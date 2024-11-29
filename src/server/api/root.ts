@@ -1,6 +1,5 @@
 import { postRouter } from "~/server/api/routers/post";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
-import { browserSessionRouter } from "./routers/browserSession";
 
 /**
  * This is the primary router for your server.
@@ -8,7 +7,6 @@ import { browserSessionRouter } from "./routers/browserSession";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  browserSession: browserSessionRouter,
   post: postRouter,
 });
 

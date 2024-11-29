@@ -20,7 +20,7 @@ export const env = createEnv({
     EMAIL_SERVER: z.string().url(),
     EMAIL_FROM: z.string().email(),
     OPENAI_API_KEY: z.string(),
-    GROQ_API_KEY: z.string(),
+    ANTHROPIC_API_KEY: z.string(),
     HEADFUL: z.boolean(),
   },
 
@@ -46,7 +46,7 @@ export const env = createEnv({
     EMAIL_SERVER: process.env.EMAIL_SERVER,
     EMAIL_FROM: process.env.EMAIL_FROM,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    GROQ_API_KEY: process.env.GROQ_API_KEY,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     HEADFUL: process.env.HEADFUL === "true",
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },

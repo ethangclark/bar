@@ -2,11 +2,10 @@ import { incrementUsage } from "~/server/services/usage";
 import { getResponseFromOpenAi } from "./providers/openAi";
 import { type Result, isFailure } from "~/common/utils/result";
 import { getResponseFromAnthropic } from "./providers/anthropic";
-import { getResponseFromGoogle } from "./providers/google";
 import { env } from "~/env";
 import { type LlmResponse, type LlmParams } from "./schemas";
 
-type Provider = "anthropic" | "google" | "openAi";
+type Provider = "anthropic" | "openAi";
 
 const defaultProvider: Provider = "openAi";
 
@@ -21,8 +20,6 @@ export async function getResponseFromLlm({
     switch (provider) {
       case "anthropic":
         return getResponseFromAnthropic(params);
-      case "google":
-        return getResponseFromGoogle(params);
       case "openAi":
         return getResponseFromOpenAi(params);
     }

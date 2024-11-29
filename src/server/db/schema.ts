@@ -140,9 +140,3 @@ export const verificationTokens = createTable(
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
   }),
 );
-
-export const pngs = createTable("png", {
-  uuid: uuid("uuid").primaryKey().defaultRandom().notNull(),
-  asUrl: text("asUrl").notNull(),
-});
-export type Png = InferSelectModel<typeof pngs>;

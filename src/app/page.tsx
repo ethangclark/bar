@@ -1,16 +1,16 @@
 "use client";
 
-import { BrowserSession } from "./_browserSession/BrowserSession";
 import { ClientOnly } from "./_components/ClientOnly";
 import { Page } from "./_components/Page";
 import { Title } from "./_components/Title";
+import Main from "./_main/Main";
 
 export default function Home() {
   return (
     <Page>
-      <Title>QA Bot</Title>
+      <Title>Baramu</Title>
       <ClientOnly>
-        <BrowserSession />
+        <Main />
       </ClientOnly>
     </Page>
   );

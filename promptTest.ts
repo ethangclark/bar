@@ -1,9 +1,7 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import { spawn } from "child_process";
 import { existsSync } from "fs";
 
-let times = parseInt(process.env.TIMES);
+let times = parseInt(process.env.TIMES ?? "0");
 if (isNaN(times) || times < 1) {
   times = 1;
 }
@@ -16,8 +14,8 @@ if (!fileRelPath || !existsSync(fileRelPath)) {
   process.exit(1);
 }
 
-const runTest = (attempt) => {
-  return new Promise((resolve, reject) => {
+const runTest = (attempt: number) => {
+  return new Promise<void>((resolve, reject) => {
     const testProcess = spawn(
       "yarn",
       [
@@ -54,7 +52,11 @@ const runTests = async () => {
       `All tests passed successfully in ${(Date.now() - startTime) / 1000}s`,
     );
   } catch (error) {
-    console.error(error.message);
+    if (error instanceof Error) {
+      console.error(error.message);
+    } else {
+      console.error(error);
+    }
     process.exit(1);
   }
 };
