@@ -1,0 +1,11 @@
+{
+  "command": "click the settings icon",
+  "bboxes": [
+    {
+      "x0": 1046,
+      "y0": 38,
+      "x1": 1070,
+      "y1": 62
+    }
+  ]
+}

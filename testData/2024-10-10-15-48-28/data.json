@@ -1,0 +1,11 @@
+{
+  "command": "click the email field",
+  "bboxes": [
+    {
+      "x0": 722.5,
+      "y0": 148,
+      "x1": 1086.5,
+      "y1": 200
+    }
+  ]
+}

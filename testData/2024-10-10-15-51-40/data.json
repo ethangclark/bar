@@ -1,0 +1,11 @@
+{
+  "command": "click the messages icon in the top right",
+  "bboxes": [
+    {
+      "x0": 1081,
+      "y0": 8,
+      "x1": 1121,
+      "y1": 48
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "command": "click the conversation with Leslee and Kirsten",
+  "bboxes": [
+    {
+      "x0": 867,
+      "y0": 502.890625,
+      "x1": 1192,
+      "y1": 570.890625
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "command": "click kaos netflix",
+  "bboxes": [
+    {
+      "x0": 332,
+      "y0": 460,
+      "x1": 916,
+      "y1": 490
+    }
+  ]
+}

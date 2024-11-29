@@ -1,0 +1,17 @@
+{
+  "command": "click the news about poll, Michigan, and Trump",
+  "bboxes": [
+    {
+      "x0": 96,
+      "y0": 517,
+      "x1": 596,
+      "y1": 797.546875
+    },
+    {
+      "x0": 612,
+      "y0": 517,
+      "x1": 984.15625,
+      "y1": 561
+    }
+  ]
+}

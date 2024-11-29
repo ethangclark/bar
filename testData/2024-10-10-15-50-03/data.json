@@ -1,0 +1,11 @@
+{
+  "command": "click the x in the box that says if you change your mind",
+  "bboxes": [
+    {
+      "x0": 391,
+      "y0": 30,
+      "x1": 407,
+      "y1": 46
+    }
+  ]
+}
