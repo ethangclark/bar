@@ -1,4 +1,4 @@
-Introduction to the Bar Exam Structure
+Introduction: Introduction to the Bar Exam Structure
 Civil Procedure: Jurisdiction and Venue
 Civil Procedure: Pleadings and Motions
 Civil Procedure: Pretrial Procedures and Discovery
@@ -52,5 +52,4 @@ Professional Responsibility: Attorney-Client Relationship
 Professional Responsibility: Conflicts of Interest
 Professional Responsibility: Competence and Ethics
 Multistate Performance Test: Introduction and Strategies
-Legal Analysis and Writing Skills
-Practical Application Exercises
+Analysis and Communication: Legal Analysis and Writing Skills
