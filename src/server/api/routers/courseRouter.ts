@@ -1,4 +1,5 @@
 import { desc, eq, sql } from "drizzle-orm";
+import { z } from "zod";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -51,4 +52,18 @@ export const courseRouter = createTRPCRouter({
 
     return courseEnrollments;
   }),
+
+  enroll: protectedProcedure
+    .input(
+      z.object({
+        courseId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      await db.insert(dbSchema.courseEnrollments).values({
+        userId,
+        courseId: input.courseId,
+      });
+    }),
 });
