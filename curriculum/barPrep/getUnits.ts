@@ -131,5 +131,3 @@ export function getUnits(): Unit[] {
 
   return units;
 }
-
-console.log(JSON.stringify(getUnits(), null, 2));

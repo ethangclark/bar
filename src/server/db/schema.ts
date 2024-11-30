@@ -10,11 +10,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
-/**
- * This uses the multi-project schema feature of Drizzle ORM, which supports the same db instance for multiple projects
- *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
 export const createTable = pgTableCreator((name) => `drizzle_${name}`);
 
 export const posts = createTable(
@@ -24,7 +19,7 @@ export const posts = createTable(
     name: text("name"),
     createdById: uuid("created_by_id")
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -59,7 +54,7 @@ export const ipUsers = createTable(
     ipAddress: text("ip_address").notNull().primaryKey(),
     userId: uuid("user_id")
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: "cascade" }),
   },
   (ipu) => ({
     userIdIdx: index("ip_user_user_id_idx").on(ipu.userId),
@@ -74,7 +69,7 @@ export const accounts = createTable(
   {
     userId: uuid("user_id")
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: "cascade" }),
     type: text("type").$type<AdapterAccount["type"]>().notNull(),
     provider: text("provider").notNull(),
     providerAccountId: text("provider_account_id").notNull(),
@@ -104,7 +99,7 @@ export const sessions = createTable(
     sessionToken: text("session_token").notNull().primaryKey(),
     userId: uuid("user_id")
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: "cascade" }),
     expires: timestamp("expires", {
       mode: "date",
       withTimezone: true,
@@ -154,7 +149,7 @@ export const courses = createTable(
     id: uuid("id").primaryKey().defaultRandom(),
     typeId: uuid("type_id")
       .notNull()
-      .references(() => courseTypes.id),
+      .references(() => courseTypes.id, { onDelete: "cascade" }),
     creationDate: timestamp("creation_date", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -178,7 +173,7 @@ export const units = createTable(
     name: text("name").notNull(),
     courseId: uuid("course_id")
       .notNull()
-      .references(() => courses.id),
+      .references(() => courses.id, { onDelete: "cascade" }),
   },
   (unit) => ({
     courseIdIdx: index("unit_course_id_idx").on(unit.courseId),
@@ -200,7 +195,7 @@ export const modules = createTable(
     name: text("name").notNull(),
     unitId: uuid("unit_id")
       .notNull()
-      .references(() => units.id),
+      .references(() => units.id, { onDelete: "cascade" }),
   },
   (module) => ({
     unitIdIdx: index("module_unit_id_idx").on(module.unitId),
@@ -222,7 +217,7 @@ export const topics = createTable(
     name: text("name").notNull(),
     moduleId: uuid("module_id")
       .notNull()
-      .references(() => modules.id),
+      .references(() => modules.id, { onDelete: "cascade" }),
   },
   (topic) => ({
     moduleIdIdx: index("topic_module_id_idx").on(topic.moduleId),
@@ -244,10 +239,10 @@ export const activities = createTable(
     name: text("name").notNull(),
     topicId: uuid("topic_id")
       .notNull()
-      .references(() => topics.id),
+      .references(() => topics.id, { onDelete: "cascade" }),
     userId: uuid("user_id")
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: "cascade" }),
   },
   (activity) => ({
     topicIdIdx: index("activity_topic_id_idx").on(activity.topicId),
