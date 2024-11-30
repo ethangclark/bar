@@ -1,9 +1,8 @@
+import { eq } from "drizzle-orm";
 import "~/env";
 import { db } from "~/server/db";
-import { getUnits } from "./getUnits";
 import { dbSchema } from "~/server/db/dbSchema";
-import { eq } from "drizzle-orm";
-import { splitResults } from "~/common/utils/promiseUtils";
+import { getUnits } from "./getUnits";
 
 const courseName = "Bar prep";
 
@@ -44,67 +43,50 @@ async function main() {
 
   const units = getUnits();
 
-  const unitResults = await Promise.allSettled(
-    units.map(async (unit) => {
-      const [unitRecord] = await db
-        .insert(dbSchema.units)
-        .values({
-          courseId: course.id,
-          name: unit.name,
-        })
-        .returning();
-      if (!unitRecord) {
-        throw new Error("Failed to create unit");
-      }
-      const moduleResults = await Promise.allSettled(
-        unit.modules.map(async (module) => {
-          const [moduleRecord] = await db
-            .insert(dbSchema.modules)
-            .values({
-              unitId: unitRecord.id,
-              name: module.name,
-            })
-            .returning();
-          if (!moduleRecord) {
-            throw new Error("Failed to create module");
-          }
-          const topicResults = await Promise.allSettled(
-            module.topics.map(async (topic) => {
-              const [topicRecord] = await db
-                .insert(dbSchema.topics)
-                .values({
-                  moduleId: moduleRecord.id,
-                  name: topic,
-                })
-                .returning();
-              if (!topicRecord) {
-                throw new Error("Failed to create topic");
-              }
-            }),
-          );
-          const { errors } = splitResults(topicResults);
-          if (errors.length) {
-            throw new AggregateError(
-              errors,
-              "Some topic creation operations failed",
+  await db.transaction(async (db) => {
+    await Promise.all(
+      units.map(async (unit) => {
+        const [unitRecord] = await db
+          .insert(dbSchema.units)
+          .values({
+            courseId: course.id,
+            name: unit.name,
+          })
+          .returning();
+        if (!unitRecord) {
+          throw new Error("Failed to create unit");
+        }
+        await Promise.all(
+          unit.modules.map(async (module) => {
+            const [moduleRecord] = await db
+              .insert(dbSchema.modules)
+              .values({
+                unitId: unitRecord.id,
+                name: module.name,
+              })
+              .returning();
+            if (!moduleRecord) {
+              throw new Error("Failed to create module");
+            }
+            await Promise.all(
+              module.topics.map(async (topic) => {
+                const [topicRecord] = await db
+                  .insert(dbSchema.topics)
+                  .values({
+                    moduleId: moduleRecord.id,
+                    name: topic,
+                  })
+                  .returning();
+                if (!topicRecord) {
+                  throw new Error("Failed to create topic");
+                }
+              }),
             );
-          }
-        }),
-      );
-      const { errors } = splitResults(moduleResults);
-      if (errors.length) {
-        throw new AggregateError(
-          errors,
-          "Some module creation operations failed",
+          }),
         );
-      }
-    }),
-  );
-  const { errors } = splitResults(unitResults);
-  if (errors.length) {
-    await db.delete(dbSchema.courses).where(eq(dbSchema.courses.id, course.id));
-    throw new AggregateError(errors, "Some course creation failed");
-  }
+      }),
+    );
+  });
 }
 
 void main().then(() => {
