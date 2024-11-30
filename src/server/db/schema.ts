@@ -4,11 +4,9 @@ import {
   integer,
   pgTableCreator,
   primaryKey,
-  serial,
   text,
   timestamp,
   uuid,
-  varchar,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
@@ -23,31 +21,31 @@ export const createTable = pgTableCreator((name) => `drizzle_${name}`);
 export const posts = createTable(
   "post",
   {
-    id: serial("id").primaryKey(),
-    name: varchar("name", { length: 256 }),
-    createdById: uuid("createdById")
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name"),
+    createdById: uuid("created_by_id")
       .notNull()
       .references(() => users.id),
-    createdAt: timestamp("createdAt", { withTimezone: true })
+    createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    updatedAt: timestamp("updatedAt", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
   (example) => ({
-    createdByIdIdx: index("createdById_idx").on(example.createdById),
+    createdByIdIdx: index("created_by_id_idx").on(example.createdById),
     nameIndex: index("name_idx").on(example.name),
   }),
 );
 
 export const users = createTable("user", {
-  id: uuid("id").primaryKey().defaultRandom().notNull(),
-  name: varchar("name", { length: 255 }),
-  email: varchar("email", { length: 255 }).notNull(),
-  emailVerified: timestamp("emailVerified", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name"),
+  email: text("email").notNull(),
+  emailVerified: timestamp("email_verified", {
     mode: "date",
     withTimezone: true,
   }).defaultNow(),
-  tokensUsed: integer("tokensUsed").default(0).notNull(),
+  tokensUsed: integer("tokens_used").default(0).notNull(),
   image: text("image"),
 });
 export type User = InferSelectModel<typeof users>;
@@ -57,15 +55,15 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 export const ipUsers = createTable(
-  "ipUser",
+  "ip_user",
   {
-    ipAddress: varchar("ipAddress", { length: 255 }).notNull().primaryKey(),
-    userId: uuid("userId")
+    ipAddress: text("ip_address").notNull().primaryKey(),
+    userId: uuid("user_id")
       .notNull()
       .references(() => users.id),
   },
   (ipu) => ({
-    userIdIdx: index("ipUser_userId_idx").on(ipu.userId),
+    userIdIdx: index("ip_user_user_id_idx").on(ipu.userId),
   }),
 );
 export const ipUsersRelations = relations(ipUsers, ({ one }) => ({
@@ -75,27 +73,25 @@ export const ipUsersRelations = relations(ipUsers, ({ one }) => ({
 export const accounts = createTable(
   "account",
   {
-    userId: uuid("userId")
+    userId: uuid("user_id")
       .notNull()
       .references(() => users.id),
-    type: varchar("type", { length: 255 })
-      .$type<AdapterAccount["type"]>()
-      .notNull(),
-    provider: varchar("provider", { length: 255 }).notNull(),
-    providerAccountId: varchar("providerAccountId", { length: 255 }).notNull(),
+    type: text("type").$type<AdapterAccount["type"]>().notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("provider_account_id").notNull(),
     refresh_token: text("refresh_token"),
     access_token: text("access_token"),
     expires_at: integer("expires_at"),
-    token_type: varchar("token_type", { length: 255 }),
-    scope: varchar("scope", { length: 255 }),
+    token_type: text("token_type"),
+    scope: text("scope"),
     id_token: text("id_token"),
-    session_state: varchar("session_state", { length: 255 }),
+    session_state: text("session_state"),
   },
   (account) => ({
     compoundKey: primaryKey({
       columns: [account.provider, account.providerAccountId],
     }),
-    userIdIdx: index("account_userId_idx").on(account.userId),
+    userIdIdx: index("account_user_id_idx").on(account.userId),
   }),
 );
 
@@ -106,10 +102,8 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 export const sessions = createTable(
   "session",
   {
-    sessionToken: varchar("sessionToken", { length: 255 })
-      .notNull()
-      .primaryKey(),
-    userId: uuid("userId")
+    sessionToken: text("session_token").notNull().primaryKey(),
+    userId: uuid("user_id")
       .notNull()
       .references(() => users.id),
     expires: timestamp("expires", {
@@ -118,7 +112,7 @@ export const sessions = createTable(
     }).notNull(),
   },
   (session) => ({
-    userIdIdx: index("session_userId_idx").on(session.userId),
+    userIdIdx: index("session_user_id_idx").on(session.userId),
   }),
 );
 
@@ -127,10 +121,10 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 }));
 
 export const verificationTokens = createTable(
-  "verificationToken",
+  "verification_token",
   {
-    identifier: varchar("identifier", { length: 255 }).notNull(),
-    token: varchar("token", { length: 255 }).notNull(),
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
     expires: timestamp("expires", {
       mode: "date",
       withTimezone: true,
@@ -140,3 +134,130 @@ export const verificationTokens = createTable(
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
   }),
 );
+
+export const courseTypes = createTable(
+  "course_type",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+  },
+  (course) => ({
+    nameIndex: index("course_name_idx").on(course.name),
+  }),
+);
+
+export const courses = createTable(
+  "course",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    typeId: uuid("type_id")
+      .notNull()
+      .references(() => courseTypes.id),
+    creationDate: timestamp("creation_date", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (course) => ({
+    typeIdIdx: index("course_type_id_idx").on(course.typeId),
+    nameIndex: index("course_name_idx").on(course.name),
+  }),
+);
+export const coursesRelations = relations(courses, ({ one }) => ({
+  type: one(courseTypes, {
+    fields: [courses.typeId],
+    references: [courseTypes.id],
+  }),
+}));
+
+export const units = createTable(
+  "unit",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => courses.id),
+  },
+  (unit) => ({
+    courseIdIdx: index("unit_course_id_idx").on(unit.courseId),
+    nameIndex: index("unit_name_idx").on(unit.name),
+  }),
+);
+export const unitsRelations = relations(units, ({ one }) => ({
+  course: one(courses, {
+    fields: [units.courseId],
+    references: [courses.id],
+  }),
+}));
+
+export const modules = createTable(
+  "module",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    unitId: uuid("unit_id")
+      .notNull()
+      .references(() => units.id),
+  },
+  (module) => ({
+    unitIdIdx: index("module_unit_id_idx").on(module.unitId),
+    nameIndex: index("module_name_idx").on(module.name),
+  }),
+);
+export const modulesRelations = relations(modules, ({ one }) => ({
+  unit: one(units, {
+    fields: [modules.unitId],
+    references: [units.id],
+  }),
+}));
+
+export const topics = createTable(
+  "topic",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    moduleId: uuid("module_id")
+      .notNull()
+      .references(() => modules.id),
+  },
+  (topic) => ({
+    moduleIdIdx: index("topic_module_id_idx").on(topic.moduleId),
+    nameIndex: index("topic_name_idx").on(topic.name),
+  }),
+);
+export const topicsRelations = relations(topics, ({ one }) => ({
+  module: one(modules, {
+    fields: [topics.moduleId],
+    references: [modules.id],
+  }),
+}));
+
+export const activities = createTable(
+  "activity",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    topicId: uuid("topic_id")
+      .notNull()
+      .references(() => topics.id),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id),
+  },
+  (activity) => ({
+    topicIdIdx: index("activity_topic_id_idx").on(activity.topicId),
+    nameIndex: index("activity_name_idx").on(activity.name),
+    useridIdx: index("activity_user_id_idx").on(activity.userId),
+  }),
+);
+export const activitiesRelations = relations(activities, ({ one }) => ({
+  topic: one(topics, {
+    fields: [activities.topicId],
+    references: [topics.id],
+  }),
+  user: one(users, {
+    fields: [activities.userId],
+    references: [users.id],
+  }),
+}));
