@@ -11,8 +11,7 @@ import {
 import { type AdapterAccount } from "next-auth/adapters";
 
 /**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
+ * This uses the multi-project schema feature of Drizzle ORM, which supports the same db instance for multiple projects
  *
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
@@ -32,8 +31,8 @@ export const posts = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
   (example) => ({
-    createdByIdIdx: index("created_by_id_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
+    createdByIdIdx: index("post_created_by_id_idx").on(example.createdById),
+    nameIndex: index("post_name_idx").on(example.name),
   }),
 );
 
@@ -142,15 +141,17 @@ export const courseTypes = createTable(
     name: text("name").notNull(),
   },
   (course) => ({
-    nameIndex: index("course_name_idx").on(course.name),
+    nameIndex: index("course_type_name_idx").on(course.name),
   }),
 );
+export const courseTypesRelations = relations(courseTypes, ({ many }) => ({
+  courses: many(courses),
+}));
 
 export const courses = createTable(
   "course",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    name: text("name").notNull(),
     typeId: uuid("type_id")
       .notNull()
       .references(() => courseTypes.id),
@@ -160,14 +161,14 @@ export const courses = createTable(
   },
   (course) => ({
     typeIdIdx: index("course_type_id_idx").on(course.typeId),
-    nameIndex: index("course_name_idx").on(course.name),
   }),
 );
-export const coursesRelations = relations(courses, ({ one }) => ({
+export const coursesRelations = relations(courses, ({ one, many }) => ({
   type: one(courseTypes, {
     fields: [courses.typeId],
     references: [courseTypes.id],
   }),
+  units: many(units),
 }));
 
 export const units = createTable(
@@ -184,11 +185,12 @@ export const units = createTable(
     nameIndex: index("unit_name_idx").on(unit.name),
   }),
 );
-export const unitsRelations = relations(units, ({ one }) => ({
+export const unitsRelations = relations(units, ({ one, many }) => ({
   course: one(courses, {
     fields: [units.courseId],
     references: [courses.id],
   }),
+  modules: many(modules),
 }));
 
 export const modules = createTable(
@@ -205,11 +207,12 @@ export const modules = createTable(
     nameIndex: index("module_name_idx").on(module.name),
   }),
 );
-export const modulesRelations = relations(modules, ({ one }) => ({
+export const modulesRelations = relations(modules, ({ one, many }) => ({
   unit: one(units, {
     fields: [modules.unitId],
     references: [units.id],
   }),
+  topics: many(topics),
 }));
 
 export const topics = createTable(
@@ -226,11 +229,12 @@ export const topics = createTable(
     nameIndex: index("topic_name_idx").on(topic.name),
   }),
 );
-export const topicsRelations = relations(topics, ({ one }) => ({
+export const topicsRelations = relations(topics, ({ one, many }) => ({
   module: one(modules, {
     fields: [topics.moduleId],
     references: [modules.id],
   }),
+  activities: many(activities),
 }));
 
 export const activities = createTable(
@@ -248,7 +252,7 @@ export const activities = createTable(
   (activity) => ({
     topicIdIdx: index("activity_topic_id_idx").on(activity.topicId),
     nameIndex: index("activity_name_idx").on(activity.name),
-    useridIdx: index("activity_user_id_idx").on(activity.userId),
+    userIdIdx: index("activity_user_id_idx").on(activity.userId),
   }),
 );
 export const activitiesRelations = relations(activities, ({ one }) => ({
