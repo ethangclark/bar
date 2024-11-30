@@ -13,24 +13,42 @@ function resolvePath(filePath: string): string {
 const unitModuleListPath = resolvePath("./unitModuleList.txt");
 const topicListPath = resolvePath("./topicList.txt");
 const topicPrefaceChar = "•";
-const isLineAModuleTitle = (line: string) => line.includes(":");
+export const unitModuleInfix = ": ";
+const isLineARawModuleName = (line: string) => line.includes(unitModuleInfix);
+
+export function rawModuleNameToUnitAndModuleName(rawModuleName: string) {
+  const [unitName, moduleName] = rawModuleName.split(unitModuleInfix);
+  if (!unitName || !moduleName) {
+    throw new Error(`Invalid module name: ${rawModuleName}`);
+  }
+  return { unitName, moduleName };
+}
 
 const unitModuleListContent = fs.readFileSync(unitModuleListPath, "utf8");
 const topicListContent = fs.readFileSync(topicListPath, "utf8");
 
 // Function to read and parse the course outline
-export function getModuleList() {
+export function getRawModuleListFromFile() {
   return unitModuleListContent
     .split("\n")
     .filter((line) => line.trim() !== "")
     .map((line) => line.trim());
 }
 
-export function getTopics() {
+type Module = {
+  name: string;
+  topics: string[];
+};
+type Unit = {
+  name: string;
+  modules: Module[];
+};
+
+export function getRawModules(): Module[] {
   // Split content into lines and remove empty lines
   const lines = topicListContent.split("\n").filter((line) => line.trim());
 
-  const modules = [];
+  const rawModules = Array<Module>();
   let currentModule = null;
   let currentTopics = [];
 
@@ -42,11 +60,11 @@ export function getTopics() {
     if (!line) continue;
 
     // If line contains a colon, it's likely a module title
-    if (isLineAModuleTitle(line)) {
+    if (isLineARawModuleName(line)) {
       // If we have a previous module, save it
       if (currentModule) {
-        modules.push({
-          module: currentModule,
+        rawModules.push({
+          name: currentModule,
           topics: currentTopics,
         });
       }
@@ -68,13 +86,50 @@ export function getTopics() {
 
   // Add the last module
   if (currentModule) {
-    modules.push({
-      module: currentModule,
+    rawModules.push({
+      name: currentModule,
       topics: currentTopics,
     });
   }
 
-  return modules;
+  return rawModules;
 }
 
-console.log(JSON.stringify(getTopics(), null, 2));
+export function getUnits(): Unit[] {
+  const rawModules = getRawModules();
+
+  const units = Array<Unit>();
+  let currentUnit = null;
+  let currentModules = [];
+  for (const rawModule of rawModules) {
+    const { unitName, moduleName } = rawModuleNameToUnitAndModuleName(
+      rawModule.name,
+    );
+    if (currentUnit !== unitName) {
+      if (currentUnit) {
+        units.push({
+          name: currentUnit,
+          modules: currentModules,
+        });
+      }
+      currentUnit = unitName;
+      currentModules = [];
+    }
+    currentModules.push({
+      ...rawModule,
+      name: moduleName,
+    });
+  }
+
+  // Add the last unit
+  if (currentUnit) {
+    units.push({
+      name: currentUnit,
+      modules: currentModules,
+    });
+  }
+
+  return units;
+}
+
+console.log(JSON.stringify(getUnits(), null, 2));
