@@ -90,5 +90,5 @@ async function main() {
 }
 
 void main().then(() => {
-  console.log("Done");
+  console.log("Done populating :) Go ahead and kill this script.");
 });
