@@ -15,6 +15,13 @@
       "when": 1733006383903,
       "tag": "0001_dusty_silvermane",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1733009913559,
+      "tag": "0002_plain_wong",
+      "breakpoints": true
     }
   ]
 }

@@ -46,6 +46,8 @@ export type User = InferSelectModel<typeof users>;
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
+  sessions: many(sessions),
+  courseEnrollments: many(courseEnrollments),
 }));
 
 export const ipUsers = createTable(
@@ -164,7 +166,36 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
     references: [courseTypes.id],
   }),
   units: many(units),
+  enrollments: many(courseEnrollments),
 }));
+
+export const courseEnrollments = createTable(
+  "course_enrollment",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => courses.id, { onDelete: "cascade" }),
+  },
+  (ce) => ({
+    compoundKey: primaryKey({ columns: [ce.userId, ce.courseId] }),
+  }),
+);
+export const courseEnrollmentsRelations = relations(
+  courseEnrollments,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [courseEnrollments.userId],
+      references: [users.id],
+    }),
+    course: one(courses, {
+      fields: [courseEnrollments.courseId],
+      references: [courses.id],
+    }),
+  }),
+);
 
 export const units = createTable(
   "unit",

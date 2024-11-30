@@ -118,6 +118,7 @@ export const createTRPCRouter = t.router;
  */
 export const publicProcedure = t.procedure;
 
+// TODO: Update this logic to not support ipUsers
 /**
  * Protected (authenticated) procedure
  *
