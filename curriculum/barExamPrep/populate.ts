@@ -19,22 +19,14 @@ const unitModuleListContent = fs.readFileSync(unitModuleListPath, "utf8");
 const topicListContent = fs.readFileSync(topicListPath, "utf8");
 
 // Function to read and parse the course outline
-export function getCourseModules() {
+export function getModuleList() {
   return unitModuleListContent
     .split("\n")
     .filter((line) => line.trim() !== "")
     .map((line) => line.trim());
 }
 
-// Function to read and parse the topic list
-export function getDefinedTopics() {
-  return topicListContent
-    .split("\n")
-    .filter((line) => line.trim() !== "" && !line.startsWith("\t"))
-    .map((line) => line.trim());
-}
-
-function parseBarExamContent() {
+export function getTopics() {
   // Split content into lines and remove empty lines
   const lines = topicListContent.split("\n").filter((line) => line.trim());
 
@@ -85,4 +77,4 @@ function parseBarExamContent() {
   return modules;
 }
 
-console.log(JSON.stringify(parseBarExamContent(), null, 2));
+console.log(JSON.stringify(getTopics(), null, 2));
