@@ -1,11 +1,10 @@
-import exp from "constants";
 import {
   getRawModuleListFromFile,
   getRawModules,
   getUnits,
   rawModuleNameToUnitAndModuleName,
   unitModuleInfix,
-} from "./populate";
+} from "./getUnits";
 
 describe("getRawModules", () => {
   it("includes all expected modules based on the raw module list file", () => {
