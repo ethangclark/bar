@@ -1,17 +1,17 @@
+import { Typography } from "antd";
+
 export function Title({
   children,
+  className = "",
   marginBottomCn = "mb-12",
-  mellow = false,
 }: {
   children: React.ReactNode;
+  className?: string;
   marginBottomCn?: string;
-  mellow?: boolean;
 }) {
   return (
-    <h1
-      className={`${mellow ? "text-4xl font-semibold" : "text-5xl font-bold"} tracking-tight  ${marginBottomCn}`}
-    >
+    <Typography.Title level={1} className={`${className} ${marginBottomCn}`}>
       {children}
-    </h1>
+    </Typography.Title>
   );
 }

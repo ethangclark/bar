@@ -1,0 +1,1 @@
+ALTER TABLE "drizzle_course_enrollment" ADD COLUMN "start_date" timestamp with time zone DEFAULT now();

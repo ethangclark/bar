@@ -181,6 +181,9 @@ export const courseEnrollments = createTable(
     courseId: uuid("course_id")
       .notNull()
       .references(() => courses.id, { onDelete: "cascade" }),
+    startDate: timestamp("start_date", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (ce) => ({
     compoundKey: primaryKey({ columns: [ce.userId, ce.courseId] }),

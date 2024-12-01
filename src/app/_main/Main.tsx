@@ -1,28 +1,47 @@
-import { Button, Spin } from "antd";
+import { Button, Card, Spin, Typography } from "antd";
 import { useMemo } from "react";
 import { noop } from "~/common/utils/fnUtils";
-import { type CourseType } from "~/server/db/schema";
+import { formatDayDate } from "~/common/utils/timeUtils";
+import { type CourseEnrollment, type CourseType } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
 function Option({
   courseType,
-  enrolled,
+  enrollment,
   onEnroll,
   onResume,
 }: {
   courseType: CourseType;
-  enrolled: boolean;
+  enrollment: CourseEnrollment | null;
   onEnroll: () => void;
   onResume: () => void;
 }) {
   return (
-    <div>
-      <div>{courseType.name}</div>
-      <Button disabled={enrolled} onClick={onEnroll}>
-        Enroll
-      </Button>
-      {enrolled ? <Button onClick={onResume}>Resume</Button> : null}
-    </div>
+    <Card title={courseType.name}>
+      <div className="mb-4">
+        {enrollment ? (
+          <>
+            <Button size="large" onClick={onResume} type="primary">
+              Resume
+            </Button>
+          </>
+        ) : (
+          <Button size="large" disabled={!!enrollment} onClick={onEnroll}>
+            Enroll
+          </Button>
+        )}
+      </div>
+      {enrollment && (
+        <>
+          <Typography.Paragraph className="mb-0">
+            Started on {formatDayDate(enrollment.startDate)}
+          </Typography.Paragraph>
+          <Button type="text" className="px-0 text-gray-500">
+            Create new enrollment
+          </Button>
+        </>
+      )}
+    </Card>
   );
 }
 
@@ -38,7 +57,7 @@ export default function Main() {
         <Option
           key={enrollment.courseId}
           courseType={enrollment.course.courseType}
-          enrolled
+          enrollment={enrollment}
           onEnroll={noop}
           onResume={() => console.log("TODO: resume")}
         />,
@@ -57,7 +76,7 @@ export default function Main() {
         <Option
           key={course.id}
           courseType={course.courseType}
-          enrolled={false}
+          enrollment={null}
           onEnroll={async () => {
             await enroll.mutateAsync({ courseId: course.id });
             await enrollments.refetch();
@@ -75,7 +94,7 @@ export default function Main() {
 
   return (
     <div>
-      <div>Courses</div>
+      <Typography.Title level={2}>Courses</Typography.Title>
       {options}
     </div>
   );

@@ -1,0 +1,1 @@
+ALTER TABLE "drizzle_course_enrollment" ALTER COLUMN "start_date" SET NOT NULL;
