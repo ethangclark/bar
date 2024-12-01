@@ -45,11 +45,16 @@ export const courseRouter = createTRPCRouter({
 
   enrollments: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
-    const courseEnrollments = await db
-      .select()
-      .from(dbSchema.courseEnrollments)
-      .where(eq(dbSchema.courseEnrollments.userId, userId));
-
+    const courseEnrollments = await db.query.courseEnrollments.findMany({
+      where: eq(dbSchema.courseEnrollments.userId, userId),
+      with: {
+        course: {
+          with: {
+            courseType: true,
+          },
+        },
+      },
+    });
     return courseEnrollments;
   }),
 

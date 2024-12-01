@@ -34,7 +34,7 @@ export default function Main() {
         <div>
           {enrollments.data?.map((enrollment) => (
             <div key={enrollment.courseId}>
-              <div>{enrollment.courseId}</div>
+              <div>{enrollment.course.courseType.name}</div>
             </div>
           ))}
         </div>

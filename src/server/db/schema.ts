@@ -161,7 +161,7 @@ export const courses = createTable(
   }),
 );
 export const coursesRelations = relations(courses, ({ one, many }) => ({
-  type: one(courseTypes, {
+  courseType: one(courseTypes, {
     fields: [courses.typeId],
     references: [courseTypes.id],
   }),
