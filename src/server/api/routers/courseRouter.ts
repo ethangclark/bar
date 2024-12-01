@@ -13,10 +13,13 @@ export async function getLatestCoursesByType() {
   // based on creation date, then selects the most recent one
   const latestCourses = await db
     .select({
-      courseId: dbSchema.courses.id,
+      id: dbSchema.courses.id,
       courseTypeId: dbSchema.courses.typeId,
-      courseTypeName: dbSchema.courseTypes.name,
-      creationDate: dbSchema.courses.creationDate,
+      courseType: {
+        id: dbSchema.courseTypes.id,
+        name: dbSchema.courseTypes.name,
+        creationDate: dbSchema.courses.creationDate,
+      },
     })
     .from(dbSchema.courses)
     .innerJoin(

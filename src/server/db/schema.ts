@@ -43,7 +43,6 @@ export const users = createTable("user", {
   image: text("image"),
 });
 export type User = InferSelectModel<typeof users>;
-
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   sessions: many(sessions),
@@ -62,6 +61,7 @@ export const ipUsers = createTable(
     userIdIdx: index("ip_user_user_id_idx").on(ipu.userId),
   }),
 );
+export type IpUser = InferSelectModel<typeof ipUsers>;
 export const ipUsersRelations = relations(ipUsers, ({ one }) => ({
   user: one(users, { fields: [ipUsers.userId], references: [users.id] }),
 }));
@@ -90,7 +90,7 @@ export const accounts = createTable(
     userIdIdx: index("account_user_id_idx").on(account.userId),
   }),
 );
-
+export type Account = InferSelectModel<typeof accounts>;
 export const accountsRelations = relations(accounts, ({ one }) => ({
   user: one(users, { fields: [accounts.userId], references: [users.id] }),
 }));
@@ -111,7 +111,7 @@ export const sessions = createTable(
     userIdIdx: index("session_user_id_idx").on(session.userId),
   }),
 );
-
+export type Session = InferSelectModel<typeof sessions>;
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, { fields: [sessions.userId], references: [users.id] }),
 }));
@@ -130,6 +130,7 @@ export const verificationTokens = createTable(
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
   }),
 );
+export type VerificationToken = InferSelectModel<typeof verificationTokens>;
 
 export const courseTypes = createTable(
   "course_type",
@@ -141,6 +142,7 @@ export const courseTypes = createTable(
     nameIndex: index("course_type_name_idx").on(course.name),
   }),
 );
+export type CourseType = InferSelectModel<typeof courseTypes>;
 export const courseTypesRelations = relations(courseTypes, ({ many }) => ({
   courses: many(courses),
 }));
@@ -160,6 +162,7 @@ export const courses = createTable(
     typeIdIdx: index("course_type_id_idx").on(course.typeId),
   }),
 );
+export type Course = InferSelectModel<typeof courses>;
 export const coursesRelations = relations(courses, ({ one, many }) => ({
   courseType: one(courseTypes, {
     fields: [courses.typeId],
@@ -183,6 +186,7 @@ export const courseEnrollments = createTable(
     compoundKey: primaryKey({ columns: [ce.userId, ce.courseId] }),
   }),
 );
+export type CourseEnrollment = InferSelectModel<typeof courseEnrollments>;
 export const courseEnrollmentsRelations = relations(
   courseEnrollments,
   ({ one }) => ({
@@ -211,6 +215,7 @@ export const units = createTable(
     nameIndex: index("unit_name_idx").on(unit.name),
   }),
 );
+export type Unit = InferSelectModel<typeof units>;
 export const unitsRelations = relations(units, ({ one, many }) => ({
   course: one(courses, {
     fields: [units.courseId],
@@ -233,6 +238,7 @@ export const modules = createTable(
     nameIndex: index("module_name_idx").on(module.name),
   }),
 );
+export type Module = InferSelectModel<typeof modules>;
 export const modulesRelations = relations(modules, ({ one, many }) => ({
   unit: one(units, {
     fields: [modules.unitId],
@@ -255,6 +261,7 @@ export const topics = createTable(
     nameIndex: index("topic_name_idx").on(topic.name),
   }),
 );
+export type Topic = InferSelectModel<typeof topics>;
 export const topicsRelations = relations(topics, ({ one, many }) => ({
   module: one(modules, {
     fields: [topics.moduleId],
@@ -281,6 +288,7 @@ export const activities = createTable(
     userIdIdx: index("activity_user_id_idx").on(activity.userId),
   }),
 );
+export type Activity = InferSelectModel<typeof activities>;
 export const activitiesRelations = relations(activities, ({ one }) => ({
   topic: one(topics, {
     fields: [activities.topicId],
