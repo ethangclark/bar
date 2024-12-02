@@ -1,5 +1,6 @@
 "use client";
 import { Spin } from "antd";
+import { useMemo } from "react";
 import { z } from "zod";
 import { ClientOnly } from "~/app/_components/ClientOnly";
 import { Page } from "~/app/_components/Page";
@@ -19,6 +20,22 @@ export default function CoursePage({ params }: Props) {
     enrollmentId,
   });
 
+  const pctDone = useMemo(() => {
+    let total = 0;
+    enrollment.data?.course.units.forEach((unit) => {
+      unit.modules.forEach((module) => {
+        total += module.topics.length;
+      });
+    });
+    let completed = 0;
+    activites.data?.forEach((activity) => {
+      if (activity.topicMasteryProved) {
+        completed++;
+      }
+    });
+    return Math.floor((completed / total) * 100);
+  }, [activites.data, enrollment.data?.course.units]);
+
   if (!enrollment.data || !activites.data) {
     return <Spin />;
   }
@@ -27,7 +44,7 @@ export default function CoursePage({ params }: Props) {
     <Page>
       <Title>Course enrollment: {enrollmentId}</Title>
       <ClientOnly>
-        <div>Yo</div>
+        <div>Pct done: {pctDone}%</div>
       </ClientOnly>
     </Page>
   );
