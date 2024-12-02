@@ -1,11 +1,11 @@
 "use client";
 import { Spin, Tree, type TreeDataNode } from "antd";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { ClientOnly } from "~/app/_components/ClientOnly";
 import { Page } from "~/app/_components/Page";
-import { Title } from "~/app/_components/Title";
 import { api } from "~/trpc/react";
+import { Topic } from "./topic";
 
 type Props = {
   params: {
@@ -13,9 +13,14 @@ type Props = {
   };
 };
 
+const maxPct = 100;
 const toPct = (numerator: number, denominator: number) =>
-  Math.floor((numerator / denominator) * 100);
-const addPct = (title: string, pct: number) => `${title} - ${pct}%`;
+  Math.floor((numerator / denominator) * maxPct);
+const addPct = (title: string, pct: number) => (
+  <>
+    {title} - {pct}% {pct === maxPct ? "✅" : ""}
+  </>
+);
 
 export default function CoursePage({ params }: Props) {
   const enrollmentId = z.string().parse(params.id);
@@ -41,6 +46,49 @@ export default function CoursePage({ params }: Props) {
     return toPct(completedTopicIds.size, total);
   }, [completedTopicIds.size, enrollment.data?.course.units]);
 
+  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (selectedTopicId !== null || !activites.data || !enrollment.data) {
+      return;
+    }
+    const completedTopicIds = activites.data
+      .filter((a) => a.topicMasteryProved)
+      .map((a) => a.topicId);
+
+    for (const unit of enrollment.data.course.units) {
+      for (const mod of unit.modules) {
+        for (const topic of mod.topics) {
+          if (!completedTopicIds.includes(topic.id)) {
+            setSelectedTopicId(topic.id);
+            return;
+          }
+        }
+      }
+    }
+  }, [activites.data, enrollment.data, selectedTopicId]);
+
+  const selectedTopicData = useMemo(() => {
+    if (!selectedTopicId || !enrollment.data) {
+      return null;
+    }
+    for (const unit of enrollment.data.course.units) {
+      for (const mod of unit.modules) {
+        for (const topic of mod.topics) {
+          if (topic.id === selectedTopicId) {
+            return {
+              topic,
+              module: mod,
+              unit,
+              course: enrollment.data.course,
+              courseType: enrollment.data.course.courseType,
+            };
+          }
+        }
+      }
+    }
+  }, [enrollment.data, selectedTopicId]);
+
   const treeData = useMemo((): TreeDataNode[] => {
     if (!enrollment.data) {
       return [];
@@ -49,6 +97,7 @@ export default function CoursePage({ params }: Props) {
       {
         title: addPct(enrollment.data.course.courseType.name, pctDone),
         key: enrollment.data.course.id,
+        selectable: false,
         children: enrollment.data.course.units.map((unit) => {
           let done = 0;
           let total = 0;
@@ -63,6 +112,7 @@ export default function CoursePage({ params }: Props) {
           return {
             title: addPct(unit.name, toPct(done, total)),
             key: unit.id,
+            selectable: false,
             children: unit.modules.map((module) => ({
               title: addPct(
                 module.name,
@@ -90,9 +140,21 @@ export default function CoursePage({ params }: Props) {
 
   return (
     <Page>
-      <Title>Course enrollment: {enrollmentId}</Title>
+      {/* <Title>{enrollment.data.course.courseType.name}</Title> */}
       <ClientOnly>
-        <Tree treeData={treeData} />
+        <div className="flex">
+          <Tree
+            treeData={treeData}
+            onSelect={([rawKey, ...rest]) => {
+              if (!rawKey || rest.length > 0) {
+                return;
+              }
+              const key = z.string().parse(rawKey);
+              setSelectedTopicId(key);
+            }}
+          />
+          <div>{selectedTopicData && <Topic {...selectedTopicData} />}</div>
+        </div>
       </ClientOnly>
     </Page>
   );
