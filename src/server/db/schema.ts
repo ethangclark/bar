@@ -1,5 +1,6 @@
 import { relations, type InferSelectModel } from "drizzle-orm";
 import {
+  boolean,
   index,
   integer,
   pgTableCreator,
@@ -198,7 +199,7 @@ export const courseEnrollments = createTable(
 export type CourseEnrollment = InferSelectModel<typeof courseEnrollments>;
 export const courseEnrollmentsRelations = relations(
   courseEnrollments,
-  ({ one }) => ({
+  ({ one, many }) => ({
     user: one(users, {
       fields: [courseEnrollments.userId],
       references: [users.id],
@@ -207,6 +208,7 @@ export const courseEnrollmentsRelations = relations(
       fields: [courseEnrollments.courseId],
       references: [courses.id],
     }),
+    units: many(units),
   }),
 );
 
@@ -271,12 +273,11 @@ export const topics = createTable(
   }),
 );
 export type Topic = InferSelectModel<typeof topics>;
-export const topicsRelations = relations(topics, ({ one, many }) => ({
+export const topicsRelations = relations(topics, ({ one }) => ({
   module: one(modules, {
     fields: [topics.moduleId],
     references: [modules.id],
   }),
-  activities: many(activities),
 }));
 
 export const activities = createTable(
@@ -284,27 +285,41 @@ export const activities = createTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull(),
-    topicId: uuid("topic_id")
-      .notNull()
-      .references(() => topics.id, { onDelete: "cascade" }),
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    topicId: uuid("topic_id")
+      .notNull()
+      .references(() => topics.id, { onDelete: "cascade" }),
+    enrollmentId: uuid("enrollment_id")
+      .notNull()
+      .references(() => courseEnrollments.id, { onDelete: "cascade" }),
+    done: boolean("done").default(false).notNull(),
+    topicMasteryProved: boolean("topic_mastery_proved")
+      .default(false)
+      .notNull(),
   },
   (activity) => ({
-    topicIdIdx: index("activity_topic_id_idx").on(activity.topicId),
     nameIndex: index("activity_name_idx").on(activity.name),
     userIdIdx: index("activity_user_id_idx").on(activity.userId),
+    topicIdIdx: index("activity_topic_id_idx").on(activity.topicId),
+    enrollmentIdIdx: index("activity_enrollment_id_idx").on(
+      activity.enrollmentId,
+    ),
   }),
 );
 export type Activity = InferSelectModel<typeof activities>;
 export const activitiesRelations = relations(activities, ({ one }) => ({
+  user: one(users, {
+    fields: [activities.userId],
+    references: [users.id],
+  }),
   topic: one(topics, {
     fields: [activities.topicId],
     references: [topics.id],
   }),
-  user: one(users, {
-    fields: [activities.userId],
-    references: [users.id],
+  enrollment: one(courseEnrollments, {
+    fields: [activities.enrollmentId],
+    references: [courseEnrollments.id],
   }),
 }));

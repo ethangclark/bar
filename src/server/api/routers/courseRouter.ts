@@ -1,4 +1,4 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
   createTRPCRouter,
@@ -73,5 +73,41 @@ export const courseRouter = createTRPCRouter({
         userId,
         courseId: input.courseId,
       });
+    }),
+
+  enrollment: protectedProcedure
+    .input(
+      z.object({
+        enrollmentId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const courseEnrollment = await db.query.courseEnrollments.findFirst({
+        where: and(
+          eq(dbSchema.courseEnrollments.userId, userId),
+          eq(dbSchema.courseEnrollments.id, input.enrollmentId),
+        ),
+        with: {
+          course: {
+            with: {
+              courseType: true,
+              units: {
+                with: {
+                  modules: {
+                    with: {
+                      topics: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+      if (!courseEnrollment) {
+        throw new Error("Course enrollment not found");
+      }
+      return courseEnrollment;
     }),
 });

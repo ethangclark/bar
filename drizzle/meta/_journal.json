@@ -8,6 +8,13 @@
       "when": 1733179253395,
       "tag": "0000_dark_vulcan",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1733181354106,
+      "tag": "0001_known_scarecrow",
+      "breakpoints": true
     }
   ]
 }
