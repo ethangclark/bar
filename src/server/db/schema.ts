@@ -175,6 +175,7 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
 export const courseEnrollments = createTable(
   "course_enrollment",
   {
+    id: uuid("id").primaryKey().defaultRandom(),
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -185,8 +186,13 @@ export const courseEnrollments = createTable(
       .notNull()
       .defaultNow(),
   },
-  (ce) => ({
-    compoundKey: primaryKey({ columns: [ce.userId, ce.courseId] }),
+  (courseEnrollment) => ({
+    userIdIdx: index("course_enrollment_user_id_idx").on(
+      courseEnrollment.userId,
+    ),
+    courseIdIdx: index("course_enrollment_course_id_idx").on(
+      courseEnrollment.courseId,
+    ),
   }),
 );
 export type CourseEnrollment = InferSelectModel<typeof courseEnrollments>;

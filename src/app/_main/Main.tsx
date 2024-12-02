@@ -1,4 +1,5 @@
 import { Button, Card, Spin, Typography } from "antd";
+import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { noop } from "~/common/utils/fnUtils";
 import { formatDayDate } from "~/common/utils/timeUtils";
@@ -45,10 +46,11 @@ function Option({
   );
 }
 
-export default function Main() {
+export function Main() {
   const available = api.course.available.useQuery();
   const enroll = api.course.enroll.useMutation();
   const enrollments = api.course.enrollments.useQuery();
+  const router = useRouter();
 
   const options = useMemo(() => {
     const options = Array<React.ReactNode>();
@@ -59,7 +61,7 @@ export default function Main() {
           courseType={enrollment.course.courseType}
           enrollment={enrollment}
           onEnroll={noop}
-          onResume={() => console.log("TODO: resume")}
+          onResume={() => router.push(`/enrollment/${enrollment.id}`)}
         />,
       );
     });
@@ -86,7 +88,7 @@ export default function Main() {
       );
     });
     return options;
-  }, [available.data?.latestCourses, enroll, enrollments]);
+  }, [available.data?.latestCourses, enroll, enrollments, router]);
 
   if (available.isLoading) {
     return <Spin />;

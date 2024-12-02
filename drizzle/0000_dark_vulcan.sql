@@ -20,6 +20,13 @@ CREATE TABLE IF NOT EXISTS "drizzle_activity" (
 	"user_id" uuid NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "drizzle_course_enrollment" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" uuid NOT NULL,
+	"course_id" uuid NOT NULL,
+	"start_date" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "drizzle_course_type" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL
@@ -85,61 +92,73 @@ CREATE TABLE IF NOT EXISTS "drizzle_verification_token" (
 );
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "drizzle_account" ADD CONSTRAINT "drizzle_account_user_id_drizzle_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."drizzle_user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "drizzle_account" ADD CONSTRAINT "drizzle_account_user_id_drizzle_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."drizzle_user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "drizzle_activity" ADD CONSTRAINT "drizzle_activity_topic_id_drizzle_topic_id_fk" FOREIGN KEY ("topic_id") REFERENCES "public"."drizzle_topic"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "drizzle_activity" ADD CONSTRAINT "drizzle_activity_topic_id_drizzle_topic_id_fk" FOREIGN KEY ("topic_id") REFERENCES "public"."drizzle_topic"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "drizzle_activity" ADD CONSTRAINT "drizzle_activity_user_id_drizzle_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."drizzle_user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "drizzle_activity" ADD CONSTRAINT "drizzle_activity_user_id_drizzle_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."drizzle_user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "drizzle_course" ADD CONSTRAINT "drizzle_course_type_id_drizzle_course_type_id_fk" FOREIGN KEY ("type_id") REFERENCES "public"."drizzle_course_type"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "drizzle_course_enrollment" ADD CONSTRAINT "drizzle_course_enrollment_user_id_drizzle_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."drizzle_user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "drizzle_ip_user" ADD CONSTRAINT "drizzle_ip_user_user_id_drizzle_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."drizzle_user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "drizzle_course_enrollment" ADD CONSTRAINT "drizzle_course_enrollment_course_id_drizzle_course_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."drizzle_course"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "drizzle_module" ADD CONSTRAINT "drizzle_module_unit_id_drizzle_unit_id_fk" FOREIGN KEY ("unit_id") REFERENCES "public"."drizzle_unit"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "drizzle_course" ADD CONSTRAINT "drizzle_course_type_id_drizzle_course_type_id_fk" FOREIGN KEY ("type_id") REFERENCES "public"."drizzle_course_type"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "drizzle_post" ADD CONSTRAINT "drizzle_post_created_by_id_drizzle_user_id_fk" FOREIGN KEY ("created_by_id") REFERENCES "public"."drizzle_user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "drizzle_ip_user" ADD CONSTRAINT "drizzle_ip_user_user_id_drizzle_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."drizzle_user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "drizzle_session" ADD CONSTRAINT "drizzle_session_user_id_drizzle_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."drizzle_user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "drizzle_module" ADD CONSTRAINT "drizzle_module_unit_id_drizzle_unit_id_fk" FOREIGN KEY ("unit_id") REFERENCES "public"."drizzle_unit"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "drizzle_topic" ADD CONSTRAINT "drizzle_topic_module_id_drizzle_module_id_fk" FOREIGN KEY ("module_id") REFERENCES "public"."drizzle_module"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "drizzle_post" ADD CONSTRAINT "drizzle_post_created_by_id_drizzle_user_id_fk" FOREIGN KEY ("created_by_id") REFERENCES "public"."drizzle_user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "drizzle_unit" ADD CONSTRAINT "drizzle_unit_course_id_drizzle_course_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."drizzle_course"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "drizzle_session" ADD CONSTRAINT "drizzle_session_user_id_drizzle_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."drizzle_user"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "drizzle_topic" ADD CONSTRAINT "drizzle_topic_module_id_drizzle_module_id_fk" FOREIGN KEY ("module_id") REFERENCES "public"."drizzle_module"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "drizzle_unit" ADD CONSTRAINT "drizzle_unit_course_id_drizzle_course_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."drizzle_course"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -148,6 +167,8 @@ CREATE INDEX IF NOT EXISTS "account_user_id_idx" ON "drizzle_account" USING btre
 CREATE INDEX IF NOT EXISTS "activity_topic_id_idx" ON "drizzle_activity" USING btree ("topic_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "activity_name_idx" ON "drizzle_activity" USING btree ("name");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "activity_user_id_idx" ON "drizzle_activity" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "course_enrollment_user_id_idx" ON "drizzle_course_enrollment" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "course_enrollment_course_id_idx" ON "drizzle_course_enrollment" USING btree ("course_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "course_type_name_idx" ON "drizzle_course_type" USING btree ("name");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "course_type_id_idx" ON "drizzle_course" USING btree ("type_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "ip_user_user_id_idx" ON "drizzle_ip_user" USING btree ("user_id");--> statement-breakpoint
