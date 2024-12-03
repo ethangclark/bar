@@ -280,6 +280,14 @@ export const topicsRelations = relations(topics, ({ one }) => ({
   }),
 }));
 
+export type TopicContext = {
+  course: Course;
+  courseType: CourseType;
+  unit: Unit;
+  module: Module;
+  topic: Topic;
+};
+
 export const activities = createTable(
   "activity",
   {

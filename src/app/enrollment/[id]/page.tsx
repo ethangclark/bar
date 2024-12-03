@@ -1,11 +1,13 @@
 "use client";
 import { Spin, Tree, type TreeDataNode } from "antd";
+import { DownOutlined } from "@ant-design/icons";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { ClientOnly } from "~/app/_components/ClientOnly";
 import { Page } from "~/app/_components/Page";
 import { api } from "~/trpc/react";
 import { Topic } from "./topic";
+import { type TopicContext } from "~/server/db/schema";
 
 type Props = {
   params: {
@@ -68,7 +70,7 @@ export default function CoursePage({ params }: Props) {
     }
   }, [activites.data, enrollment.data, selectedTopicId]);
 
-  const selectedTopicData = useMemo(() => {
+  const selectedTopicContext = useMemo((): TopicContext | null => {
     if (!selectedTopicId || !enrollment.data) {
       return null;
     }
@@ -87,6 +89,7 @@ export default function CoursePage({ params }: Props) {
         }
       }
     }
+    return null;
   }, [enrollment.data, selectedTopicId]);
 
   const treeData = useMemo((): TreeDataNode[] => {
@@ -142,18 +145,25 @@ export default function CoursePage({ params }: Props) {
     <Page>
       {/* <Title>{enrollment.data.course.courseType.name}</Title> */}
       <ClientOnly>
-        <div className="flex">
-          <Tree
-            treeData={treeData}
-            onSelect={([rawKey, ...rest]) => {
-              if (!rawKey || rest.length > 0) {
-                return;
-              }
-              const key = z.string().parse(rawKey);
-              setSelectedTopicId(key);
-            }}
-          />
-          <div>{selectedTopicData && <Topic {...selectedTopicData} />}</div>
+        <div className="flex flex-grow justify-start">
+          <div style={{ width: 500 }}>
+            <Tree
+              switcherIcon={<DownOutlined />}
+              treeData={treeData}
+              onSelect={([rawKey, ...rest]) => {
+                if (!rawKey || rest.length > 0) {
+                  return;
+                }
+                const key = z.string().parse(rawKey);
+                setSelectedTopicId(key);
+              }}
+            />
+          </div>
+          <div className="flex flex-grow justify-center">
+            {selectedTopicContext && (
+              <Topic topicContext={selectedTopicContext} />
+            )}
+          </div>
         </div>
       </ClientOnly>
     </Page>
