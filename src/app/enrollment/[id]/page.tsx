@@ -91,6 +91,7 @@ export default function CoursePage({ params }: Props) {
               unit,
               course: enrollment.data.course,
               courseType: enrollment.data.course.courseType,
+              understandingCriteria: topic.understandingCriteria,
             };
           }
         }

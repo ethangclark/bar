@@ -281,14 +281,6 @@ export const topicsRelations = relations(topics, ({ one, many }) => ({
   understandingCriteria: many(understandingCriteria),
 }));
 
-export type TopicContext = {
-  course: Course;
-  courseType: CourseType;
-  unit: Unit;
-  module: Module;
-  topic: Topic;
-};
-
 export const understandingCriteria = createTable(
   "understanding_criterion",
   {
@@ -317,6 +309,15 @@ export const understandingCriteriaRelations = relations(
     }),
   }),
 );
+
+export type TopicContext = {
+  course: Course;
+  courseType: CourseType;
+  unit: Unit;
+  module: Module;
+  topic: Topic;
+  understandingCriteria: UnderstandingCriterion[];
+};
 
 export const activities = createTable(
   "activity",

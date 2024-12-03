@@ -1,7 +1,9 @@
 import { type TopicContext } from "~/server/db/schema";
 
 export function Topic({ topicContext }: { topicContext: TopicContext }) {
-  const { course, courseType, unit, module, topic } = topicContext;
+  const { course, courseType, unit, module, topic, understandingCriteria } =
+    topicContext;
+  console.log({ understandingCriteria });
   return (
     <div
       className="mb-2 flex h-full w-full flex-col px-8"
