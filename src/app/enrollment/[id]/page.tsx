@@ -145,8 +145,8 @@ export default function CoursePage({ params }: Props) {
     <Page>
       {/* <Title>{enrollment.data.course.courseType.name}</Title> */}
       <ClientOnly>
-        <div className="flex flex-grow justify-start">
-          <div style={{ width: 500 }}>
+        <div className="flex flex-grow flex-wrap justify-start">
+          <div style={{ width: 500 }} className="mb-10">
             <Tree
               switcherIcon={<DownOutlined />}
               treeData={treeData}
