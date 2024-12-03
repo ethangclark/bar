@@ -15,6 +15,13 @@
       "when": 1733181354106,
       "tag": "0001_known_scarecrow",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1733268100882,
+      "tag": "0002_big_ravenous",
+      "breakpoints": true
     }
   ]
 }

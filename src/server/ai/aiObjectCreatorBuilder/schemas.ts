@@ -30,33 +30,18 @@ type Transform<Base extends BaseObject> = TransformArg<Base> & {
   type: "transform";
 };
 
-export type ImageOptions =
-  | "basicScreenshot"
-  | "beforeAndAfter"
-  | "noImg"
-  | "baseAndAnnotated";
-
-export type Builder<Base extends BaseObject, Images extends ImageOptions> = {
+export type Builder<Base extends BaseObject> = {
   add<Slug extends string, U>(
     promptField: PromptFieldArg<Base, Slug, U>,
   ): Builder<
     Base & {
       [key in Slug]: string;
-    } & U,
-    Images
+    } & U
   >;
-  conditionalTransform(params: TransformArg<Base>): Builder<Base, Images>;
-  build(): (
-    params: {
-      userId: string;
-    } & (Images extends "basicScreenshot"
-      ? { pngBuffers: [Buffer] }
-      : Images extends "beforeAndAfter"
-        ? { pngBuffers: [Buffer, Buffer] }
-        : Images extends "baseAndAnnotated"
-          ? { pngBuffers: [Buffer, Buffer] }
-          : { pngBuffers?: [] }),
-  ) => Promise<Result<{ data: Base; prompts: Prompts }>>;
+  conditionalTransform(params: TransformArg<Base>): Builder<Base>;
+  build(): (params: {
+    userId: string;
+  }) => Promise<Result<{ data: Base; prompts: Prompts }>>;
 };
 
 export type Item<Base extends BaseObject> =

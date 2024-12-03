@@ -7,12 +7,7 @@ import {
 import { xmlTags } from "~/common/utils/constants";
 import { oneTagContent } from "~/common/utils/xmlUtils";
 import { type BaseObject, baseObject } from "~/common/utils/baseObject";
-import {
-  type Builder,
-  type ImageOptions,
-  type Item,
-  type PromptFieldArg,
-} from "./schemas";
+import { type Builder, type Item, type PromptFieldArg } from "./schemas";
 import { getPrompts } from "./prompt";
 import { getResponseFromLlm } from "../llm";
 
@@ -148,33 +143,22 @@ export function _buildResult<Base extends BaseObject>({
 
 export function _getExec<Base extends BaseObject>({
   introduction,
-  imageOptions,
   items,
-  pngBuffers = [],
   userId,
 }: {
   introduction: string;
-  imageOptions: ImageOptions;
   items: Array<Item<Base>>;
-  pngBuffers?: Buffer[];
   userId: string;
 }) {
   return async () => {
     const prompts = getPrompts({
       introduction,
-      imageOptions,
       items,
     });
     const { systemPrompt, prompt } = prompts;
     const llmResult = await getResponseFromLlm({
       systemPrompt,
-      messages: [
-        { type: "text" as const, content: prompt },
-        ...pngBuffers.map((buffer) => ({
-          type: "png" as const,
-          content: buffer,
-        })),
-      ],
+      messages: [{ type: "text" as const, content: prompt }],
       userId,
     });
     if (isFailure(llmResult)) {
@@ -190,44 +174,36 @@ export function _getExec<Base extends BaseObject>({
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function builderCore<Base extends BaseObject, Images extends ImageOptions>(
-  imageOptions: Images,
+function builderCore<Base extends BaseObject>(
   introduction: string,
   items: Array<Item<Base>>,
-): Builder<Base, Images> {
+): Builder<Base> {
   return {
     add<Slug extends string, U>(promptField: PromptFieldArg<Base, Slug, U>) {
       const nextItems = [
         ...items,
         { ...promptField, type: "promptField" } as Item<Base>,
       ];
-      const newBase: Builder<Base, Images> = builderCore(
-        imageOptions,
-        introduction,
-        nextItems,
-      );
+      const newBase: Builder<Base> = builderCore(introduction, nextItems);
       return newBase as unknown as Builder<
-        Base & { [key in Slug]: string } & U,
-        Images
+        Base & { [key in Slug]: string } & U
       >;
     },
     conditionalTransform({ condition, slug, prompt, transform }) {
       if (!condition) {
-        return builderCore(imageOptions, introduction, items);
+        return builderCore(introduction, items);
       }
       const nextItems = [
         ...items,
         { type: "transform" as const, slug, condition, prompt, transform },
       ];
-      return builderCore(imageOptions, introduction, nextItems);
+      return builderCore(introduction, nextItems);
     },
     build() {
-      return async ({ userId, pngBuffers = [] }) => {
+      return async ({ userId }) => {
         const exec = _getExec({
           introduction,
-          imageOptions,
           items,
-          pngBuffers,
           userId,
         });
         const maxAttempts = 3;
@@ -248,10 +224,6 @@ function builderCore<Base extends BaseObject, Images extends ImageOptions>(
   };
 }
 
-export function aiObjectCreatorBuilder<Images extends ImageOptions>(
-  // difficulty: "normal" | "hard", // TDOO: use kahuna for hard ones?
-  imageOptions: Images,
-  introduction: string,
-) {
-  return builderCore(imageOptions, introduction, []);
+export function aiObjectCreatorBuilder(introduction: string) {
+  return builderCore(introduction, []);
 }
