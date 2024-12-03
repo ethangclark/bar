@@ -273,11 +273,12 @@ export const topics = createTable(
   }),
 );
 export type Topic = InferSelectModel<typeof topics>;
-export const topicsRelations = relations(topics, ({ one }) => ({
+export const topicsRelations = relations(topics, ({ one, many }) => ({
   module: one(modules, {
     fields: [topics.moduleId],
     references: [modules.id],
   }),
+  understandingCriteria: many(understandingCriteria),
 }));
 
 export type TopicContext = {
@@ -288,6 +289,35 @@ export type TopicContext = {
   topic: Topic;
 };
 
+export const understandingCriteria = createTable(
+  "understanding_criterion",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    topicId: uuid("topic_id")
+      .notNull()
+      .references(() => topics.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description").notNull(),
+  },
+  (understandingCriterion) => ({
+    topicIdIdx: index("understanding_criterion_topic_id_idx").on(
+      understandingCriterion.topicId,
+    ),
+  }),
+);
+export type UnderstandingCriterion = InferSelectModel<
+  typeof understandingCriteria
+>;
+export const understandingCriteriaRelations = relations(
+  understandingCriteria,
+  ({ one }) => ({
+    topic: one(topics, {
+      fields: [understandingCriteria.topicId],
+      references: [topics.id],
+    }),
+  }),
+);
+
 export const activities = createTable(
   "activity",
   {
@@ -296,21 +326,23 @@ export const activities = createTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    topicId: uuid("topic_id")
+    understandingCriterionId: uuid("understanding_criterion_id")
       .notNull()
-      .references(() => topics.id, { onDelete: "cascade" }),
+      .references(() => understandingCriteria.id, { onDelete: "cascade" }),
     enrollmentId: uuid("enrollment_id")
       .notNull()
       .references(() => courseEnrollments.id, { onDelete: "cascade" }),
     done: boolean("done").default(false).notNull(),
-    topicMasteryProved: boolean("topic_mastery_proved")
+    understandingCriterionSatisfied: boolean("understang_criterion_satisfied")
       .default(false)
       .notNull(),
   },
   (activity) => ({
     nameIndex: index("activity_name_idx").on(activity.name),
     userIdIdx: index("activity_user_id_idx").on(activity.userId),
-    topicIdIdx: index("activity_topic_id_idx").on(activity.topicId),
+    understandingCriterionIdIdx: index(
+      "activity_understanding_criterion_id_idx",
+    ).on(activity.understandingCriterionId),
     enrollmentIdIdx: index("activity_enrollment_id_idx").on(
       activity.enrollmentId,
     ),
@@ -322,9 +354,9 @@ export const activitiesRelations = relations(activities, ({ one }) => ({
     fields: [activities.userId],
     references: [users.id],
   }),
-  topic: one(topics, {
-    fields: [activities.topicId],
-    references: [topics.id],
+  understandingCriterion: one(understandingCriteria, {
+    fields: [activities.understandingCriterionId],
+    references: [understandingCriteria.id],
   }),
   enrollment: one(courseEnrollments, {
     fields: [activities.enrollmentId],

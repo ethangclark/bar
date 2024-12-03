@@ -96,7 +96,11 @@ export const courseRouter = createTRPCRouter({
                 with: {
                   modules: {
                     with: {
-                      topics: true,
+                      topics: {
+                        with: {
+                          understandingCriteria: true,
+                        },
+                      },
                     },
                   },
                 },

@@ -31,37 +31,44 @@ export default function CoursePage({ params }: Props) {
     enrollmentId,
   });
 
-  const completedTopicIds = useMemo((): Set<string> => {
+  const satsifiedCriterionIds = useMemo((): Set<string> => {
     if (!activites.data) {
       return new Set();
     }
-    return new Set(activites.data.map((a) => a.topicId));
+    return new Set(
+      activites.data
+        .filter((a) => a.understandingCriterionSatisfied)
+        .map((a) => a.understandingCriterionId),
+    );
   }, [activites.data]);
 
   const pctDone = useMemo(() => {
-    let total = 0;
+    let totalCriteria = 0;
     enrollment.data?.course.units.forEach((unit) => {
       unit.modules.forEach((module) => {
-        total += module.topics.length;
+        module.topics.forEach((topic) => {
+          totalCriteria += topic.understandingCriteria.length;
+        });
       });
     });
-    return toPct(completedTopicIds.size, total);
-  }, [completedTopicIds.size, enrollment.data?.course.units]);
+    return toPct(satsifiedCriterionIds.size, totalCriteria);
+  }, [satsifiedCriterionIds.size, enrollment.data?.course.units]);
 
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
 
+  // select the first topic where not all criteria are satisfied
   useEffect(() => {
     if (selectedTopicId !== null || !activites.data || !enrollment.data) {
       return;
     }
-    const completedTopicIds = activites.data
-      .filter((a) => a.topicMasteryProved)
-      .map((a) => a.topicId);
+    const satisfiedCriterionIds = activites.data
+      .filter((a) => a.understandingCriterionSatisfied)
+      .map((a) => a.understandingCriterionId);
 
     for (const unit of enrollment.data.course.units) {
       for (const mod of unit.modules) {
         for (const topic of mod.topics) {
-          if (!completedTopicIds.includes(topic.id)) {
+          if (!satisfiedCriterionIds.includes(topic.id)) {
             setSelectedTopicId(topic.id);
             return;
           }
@@ -107,7 +114,7 @@ export default function CoursePage({ params }: Props) {
           unit.modules.forEach((module) => {
             module.topics.forEach((topic) => {
               total++;
-              if (completedTopicIds.has(topic.id)) {
+              if (satsifiedCriterionIds.has(topic.id)) {
                 done++;
               }
             });
@@ -120,7 +127,7 @@ export default function CoursePage({ params }: Props) {
               title: addPct(
                 module.name,
                 toPct(
-                  module.topics.filter((t) => completedTopicIds.has(t.id))
+                  module.topics.filter((t) => satsifiedCriterionIds.has(t.id))
                     .length,
                   module.topics.length,
                 ),
@@ -135,7 +142,7 @@ export default function CoursePage({ params }: Props) {
         }),
       },
     ];
-  }, [completedTopicIds, enrollment.data, pctDone]);
+  }, [satsifiedCriterionIds, enrollment.data, pctDone]);
 
   if (!enrollment.data || !activites.data) {
     return <Spin />;

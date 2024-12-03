@@ -13,12 +13,12 @@ export const activityRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const { enrollmentId } = input;
-      const activites = await db.query.activities.findMany({
+      const activities = await db.query.activities.findMany({
         where: and(
           eq(dbSchema.activities.enrollmentId, enrollmentId),
           eq(dbSchema.activities.userId, ctx.session.user.id),
         ),
       });
-      return activites;
+      return activities;
     }),
 });
