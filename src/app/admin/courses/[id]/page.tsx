@@ -1,5 +1,5 @@
 "use client";
-import { Spin, Tree } from "antd";
+import { Button, Spin, Tree } from "antd";
 import { z } from "zod";
 import { useCourseTreeData } from "~/app/enrollment/[id]/useCourseTreeData";
 import { useTreeProps } from "~/app/enrollment/[id]/useTreeProps";
@@ -42,7 +42,24 @@ export default function AdminCoursePage({ params }: Props) {
       <ClientOnly>
         <div className="flex">
           <Tree {...treeProps} />
-          <div className="border p-10">{selectedTopicContext?.topic.name}</div>
+          <div className="border p-10">
+            <div>selected topic:</div>
+            <div className="mb-5 text-2xl">
+              {selectedTopicContext?.topic.name}
+            </div>
+            <Button className="mb-5">(Re)generate criteria</Button>
+            <div>understanding criteria:</div>
+            <div>
+              {selectedTopicContext?.understandingCriteria.map((criterion) => {
+                return (
+                  <div key={criterion.id}>
+                    <div className="text-xl">{criterion.name}</div>
+                    <div>{criterion.description}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </ClientOnly>
     </Page>
