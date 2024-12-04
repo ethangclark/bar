@@ -21,11 +21,12 @@ export default function AdminCoursePage({ params }: Props) {
 
   const isLoading = course.isLoading;
 
-  const { treeData, setSelectedTopicId } = useCourseTreeData({
-    course: course.data ?? null,
-    activities: [],
-    isLoading,
-  });
+  const { treeData, setSelectedTopicId, selectedTopicContext } =
+    useCourseTreeData({
+      course: course.data ?? null,
+      activities: [],
+      isLoading,
+    });
 
   const treeProps = useTreeProps({
     treeData,
@@ -39,7 +40,10 @@ export default function AdminCoursePage({ params }: Props) {
     <Page>
       <Title>Admin - course</Title>
       <ClientOnly>
-        <Tree {...treeProps} />
+        <div className="flex">
+          <Tree {...treeProps} />
+          <div className="border p-10">{selectedTopicContext?.topic.name}</div>
+        </div>
       </ClientOnly>
     </Page>
   );
