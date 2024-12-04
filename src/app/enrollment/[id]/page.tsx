@@ -7,7 +7,12 @@ import { ClientOnly } from "~/app/_components/ClientOnly";
 import { Page } from "~/app/_components/Page";
 import { api } from "~/trpc/react";
 import { Topic } from "./topic";
-import { type TopicContext } from "~/server/db/schema";
+import {
+  type Activity,
+  type TopicContext,
+  type DetailedEnrollment,
+} from "~/server/db/schema";
+import { TitleWithPct } from "./pctDisplay";
 
 type Props = {
   params: {
@@ -15,67 +20,94 @@ type Props = {
   };
 };
 
-const maxPct = 100;
-const toPct = (numerator: number, denominator: number) =>
-  Math.floor((numerator / denominator) * maxPct);
-const addPct = (title: string, pct: number) => (
-  <>
-    {title} - {pct}% {pct === maxPct ? "✅" : ""}
-  </>
-);
+function useSatisfiedCriterionIds(activities: Activity[] = []) {
+  return useMemo(
+    () =>
+      new Set(
+        activities
+          .filter((a) => a.understandingCriterionSatisfied)
+          .map((a) => a.understandingCriterionId),
+      ),
+    [activities],
+  );
+}
 
-export default function CoursePage({ params }: Props) {
-  const enrollmentId = z.string().parse(params.id);
-  const enrollment = api.course.enrollment.useQuery({ enrollmentId });
-  const activites = api.activity.enrollmentActivities.useQuery({
-    enrollmentId,
-  });
-
-  const satsifiedCriterionIds = useMemo((): Set<string> => {
-    if (!activites.data) {
-      return new Set();
-    }
-    return new Set(
-      activites.data
-        .filter((a) => a.understandingCriterionSatisfied)
-        .map((a) => a.understandingCriterionId),
-    );
-  }, [activites.data]);
-
-  const pctDone = useMemo(() => {
-    let totalCriteria = 0;
-    enrollment.data?.course.units.forEach((unit) => {
+function useTotalCriteria(enrollment: DetailedEnrollment | null) {
+  return useMemo(() => {
+    let total = 0;
+    enrollment?.course.units.forEach((unit) => {
       unit.modules.forEach((module) => {
         module.topics.forEach((topic) => {
-          totalCriteria += topic.understandingCriteria.length;
+          total += topic.understandingCriteria.length;
         });
       });
     });
-    return toPct(satsifiedCriterionIds.size, totalCriteria);
-  }, [satsifiedCriterionIds.size, enrollment.data?.course.units]);
+    return total;
+  }, [enrollment?.course.units]);
+}
 
-  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
-
-  // select the first topic where not all criteria are satisfied
-  useEffect(() => {
-    if (selectedTopicId !== null || !activites.data || !enrollment.data) {
-      return;
-    }
-    const satisfiedCriterionIds = activites.data
-      .filter((a) => a.understandingCriterionSatisfied)
-      .map((a) => a.understandingCriterionId);
-
-    for (const unit of enrollment.data.course.units) {
-      for (const mod of unit.modules) {
-        for (const topic of mod.topics) {
-          if (!satisfiedCriterionIds.includes(topic.id)) {
-            setSelectedTopicId(topic.id);
-            return;
+function getFirstIncompleteTopic(
+  enrollment: DetailedEnrollment,
+  satisfiedCriterionIds: Set<string>,
+) {
+  for (const unit of enrollment.course.units) {
+    for (const mod of unit.modules) {
+      for (const topic of mod.topics) {
+        for (const criterion of topic.understandingCriteria) {
+          if (!satisfiedCriterionIds.has(criterion.id)) {
+            return topic;
           }
         }
       }
     }
-  }, [activites.data, enrollment.data, selectedTopicId]);
+  }
+  return null;
+}
+
+function useSelectFirstIncompleteTopic({
+  disabled,
+  enrollment,
+  activities,
+  onSelectTopic,
+}: {
+  disabled: boolean;
+  enrollment: DetailedEnrollment | null;
+  activities: Activity[];
+  onSelectTopic: (topicId: string) => void;
+}) {
+  const satisfiedCriterionIds = useSatisfiedCriterionIds(activities);
+  useEffect(() => {
+    if (disabled || !enrollment) {
+      return;
+    }
+    const topic = getFirstIncompleteTopic(enrollment, satisfiedCriterionIds);
+    if (!topic) {
+      return;
+    }
+    onSelectTopic(topic.id);
+  }, [disabled, enrollment, onSelectTopic, satisfiedCriterionIds]);
+}
+
+export default function CoursePage({ params }: Props) {
+  const enrollmentId = z.string().parse(params.id);
+  const enrollment = api.course.enrollment.useQuery({ enrollmentId });
+  const activities = api.activity.enrollmentActivities.useQuery({
+    enrollmentId,
+  });
+
+  const satisfiedCriterionIds = useSatisfiedCriterionIds(activities.data);
+  const totalCriteria = useTotalCriteria(enrollment.data ?? null);
+
+  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+
+  const isLoading = enrollment.isLoading || activities.isLoading;
+
+  useSelectFirstIncompleteTopic({
+    disabled: isLoading || selectedTopicId !== null,
+    enrollment: enrollment.data ?? null,
+    activities: activities.data ?? [],
+    onSelectTopic: setSelectedTopicId,
+  });
 
   const selectedTopicContext = useMemo((): TopicContext | null => {
     if (!selectedTopicId || !enrollment.data) {
@@ -106,7 +138,13 @@ export default function CoursePage({ params }: Props) {
     }
     return [
       {
-        title: addPct(enrollment.data.course.courseType.name, pctDone),
+        title: (
+          <TitleWithPct
+            title={enrollment.data.course.courseType.name}
+            completed={satisfiedCriterionIds.size}
+            total={totalCriteria}
+          />
+        ),
         key: enrollment.data.course.id,
         selectable: false,
         children: enrollment.data.course.units.map((unit) => {
@@ -115,23 +153,27 @@ export default function CoursePage({ params }: Props) {
           unit.modules.forEach((module) => {
             module.topics.forEach((topic) => {
               total++;
-              if (satsifiedCriterionIds.has(topic.id)) {
+              if (satisfiedCriterionIds.has(topic.id)) {
                 done++;
               }
             });
           });
           return {
-            title: addPct(unit.name, toPct(done, total)),
+            title: (
+              <TitleWithPct title={unit.name} completed={done} total={total} />
+            ),
             key: unit.id,
             selectable: false,
             children: unit.modules.map((module) => ({
-              title: addPct(
-                module.name,
-                toPct(
-                  module.topics.filter((t) => satsifiedCriterionIds.has(t.id))
-                    .length,
-                  module.topics.length,
-                ),
+              title: (
+                <TitleWithPct
+                  title={module.name}
+                  completed={
+                    module.topics.filter((t) => satisfiedCriterionIds.has(t.id))
+                      .length
+                  }
+                  total={module.topics.length}
+                />
               ),
               key: module.id,
               children: module.topics.map((topic) => ({
@@ -143,15 +185,14 @@ export default function CoursePage({ params }: Props) {
         }),
       },
     ];
-  }, [satsifiedCriterionIds, enrollment.data, pctDone]);
+  }, [satisfiedCriterionIds, enrollment.data, totalCriteria]);
 
-  if (!enrollment.data || !activites.data) {
+  if (!enrollment.data || !activities.data) {
     return <Spin />;
   }
 
   return (
     <Page>
-      {/* <Title>{enrollment.data.course.courseType.name}</Title> */}
       <ClientOnly>
         <div className="flex flex-grow flex-wrap justify-start">
           <div style={{ width: 500 }} className="mb-10">
