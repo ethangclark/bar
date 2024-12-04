@@ -23,6 +23,7 @@ export const env = createEnv({
     OPENAI_API_KEY: z.string(),
     ANTHROPIC_API_KEY: z.string(),
     HEADFUL: z.boolean(),
+    OPENROUTER_API_KEY: z.string(),
   },
 
   /**
@@ -49,6 +50,7 @@ export const env = createEnv({
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     HEADFUL: process.env.HEADFUL === "true",
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

@@ -10,6 +10,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
+import { z } from "zod";
 
 export const createTable = pgTableCreator((name) => `drizzle_${name}`);
 
@@ -147,6 +148,10 @@ export type CourseType = InferSelectModel<typeof courseTypes>;
 export const courseTypesRelations = relations(courseTypes, ({ many }) => ({
   courses: many(courses),
 }));
+export const courseTypeSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+}) satisfies z.ZodType<CourseType>;
 
 export const courses = createTable(
   "course",
@@ -172,6 +177,11 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
   units: many(units),
   enrollments: many(courseEnrollments),
 }));
+export const courseSchema = z.object({
+  id: z.string(),
+  typeId: z.string(),
+  creationDate: z.date(),
+}) satisfies z.ZodType<Course>;
 
 export const courseEnrollments = createTable(
   "course_enrollment",
@@ -234,6 +244,11 @@ export const unitsRelations = relations(units, ({ one, many }) => ({
   }),
   modules: many(modules),
 }));
+export const unitSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  courseId: z.string(),
+}) satisfies z.ZodType<Unit>;
 
 export const modules = createTable(
   "module",
@@ -257,6 +272,11 @@ export const modulesRelations = relations(modules, ({ one, many }) => ({
   }),
   topics: many(topics),
 }));
+export const moduleSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  unitId: z.string(),
+}) satisfies z.ZodType<Module>;
 
 export const topics = createTable(
   "topic",
@@ -280,6 +300,11 @@ export const topicsRelations = relations(topics, ({ one, many }) => ({
   }),
   understandingCriteria: many(understandingCriteria),
 }));
+export const topicSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  moduleId: z.string(),
+}) satisfies z.ZodType<Topic>;
 
 export const understandingCriteria = createTable(
   "understanding_criterion",
@@ -309,32 +334,40 @@ export const understandingCriteriaRelations = relations(
     }),
   }),
 );
+export const understandingCriterionSchema = z.object({
+  id: z.string(),
+  topicId: z.string(),
+  name: z.string(),
+  description: z.string(),
+}) satisfies z.ZodType<UnderstandingCriterion>;
 
-export type TopicContext = {
-  course: Course;
-  courseType: CourseType;
-  unit: Unit;
-  module: Module;
-  topic: Topic;
-  understandingCriteria: UnderstandingCriterion[];
-};
+export const topicContextSchema = z.object({
+  course: courseSchema,
+  courseType: courseTypeSchema,
+  unit: unitSchema,
+  module: moduleSchema,
+  topic: topicSchema,
+  understandingCriteria: z.array(understandingCriterionSchema),
+});
+export type TopicContext = z.infer<typeof topicContextSchema>;
 
-export type DetailedCourse = Course & {
-  courseType: CourseType;
-  units: Array<
-    Unit & {
-      modules: Array<
-        Module & {
-          topics: Array<
-            Topic & {
-              understandingCriteria: UnderstandingCriterion[];
-            }
-          >;
-        }
-      >;
-    }
-  >;
-};
+export const detailedCourseSchema = courseSchema.extend({
+  courseType: courseTypeSchema,
+  units: z.array(
+    unitSchema.extend({
+      modules: z.array(
+        moduleSchema.extend({
+          topics: z.array(
+            topicSchema.extend({
+              understandingCriteria: z.array(understandingCriterionSchema),
+            }),
+          ),
+        }),
+      ),
+    }),
+  ),
+});
+export type DetailedCourse = z.infer<typeof detailedCourseSchema>;
 export type DetailedEnrollment = CourseEnrollment & {
   course: DetailedCourse;
 };

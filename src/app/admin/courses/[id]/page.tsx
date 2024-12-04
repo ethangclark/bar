@@ -35,8 +35,7 @@ export default function AdminCoursePage({ params }: Props) {
 
   const regenerateForTopic =
     api.understandingCriteria.regenerateForTopic.useMutation();
-
-  const topicId = selectedTopicContext?.topic.id;
+  console.log("mutation data:", regenerateForTopic.data);
 
   if (course.isLoading) {
     return <Spin />;
@@ -55,8 +54,11 @@ export default function AdminCoursePage({ params }: Props) {
             </div>
             <Button
               className="mb-5"
-              disabled={!topicId}
-              onClick={() => topicId && regenerateForTopic.mutate({ topicId })}
+              disabled={!selectedTopicContext}
+              onClick={() =>
+                selectedTopicContext &&
+                regenerateForTopic.mutate(selectedTopicContext)
+              }
             >
               (Re)generate criteria
             </Button>
