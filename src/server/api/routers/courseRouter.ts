@@ -114,4 +114,51 @@ export const courseRouter = createTRPCRouter({
       }
       return courseEnrollment;
     }),
+
+  courses: publicProcedure.query(async () => {
+    const courses = await db.query.courses.findMany({
+      with: {
+        courseType: true,
+        units: {
+          with: {
+            modules: {
+              with: {
+                topics: {
+                  with: {
+                    understandingCriteria: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    return courses;
+  }),
+
+  courseDetail: publicProcedure
+    .input(z.object({ courseId: z.string() }))
+    .query(async ({ input }) => {
+      const course = await db.query.courses.findFirst({
+        where: eq(dbSchema.courses.id, input.courseId),
+        with: {
+          courseType: true,
+          units: {
+            with: {
+              modules: {
+                with: {
+                  topics: {
+                    with: {
+                      understandingCriteria: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+      return course;
+    }),
 });

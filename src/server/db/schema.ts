@@ -318,22 +318,25 @@ export type TopicContext = {
   topic: Topic;
   understandingCriteria: UnderstandingCriterion[];
 };
+
+export type DetailedCourse = Course & {
+  courseType: CourseType;
+  units: Array<
+    Unit & {
+      modules: Array<
+        Module & {
+          topics: Array<
+            Topic & {
+              understandingCriteria: UnderstandingCriterion[];
+            }
+          >;
+        }
+      >;
+    }
+  >;
+};
 export type DetailedEnrollment = CourseEnrollment & {
-  course: Course & {
-    units: Array<
-      Unit & {
-        modules: Array<
-          Module & {
-            topics: Array<
-              Topic & {
-                understandingCriteria: UnderstandingCriterion[];
-              }
-            >;
-          }
-        >;
-      }
-    >;
-  };
+  course: DetailedCourse;
 };
 
 export const activities = createTable(

@@ -7,3 +7,7 @@ export async function waitForMs(ms: number): Promise<void> {
 export function formatDayDate(date: Date): string {
   return dayjs(date).format("YYYY-MM-DD");
 }
+
+export function formatDateTime(date: Date): string {
+  return dayjs(date).format("MMM D, YYYY h:mm A");
+}
