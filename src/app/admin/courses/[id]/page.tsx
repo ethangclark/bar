@@ -33,6 +33,11 @@ export default function AdminCoursePage({ params }: Props) {
     setSelectedId: setSelectedTopicId,
   });
 
+  const regenerateForTopic =
+    api.understandingCriteria.regenerateForTopic.useMutation();
+
+  const topicId = selectedTopicContext?.topic.id;
+
   if (course.isLoading) {
     return <Spin />;
   }
@@ -43,11 +48,18 @@ export default function AdminCoursePage({ params }: Props) {
         <div className="flex">
           <Tree {...treeProps} />
           <div className="border p-10">
+            <div className="mb-5">(select a topic to make this pane work)</div>
             <div>selected topic:</div>
             <div className="mb-5 text-2xl">
               {selectedTopicContext?.topic.name}
             </div>
-            <Button className="mb-5">(Re)generate criteria</Button>
+            <Button
+              className="mb-5"
+              disabled={!topicId}
+              onClick={() => topicId && regenerateForTopic.mutate({ topicId })}
+            >
+              (Re)generate criteria
+            </Button>
             <div>understanding criteria:</div>
             <div>
               {selectedTopicContext?.understandingCriteria.map((criterion) => {
