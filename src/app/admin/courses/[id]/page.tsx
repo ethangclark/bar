@@ -63,16 +63,7 @@ export default function AdminCoursePage({ params }: Props) {
               (Re)generate criteria
             </Button>
             <div>understanding criteria:</div>
-            <div>
-              {selectedTopicContext?.understandingCriteria.map((criterion) => {
-                return (
-                  <div key={criterion.id}>
-                    <div className="text-xl">{criterion.name}</div>
-                    <div>{criterion.description}</div>
-                  </div>
-                );
-              })}
-            </div>
+            <div>(removed -- not a thing anymore)</div>
           </div>
         </div>
       </ClientOnly>

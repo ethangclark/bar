@@ -293,12 +293,11 @@ export const topics = createTable(
   }),
 );
 export type Topic = InferSelectModel<typeof topics>;
-export const topicsRelations = relations(topics, ({ one, many }) => ({
+export const topicsRelations = relations(topics, ({ one }) => ({
   module: one(modules, {
     fields: [topics.moduleId],
     references: [modules.id],
   }),
-  understandingCriteria: many(understandingCriteria),
 }));
 export const topicSchema = z.object({
   id: z.string(),
@@ -306,48 +305,12 @@ export const topicSchema = z.object({
   moduleId: z.string(),
 }) satisfies z.ZodType<Topic>;
 
-export const understandingCriteria = createTable(
-  "understanding_criterion",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    topicId: uuid("topic_id")
-      .notNull()
-      .references(() => topics.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
-    description: text("description").notNull(),
-  },
-  (understandingCriterion) => ({
-    topicIdIdx: index("understanding_criterion_topic_id_idx").on(
-      understandingCriterion.topicId,
-    ),
-  }),
-);
-export type UnderstandingCriterion = InferSelectModel<
-  typeof understandingCriteria
->;
-export const understandingCriteriaRelations = relations(
-  understandingCriteria,
-  ({ one }) => ({
-    topic: one(topics, {
-      fields: [understandingCriteria.topicId],
-      references: [topics.id],
-    }),
-  }),
-);
-export const understandingCriterionSchema = z.object({
-  id: z.string(),
-  topicId: z.string(),
-  name: z.string(),
-  description: z.string(),
-}) satisfies z.ZodType<UnderstandingCriterion>;
-
 export const topicContextSchema = z.object({
   course: courseSchema,
   courseType: courseTypeSchema,
   unit: unitSchema,
   module: moduleSchema,
   topic: topicSchema,
-  understandingCriteria: z.array(understandingCriterionSchema),
 });
 export type TopicContext = z.infer<typeof topicContextSchema>;
 
@@ -357,11 +320,7 @@ export const detailedCourseSchema = courseSchema.extend({
     unitSchema.extend({
       modules: z.array(
         moduleSchema.extend({
-          topics: z.array(
-            topicSchema.extend({
-              understandingCriteria: z.array(understandingCriterionSchema),
-            }),
-          ),
+          topics: z.array(topicSchema),
         }),
       ),
     }),
@@ -380,23 +339,19 @@ export const activities = createTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    understandingCriterionId: uuid("understanding_criterion_id")
+    topicId: uuid("topic_id")
       .notNull()
-      .references(() => understandingCriteria.id, { onDelete: "cascade" }),
+      .references(() => topics.id, { onDelete: "cascade" }),
     enrollmentId: uuid("enrollment_id")
       .notNull()
       .references(() => courseEnrollments.id, { onDelete: "cascade" }),
-    done: boolean("done").default(false).notNull(),
-    understandingCriterionSatisfied: boolean("understang_criterion_satisfied")
-      .default(false)
-      .notNull(),
+    conclusion: text("conclusion"),
+    demonstratesMastery: boolean("demonstrates_mastery").default(false),
   },
   (activity) => ({
     nameIndex: index("activity_name_idx").on(activity.name),
     userIdIdx: index("activity_user_id_idx").on(activity.userId),
-    understandingCriterionIdIdx: index(
-      "activity_understanding_criterion_id_idx",
-    ).on(activity.understandingCriterionId),
+    topicIdIdx: index("activity_topic_id_idx").on(activity.topicId),
     enrollmentIdIdx: index("activity_enrollment_id_idx").on(
       activity.enrollmentId,
     ),
@@ -408,9 +363,9 @@ export const activitiesRelations = relations(activities, ({ one }) => ({
     fields: [activities.userId],
     references: [users.id],
   }),
-  understandingCriterion: one(understandingCriteria, {
-    fields: [activities.understandingCriterionId],
-    references: [understandingCriteria.id],
+  topic: one(topics, {
+    fields: [activities.topicId],
+    references: [topics.id],
   }),
   enrollment: one(courseEnrollments, {
     fields: [activities.enrollmentId],

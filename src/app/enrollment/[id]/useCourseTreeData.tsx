@@ -8,26 +8,12 @@ import {
 } from "~/server/db/schema";
 import { TitleWithPct } from "./pctDisplay";
 
-function useSatisfiedCriterionIds(activities: Activity[] = []) {
-  return useMemo(
-    () =>
-      new Set(
-        activities
-          .filter((a) => a.understandingCriterionSatisfied)
-          .map((a) => a.understandingCriterionId),
-      ),
-    [activities],
-  );
-}
-
-function useTotalCriteria(course: DetailedCourse | null) {
+function useTotalTopics(course: DetailedCourse | null) {
   return useMemo(() => {
     let total = 0;
     course?.units.forEach((unit) => {
       unit.modules.forEach((module) => {
-        module.topics.forEach((topic) => {
-          total += topic.understandingCriteria.length;
-        });
+        total += module.topics.length;
       });
     });
     return total;
@@ -36,20 +22,24 @@ function useTotalCriteria(course: DetailedCourse | null) {
 
 function getFirstIncompleteTopic(
   course: DetailedCourse,
-  satisfiedCriterionIds: Set<string>,
+  masteredTopicIds: Set<string>,
 ) {
   for (const unit of course.units) {
     for (const mod of unit.modules) {
       for (const topic of mod.topics) {
-        for (const criterion of topic.understandingCriteria) {
-          if (!satisfiedCriterionIds.has(criterion.id)) {
-            return topic;
-          }
+        if (!masteredTopicIds.has(topic.id)) {
+          return topic;
         }
       }
     }
   }
   return null;
+}
+
+function getMasteredTopicIds(activities: Activity[]) {
+  return new Set(
+    activities.filter((a) => a.demonstratesMastery).map((a) => a.topicId),
+  );
 }
 
 function useSelectFirstIncompleteTopic({
@@ -63,17 +53,17 @@ function useSelectFirstIncompleteTopic({
   activities: Activity[];
   onSelectTopic: (topicId: string) => void;
 }) {
-  const satisfiedCriterionIds = useSatisfiedCriterionIds(activities);
   useEffect(() => {
     if (disabled || !course) {
       return;
     }
-    const topic = getFirstIncompleteTopic(course, satisfiedCriterionIds);
+    const masteredTopicIds = getMasteredTopicIds(activities);
+    const topic = getFirstIncompleteTopic(course, masteredTopicIds);
     if (!topic) {
       return;
     }
     onSelectTopic(topic.id);
-  }, [course, disabled, onSelectTopic, satisfiedCriterionIds]);
+  }, [activities, course, disabled, onSelectTopic]);
 }
 
 export function useCourseTreeData({
@@ -85,8 +75,7 @@ export function useCourseTreeData({
   activities: Activity[];
   isLoading: boolean;
 }) {
-  const satisfiedCriterionIds = useSatisfiedCriterionIds(activities);
-  const totalCriteria = useTotalCriteria(course);
+  const totalTopics = useTotalTopics(course);
 
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
 
@@ -111,7 +100,6 @@ export function useCourseTreeData({
               unit,
               course,
               courseType: course.courseType,
-              understandingCriteria: topic.understandingCriteria,
             };
           }
         }
@@ -124,13 +112,14 @@ export function useCourseTreeData({
     if (!course) {
       return [];
     }
+    const masteredTopicIds = getMasteredTopicIds(activities);
     return [
       {
         title: (
           <TitleWithPct
             title={course.courseType.name}
-            completed={satisfiedCriterionIds.size}
-            total={totalCriteria}
+            completed={masteredTopicIds.size}
+            total={totalTopics}
           />
         ),
         key: course.id,
@@ -141,7 +130,7 @@ export function useCourseTreeData({
           unit.modules.forEach((module) => {
             module.topics.forEach((topic) => {
               total++;
-              if (satisfiedCriterionIds.has(topic.id)) {
+              if (masteredTopicIds.has(topic.id)) {
                 done++;
               }
             });
@@ -157,7 +146,7 @@ export function useCourseTreeData({
                 <TitleWithPct
                   title={module.name}
                   completed={
-                    module.topics.filter((t) => satisfiedCriterionIds.has(t.id))
+                    module.topics.filter((t) => masteredTopicIds.has(t.id))
                       .length
                   }
                   total={module.topics.length}
@@ -173,7 +162,7 @@ export function useCourseTreeData({
         }),
       },
     ];
-  }, [course, satisfiedCriterionIds, totalCriteria]);
+  }, [activities, course, totalTopics]);
 
   return {
     treeData,

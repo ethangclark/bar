@@ -96,11 +96,7 @@ export const courseRouter = createTRPCRouter({
                 with: {
                   modules: {
                     with: {
-                      topics: {
-                        with: {
-                          understandingCriteria: true,
-                        },
-                      },
+                      topics: true,
                     },
                   },
                 },
@@ -123,11 +119,7 @@ export const courseRouter = createTRPCRouter({
           with: {
             modules: {
               with: {
-                topics: {
-                  with: {
-                    understandingCriteria: true,
-                  },
-                },
+                topics: true,
               },
             },
           },
@@ -148,11 +140,7 @@ export const courseRouter = createTRPCRouter({
             with: {
               modules: {
                 with: {
-                  topics: {
-                    with: {
-                      understandingCriteria: true,
-                    },
-                  },
+                  topics: true,
                 },
               },
             },
