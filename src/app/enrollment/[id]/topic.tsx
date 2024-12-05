@@ -113,7 +113,10 @@ export function Topic({
           </span>
         </Dropdown>
       </div>
-      <div className="outline-3 h-full w-full rounded-3xl p-8 outline outline-gray-200">
+      <div
+        className="outline-3 h-full w-full rounded-3xl p-8 outline outline-gray-200"
+        style={{ height: `calc(100vh - 200px)` }}
+      >
         {messages?.map((m) => {
           if (m.senderRole === "user") {
             return (
