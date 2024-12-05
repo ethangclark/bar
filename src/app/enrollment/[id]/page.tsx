@@ -50,7 +50,10 @@ export default function CoursePage({ params }: Props) {
           </div>
           <div className="flex flex-grow justify-center">
             {selectedTopicContext && (
-              <Topic topicContext={selectedTopicContext} />
+              <Topic
+                topicContext={selectedTopicContext}
+                tutoringSessions={tutoringSessions.data ?? []}
+              />
             )}
           </div>
         </div>

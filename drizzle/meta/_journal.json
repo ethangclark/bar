@@ -15,6 +15,13 @@
       "when": 1733422621189,
       "tag": "0001_youthful_omega_red",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1733424411454,
+      "tag": "0002_minor_bruce_banner",
+      "breakpoints": true
     }
   ]
 }

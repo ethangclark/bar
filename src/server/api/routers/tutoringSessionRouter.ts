@@ -1,14 +1,10 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { getOpenRouterResponse } from "~/server/ai/llm";
-import {
-  adminProcedure,
-  createTRPCRouter,
-  protectedProcedure,
-} from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
-import { topicContextSchema, type TopicContext } from "~/server/db/schema";
+import { chatMessageSchema, type TopicContext } from "~/server/db/schema";
 
 const getPrompt = (tc: TopicContext) => {
   return `You are conducting an informal bar exam prep tutoring session. This session is focused on the topic of "${tc.topic.name}", which the student is studying as part of the chapter "${tc.unit.name}: ${tc.module.name}".
@@ -19,6 +15,27 @@ Before engaging in the session, generate an approach you will take to quickly 1)
 
 Ensure that your approach ruthlessly ignores details that will not directly contribute to the student's success on the bar exam. Focus on mastery of the core bar exam material, and breeze through the rest.`;
 };
+console.log(getPrompt);
+
+async function getChatMessages({
+  userId,
+  tutoringSessionId,
+}: {
+  userId: string;
+  tutoringSessionId: string;
+}) {
+  const rawMessages = await db.query.chatMessages.findMany({
+    where: and(
+      eq(dbSchema.chatMessages.userId, userId),
+      eq(dbSchema.chatMessages.tutoringSessionId, tutoringSessionId),
+    ),
+  });
+  const messages = rawMessages.map((m) => chatMessageSchema.parse(m));
+  const sorted = messages.sort(
+    (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+  );
+  return sorted;
+}
 
 export const tutoringSessionRouter = createTRPCRouter({
   enrollmentTutoringSessions: protectedProcedure
@@ -37,23 +54,47 @@ export const tutoringSessionRouter = createTRPCRouter({
       });
       return tutoringSessions;
     }),
-  regenerateForTopic: adminProcedure
-    .input(topicContextSchema)
+  chatMessages: protectedProcedure
+    .input(z.object({ tutoringSessionId: z.string().nullable() }))
+    .query(async ({ ctx, input }) => {
+      const { tutoringSessionId } = input;
+      if (tutoringSessionId == null) {
+        return [];
+      }
+      const messages = getChatMessages({
+        userId: ctx.userId,
+        tutoringSessionId,
+      });
+      return messages;
+    }),
+
+  processUserMessage: protectedProcedure
+    .input(z.object({ tutoringSessionId: z.string(), content: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const { content, tutoringSessionId } = input;
+      const messages = await getChatMessages({
+        userId: ctx.userId,
+        tutoringSessionId,
+      });
+
       const response = await getOpenRouterResponse(ctx.userId, {
         model: "anthropic/claude-3.5-sonnet:beta",
         messages: [
+          ...messages.map((m) => ({
+            role: m.senderRole,
+            content: m.content,
+          })),
           {
-            role: "system",
-            content: getPrompt(input),
+            role: "user",
+            content,
           },
         ],
       });
-      const content = response.choices[0]?.message.content;
-      if (!content) {
+      const responseContent = response.choices[0]?.message.content;
+      if (!responseContent) {
         throw new Error("No content in response");
       }
-      console.log("content", content);
-      return content;
+      console.log("responseContent", responseContent);
+      return responseContent;
     }),
 });

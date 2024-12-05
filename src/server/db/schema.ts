@@ -11,6 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 import { z } from "zod";
+import { type Role, roleSchema } from "../ai/llm/schemas";
 
 export const createTable = pgTableCreator((name) => `drizzle_${name}`);
 
@@ -347,6 +348,9 @@ export const tutoringSessions = createTable(
       .references(() => courseEnrollments.id, { onDelete: "cascade" }),
     conclusion: text("conclusion"),
     demonstratesMastery: boolean("demonstrates_mastery").default(false),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (tutoringSession) => ({
     nameIndex: index("tutoring_session_name_idx").on(tutoringSession.name),
@@ -377,3 +381,51 @@ export const tutoringSessionsRelations = relations(
     }),
   }),
 );
+
+export const chatMessages = createTable(
+  "tutor_chat_message",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tutoringSessionId: uuid("tutoring_session_id")
+      .notNull()
+      .references(() => tutoringSessions.id, { onDelete: "cascade" }),
+    senderRole: text("sender_role").notNull(),
+    content: text("content").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (tcm) => ({
+    userIdIdx: index("tutor_chat_message_user_id_idx").on(tcm.userId),
+    tutoringSessionIdIdx: index(
+      "tutor_chat_message_tutoring_session_id_idx",
+    ).on(tcm.tutoringSessionId),
+  }),
+);
+export type ChatMessage = Omit<
+  InferSelectModel<typeof chatMessages>,
+  "senderRole"
+> & {
+  senderRole: Role;
+};
+export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
+  user: one(users, {
+    fields: [chatMessages.userId],
+    references: [users.id],
+  }),
+  tutoringSession: one(tutoringSessions, {
+    fields: [chatMessages.tutoringSessionId],
+    references: [tutoringSessions.id],
+  }),
+}));
+export const chatMessageSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  tutoringSessionId: z.string(),
+  senderRole: roleSchema,
+  content: z.string(),
+  createdAt: z.date(),
+}) satisfies z.ZodType<ChatMessage>;

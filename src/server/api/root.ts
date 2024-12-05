@@ -12,7 +12,7 @@ export const appRouter = createTRPCRouter({
   tutoringSession: tutoringSessionRouter,
   course: courseRouter,
   post: postRouter,
-  tutorChat: tutoringSessionRouter,
+  chat: tutoringSessionRouter,
 });
 
 // export type definition of API

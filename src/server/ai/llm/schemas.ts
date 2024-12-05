@@ -28,7 +28,7 @@ export type ImageContentPart = z.infer<typeof imageContentSchema>;
 const contentPartSchema = z.union([textContentSchema, imageContentSchema]);
 export type ContentPart = z.infer<typeof contentPartSchema>;
 
-const roleSchema = z.enum(["user", "assistant", "system"]);
+export const roleSchema = z.enum(["user", "assistant", "system"]);
 export type Role = z.infer<typeof roleSchema>;
 
 const message = z.object({
