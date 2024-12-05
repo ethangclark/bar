@@ -6,8 +6,10 @@ import { getUser } from "./user";
 
 export async function determineIfUsageOk(userId: string) {
   const user = await getUser(userId);
-  if (user.tokensUsed > 1000000) {
-    return failure("Max token usage exceeded.");
+  if (user.tokensUsed > 10 * 1000 * 1000) {
+    return failure(
+      "You have exceeded your allotted usage. Please contact support.",
+    );
   }
   return null;
 }

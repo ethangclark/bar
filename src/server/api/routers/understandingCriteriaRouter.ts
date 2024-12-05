@@ -15,8 +15,8 @@ Ensure that your approach ruthlessly ignores details that will not directly cont
 export const understandingCriteriaRouter = createTRPCRouter({
   regenerateForTopic: adminProcedure
     .input(topicContextSchema)
-    .mutation(async ({ input }) => {
-      const response = await getOpenRouterResponse({
+    .mutation(async ({ ctx, input }) => {
+      const response = await getOpenRouterResponse(ctx.userId, {
         model: "anthropic/claude-3.5-sonnet:beta",
         messages: [
           {
