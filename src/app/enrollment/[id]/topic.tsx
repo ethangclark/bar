@@ -1,5 +1,7 @@
-import { Spin } from "antd";
-import { useEffect, useState } from "react";
+import { Dropdown, type MenuProps, Spin } from "antd";
+import { useEffect, useMemo, useState } from "react";
+import { useCss } from "~/app/_hooks/useCss";
+import { formatDateTime } from "~/common/utils/timeUtils";
 import { type TutoringSession, type TopicContext } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
@@ -61,7 +63,7 @@ export function Topic({
   topicTutoringSessions: TutoringSession[];
   refetchTutoringSessions: () => Promise<void>;
 }) {
-  const { course, courseType, unit, module, topic } = topicContext;
+  const { courseType, unit, module, topic } = topicContext;
 
   const { selectedSession, setSelectedSession } = useSelectedSession({
     enrollmentId,
@@ -75,9 +77,19 @@ export function Topic({
       tutoringSessionId: selectedSession?.id ?? null,
     });
 
-  if (areMessagesLoading || !messages?.length) {
-    return <Spin />;
-  }
+  const menuItems = useMemo((): MenuProps["items"] => {
+    return topicTutoringSessions.map((session) => ({
+      key: session.id,
+      label: formatDateTime(session.createdAt),
+      onClick: () => setSelectedSession(session),
+    }));
+  }, [setSelectedSession, topicTutoringSessions]);
+
+  // TODO: this isn't working
+  const { id: dropdownWrapperId } = useCss(
+    (id) =>
+      `#${id} .ant-dropdown-menu { max-height: 200px; overflow-y: auto; }`,
+  );
 
   return (
     <div
@@ -87,17 +99,30 @@ export function Topic({
       <div>
         {courseType.name} &gt; {unit.name} &gt; {module.name}
       </div>
-      <div className="mb-4 text-2xl">{topic.name}</div>
+      <div className="text-2xl">{topic.name}</div>
+      <div className="mb-4 text-sm" id={dropdownWrapperId}>
+        <Dropdown
+          menu={{
+            items: menuItems,
+          }}
+        >
+          <span>
+            {selectedSession ? formatDateTime(selectedSession.createdAt) : " "}
+          </span>
+        </Dropdown>
+      </div>
       <div className="outline-3 h-full w-full rounded-3xl p-8 outline outline-gray-200">
-        <h1>{courseType.name}</h1>
-        <h2>{course.id}</h2>
-        <h3>{unit.name}</h3>
-        <h4>{module.name}</h4>
-        <h5>{topic.name}</h5>
-        <h6>Messages:</h6>
-        {messages.map((m) => (
-          <div key={m.id}>{m.content}</div>
-        ))}
+        {messages?.map((m) => {
+          if (m.senderRole === "user") {
+            return (
+              <div key={m.id} className="rounded-xl bg-blue-100 p-4">
+                {m.content}
+              </div>
+            );
+          }
+          return <div key={m.id}>{m.content}</div>;
+        })}
+        {areMessagesLoading ? <Spin /> : null}
       </div>
     </div>
   );
