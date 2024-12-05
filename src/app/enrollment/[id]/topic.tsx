@@ -159,8 +159,13 @@ export function Topic({
             value={v}
             setValue={setV}
             placeholder="Compose your response"
-            roundedCn="rounded-2xl"
             height={70}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                console.log("send message");
+              }
+            }}
           />
         </div>
       </div>

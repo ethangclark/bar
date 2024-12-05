@@ -16,7 +16,6 @@ export const Editor = ({
   onKeyDown,
   disabled,
   className,
-  roundedCn = "rounded",
   height,
 }: {
   value: string;
@@ -27,7 +26,6 @@ export const Editor = ({
   onKeyDown?: KeyboardEventHandler<HTMLTextAreaElement>;
   disabled?: boolean;
   className?: string;
-  roundedCn?: string;
   height?: number;
 }) => {
   const Component = height ? FixedTextArea : ExpandingTextarea;
@@ -43,7 +41,7 @@ export const Editor = ({
       }}
       onKeyDown={onKeyDown}
       disabled={disabled}
-      className={`${roundedCn} p-2 outline outline-1 outline-gray-200 focus:outline focus:outline-gray-200 ${className ?? ""}`}
+      className={`rounded-md p-2 outline outline-1 outline-gray-200 focus:outline focus:outline-gray-200 ${className ?? ""}`}
       placeholder={placeholder}
     />
   );
