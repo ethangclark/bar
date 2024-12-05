@@ -1,11 +1,16 @@
 "use client";
 
-import { type KeyboardEventHandler } from "react";
+import { forwardRef, type KeyboardEventHandler } from "react";
 import ExpandingTextarea, {
   type TextareaProps,
 } from "react-expanding-textarea";
 
-const FixedTextArea = (props: TextareaProps) => <textarea {...props} />;
+const FixedTextArea = forwardRef<
+  HTMLTextAreaElement,
+  Omit<TextareaProps, "rows">
+>(function FixedTextArea(props, ref) {
+  return <textarea {...props} ref={ref} />;
+});
 
 export const Editor = ({
   value,

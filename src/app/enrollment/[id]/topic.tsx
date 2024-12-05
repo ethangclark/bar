@@ -138,7 +138,21 @@ export function Topic({
           style={{ height: `calc(100vh - 280px)` }}
         >
           <div className="flex h-full w-full flex-col overflow-y-auto p-4">
-            {messages?.map((m) => {
+            {messages?.map((m, idx) => {
+              if (m.senderRole === "system") {
+                return null;
+              }
+
+              // if subsequent message is system message, and no user messages before it,
+              // then this is a "lesson prep" message and shoud be hidden
+              if (
+                m.senderRole === "assistant" &&
+                messages[idx + 1]?.senderRole === "system" &&
+                messages.slice(0, idx).every((m) => m.senderRole !== "user")
+              ) {
+                return null;
+              }
+
               if (m.senderRole === "user") {
                 return (
                   <Message key={m.id}>
@@ -157,7 +171,11 @@ export function Topic({
               );
             })}
             <div className="flex w-full justify-center">
-              {isLoading ? <Spin /> : null}
+              {isLoading ? (
+                <div className="text-gray-500">
+                  Thinking helpful thoughts... One minute... <Spin />
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
