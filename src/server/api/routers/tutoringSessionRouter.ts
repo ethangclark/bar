@@ -1,6 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { assertIsNotFailure } from "~/common/utils/result";
 import { getOpenRouterResponse } from "~/server/ai/llm";
+import { getResponseText } from "~/server/ai/llm/responseText";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
@@ -10,7 +12,7 @@ import {
   type TopicContext,
 } from "~/server/db/schema";
 
-const getSystemPrompt = (tc: TopicContext) => {
+const getInitialSystemPrompt = (tc: TopicContext) => {
   return `You are conducting an informal bar exam prep tutoring session. This session is focused on the topic of "${tc.topic.name}", which the student is studying as part of the chapter "${tc.unit.name}: ${tc.module.name}".
 
 The goal of the tutoring session is to efficiently and informally get the student to demonstrate topic mastery sufficient for bar exam preparation.
@@ -19,7 +21,10 @@ Before engaging in the session, generate an approach you will take to quickly 1)
 
 Ensure that your approach ruthlessly ignores details that will not directly contribute to the student's success on the bar exam. Focus on mastery of the core bar exam material, and breeze through the rest.`;
 };
-console.log(getSystemPrompt);
+
+const getHandoffPrompt = (_: TopicContext) => {
+  return `Thank you for creating that. I am now handing off to the student. Please say hi and take over the session.`;
+};
 
 async function getChatMessages({
   userId,
@@ -78,14 +83,59 @@ export const tutoringSessionRouter = createTRPCRouter({
       if (!session || excess.length > 0) {
         throw new Error("Failed to create tutoring session");
       }
-      await db.insert(dbSchema.chatMessages).values([
-        {
-          tutoringSessionId: session.id,
-          userId: ctx.userId,
-          senderRole: "system",
-          content: getSystemPrompt(topicContext),
-        },
-      ]);
+      const initialSystemPrompt = getInitialSystemPrompt(topicContext);
+      const initialMessage = {
+        role: "system" as const,
+        content: initialSystemPrompt,
+      };
+      const initialResponse = await getOpenRouterResponse(ctx.userId, {
+        model: "anthropic/claude-3.5-sonnet:beta",
+        messages: [initialMessage],
+      });
+      const initialResponseText = getResponseText(initialResponse);
+      assertIsNotFailure(initialResponseText);
+
+      const handoffSystemPrompt = getHandoffPrompt(topicContext);
+      const handedOffResponse = await getOpenRouterResponse(ctx.userId, {
+        model: "anthropic/claude-3.5-sonnet:beta",
+        messages: [
+          initialMessage,
+          {
+            role: "assistant",
+            content: initialResponseText,
+          },
+          {
+            role: "system",
+            content: handoffSystemPrompt,
+          },
+        ],
+      });
+      const handedOffResponseText = getResponseText(handedOffResponse);
+      assertIsNotFailure(handedOffResponseText);
+      await db.insert(dbSchema.chatMessages).values({
+        tutoringSessionId: session.id,
+        userId: ctx.userId,
+        senderRole: "system",
+        content: initialSystemPrompt,
+      });
+      await db.insert(dbSchema.chatMessages).values({
+        tutoringSessionId: session.id,
+        userId: ctx.userId,
+        senderRole: "assistant",
+        content: initialResponseText,
+      });
+      await db.insert(dbSchema.chatMessages).values({
+        tutoringSessionId: session.id,
+        userId: ctx.userId,
+        senderRole: "system",
+        content: handoffSystemPrompt,
+      });
+      await db.insert(dbSchema.chatMessages).values({
+        tutoringSessionId: session.id,
+        userId: ctx.userId,
+        senderRole: "assistant",
+        content: handedOffResponseText,
+      });
       return session;
     }),
   chatMessages: protectedProcedure

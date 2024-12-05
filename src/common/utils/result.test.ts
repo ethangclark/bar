@@ -2,7 +2,7 @@ import { vi } from "vitest";
 import {
   failureType,
   failure,
-  errorToProblem,
+  _errorToProblem,
   errorToFailure,
   isFailure,
   type Failure,
@@ -94,7 +94,7 @@ describe("tryRepeatedly function", () => {
 describe("errorToProblem function", () => {
   it("should convert an error to a Problem string", () => {
     const error = new Error("Test error");
-    const result = errorToProblem(error);
+    const result = _errorToProblem(error);
 
     expect(result).toBe('An error was encountered.  Error: "Error".');
   });

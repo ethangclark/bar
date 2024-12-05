@@ -27,14 +27,14 @@ function useSelectedSession({
     useState<TutoringSession | null>(() =>
       getMostRecentSession(topicTutoringSessions),
     );
-  const { mutateAsync } =
+  const { mutateAsync: createSession, isPending: isCreatingSession } =
     api.tutoringSession.createTutoringSession.useMutation();
   useEffect(() => {
     if (selectedSession) {
       return;
     }
     async function effect() {
-      const session = await mutateAsync({
+      const session = await createSession({
         enrollmentId,
         topicContext,
       });
@@ -43,13 +43,13 @@ function useSelectedSession({
     }
     void effect();
   }, [
-    mutateAsync,
+    createSession,
     enrollmentId,
     refetchTutoringSessions,
     selectedSession,
     topicContext,
   ]);
-  return { selectedSession, setSelectedSession };
+  return { isCreatingSession, selectedSession, setSelectedSession };
 }
 
 export function Topic({
@@ -65,12 +65,13 @@ export function Topic({
 }) {
   const { courseType, unit, module, topic } = topicContext;
 
-  const { selectedSession, setSelectedSession } = useSelectedSession({
-    enrollmentId,
-    topicContext,
-    topicTutoringSessions,
-    refetchTutoringSessions,
-  });
+  const { isCreatingSession, selectedSession, setSelectedSession } =
+    useSelectedSession({
+      enrollmentId,
+      topicContext,
+      topicTutoringSessions,
+      refetchTutoringSessions,
+    });
 
   const { isLoading: areMessagesLoading, data: messages } =
     api.tutoringSession.chatMessages.useQuery({
@@ -122,7 +123,9 @@ export function Topic({
           }
           return <div key={m.id}>{m.content}</div>;
         })}
-        {areMessagesLoading ? <Spin /> : null}
+        <div className="flex w-full justify-center">
+          {isCreatingSession || areMessagesLoading ? <Spin /> : null}
+        </div>
       </div>
     </div>
   );

@@ -32,7 +32,7 @@ export function failure(
   } satisfies Result<unknown>;
 }
 
-export const errorToProblem = (
+export const _errorToProblem = (
   error: unknown,
   additionalDetail = "",
 ): Problem => {
@@ -46,7 +46,7 @@ export const errorToFailure = (
 ): Failure => {
   assertError(error);
   return {
-    problem: errorToProblem(error, additionalDetail),
+    problem: _errorToProblem(error, additionalDetail),
     error,
   };
 };
