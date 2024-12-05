@@ -7,6 +7,7 @@ import { api } from "~/trpc/react";
 import { Topic } from "./topic";
 import { useCourseTreeData } from "./useCourseTreeData";
 import { useTreeProps } from "./useTreeProps";
+import { useCallback, useMemo } from "react";
 
 type Props = {
   params: {
@@ -17,18 +18,22 @@ type Props = {
 export default function CoursePage({ params }: Props) {
   const enrollmentId = z.string().parse(params.id);
 
-  const enrollment = api.course.enrollment.useQuery({ enrollmentId });
-  const tutoringSessions =
-    api.tutoringSession.enrollmentTutoringSessions.useQuery({
-      enrollmentId,
-    });
+  const { isLoading: isEnrollmentLoading, data: enrollment } =
+    api.course.enrollment.useQuery({ enrollmentId });
+  const {
+    refetch: refetchSessions,
+    isLoading: areSessionsLoading,
+    data: tutoringSessions,
+  } = api.tutoringSession.enrollmentTutoringSessions.useQuery({
+    enrollmentId,
+  });
 
-  const isLoading = enrollment.isLoading || tutoringSessions.isLoading;
+  const isLoading = isEnrollmentLoading || areSessionsLoading;
 
   const { treeData, setSelectedTopicId, selectedTopicContext } =
     useCourseTreeData({
-      course: enrollment.data?.course ?? null,
-      tutoringSessions: tutoringSessions.data ?? [],
+      course: enrollment?.course ?? null,
+      tutoringSessions: tutoringSessions ?? [],
       isLoading,
     });
 
@@ -36,6 +41,18 @@ export default function CoursePage({ params }: Props) {
     treeData,
     setSelectedId: setSelectedTopicId,
   });
+
+  const topicTutoringSessions = useMemo(
+    () =>
+      (tutoringSessions ?? []).filter(
+        (s) => s.topicId === selectedTopicContext?.topic.id,
+      ),
+    [selectedTopicContext?.topic.id, tutoringSessions],
+  );
+
+  const noOptionRefetchSessions = useCallback(async () => {
+    await refetchSessions();
+  }, [refetchSessions]);
 
   if (isLoading) {
     return <Spin />;
@@ -51,8 +68,11 @@ export default function CoursePage({ params }: Props) {
           <div className="flex flex-grow justify-center">
             {selectedTopicContext && (
               <Topic
+                key={selectedTopicContext.topic.id}
+                enrollmentId={enrollmentId}
                 topicContext={selectedTopicContext}
-                tutoringSessions={tutoringSessions.data ?? []}
+                topicTutoringSessions={topicTutoringSessions}
+                refetchTutoringSessions={noOptionRefetchSessions}
               />
             )}
           </div>

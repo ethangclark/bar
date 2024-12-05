@@ -8,15 +8,15 @@ import { formatDateTime } from "~/common/utils/timeUtils";
 import Link from "next/link";
 
 export default function AdminPage() {
-  const courses = api.course.courses.useQuery();
-  if (courses.isLoading) {
+  const { isLoading, data } = api.course.courses.useQuery();
+  if (isLoading) {
     return <Spin />;
   }
   return (
     <Page>
       <Title>Admin</Title>
       <ClientOnly>
-        {courses.data?.map((course) => (
+        {data?.map((course) => (
           <div key={course.id}>
             <h2>{course.courseType.name}</h2>
             <p>Course ID: {course.id}</p>

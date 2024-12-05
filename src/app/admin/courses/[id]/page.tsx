@@ -17,13 +17,11 @@ type Props = {
 export default function AdminCoursePage({ params }: Props) {
   const courseId = z.string().parse(params.id);
 
-  const course = api.course.courseDetail.useQuery({ courseId });
-
-  const isLoading = course.isLoading;
+  const { isLoading, data } = api.course.courseDetail.useQuery({ courseId });
 
   const { treeData, setSelectedTopicId, selectedTopicContext } =
     useCourseTreeData({
-      course: course.data ?? null,
+      course: data ?? null,
       tutoringSessions: [],
       isLoading,
     });
@@ -33,7 +31,7 @@ export default function AdminCoursePage({ params }: Props) {
     setSelectedId: setSelectedTopicId,
   });
 
-  if (course.isLoading) {
+  if (isLoading) {
     return <Spin />;
   }
   return (

@@ -1,31 +1,89 @@
 import { Spin } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type TutoringSession, type TopicContext } from "~/server/db/schema";
 import { api } from "~/trpc/react";
+import { useWhatChanged } from "@simbathesailor/use-what-changed";
+
+function getMostRecentSession(sessions: TutoringSession[]) {
+  const mostRecentFirst = sessions.sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+  );
+  return mostRecentFirst[0] ?? null;
+}
+
+function useSelectedSession({
+  enrollmentId,
+  topicContext,
+  topicTutoringSessions,
+  refetchTutoringSessions,
+}: {
+  enrollmentId: string;
+  topicContext: TopicContext;
+  topicTutoringSessions: TutoringSession[];
+  refetchTutoringSessions: () => Promise<void>;
+}) {
+  const [selectedSession, setSelectedSession] =
+    useState<TutoringSession | null>(() =>
+      getMostRecentSession(topicTutoringSessions),
+    );
+  const { mutateAsync } =
+    api.tutoringSession.createTutoringSession.useMutation();
+  useEffect(() => {
+    if (selectedSession) {
+      return;
+    }
+    async function effect() {
+      const session = await mutateAsync({
+        enrollmentId,
+        topicContext,
+      });
+      await refetchTutoringSessions();
+      setSelectedSession(session);
+    }
+    void effect();
+  }, [
+    mutateAsync,
+    enrollmentId,
+    refetchTutoringSessions,
+    selectedSession,
+    topicContext,
+  ]);
+  useWhatChanged([
+    mutateAsync,
+    enrollmentId,
+    refetchTutoringSessions,
+    selectedSession,
+    topicContext,
+  ]);
+  return { selectedSession, setSelectedSession };
+}
 
 export function Topic({
+  enrollmentId,
   topicContext,
-  tutoringSessions,
+  topicTutoringSessions,
+  refetchTutoringSessions,
 }: {
+  enrollmentId: string;
   topicContext: TopicContext;
-  tutoringSessions: TutoringSession[];
+  topicTutoringSessions: TutoringSession[];
+  refetchTutoringSessions: () => Promise<void>;
 }) {
   const { course, courseType, unit, module, topic } = topicContext;
 
-  const [tutoringSessionId, setTutoringSessionId] = useState<string | null>(
-    () => {
-      const sorted = tutoringSessions.sort(
-        (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
-      );
-      return sorted[0]?.id ?? null;
-    },
-  );
-
-  const messages = api.tutoringSession.chatMessages.useQuery({
-    tutoringSessionId,
+  const { selectedSession, setSelectedSession } = useSelectedSession({
+    enrollmentId,
+    topicContext,
+    topicTutoringSessions,
+    refetchTutoringSessions,
   });
 
-  if (!messages.data) {
+  const { isLoading: areMessagesLoading, data: messages } =
+    api.tutoringSession.chatMessages.useQuery({
+      tutoringSessionId: selectedSession?.id ?? null,
+    });
+
+  if (areMessagesLoading || !messages?.length) {
     return <Spin />;
   }
 
@@ -45,7 +103,7 @@ export function Topic({
         <h4>{module.name}</h4>
         <h5>{topic.name}</h5>
         <h6>Messages:</h6>
-        {messages.data.map((m) => (
+        {messages.map((m) => (
           <div key={m.id}>{m.content}</div>
         ))}
       </div>

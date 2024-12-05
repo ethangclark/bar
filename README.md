@@ -21,6 +21,7 @@ If you are not familiar with the different technologies used in this project, pl
 - [Tailwind CSS](https://tailwindcss.com)
 - [tRPC](https://trpc.io)
 - [Ant Design](https://ant.design/)
+- [What Changed](https://www.npmjs.com/package/@simbathesailor/use-what-changed)
 
 ## Learn More
 

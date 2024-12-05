@@ -47,14 +47,19 @@ function Option({
 }
 
 export function Main() {
-  const available = api.course.available.useQuery();
-  const enroll = api.course.enroll.useMutation();
-  const enrollments = api.course.enrollments.useQuery();
+  const { data: availableCourses, isLoading: areAvailableCoursesLoading } =
+    api.course.available.useQuery();
+  const { mutateAsync: enroll } = api.course.enroll.useMutation();
+  const {
+    data: enrollments,
+    isLoading: areEnrollmentsLoading,
+    refetch: refetchEnrollments,
+  } = api.course.enrollments.useQuery();
   const router = useRouter();
 
   const options = useMemo(() => {
     const options = Array<React.ReactNode>();
-    enrollments.data?.forEach((enrollment) => {
+    enrollments?.forEach((enrollment) => {
       options.push(
         <Option
           key={enrollment.courseId}
@@ -65,9 +70,9 @@ export function Main() {
         />,
       );
     });
-    available.data?.latestCourses.forEach((course) => {
+    availableCourses?.latestCourses.forEach((course) => {
       if (
-        enrollments.data?.some(
+        enrollments?.some(
           (enrollment) =>
             enrollment.course.courseType.id === course.courseTypeId,
         )
@@ -80,17 +85,23 @@ export function Main() {
           courseType={course.courseType}
           enrollment={null}
           onEnroll={async () => {
-            await enroll.mutateAsync({ courseId: course.id });
-            await enrollments.refetch();
+            await enroll({ courseId: course.id });
+            await refetchEnrollments();
           }}
           onResume={noop}
         />,
       );
     });
     return options;
-  }, [available.data?.latestCourses, enroll, enrollments, router]);
+  }, [
+    availableCourses?.latestCourses,
+    enroll,
+    enrollments,
+    refetchEnrollments,
+    router,
+  ]);
 
-  if (available.isLoading) {
+  if (areAvailableCoursesLoading || areEnrollmentsLoading) {
     return <Spin />;
   }
 

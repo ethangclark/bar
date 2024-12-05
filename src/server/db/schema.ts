@@ -336,7 +336,6 @@ export const tutoringSessions = createTable(
   "tutoring_session",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    name: text("name").notNull(),
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -353,7 +352,6 @@ export const tutoringSessions = createTable(
       .defaultNow(),
   },
   (tutoringSession) => ({
-    nameIndex: index("tutoring_session_name_idx").on(tutoringSession.name),
     userIdIdx: index("tutoring_session_user_id_idx").on(tutoringSession.userId),
     topicIdIdx: index("tutoring_session_topic_id_idx").on(
       tutoringSession.topicId,
