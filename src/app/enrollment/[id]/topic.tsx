@@ -1,5 +1,6 @@
 import { Dropdown, type MenuProps, Spin } from "antd";
 import { useEffect, useMemo, useState } from "react";
+import { PreformattedText } from "~/app/_components/PreformattedText";
 import { useCss } from "~/app/_hooks/useCss";
 import { formatDateTime } from "~/common/utils/timeUtils";
 import { type TutoringSession, type TopicContext } from "~/server/db/schema";
@@ -117,11 +118,15 @@ export function Topic({
           if (m.senderRole === "user") {
             return (
               <div key={m.id} className="rounded-xl bg-blue-100 p-4">
-                {m.content}
+                <PreformattedText>{m.content}</PreformattedText>
               </div>
             );
           }
-          return <div key={m.id}>{m.content}</div>;
+          return (
+            <div key={m.id} className="text-sm">
+              <PreformattedText key={m.id}>{m.content}</PreformattedText>
+            </div>
+          );
         })}
         <div className="flex w-full justify-center">
           {isCreatingSession || areMessagesLoading ? <Spin /> : null}
