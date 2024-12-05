@@ -26,6 +26,8 @@ const getHandoffPrompt = (_: TopicContext) => {
   return `Thank you for creating that. I am now handing off to the student. Please say hi and take over the session.`;
 };
 
+const model = "anthropic/claude-3.5-sonnet:beta";
+
 async function getChatMessages({
   userId,
   tutoringSessionId,
@@ -89,7 +91,7 @@ export const tutoringSessionRouter = createTRPCRouter({
         content: initialSystemPrompt,
       };
       const initialResponse = await getOpenRouterResponse(ctx.userId, {
-        model: "anthropic/claude-3.5-sonnet:beta",
+        model,
         messages: [initialMessage],
       });
       const initialResponseText = getResponseText(initialResponse);
@@ -97,7 +99,7 @@ export const tutoringSessionRouter = createTRPCRouter({
 
       const handoffSystemPrompt = getHandoffPrompt(topicContext);
       const handedOffResponse = await getOpenRouterResponse(ctx.userId, {
-        model: "anthropic/claude-3.5-sonnet:beta",
+        model,
         messages: [
           initialMessage,
           {
@@ -152,7 +154,7 @@ export const tutoringSessionRouter = createTRPCRouter({
       return messages;
     }),
 
-  processUserMessage: protectedProcedure
+  sendMessage: protectedProcedure
     .input(z.object({ tutoringSessionId: z.string(), content: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { content, tutoringSessionId } = input;
@@ -162,7 +164,7 @@ export const tutoringSessionRouter = createTRPCRouter({
       });
 
       const response = await getOpenRouterResponse(ctx.userId, {
-        model: "anthropic/claude-3.5-sonnet:beta",
+        model,
         messages: [
           ...messages.map((m) => ({
             role: m.senderRole,
@@ -174,11 +176,19 @@ export const tutoringSessionRouter = createTRPCRouter({
           },
         ],
       });
-      const responseContent = response.choices[0]?.message.content;
-      if (!responseContent) {
-        throw new Error("No content in response");
-      }
-      console.log("responseContent", responseContent);
-      return responseContent;
+      const responseText = getResponseText(response);
+      assertIsNotFailure(responseText);
+      await db.insert(dbSchema.chatMessages).values({
+        tutoringSessionId,
+        userId: ctx.userId,
+        senderRole: "user",
+        content,
+      });
+      await db.insert(dbSchema.chatMessages).values({
+        tutoringSessionId,
+        userId: ctx.userId,
+        senderRole: "assistant",
+        content: responseText,
+      });
     }),
 });

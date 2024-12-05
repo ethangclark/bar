@@ -14,6 +14,10 @@ function getMostRecentSession(sessions: TutoringSession[]) {
   return mostRecentFirst[0] ?? null;
 }
 
+function Message({ children }: { children: React.ReactNode }) {
+  return <div className="mb-4">{children}</div>;
+}
+
 function useSelectedSession({
   enrollmentId,
   topicContext,
@@ -75,10 +79,13 @@ export function Topic({
       refetchTutoringSessions,
     });
 
-  const { isLoading: areMessagesLoading, data: messages } =
-    api.tutoringSession.chatMessages.useQuery({
-      tutoringSessionId: selectedSession?.id ?? null,
-    });
+  const {
+    isLoading: areMessagesLoading,
+    data: messages,
+    refetch: refetchMessages,
+  } = api.tutoringSession.chatMessages.useQuery({
+    tutoringSessionId: selectedSession?.id ?? null,
+  });
 
   const menuItems = useMemo((): MenuProps["items"] => {
     return topicTutoringSessions.map((session) => ({
@@ -95,6 +102,11 @@ export function Topic({
   );
 
   const [v, setV] = useState("asdf");
+
+  const { mutateAsync: sendMessage, isPending: sendingMessage } =
+    api.tutoringSession.sendMessage.useMutation();
+
+  const isLoading = isCreatingSession || areMessagesLoading || sendingMessage;
 
   return (
     <div
@@ -125,23 +137,27 @@ export function Topic({
           className="outline-3 flex h-full w-full items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200"
           style={{ height: `calc(100vh - 280px)` }}
         >
-          <div className="flex h-full w-full flex-col items-center overflow-y-auto p-4">
+          <div className="flex h-full w-full flex-col overflow-y-auto p-4">
             {messages?.map((m) => {
               if (m.senderRole === "user") {
                 return (
-                  <div key={m.id} className="rounded-xl bg-blue-100 p-4">
-                    <PreformattedText>{m.content}</PreformattedText>
-                  </div>
+                  <Message key={m.id}>
+                    <div className="self-end rounded-xl bg-blue-100 p-3">
+                      <PreformattedText>{m.content}</PreformattedText>
+                    </div>
+                  </Message>
                 );
               }
               return (
-                <div key={m.id} className="text-sm">
-                  <PreformattedText key={m.id}>{m.content}</PreformattedText>
-                </div>
+                <Message key={m.id}>
+                  <div className="text-sm">
+                    <PreformattedText key={m.id}>{m.content}</PreformattedText>
+                  </div>
+                </Message>
               );
             })}
             <div className="flex w-full justify-center">
-              {isCreatingSession || areMessagesLoading ? <Spin /> : null}
+              {isLoading ? <Spin /> : null}
             </div>
           </div>
         </div>
@@ -160,12 +176,19 @@ export function Topic({
             setValue={setV}
             placeholder="Compose your response"
             height={70}
-            onKeyDown={(e) => {
+            onKeyDown={async (e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                console.log("send message");
+                if (!selectedSession || isLoading) return; // do nothing :/
+                await sendMessage({
+                  tutoringSessionId: selectedSession.id,
+                  content: v,
+                });
+                await refetchMessages();
+                setV("");
               }
             }}
+            disabled={sendingMessage}
           />
         </div>
       </div>
