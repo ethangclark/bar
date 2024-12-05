@@ -1,6 +1,16 @@
 import { getOpenRouterResponse } from "~/server/ai/llm";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
-import { topicContextSchema } from "~/server/db/schema";
+import { type TopicContext, topicContextSchema } from "~/server/db/schema";
+
+const getPrompt = (tc: TopicContext) => {
+  return `You are conducting an informal bar exam prep tutoring session. This session is focused on the topic of "${tc.topic.name}", which the student is studying as part of the chapter "${tc.unit.name}: ${tc.module.name}".
+
+The goal of the tutoring session is to efficiently and informally get the student to demonstrate topic mastery sufficient for bar exam preparation.
+
+Before engaging in the session, generate an approach you will take to quickly 1) assess the student's current level in the area and 2) guide them to a level of understanding that will allow them to succeed on the bar exam. (If level 1 reveals that they are already at the necessary level, you will skip step 2.)
+
+Ensure that your approach ruthlessly ignores details that will not directly contribute to the student's success on the bar exam. Focus on mastery of the core bar exam material, and breeze through the rest.`;
+};
 
 export const understandingCriteriaRouter = createTRPCRouter({
   regenerateForTopic: adminProcedure
@@ -10,8 +20,8 @@ export const understandingCriteriaRouter = createTRPCRouter({
         model: "anthropic/claude-3.5-sonnet:beta",
         messages: [
           {
-            role: "user",
-            content: `I am creating a study course for the course "${input.courseType.name}". I'm currently building my curriculum around  "${input.unit.name}: ${input.module.name}" I want you to generate a list of criteria that could be used to prove understanding of the following topic: ${input.topic.name}.`,
+            role: "system",
+            content: getPrompt(input),
           },
         ],
       });
@@ -19,6 +29,7 @@ export const understandingCriteriaRouter = createTRPCRouter({
       if (!content) {
         throw new Error("No content in response");
       }
+      console.log("content", content);
       return content;
     }),
 });

@@ -4,7 +4,7 @@ import { db } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
 import { getUnits } from "./getUnits";
 
-const courseName = "Bar prep";
+const courseName = "Bar Exam Prep";
 
 async function ensureCourseType() {
   let courseType = await db.query.courseTypes.findFirst({
