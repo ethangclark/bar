@@ -16,8 +16,11 @@ CREATE TABLE IF NOT EXISTS "drizzle_account" (
 CREATE TABLE IF NOT EXISTS "drizzle_activity" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
+	"user_id" uuid NOT NULL,
 	"topic_id" uuid NOT NULL,
-	"user_id" uuid NOT NULL
+	"enrollment_id" uuid NOT NULL,
+	"conclusion" text,
+	"demonstrates_mastery" boolean DEFAULT false
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "drizzle_course_enrollment" (
@@ -98,13 +101,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
+ ALTER TABLE "drizzle_activity" ADD CONSTRAINT "drizzle_activity_user_id_drizzle_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."drizzle_user"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
  ALTER TABLE "drizzle_activity" ADD CONSTRAINT "drizzle_activity_topic_id_drizzle_topic_id_fk" FOREIGN KEY ("topic_id") REFERENCES "public"."drizzle_topic"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "drizzle_activity" ADD CONSTRAINT "drizzle_activity_user_id_drizzle_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."drizzle_user"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "drizzle_activity" ADD CONSTRAINT "drizzle_activity_enrollment_id_drizzle_course_enrollment_id_fk" FOREIGN KEY ("enrollment_id") REFERENCES "public"."drizzle_course_enrollment"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -164,9 +173,10 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "account_user_id_idx" ON "drizzle_account" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "activity_topic_id_idx" ON "drizzle_activity" USING btree ("topic_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "activity_name_idx" ON "drizzle_activity" USING btree ("name");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "activity_user_id_idx" ON "drizzle_activity" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "activity_topic_id_idx" ON "drizzle_activity" USING btree ("topic_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "activity_enrollment_id_idx" ON "drizzle_activity" USING btree ("enrollment_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "course_enrollment_user_id_idx" ON "drizzle_course_enrollment" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "course_enrollment_course_id_idx" ON "drizzle_course_enrollment" USING btree ("course_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "course_type_name_idx" ON "drizzle_course_type" USING btree ("name");--> statement-breakpoint

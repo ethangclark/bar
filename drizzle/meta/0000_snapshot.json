@@ -1,5 +1,5 @@
 {
-  "id": "530979bf-fa27-456f-9564-c6cea15d5800",
+  "id": "d3e15c8f-0589-45d7-9470-76ef422eb362",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -135,35 +135,39 @@
           "primaryKey": false,
           "notNull": true
         },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "topic_id": {
           "name": "topic_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "user_id": {
-          "name": "user_id",
+        "enrollment_id": {
+          "name": "enrollment_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "conclusion": {
+          "name": "conclusion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "demonstrates_mastery": {
+          "name": "demonstrates_mastery",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         }
       },
       "indexes": {
-        "activity_topic_id_idx": {
-          "name": "activity_topic_id_idx",
-          "columns": [
-            {
-              "expression": "topic_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "activity_name_idx": {
           "name": "activity_name_idx",
           "columns": [
@@ -193,9 +197,52 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "activity_topic_id_idx": {
+          "name": "activity_topic_id_idx",
+          "columns": [
+            {
+              "expression": "topic_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "activity_enrollment_id_idx": {
+          "name": "activity_enrollment_id_idx",
+          "columns": [
+            {
+              "expression": "enrollment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
+        "drizzle_activity_user_id_drizzle_user_id_fk": {
+          "name": "drizzle_activity_user_id_drizzle_user_id_fk",
+          "tableFrom": "drizzle_activity",
+          "tableTo": "drizzle_user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
         "drizzle_activity_topic_id_drizzle_topic_id_fk": {
           "name": "drizzle_activity_topic_id_drizzle_topic_id_fk",
           "tableFrom": "drizzle_activity",
@@ -209,12 +256,12 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "drizzle_activity_user_id_drizzle_user_id_fk": {
-          "name": "drizzle_activity_user_id_drizzle_user_id_fk",
+        "drizzle_activity_enrollment_id_drizzle_course_enrollment_id_fk": {
+          "name": "drizzle_activity_enrollment_id_drizzle_course_enrollment_id_fk",
           "tableFrom": "drizzle_activity",
-          "tableTo": "drizzle_user",
+          "tableTo": "drizzle_course_enrollment",
           "columnsFrom": [
-            "user_id"
+            "enrollment_id"
           ],
           "columnsTo": [
             "id"
