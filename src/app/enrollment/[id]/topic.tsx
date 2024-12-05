@@ -117,9 +117,9 @@ export function Topic({
         <div>
           {courseType.name} &gt; {unit.name} &gt; {module.name}
         </div>
-        <div className="text-2xl">{topic.name}</div>
+        <div className="mb-2 text-2xl">{topic.name}</div>
         <div className="mb-4 text-sm" id={dropdownWrapperId}>
-          <Dropdown
+          <Dropdown.Button
             menu={{
               items: menuItems,
             }}
@@ -129,7 +129,7 @@ export function Topic({
                 ? formatDateTime(selectedSession.createdAt)
                 : " "}
             </span>
-          </Dropdown>
+          </Dropdown.Button>
         </div>
       </div>
       <div className="flex flex-col items-center">
@@ -168,7 +168,7 @@ export function Topic({
             bottom: 0,
             width: 562,
             marginTop: 24,
-            marginBottom: -48,
+            marginBottom: -100,
           }}
         >
           <Editor
