@@ -7,11 +7,14 @@ import { formatDateTime } from "~/common/utils/timeUtils";
 import { type TutoringSession, type TopicContext } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
+function sortSessionsEarliestFirst(sessions: TutoringSession[]) {
+  return sessions
+    .slice()
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+}
+
 function getMostRecentSession(sessions: TutoringSession[]) {
-  const mostRecentFirst = sessions.sort(
-    (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-  );
-  return mostRecentFirst[0] ?? null;
+  return sortSessionsEarliestFirst(sessions).slice().pop() ?? null;
 }
 
 function Message({ children }: { children: React.ReactNode }) {
@@ -58,6 +61,10 @@ function useSelectedSession({
   return { isCreatingSession, selectedSession, setSelectedSession };
 }
 
+function getSessionLabel(session: TutoringSession, idx: number) {
+  return `Session ${idx + 1}: ${formatDateTime(session.createdAt)}`;
+}
+
 export function Topic({
   enrollmentId,
   topicContext,
@@ -70,6 +77,11 @@ export function Topic({
   refetchTutoringSessions: () => Promise<void>;
 }) {
   const { courseType, unit, module, topic } = topicContext;
+
+  const sessionsEarliestFirst = useMemo(
+    () => sortSessionsEarliestFirst(topicTutoringSessions),
+    [topicTutoringSessions],
+  );
 
   const { isCreatingSession, selectedSession, setSelectedSession } =
     useSelectedSession({
@@ -88,12 +100,14 @@ export function Topic({
   });
 
   const menuItems = useMemo((): MenuProps["items"] => {
-    return topicTutoringSessions.map((session) => ({
-      key: session.id,
-      label: formatDateTime(session.createdAt),
-      onClick: () => setSelectedSession(session),
-    }));
-  }, [setSelectedSession, topicTutoringSessions]);
+    return sessionsEarliestFirst
+      .map((session, idx) => ({
+        key: session.id,
+        label: getSessionLabel(session, idx),
+        onClick: () => setSelectedSession(session),
+      }))
+      .reverse();
+  }, [setSelectedSession, sessionsEarliestFirst]);
 
   // TODO: this isn't working
   const { id: dropdownWrapperId } = useCss(
@@ -125,9 +139,11 @@ export function Topic({
             }}
           >
             <span>
-              {selectedSession
-                ? formatDateTime(selectedSession.createdAt)
-                : " "}
+              {selectedSession &&
+                getSessionLabel(
+                  selectedSession,
+                  sessionsEarliestFirst.indexOf(selectedSession),
+                )}
             </span>
           </Dropdown.Button>
         </div>
