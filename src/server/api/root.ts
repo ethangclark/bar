@@ -1,8 +1,7 @@
 import { postRouter } from "~/server/api/routers/postRouter";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { courseRouter } from "./routers/courseRouter";
-import { activityRouter } from "./routers/activityRouter";
-import { understandingCriteriaRouter } from "./routers/understandingCriteriaRouter";
+import { tutoringSessionRouter } from "./routers/tutoringSessionRouter";
 
 /**
  * This is the primary router for your server.
@@ -10,10 +9,10 @@ import { understandingCriteriaRouter } from "./routers/understandingCriteriaRout
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  activity: activityRouter,
+  tutoringSession: tutoringSessionRouter,
   course: courseRouter,
   post: postRouter,
-  understandingCriteria: understandingCriteriaRouter,
+  tutorChat: tutoringSessionRouter,
 });
 
 // export type definition of API

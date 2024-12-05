@@ -1,5 +1,5 @@
 "use client";
-import { Button, Spin, Tree } from "antd";
+import { Spin, Tree } from "antd";
 import { z } from "zod";
 import { useCourseTreeData } from "~/app/enrollment/[id]/useCourseTreeData";
 import { useTreeProps } from "~/app/enrollment/[id]/useTreeProps";
@@ -24,7 +24,7 @@ export default function AdminCoursePage({ params }: Props) {
   const { treeData, setSelectedTopicId, selectedTopicContext } =
     useCourseTreeData({
       course: course.data ?? null,
-      activities: [],
+      tutoringSessions: [],
       isLoading,
     });
 
@@ -32,10 +32,6 @@ export default function AdminCoursePage({ params }: Props) {
     treeData,
     setSelectedId: setSelectedTopicId,
   });
-
-  const regenerateForTopic =
-    api.understandingCriteria.regenerateForTopic.useMutation();
-  console.log("mutation data:", regenerateForTopic.data);
 
   if (course.isLoading) {
     return <Spin />;
@@ -52,18 +48,6 @@ export default function AdminCoursePage({ params }: Props) {
             <div className="mb-5 text-2xl">
               {selectedTopicContext?.topic.name}
             </div>
-            <Button
-              className="mb-5"
-              disabled={!selectedTopicContext}
-              onClick={() =>
-                selectedTopicContext &&
-                regenerateForTopic.mutate(selectedTopicContext)
-              }
-            >
-              (Re)generate criteria
-            </Button>
-            <div>understanding criteria:</div>
-            <div>(removed -- not a thing anymore)</div>
           </div>
         </div>
       </ClientOnly>

@@ -2,7 +2,7 @@
 import { type TreeDataNode } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import {
-  type Activity,
+  type TutoringSession,
   type DetailedCourse,
   type TopicContext,
 } from "~/server/db/schema";
@@ -36,43 +36,43 @@ function getFirstIncompleteTopic(
   return null;
 }
 
-function getMasteredTopicIds(activities: Activity[]) {
+function getMasteredTopicIds(tutoringSessions: TutoringSession[]) {
   return new Set(
-    activities.filter((a) => a.demonstratesMastery).map((a) => a.topicId),
+    tutoringSessions.filter((a) => a.demonstratesMastery).map((a) => a.topicId),
   );
 }
 
 function useSelectFirstIncompleteTopic({
   disabled,
   course,
-  activities,
+  tutoringSessions,
   onSelectTopic,
 }: {
   disabled: boolean;
   course: DetailedCourse | null;
-  activities: Activity[];
+  tutoringSessions: TutoringSession[];
   onSelectTopic: (topicId: string) => void;
 }) {
   useEffect(() => {
     if (disabled || !course) {
       return;
     }
-    const masteredTopicIds = getMasteredTopicIds(activities);
+    const masteredTopicIds = getMasteredTopicIds(tutoringSessions);
     const topic = getFirstIncompleteTopic(course, masteredTopicIds);
     if (!topic) {
       return;
     }
     onSelectTopic(topic.id);
-  }, [activities, course, disabled, onSelectTopic]);
+  }, [tutoringSessions, course, disabled, onSelectTopic]);
 }
 
 export function useCourseTreeData({
   course,
-  activities,
+  tutoringSessions,
   isLoading,
 }: {
   course: DetailedCourse | null;
-  activities: Activity[];
+  tutoringSessions: TutoringSession[];
   isLoading: boolean;
 }) {
   const totalTopics = useTotalTopics(course);
@@ -82,7 +82,7 @@ export function useCourseTreeData({
   useSelectFirstIncompleteTopic({
     disabled: isLoading || selectedTopicId !== null,
     course,
-    activities,
+    tutoringSessions,
     onSelectTopic: setSelectedTopicId,
   });
 
@@ -112,7 +112,7 @@ export function useCourseTreeData({
     if (!course) {
       return [];
     }
-    const masteredTopicIds = getMasteredTopicIds(activities);
+    const masteredTopicIds = getMasteredTopicIds(tutoringSessions);
     return [
       {
         title: (
@@ -162,7 +162,7 @@ export function useCourseTreeData({
         }),
       },
     ];
-  }, [activities, course, totalTopics]);
+  }, [tutoringSessions, course, totalTopics]);
 
   return {
     treeData,

@@ -331,8 +331,8 @@ export type DetailedEnrollment = CourseEnrollment & {
   course: DetailedCourse;
 };
 
-export const activities = createTable(
-  "activity",
+export const tutoringSessions = createTable(
+  "tutoring_session",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull(),
@@ -348,27 +348,32 @@ export const activities = createTable(
     conclusion: text("conclusion"),
     demonstratesMastery: boolean("demonstrates_mastery").default(false),
   },
-  (activity) => ({
-    nameIndex: index("activity_name_idx").on(activity.name),
-    userIdIdx: index("activity_user_id_idx").on(activity.userId),
-    topicIdIdx: index("activity_topic_id_idx").on(activity.topicId),
-    enrollmentIdIdx: index("activity_enrollment_id_idx").on(
-      activity.enrollmentId,
+  (tutoringSession) => ({
+    nameIndex: index("tutoring_session_name_idx").on(tutoringSession.name),
+    userIdIdx: index("tutoring_session_user_id_idx").on(tutoringSession.userId),
+    topicIdIdx: index("tutoring_session_topic_id_idx").on(
+      tutoringSession.topicId,
+    ),
+    enrollmentIdIdx: index("tutoring_session_enrollment_id_idx").on(
+      tutoringSession.enrollmentId,
     ),
   }),
 );
-export type Activity = InferSelectModel<typeof activities>;
-export const activitiesRelations = relations(activities, ({ one }) => ({
-  user: one(users, {
-    fields: [activities.userId],
-    references: [users.id],
+export type TutoringSession = InferSelectModel<typeof tutoringSessions>;
+export const tutoringSessionsRelations = relations(
+  tutoringSessions,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [tutoringSessions.userId],
+      references: [users.id],
+    }),
+    topic: one(topics, {
+      fields: [tutoringSessions.topicId],
+      references: [topics.id],
+    }),
+    enrollment: one(courseEnrollments, {
+      fields: [tutoringSessions.enrollmentId],
+      references: [courseEnrollments.id],
+    }),
   }),
-  topic: one(topics, {
-    fields: [activities.topicId],
-    references: [topics.id],
-  }),
-  enrollment: one(courseEnrollments, {
-    fields: [activities.enrollmentId],
-    references: [courseEnrollments.id],
-  }),
-}));
+);

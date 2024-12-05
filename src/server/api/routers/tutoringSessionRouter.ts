@@ -1,6 +1,14 @@
+import { and, eq } from "drizzle-orm";
+import { z } from "zod";
 import { getOpenRouterResponse } from "~/server/ai/llm";
-import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
-import { type TopicContext, topicContextSchema } from "~/server/db/schema";
+import {
+  adminProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+} from "~/server/api/trpc";
+import { db } from "~/server/db";
+import { dbSchema } from "~/server/db/dbSchema";
+import { topicContextSchema, type TopicContext } from "~/server/db/schema";
 
 const getPrompt = (tc: TopicContext) => {
   return `You are conducting an informal bar exam prep tutoring session. This session is focused on the topic of "${tc.topic.name}", which the student is studying as part of the chapter "${tc.unit.name}: ${tc.module.name}".
@@ -12,7 +20,23 @@ Before engaging in the session, generate an approach you will take to quickly 1)
 Ensure that your approach ruthlessly ignores details that will not directly contribute to the student's success on the bar exam. Focus on mastery of the core bar exam material, and breeze through the rest.`;
 };
 
-export const understandingCriteriaRouter = createTRPCRouter({
+export const tutoringSessionRouter = createTRPCRouter({
+  enrollmentTutoringSessions: protectedProcedure
+    .input(
+      z.object({
+        enrollmentId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { enrollmentId } = input;
+      const tutoringSessions = await db.query.tutoringSessions.findMany({
+        where: and(
+          eq(dbSchema.tutoringSessions.enrollmentId, enrollmentId),
+          eq(dbSchema.tutoringSessions.userId, ctx.session.user.id),
+        ),
+      });
+      return tutoringSessions;
+    }),
   regenerateForTopic: adminProcedure
     .input(topicContextSchema)
     .mutation(async ({ ctx, input }) => {

@@ -18,16 +18,17 @@ export default function CoursePage({ params }: Props) {
   const enrollmentId = z.string().parse(params.id);
 
   const enrollment = api.course.enrollment.useQuery({ enrollmentId });
-  const activities = api.activity.enrollmentActivities.useQuery({
-    enrollmentId,
-  });
+  const tutoringSessions =
+    api.tutoringSession.enrollmentTutoringSessions.useQuery({
+      enrollmentId,
+    });
 
-  const isLoading = enrollment.isLoading || activities.isLoading;
+  const isLoading = enrollment.isLoading || tutoringSessions.isLoading;
 
   const { treeData, setSelectedTopicId, selectedTopicContext } =
     useCourseTreeData({
       course: enrollment.data?.course ?? null,
-      activities: activities.data ?? [],
+      tutoringSessions: tutoringSessions.data ?? [],
       isLoading,
     });
 
