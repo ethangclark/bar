@@ -120,45 +120,49 @@ export function Topic({
           </Dropdown>
         </div>
       </div>
-      <div
-        className="outline-3 flex h-full w-full items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200"
-        style={{ height: `calc(100vh - 260px)` }}
-      >
-        <div className="flex h-full w-full flex-col items-center overflow-y-auto p-4">
-          {messages?.map((m) => {
-            if (m.senderRole === "user") {
+      <div className="flex flex-col items-center">
+        <div
+          className="outline-3 flex h-full w-full items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200"
+          style={{ height: `calc(100vh - 280px)` }}
+        >
+          <div className="flex h-full w-full flex-col items-center overflow-y-auto p-4">
+            {messages?.map((m) => {
+              if (m.senderRole === "user") {
+                return (
+                  <div key={m.id} className="rounded-xl bg-blue-100 p-4">
+                    <PreformattedText>{m.content}</PreformattedText>
+                  </div>
+                );
+              }
               return (
-                <div key={m.id} className="rounded-xl bg-blue-100 p-4">
-                  <PreformattedText>{m.content}</PreformattedText>
+                <div key={m.id} className="text-sm">
+                  <PreformattedText key={m.id}>{m.content}</PreformattedText>
                 </div>
               );
-            }
-            return (
-              <div key={m.id} className="text-sm">
-                <PreformattedText key={m.id}>{m.content}</PreformattedText>
-              </div>
-            );
-          })}
-          <div className="flex w-full justify-center">
-            {isCreatingSession || areMessagesLoading ? <Spin /> : null}
+            })}
+            <div className="flex w-full justify-center">
+              {isCreatingSession || areMessagesLoading ? <Spin /> : null}
+            </div>
           </div>
         </div>
-      </div>
-      <div
-        style={{
-          height: 100,
-          position: "absolute",
-          bottom: 0,
-          width: 562,
-        }}
-      >
-        <Editor
-          value={v}
-          setValue={setV}
-          placeholder="Compose your response"
-          roundedCn="rounded-2xl"
-          height={70}
-        />
+        <div
+          style={{
+            height: 100,
+            position: "relative",
+            bottom: 0,
+            width: 562,
+            marginTop: 24,
+            marginBottom: -48,
+          }}
+        >
+          <Editor
+            value={v}
+            setValue={setV}
+            placeholder="Compose your response"
+            roundedCn="rounded-2xl"
+            height={70}
+          />
+        </div>
       </div>
     </div>
   );
