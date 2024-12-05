@@ -62,7 +62,7 @@ export default function CoursePage({ params }: Props) {
     <Page>
       <ClientOnly>
         <div className="flex flex-grow flex-wrap justify-start">
-          <div style={{ width: 500 }} className="mb-10">
+          <div style={{ width: 400 }} className="mb-10">
             <AntdTree {...treeProps} height={700} />
           </div>
           <div className="flex flex-grow justify-center">

@@ -1,5 +1,6 @@
 import { Dropdown, type MenuProps, Spin } from "antd";
 import { useEffect, useMemo, useState } from "react";
+import { Editor } from "~/app/_components/Editor";
 import { PreformattedText } from "~/app/_components/PreformattedText";
 import { useCss } from "~/app/_hooks/useCss";
 import { formatDateTime } from "~/common/utils/timeUtils";
@@ -93,47 +94,71 @@ export function Topic({
       `#${id} .ant-dropdown-menu { max-height: 200px; overflow-y: auto; }`,
   );
 
+  const [v, setV] = useState("asdf");
+
   return (
     <div
-      className="mb-2 flex h-full w-full flex-col px-8"
+      className="mb-2 flex h-full w-full flex-col items-center px-8"
       style={{ width: 672 }}
     >
-      <div>
-        {courseType.name} &gt; {unit.name} &gt; {module.name}
-      </div>
-      <div className="text-2xl">{topic.name}</div>
-      <div className="mb-4 text-sm" id={dropdownWrapperId}>
-        <Dropdown
-          menu={{
-            items: menuItems,
-          }}
-        >
-          <span>
-            {selectedSession ? formatDateTime(selectedSession.createdAt) : " "}
-          </span>
-        </Dropdown>
+      <div className="self-start">
+        <div>
+          {courseType.name} &gt; {unit.name} &gt; {module.name}
+        </div>
+        <div className="text-2xl">{topic.name}</div>
+        <div className="mb-4 text-sm" id={dropdownWrapperId}>
+          <Dropdown
+            menu={{
+              items: menuItems,
+            }}
+          >
+            <span>
+              {selectedSession
+                ? formatDateTime(selectedSession.createdAt)
+                : " "}
+            </span>
+          </Dropdown>
+        </div>
       </div>
       <div
-        className="outline-3 h-full w-full rounded-3xl p-8 outline outline-gray-200"
-        style={{ height: `calc(100vh - 200px)` }}
+        className="outline-3 flex h-full w-full items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200"
+        style={{ height: `calc(100vh - 260px)` }}
       >
-        {messages?.map((m) => {
-          if (m.senderRole === "user") {
+        <div className="flex h-full w-full flex-col items-center overflow-y-auto p-4">
+          {messages?.map((m) => {
+            if (m.senderRole === "user") {
+              return (
+                <div key={m.id} className="rounded-xl bg-blue-100 p-4">
+                  <PreformattedText>{m.content}</PreformattedText>
+                </div>
+              );
+            }
             return (
-              <div key={m.id} className="rounded-xl bg-blue-100 p-4">
-                <PreformattedText>{m.content}</PreformattedText>
+              <div key={m.id} className="text-sm">
+                <PreformattedText key={m.id}>{m.content}</PreformattedText>
               </div>
             );
-          }
-          return (
-            <div key={m.id} className="text-sm">
-              <PreformattedText key={m.id}>{m.content}</PreformattedText>
-            </div>
-          );
-        })}
-        <div className="flex w-full justify-center">
-          {isCreatingSession || areMessagesLoading ? <Spin /> : null}
+          })}
+          <div className="flex w-full justify-center">
+            {isCreatingSession || areMessagesLoading ? <Spin /> : null}
+          </div>
         </div>
+      </div>
+      <div
+        style={{
+          height: 100,
+          position: "absolute",
+          bottom: 0,
+          width: 562,
+        }}
+      >
+        <Editor
+          value={v}
+          setValue={setV}
+          placeholder="Compose your response"
+          roundedCn="rounded-2xl"
+          height={70}
+        />
       </div>
     </div>
   );
