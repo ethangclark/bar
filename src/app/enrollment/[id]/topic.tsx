@@ -2,7 +2,6 @@ import { Spin } from "antd";
 import { useEffect, useState } from "react";
 import { type TutoringSession, type TopicContext } from "~/server/db/schema";
 import { api } from "~/trpc/react";
-import { useWhatChanged } from "@simbathesailor/use-what-changed";
 
 function getMostRecentSession(sessions: TutoringSession[]) {
   const mostRecentFirst = sessions.sort(
@@ -42,13 +41,6 @@ function useSelectedSession({
     }
     void effect();
   }, [
-    mutateAsync,
-    enrollmentId,
-    refetchTutoringSessions,
-    selectedSession,
-    topicContext,
-  ]);
-  useWhatChanged([
     mutateAsync,
     enrollmentId,
     refetchTutoringSessions,
