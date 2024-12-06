@@ -1,11 +1,12 @@
-import { Dropdown, type MenuProps, Spin } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { Dropdown, type MenuProps, Spin, Modal } from "antd";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Editor } from "~/app/_components/Editor";
 import { PreformattedText } from "~/app/_components/PreformattedText";
 import { useCss } from "~/app/_hooks/useCss";
 import { formatDateTime } from "~/common/utils/timeUtils";
 import { type TutoringSession, type TopicContext } from "~/server/db/schema";
 import { api } from "~/trpc/react";
+import confetti from "canvas-confetti";
 
 function sortSessionsEarliestFirst(sessions: TutoringSession[]) {
   return sessions
@@ -30,35 +31,39 @@ function useSelectedSession({
   enrollmentId: string;
   topicContext: TopicContext;
   topicTutoringSessions: TutoringSession[];
-  refetchTutoringSessions: () => Promise<void>;
+  refetchTutoringSessions: () => Promise<TutoringSession[]>;
 }) {
   const [selectedSession, setSelectedSession] =
     useState<TutoringSession | null>(() =>
       getMostRecentSession(topicTutoringSessions),
     );
+
   const { mutateAsync: createSession, isPending: isCreatingSession } =
     api.tutoringSession.createTutoringSession.useMutation();
+
+  const startNewSession = useCallback(async () => {
+    setSelectedSession(null);
+    await createSession({
+      enrollmentId,
+      topicContext,
+    });
+    const newSessions = await refetchTutoringSessions();
+    setSelectedSession(getMostRecentSession(newSessions));
+  }, [createSession, enrollmentId, refetchTutoringSessions, topicContext]);
+
   useEffect(() => {
     if (selectedSession) {
       return;
     }
-    async function effect() {
-      const session = await createSession({
-        enrollmentId,
-        topicContext,
-      });
-      await refetchTutoringSessions();
-      setSelectedSession(session);
-    }
-    void effect();
-  }, [
-    createSession,
-    enrollmentId,
-    refetchTutoringSessions,
+    void startNewSession();
+  }, [selectedSession, startNewSession]);
+
+  return {
+    isCreatingSession,
     selectedSession,
-    topicContext,
-  ]);
-  return { isCreatingSession, selectedSession, setSelectedSession };
+    setSelectedSession,
+    startNewSession,
+  };
 }
 
 function getSessionLabel(session: TutoringSession, idx: number) {
@@ -70,11 +75,13 @@ export function Topic({
   topicContext,
   topicTutoringSessions,
   refetchTutoringSessions,
+  onTopicComplete,
 }: {
   enrollmentId: string;
   topicContext: TopicContext;
   topicTutoringSessions: TutoringSession[];
-  refetchTutoringSessions: () => Promise<void>;
+  refetchTutoringSessions: () => Promise<TutoringSession[]>;
+  onTopicComplete: () => void;
 }) {
   const { courseType, unit, module, topic } = topicContext;
 
@@ -83,13 +90,17 @@ export function Topic({
     [topicTutoringSessions],
   );
 
-  const { isCreatingSession, selectedSession, setSelectedSession } =
-    useSelectedSession({
-      enrollmentId,
-      topicContext,
-      topicTutoringSessions,
-      refetchTutoringSessions,
-    });
+  const {
+    isCreatingSession,
+    selectedSession,
+    setSelectedSession,
+    startNewSession,
+  } = useSelectedSession({
+    enrollmentId,
+    topicContext,
+    topicTutoringSessions,
+    refetchTutoringSessions,
+  });
 
   const {
     isLoading: areMessagesLoading,
@@ -120,6 +131,18 @@ export function Topic({
   const { mutateAsync: sendMessage, isPending: sendingMessage } =
     api.tutoringSession.sendMessage.useMutation();
 
+  const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (selectedSession?.demonstratesMastery) {
+      void confetti({
+        spread: 100,
+        startVelocity: 40,
+      });
+      setModalOpen(true);
+    }
+  }, [selectedSession?.demonstratesMastery]);
+
   const isLoading = isCreatingSession || areMessagesLoading || sendingMessage;
 
   return (
@@ -127,6 +150,18 @@ export function Topic({
       className="mb-2 flex h-full w-full flex-col items-center px-8"
       style={{ width: 672 }}
     >
+      <Modal
+        title="You crushed a module."
+        open={modalOpen}
+        onOk={onTopicComplete}
+        onCancel={startNewSession}
+      >
+        <p>Great job! You've demonstrated mastery of this topic.</p>
+        <p>
+          Click "OK" to move to the next topic, or "Cancel" to start another
+          session on this topic.
+        </p>
+      </Modal>
       <div className="self-start">
         <div>
           {courseType.name} &gt; {unit.name} &gt; {module.name}
@@ -214,12 +249,15 @@ export function Topic({
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 if (!selectedSession || isLoading) return; // do nothing :/
-                await sendMessage({
+                const { masteryDemonstrated } = await sendMessage({
                   tutoringSessionId: selectedSession.id,
                   content: v,
                 });
                 await refetchMessages();
                 setV("");
+                if (masteryDemonstrated) {
+                  await refetchTutoringSessions();
+                }
               }
             }}
             disabled={sendingMessage}

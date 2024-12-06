@@ -1,6 +1,6 @@
 "use client";
 import { type TreeDataNode } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   type TutoringSession,
   type DetailedCourse,
@@ -23,15 +23,24 @@ function useTotalTopics(course: DetailedCourse | null) {
 function getFirstIncompleteTopic(
   course: DetailedCourse,
   masteredTopicIds: Set<string>,
+  afterTopicId: string | null,
 ) {
+  let found = !afterTopicId;
   for (const unit of course.units) {
     for (const mod of unit.modules) {
       for (const topic of mod.topics) {
-        if (!masteredTopicIds.has(topic.id)) {
+        if (topic.id === afterTopicId) {
+          found = true;
+          continue;
+        }
+        if (found && !masteredTopicIds.has(topic.id)) {
           return topic;
         }
       }
     }
+  }
+  if (afterTopicId !== null) {
+    return getFirstIncompleteTopic(course, masteredTopicIds, null);
   }
   return null;
 }
@@ -42,28 +51,39 @@ function getMasteredTopicIds(tutoringSessions: TutoringSession[]) {
   );
 }
 
-function useSelectFirstIncompleteTopic({
-  disabled,
+function useTopicSelection({
+  isLoading,
   course,
   tutoringSessions,
-  onSelectTopic,
 }: {
-  disabled: boolean;
+  isLoading: boolean;
   course: DetailedCourse | null;
   tutoringSessions: TutoringSession[];
-  onSelectTopic: (topicId: string) => void;
 }) {
-  useEffect(() => {
-    if (disabled || !course) {
+  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+
+  const gottaWait = isLoading || course === null;
+
+  const selectNextTopic = useCallback(() => {
+    if (gottaWait) {
       return;
     }
     const masteredTopicIds = getMasteredTopicIds(tutoringSessions);
-    const topic = getFirstIncompleteTopic(course, masteredTopicIds);
-    if (!topic) {
-      return;
+    const nextTopic = getFirstIncompleteTopic(
+      course,
+      masteredTopicIds,
+      selectedTopicId,
+    );
+    setSelectedTopicId(nextTopic?.id ?? null);
+  }, [course, gottaWait, selectedTopicId, tutoringSessions]);
+
+  useEffect(() => {
+    if (!gottaWait && !selectedTopicId) {
+      selectNextTopic();
     }
-    onSelectTopic(topic.id);
-  }, [tutoringSessions, course, disabled, onSelectTopic]);
+  }, [gottaWait, selectNextTopic, selectedTopicId]);
+
+  return { selectedTopicId, setSelectedTopicId, selectNextTopic };
 }
 
 export function useCourseTreeData({
@@ -77,14 +97,12 @@ export function useCourseTreeData({
 }) {
   const totalTopics = useTotalTopics(course);
 
-  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
-
-  useSelectFirstIncompleteTopic({
-    disabled: isLoading || selectedTopicId !== null,
-    course,
-    tutoringSessions,
-    onSelectTopic: setSelectedTopicId,
-  });
+  const { selectedTopicId, setSelectedTopicId, selectNextTopic } =
+    useTopicSelection({
+      isLoading,
+      course,
+      tutoringSessions,
+    });
 
   const selectedTopicContext = useMemo((): TopicContext | null => {
     if (!selectedTopicId || !course) {
@@ -168,5 +186,6 @@ export function useCourseTreeData({
     treeData,
     setSelectedTopicId,
     selectedTopicContext,
+    selectNextTopic,
   };
 }

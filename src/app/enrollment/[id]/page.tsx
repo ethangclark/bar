@@ -30,12 +30,16 @@ export default function CoursePage({ params }: Props) {
 
   const isLoading = isEnrollmentLoading || areSessionsLoading;
 
-  const { treeData, setSelectedTopicId, selectedTopicContext } =
-    useCourseTreeData({
-      course: enrollment?.course ?? null,
-      tutoringSessions: tutoringSessions ?? [],
-      isLoading,
-    });
+  const {
+    treeData,
+    setSelectedTopicId,
+    selectedTopicContext,
+    selectNextTopic,
+  } = useCourseTreeData({
+    course: enrollment?.course ?? null,
+    tutoringSessions: tutoringSessions ?? [],
+    isLoading,
+  });
 
   const treeProps = useTreeProps({
     treeData,
@@ -50,8 +54,12 @@ export default function CoursePage({ params }: Props) {
     [selectedTopicContext?.topic.id, tutoringSessions],
   );
 
-  const noOptionRefetchSessions = useCallback(async () => {
-    await refetchSessions();
+  const streamlinedRefetch = useCallback(async () => {
+    const r = await refetchSessions();
+    if (!r.data) {
+      throw new Error("Failed to refetch sessions");
+    }
+    return r.data;
   }, [refetchSessions]);
 
   if (isLoading) {
@@ -72,7 +80,8 @@ export default function CoursePage({ params }: Props) {
                 enrollmentId={enrollmentId}
                 topicContext={selectedTopicContext}
                 topicTutoringSessions={topicTutoringSessions}
-                refetchTutoringSessions={noOptionRefetchSessions}
+                refetchTutoringSessions={streamlinedRefetch}
+                onTopicComplete={selectNextTopic}
               />
             )}
           </div>

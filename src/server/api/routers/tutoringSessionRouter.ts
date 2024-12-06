@@ -22,8 +22,14 @@ Before engaging in the session, generate an approach you will take to quickly 1)
 Ensure that your approach ruthlessly ignores details that will not directly contribute to the student's success on the bar exam. Focus on mastery of the core bar exam material, and breeze through the rest.`;
 };
 
+const masteryDemonstratedCode = "MASTERY_DEMONSTRATED";
+
 const getHandoffPrompt = (_: TopicContext) => {
-  return `Thank you for creating that. I am now handing off to the student. Please say hi and take over the session.`;
+  return `Thank you for creating that.
+
+I will be handing you over to the student in a moment. Something very important to remember: When you have reached a point in the session where the student has demonstrated sufficient mastery of the topic, include the special code "${masteryDemonstratedCode}" in your message. This will signal to the system that the student has demonstrated mastery and that the session is complete. Immediately reply with this code when they have demonstrated mastery, and do not include or reference this code until they do.
+
+I am now handing off to the student. Please say hi and take over the session.`;
 };
 
 const model = "anthropic/claude-3.5-sonnet:beta";
@@ -184,11 +190,24 @@ export const tutoringSessionRouter = createTRPCRouter({
         senderRole: "user",
         content,
       });
-      await db.insert(dbSchema.chatMessages).values({
-        tutoringSessionId,
-        userId: ctx.userId,
-        senderRole: "assistant",
-        content: responseText,
-      });
+      const masteryDemonstrated = responseText.includes(
+        masteryDemonstratedCode,
+      );
+      if (masteryDemonstrated) {
+        await db
+          .update(dbSchema.tutoringSessions)
+          .set({
+            demonstratesMastery: true,
+          })
+          .where(eq(dbSchema.tutoringSessions.id, tutoringSessionId));
+      } else {
+        await db.insert(dbSchema.chatMessages).values({
+          tutoringSessionId,
+          userId: ctx.userId,
+          senderRole: "assistant",
+          content: responseText,
+        });
+      }
+      return { masteryDemonstrated };
     }),
 });
