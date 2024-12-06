@@ -33,35 +33,58 @@ function useSelectedSession({
   topicTutoringSessions: TutoringSession[];
   refetchTutoringSessions: () => Promise<TutoringSession[]>;
 }) {
-  const [selectedSession, setSelectedSession] =
-    useState<TutoringSession | null>(() =>
-      getMostRecentSession(topicTutoringSessions),
-    );
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    () => getMostRecentSession(topicTutoringSessions)?.id ?? null,
+  );
+  // if selectedSessionId does not correspond to an available session, clear it
+  useEffect(() => {
+    if (
+      selectedSessionId &&
+      !topicTutoringSessions.some((s) => s.id === selectedSessionId)
+    ) {
+      setSelectedSessionId(null);
+    }
+  }, [selectedSessionId, topicTutoringSessions]);
+  // if sessions are available but none are selected, select the most recent one
+  useEffect(() => {
+    if (!selectedSessionId && topicTutoringSessions.length > 0) {
+      setSelectedSessionId(
+        getMostRecentSession(topicTutoringSessions)?.id ?? null,
+      );
+    }
+  }, [selectedSessionId, topicTutoringSessions]);
 
   const { mutateAsync: createSession, isPending: isCreatingSession } =
     api.tutoringSession.createTutoringSession.useMutation();
 
   const startNewSession = useCallback(async () => {
-    setSelectedSession(null);
+    setSelectedSessionId(null);
     await createSession({
       enrollmentId,
       topicContext,
     });
     const newSessions = await refetchTutoringSessions();
-    setSelectedSession(getMostRecentSession(newSessions));
+    setSelectedSessionId(getMostRecentSession(newSessions)?.id ?? null);
   }, [createSession, enrollmentId, refetchTutoringSessions, topicContext]);
 
+  // if there are no sessions available, start a new one
   useEffect(() => {
-    if (selectedSession) {
-      return;
+    if (topicTutoringSessions.length === 0) {
+      void startNewSession();
     }
-    void startNewSession();
-  }, [selectedSession, startNewSession]);
+  }, [startNewSession, topicTutoringSessions.length]);
+
+  // materialize this based on ID and the live list of sessions so it remains up-to-date
+  const selectedSession = useMemo(() => {
+    return (
+      topicTutoringSessions.find((s) => s.id === selectedSessionId) ?? null
+    );
+  }, [selectedSessionId, topicTutoringSessions]);
 
   return {
     isCreatingSession,
     selectedSession,
-    setSelectedSession,
+    setSelectedSessionId,
     startNewSession,
   };
 }
@@ -93,7 +116,7 @@ export function Topic({
   const {
     isCreatingSession,
     selectedSession,
-    setSelectedSession,
+    setSelectedSessionId,
     startNewSession,
   } = useSelectedSession({
     enrollmentId,
@@ -115,10 +138,10 @@ export function Topic({
       .map((session, idx) => ({
         key: session.id,
         label: getSessionLabel(session, idx),
-        onClick: () => setSelectedSession(session),
+        onClick: () => setSelectedSessionId(session.id),
       }))
       .reverse();
-  }, [setSelectedSession, sessionsEarliestFirst]);
+  }, [setSelectedSessionId, sessionsEarliestFirst]);
 
   // TODO: this isn't working
   const { id: dropdownWrapperId } = useCss(
@@ -126,7 +149,7 @@ export function Topic({
       `#${id} .ant-dropdown-menu { max-height: 200px; overflow-y: auto; }`,
   );
 
-  const [v, setV] = useState("asdf");
+  const [v, setV] = useState("");
 
   const { mutateAsync: sendMessage, isPending: sendingMessage } =
     api.tutoringSession.sendMessage.useMutation();
@@ -177,7 +200,9 @@ export function Topic({
               {selectedSession &&
                 getSessionLabel(
                   selectedSession,
-                  sessionsEarliestFirst.indexOf(selectedSession),
+                  sessionsEarliestFirst
+                    .map((s) => s.id)
+                    .indexOf(selectedSession.id),
                 )}
             </span>
           </Dropdown.Button>
@@ -256,6 +281,7 @@ export function Topic({
                 await refetchMessages();
                 setV("");
                 if (masteryDemonstrated) {
+                  // this will reload the tutoring sessions so we get the update to the `masteryDemonstrated` field
                   await refetchTutoringSessions();
                 }
               }
