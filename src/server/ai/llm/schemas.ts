@@ -45,7 +45,7 @@ const openRouterRequest = z.object({
 export type OpenRouterRequest = z.infer<typeof openRouterRequest>;
 
 const nonStreamingChoiceSchema = z.object({
-  finish_reason: z.string().nullable(),
+  finish_reason: z.string().optional(),
   message: message,
   error: z
     .object({

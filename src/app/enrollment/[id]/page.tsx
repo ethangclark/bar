@@ -32,6 +32,7 @@ export default function CoursePage({ params }: Props) {
 
   const {
     treeData,
+    selectedTopicId,
     setSelectedTopicId,
     selectedTopicContext,
     selectNextTopic,
@@ -43,6 +44,7 @@ export default function CoursePage({ params }: Props) {
 
   const treeProps = useTreeProps({
     treeData,
+    selectedId: selectedTopicId,
     setSelectedId: setSelectedTopicId,
   });
 

@@ -172,7 +172,7 @@ export function useCourseTreeData({
               ),
               key: module.id,
               children: module.topics.map((topic) => ({
-                title: topic.name,
+                title: `${topic.name} ${masteredTopicIds.has(topic.id) ? "✅" : ""}`,
                 key: topic.id,
               })),
             })),
@@ -184,6 +184,7 @@ export function useCourseTreeData({
 
   return {
     treeData,
+    selectedTopicId,
     setSelectedTopicId,
     selectedTopicContext,
     selectNextTopic,

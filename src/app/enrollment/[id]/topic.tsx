@@ -1,4 +1,4 @@
-import { Dropdown, type MenuProps, Spin, Modal } from "antd";
+import { Dropdown, type MenuProps, Spin, Modal, Button } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Editor } from "~/app/_components/Editor";
 import { PreformattedText } from "~/app/_components/PreformattedText";
@@ -11,7 +11,7 @@ import confetti from "canvas-confetti";
 function sortSessionsEarliestFirst(sessions: TutoringSession[]) {
   return sessions
     .slice()
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 }
 
 function getMostRecentSession(sessions: TutoringSession[]) {
@@ -168,16 +168,38 @@ export function Topic({
 
   const isLoading = isCreatingSession || areMessagesLoading || sendingMessage;
 
+  const onCancel = useCallback(async () => {
+    if (isLoading) {
+      return;
+    }
+    await startNewSession();
+    setModalOpen(false);
+  }, [isLoading, startNewSession]);
+
   return (
     <div
       className="mb-2 flex h-full w-full flex-col items-center px-8"
       style={{ width: 672 }}
     >
       <Modal
-        title="You crushed a module."
+        title="Module complete"
         open={modalOpen}
         onOk={onTopicComplete}
-        onCancel={startNewSession}
+        onCancel={onCancel}
+        footer={[
+          isLoading && <Spin key="spin" className="mr-4" />,
+          <Button key="cancel" onClick={onCancel} disabled={isLoading}>
+            Cancel
+          </Button>,
+          <Button
+            key="ok"
+            type="primary"
+            onClick={onTopicComplete}
+            disabled={isLoading}
+          >
+            OK
+          </Button>,
+        ]}
       >
         <p>Great job! You've demonstrated mastery of this topic.</p>
         <p>
