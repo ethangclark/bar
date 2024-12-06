@@ -37,9 +37,9 @@ function Option({
           <Typography.Paragraph className="mb-0">
             Started on {formatDayDate(enrollment.startDate)}
           </Typography.Paragraph>
-          <Button type="text" className="px-0 text-gray-500">
+          {/* <Button type="text" className="px-0 text-gray-500">
             Create new enrollment
-          </Button>
+          </Button> */}
         </>
       )}
     </Card>

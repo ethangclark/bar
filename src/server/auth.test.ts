@@ -27,7 +27,7 @@ describe("auth", () => {
         email: "test@example.com",
       });
       expect(result).toBe(
-        "Sign in to Spreader as test@example.com with this link: http://example.com/token\n\n",
+        "Sign in to SummitEd.ai as test@example.com with this link: http://example.com/token\n\n",
       );
     });
   });

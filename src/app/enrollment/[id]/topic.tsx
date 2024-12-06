@@ -184,7 +184,6 @@ export function Topic({
       <Modal
         title="Module complete"
         open={modalOpen}
-        onOk={onTopicComplete}
         onCancel={onCancel}
         footer={[
           isLoading && <Spin key="spin" className="mr-4" />,

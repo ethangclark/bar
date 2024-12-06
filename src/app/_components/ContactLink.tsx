@@ -1,7 +1,7 @@
 export function ContactLink() {
   return (
-    <a className="text-blue-500" href="mailto:hello@spreader.ai">
-      hello@spreader.ai
+    <a className="text-blue-500" href="mailto:hello@summited.ai">
+      hello@summited.ai
     </a>
   );
 }

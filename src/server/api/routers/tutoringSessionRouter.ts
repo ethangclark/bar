@@ -15,21 +15,23 @@ import {
 const getInitialSystemPrompt = (tc: TopicContext) => {
   return `You are conducting an informal bar exam prep tutoring session. This session is focused on the topic of "${tc.topic.name}", which the student is studying as part of the chapter "${tc.unit.name}: ${tc.module.name}".
 
-The goal of the tutoring session is to efficiently and informally get the student to demonstrate topic mastery sufficient for bar exam preparation.
+The goal of the tutoring session is to efficiently and informally get the student to demonstrate topic proficiency sufficient for bar exam preparation.
 
 Before engaging in the session, generate an approach you will take to quickly 1) assess the student's current level in the area and 2) guide them to a level of understanding that will allow them to succeed on the bar exam. (If level 1 reveals that they are already at the necessary level, you will skip step 2.)
 
-Ensure that your approach ruthlessly ignores details that will not directly contribute to the student's success on the bar exam. Focus on mastery of the core bar exam material, and breeze through the rest.`;
+Ensure that your approach ruthlessly ignores details that will not directly contribute to the student's success on the bar exam. Focus on proficiency of the core bar exam material, and breeze through the rest.`;
 };
 
-const masteryDemonstratedCode = "MASTERY_DEMONSTRATED";
+const masteryDemonstratedCode = "PROFICIENCY_DEMONSTRATED";
 
 const getHandoffPrompt = (_: TopicContext) => {
   return `Thank you for creating that.
 
-I will be handing you over to the student in a moment. Something very important to remember: When you have reached a point in the session where the student has demonstrated sufficient mastery of the topic, include the special code "${masteryDemonstratedCode}" in your message. This will signal to the system that the student has demonstrated mastery and that the session is complete. Immediately reply with this code when they have demonstrated mastery, and do not include or reference this code until they do.
+I will be handing you over to the student in a moment. Something very important to remember: When you have reached a point in the session where the student has demonstrated sufficient proficiency in the topic, include the special code "${masteryDemonstratedCode}" in your message. This will signal to the system that the student has demonstrated proficiency and that the session is complete. Make sure you send this code IMMEDIATELY when it comes across that they are confident in the topic. If they say they've got it down and are ready to move on, take their word for it and send the code.
 
-I am now handing off to the student. Please say hi and take over the session.`;
+We're not going for a perfect bar exam score -- we're going for confidence in a passing score. Keeping them in the session longer than necessary will constitute a failure of purpose. So be efficient; if they're ready to move on, send the code. When in doubt, just ask them if they're ready to move on and respect their response.
+
+I am now handing off to the student. Please say hi and take over the session. (Also the student doesn't know I'm here, so don't mention me.)`;
 };
 
 const model = "anthropic/claude-3.5-sonnet:beta";
