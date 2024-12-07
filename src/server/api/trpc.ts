@@ -29,7 +29,8 @@ import { queryUser } from "~/server/services/user";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const ipAddress = opts.headers.get("x-forwarded-for");
+  const ipAddressHeader = opts.headers.get("x-forwarded-for") ?? "";
+  const ipAddress = ipAddressHeader.split(",")[0];
   if (!ipAddress) throw Error("IP address not found");
 
   const session = await getServerAuthSession();
