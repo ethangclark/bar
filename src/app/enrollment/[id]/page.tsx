@@ -9,6 +9,8 @@ import { useCourseTreeData } from "./useCourseTreeData";
 import { useTreeProps } from "./useTreeProps";
 import { useCallback, useMemo } from "react";
 import { Logo, LogoText } from "~/app/_components/Logo";
+import { Slideout } from "./slideout";
+import { MenuOutlined } from "@ant-design/icons";
 import Link from "next/link";
 
 type Props = {
@@ -71,21 +73,34 @@ export default function CoursePage({ params }: Props) {
     return <Spin />;
   }
 
+  const treeWidth = 400;
+  const tree = (
+    <div style={{ width: treeWidth }} className="mb-10">
+      <div className="mb-2 flex justify-between">
+        <div className="mb-2 flex items-center">
+          <Logo height={20} />
+          <LogoText className="text-2xl" />
+        </div>
+        <Link href={"/api/auth/signout"}>
+          <Button>{"Sign out"}</Button>
+        </Link>
+      </div>
+      <AntdTree {...treeProps} height={700} />
+    </div>
+  );
+
   return (
     <Page>
       <ClientOnly>
         <div className="flex flex-grow flex-wrap justify-start">
-          <div style={{ width: 400 }} className="mb-10">
-            <div className="mb-2 flex justify-between">
-              <div className="mb-2 flex items-center">
-                <Logo height={20} />
-                <LogoText className="text-2xl" />
-              </div>
-              <Link href={"/api/auth/signout"}>
-                <Button>{"Sign out"}</Button>
-              </Link>
-            </div>
-            <AntdTree {...treeProps} height={700} />
+          <div className="mr-6 hidden xl:block">{tree}</div>
+          <div className="xl:hidden">
+            <Slideout
+              trigger={<MenuOutlined className="text-2xl" />}
+              width={treeWidth + 50}
+            >
+              {tree}
+            </Slideout>
           </div>
           <div className="flex flex-grow justify-center">
             {selectedTopicContext && (
@@ -99,6 +114,7 @@ export default function CoursePage({ params }: Props) {
               />
             )}
           </div>
+          <div className="hidden xl:block" style={{ width: 120 }} />
         </div>
       </ClientOnly>
     </Page>

@@ -236,11 +236,13 @@ export function Topic({
           <Spin />
         </div>
       </Modal>
-      <div className="self-start">
+      <div className="w-full self-start">
         <div>
-          {courseType.name} &gt; {unit.name} &gt; {module.name}
+          <div>
+            {courseType.name} &gt; {unit.name} &gt; {module.name}
+          </div>
+          <div className="mb-2 text-2xl">{topic.name}</div>
         </div>
-        <div className="mb-2 text-2xl">{topic.name}</div>
         <div className="mb-4 text-sm" id={dropdownWrapperId}>
           <Dropdown.Button
             menu={{
@@ -259,7 +261,7 @@ export function Topic({
           </Dropdown.Button>
         </div>
       </div>
-      <div className="flex flex-col items-center">
+      <div className="flex w-full flex-col items-center">
         <div
           className="outline-3 flex h-full w-full items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200"
           style={{ height: `calc(100vh - 300px)` }}
