@@ -16,7 +16,7 @@ export default function Home() {
   return (
     <ClientOnly>
       <Page>
-        <div className="mb-16 flex flex-col items-center">
+        <div className="flex flex-col items-center">
           <div className="flex items-center">
             <Logo height={h} />
             <LogoText className="text-6xl" />
@@ -37,7 +37,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="flex flex-grow flex-col items-center justify-between">
-            <div className="flex flex-col items-center gap-8">
+            <div className="mb-4 flex flex-grow flex-col items-center justify-center gap-8">
               <h1
                 className="w-full pb-8 text-center font-bold"
                 style={{ fontSize: 108, lineHeight: "120px" }}
@@ -77,7 +77,10 @@ export default function Home() {
                 </a>
               </div>
             </div>
-            <div className="text-sm text-gray-500">
+            <div
+              className="text-sm text-gray-500"
+              style={{ marginBottom: -24 }}
+            >
               Questions? Comments? Email us at hello@summited.ai
             </div>
           </div>

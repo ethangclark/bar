@@ -1,4 +1,3 @@
-import { and, eq } from "drizzle-orm";
 import { audioDataSchema } from "~/common/utils/types";
 import { transcribeAudio } from "~/server/ai/stt";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";

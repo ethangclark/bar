@@ -88,7 +88,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     }
   };
 
-  const isProcessing = isProcessingDownstream || isProcessingInternally;
+  const isProcessing = isProcessingDownstream ?? isProcessingInternally;
 
   return (
     <Button
