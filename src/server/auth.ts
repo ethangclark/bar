@@ -64,7 +64,7 @@ export function text({
   urlWithLoginToken: string;
   email: string;
 }) {
-  return `Sign in to SummetEd.ai as ${email} with this link: ${urlWithLoginToken}\n\n`;
+  return `Sign in to SummitEd.ai as ${email} with this link: ${urlWithLoginToken}\n\n`;
 }
 
 export const emailProvider = Email({

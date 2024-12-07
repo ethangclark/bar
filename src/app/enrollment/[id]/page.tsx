@@ -8,6 +8,7 @@ import { Topic } from "./topic";
 import { useCourseTreeData } from "./useCourseTreeData";
 import { useTreeProps } from "./useTreeProps";
 import { useCallback, useMemo } from "react";
+import { Logo, LogoText } from "~/app/_components/Logo";
 
 type Props = {
   params: {
@@ -73,6 +74,10 @@ export default function CoursePage({ params }: Props) {
       <ClientOnly>
         <div className="flex flex-grow flex-wrap justify-start">
           <div style={{ width: 400 }} className="mb-10">
+            <div className="mb-2 flex items-center">
+              <Logo height={20} />
+              <LogoText className="text-2xl" />
+            </div>
             <AntdTree {...treeProps} height={700} />
           </div>
           <div className="flex flex-grow justify-center">

@@ -1,6 +1,6 @@
 # Module creation prompt (used with o1, which put each module on a newline, which I actually preferred...)
 
-Design a course outline for Baramu, a conversation-based bar exam prep course. Baramu is designed to prepare law students for all components of the bar exam -- MBE, MEE, and MPT. The modules you define in your outline will later be broken down into conversational/writing exercises designed to rewire participants' brains so they perform as well as they can.
+Design a course outline for SummitEd.ai, a conversation-based bar exam prep course. SummitEd.ai is designed to prepare law students for all components of the bar exam -- MBE, MEE, and MPT. The modules you define in your outline will later be broken down into conversational/writing exercises designed to rewire participants' brains so they perform as well as they can.
 
 Define each module in your outline in <module> tags, like so:
 
@@ -15,8 +15,8 @@ Don't worry about the method of teaching used to get the content of these module
 
 # Topic population prompt (also used with o1)
 
-Baramu is a bar exam prep course designed to prepare law students for all components of the bar exam -- MBE, MEE, and MPT. It dynamically generates conversations, essay assignments, and practical assignments designed to rewrire law students' brains so that they can perform as well as possible as quickly as possible.
+SummitEd.ai is a bar exam prep course designed to prepare law students for all components of the bar exam -- MBE, MEE, and MPT. It dynamically generates conversations, essay assignments, and practical assignments designed to rewrire law students' brains so that they can perform as well as possible as quickly as possible.
 
-Below is the module list covered by Baramu. For each module, create a comprehensive list of topics that should be covered. These topic lists should be comprehensive.
+Below is the module list covered by SummitEd.ai. For each module, create a comprehensive list of topics that should be covered. These topic lists should be comprehensive.
 
 Don't specify *how* the topics will be covered -- that will be dealt with elsewhere. The only important thing is that the topic lists you provide encompass all of the subject matter that a student needs to learn to master the module area.

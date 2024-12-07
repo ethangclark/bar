@@ -1,12 +1,12 @@
-# Baramu
+# SummitEd.ai
 
-Baramu: Learn dynamically.
+SummitEd.ai: Learn dynamically.
 
-Baramu is bar exam prep that's tailored specifically to you, delving deep and shining new light into weak areas, and blazing through areas where you're already strong.
+SummitEd.ai is bar exam prep that's tailored specifically to you, delving deep and shining new light into weak areas, and blazing through areas where you're already strong.
 
 Which do you learn faster from -- a lively conversation with someone who knows their stuff, or by rereading the same dry piece of study material for the eighth time?
 
-Reverse the burn-out. Learn dynamically. Try Baramu for free.
+Reverse the burn-out. Learn dynamically. Try SummitEd.ai for free.
 
 # Create T3 App
 

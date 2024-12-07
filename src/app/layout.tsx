@@ -6,7 +6,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 import { ConfigProvider } from "antd";
 
 export const metadata = {
-  title: "Baramu",
+  title: "SummitEd.ai",
   description: "Loan officer empowerment",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
