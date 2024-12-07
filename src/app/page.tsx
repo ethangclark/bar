@@ -24,7 +24,7 @@ export default function Home() {
           <h1 className="text-2xl font-bold">February 2025 Bar Exam Prep</h1>
         </div>
         {isLoggedIn ? (
-          <div className="flex flex-grow flex-col items-center justify-between">
+          <div className="mt-20 flex flex-grow flex-col items-center justify-between">
             <div>
               <Courses />
             </div>
