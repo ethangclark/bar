@@ -162,6 +162,11 @@ export function Topic({
 
   const handleAudioData = useCallback(
     async (audioData: AudioData) => {
+      const perMinute = 160 * 1000; // same logic is in transcriptionRouter.ts
+      if (audioData.data.length > perMinute * 10) {
+        throw new Error("Audio data exceeds max supported length");
+      }
+
       const { text } = await transcribe(audioData);
       setV((v) => (v ? v + " " + text : text));
     },
