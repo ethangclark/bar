@@ -49,7 +49,7 @@ export default function Home() {
                 style={{ maxWidth: 450 }}
               >
                 <p>
-                  SummetEd is an instant chat and voice-based tutor that reviews
+                  SummitEd is an instant chat and voice-based tutor that reviews
                   all the material you need to pass the bar, drilling into areas
                   of improvement until you've reached proficiency.
                 </p>
