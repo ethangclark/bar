@@ -7,7 +7,8 @@ import { formatDateTime } from "~/common/utils/timeUtils";
 import { type TutoringSession, type TopicContext } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 import confetti from "canvas-confetti";
-import { useNotify } from "~/app/_hooks/useNotify";
+import { VoiceRecorder } from "../voiceRecorder";
+import { type AudioData } from "~/common/utils/types";
 
 function sortSessionsEarliestFirst(sessions: TutoringSession[]) {
   return sessions
@@ -154,7 +155,18 @@ export function Topic({
       `#${id} .ant-dropdown-menu { max-height: 200px; overflow-y: auto; }`,
   );
 
+  const { mutateAsync: transcribe, isPending: isTranscribing } =
+    api.trascription.transcribe.useMutation();
+
   const [v, setV] = useState("");
+
+  const handleAudioData = useCallback(
+    async (audioData: AudioData) => {
+      const { text } = await transcribe(audioData);
+      setV((v) => (v ? v + " " + text : text));
+    },
+    [transcribe],
+  );
 
   const { mutateAsync: sendMessage, isPending: sendingMessage } =
     api.tutoringSession.sendMessage.useMutation();
@@ -307,34 +319,43 @@ export function Topic({
             marginBottom: -100,
           }}
         >
-          <Editor
-            value={v}
-            setValue={setV}
-            placeholder="Compose your message..."
-            height={70}
-            onKeyDown={async (e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                if (!selectedSession || isLoading) return; // do nothing :/
-                const { masteryDemonstrated, conclusion } = await sendMessage({
-                  tutoringSessionId: selectedSession.id,
-                  content: v,
-                });
-                await refetchMessages();
-                setV("");
-                if (masteryDemonstrated) {
-                  // this will reload the tutoring sessions so we get the update to the `masteryDemonstrated` field
-                  await refetchTutoringSessions();
+          <div className="mb-2 flex">
+            <Editor
+              value={v}
+              setValue={setV}
+              placeholder="Compose your message..."
+              height={70}
+              onKeyDown={async (e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (!selectedSession || isLoading) return; // do nothing :/
+                  const { masteryDemonstrated, conclusion } = await sendMessage(
+                    {
+                      tutoringSessionId: selectedSession.id,
+                      content: v,
+                    },
+                  );
+                  await refetchMessages();
+                  setV("");
+                  if (masteryDemonstrated) {
+                    // this will reload the tutoring sessions so we get the update to the `masteryDemonstrated` field
+                    await refetchTutoringSessions();
+                  }
+                  if (conclusion) {
+                    setSessionBumpModalOpen(true);
+                    await startNewSession(conclusion);
+                    setSessionBumpModalOpen(false);
+                  }
                 }
-                if (conclusion) {
-                  setSessionBumpModalOpen(true);
-                  await startNewSession(conclusion);
-                  setSessionBumpModalOpen(false);
-                }
-              }
-            }}
-            disabled={sendingMessage}
-          />
+              }}
+              disabled={sendingMessage}
+              className="mr-4"
+            />
+            <VoiceRecorder
+              onRecordingComplete={handleAudioData}
+              isProcessing={isTranscribing}
+            />
+          </div>
           <div className="w-full text-center text-xs text-gray-400">
             Press enter to send. Response may take a few seconds. Let the tutor
             know if you're done with the topic, or want help in a particular

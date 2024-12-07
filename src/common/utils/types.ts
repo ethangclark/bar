@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export type Sentence = `${string}.`;
 export function isSentence(value: unknown): value is Sentence {
   return typeof value === "string" && value.endsWith(".");
@@ -29,3 +31,11 @@ export function assertIsNonEmptyArray<T>(
     throw new Error("Expected a non-empty array");
   }
 }
+
+export const audioDataSchema = z.object({
+  data: z.string(), // base64 encoded audio
+  timestamp: z.string(), // ISO string timestamp
+  mimeType: z.string(), // audio MIME type
+});
+// Types for the audio data structure
+export type AudioData = z.infer<typeof audioDataSchema>;
