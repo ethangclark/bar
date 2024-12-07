@@ -36,44 +36,49 @@ export default function Home() {
             </Link>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-8 text-center">
-            <h1
-              className="pb-8 font-bold"
-              style={{ fontSize: 108, lineHeight: "120px" }}
-            >
-              Pass the bar with confidence
-            </h1>
-            <div
-              className="flex flex-col items-center gap-8 text-center"
-              style={{ maxWidth: 450 }}
-            >
-              <p>
-                SummetEd is an instant chat and voice-based tutor that reviews
-                all the material you need to pass the bar, drilling into areas
-                of improvement until you've reached proficiency.
-              </p>
-              <p>
-                We are providing <span className="font-bold">free</span> access
-                to 200 signups.
-              </p>
-              <p className="flex items-center">
-                <span className="mr-1">Seats remaining:</span>
-                <span className="font-bold">{seatsRemaining}</span>
-              </p>
+          <div className="flex flex-grow flex-col items-center justify-between">
+            <div className="flex flex-col items-center gap-8">
+              <h1
+                className="w-full pb-8 text-center font-bold"
+                style={{ fontSize: 108, lineHeight: "120px" }}
+              >
+                Pass the bar with confidence
+              </h1>
+              <div
+                className="flex flex-col items-center gap-8 text-center"
+                style={{ maxWidth: 450 }}
+              >
+                <p>
+                  SummetEd is an instant chat and voice-based tutor that reviews
+                  all the material you need to pass the bar, drilling into areas
+                  of improvement until you've reached proficiency.
+                </p>
+                <p>
+                  We are providing <span className="font-bold">free</span>{" "}
+                  access to 200 signups.
+                </p>
+                <p className="flex items-center">
+                  <span className="mr-1">Seats remaining:</span>
+                  <span className="font-bold">{seatsRemaining}</span>
+                </p>
+              </div>
+              <div className="flex gap-4">
+                <a
+                  href="/api/auth/signin"
+                  className="rounded-full bg-blue-500 px-10 py-3 font-semibold text-white no-underline transition hover:bg-blue-600"
+                >
+                  Sign up
+                </a>
+                <a
+                  href="/api/auth/signin"
+                  className="rounded-full bg-gray-300 px-10 py-3 font-semibold no-underline transition hover:bg-blue-200"
+                >
+                  Sign in
+                </a>
+              </div>
             </div>
-            <div className="flex gap-4">
-              <a
-                href="/api/auth/signin"
-                className="rounded-full bg-blue-500 px-10 py-3 font-semibold text-white no-underline transition hover:bg-blue-600"
-              >
-                Sign up
-              </a>
-              <a
-                href="/api/auth/signin"
-                className="rounded-full bg-gray-300 px-10 py-3 font-semibold no-underline transition hover:bg-blue-200"
-              >
-                Sign in
-              </a>
+            <div className="text-sm text-gray-500">
+              Questions? Comments? Email us at hello@summited.ai
             </div>
           </div>
         )}
