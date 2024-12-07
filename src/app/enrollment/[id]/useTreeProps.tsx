@@ -7,10 +7,12 @@ export function useTreeProps({
   treeData,
   selectedId,
   setSelectedId,
+  courseId,
 }: {
   treeData: TreeDataNode[];
   selectedId: string | null;
   setSelectedId: (id: string) => void;
+  courseId: string | null;
 }) {
   return {
     switcherIcon: <DownOutlined />,
@@ -23,5 +25,6 @@ export function useTreeProps({
       const key = z.string().parse(rawKey);
       setSelectedId(key);
     },
+    defaultExpandedKeys: courseId ? [courseId] : [], // we want the root course node expanded
   };
 }

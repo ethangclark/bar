@@ -1,5 +1,5 @@
 "use client";
-import { Tree as AntdTree, Spin } from "antd";
+import { Tree as AntdTree, Button, Spin } from "antd";
 import { z } from "zod";
 import { ClientOnly } from "~/app/_components/ClientOnly";
 import { Page } from "~/app/_components/Page";
@@ -9,6 +9,7 @@ import { useCourseTreeData } from "./useCourseTreeData";
 import { useTreeProps } from "./useTreeProps";
 import { useCallback, useMemo } from "react";
 import { Logo, LogoText } from "~/app/_components/Logo";
+import Link from "next/link";
 
 type Props = {
   params: {
@@ -47,6 +48,7 @@ export default function CoursePage({ params }: Props) {
     treeData,
     selectedId: selectedTopicId,
     setSelectedId: setSelectedTopicId,
+    courseId: enrollment?.course.id ?? null,
   });
 
   const topicTutoringSessions = useMemo(
@@ -74,9 +76,14 @@ export default function CoursePage({ params }: Props) {
       <ClientOnly>
         <div className="flex flex-grow flex-wrap justify-start">
           <div style={{ width: 400 }} className="mb-10">
-            <div className="mb-2 flex items-center">
-              <Logo height={20} />
-              <LogoText className="text-2xl" />
+            <div className="mb-2 flex justify-between">
+              <div className="mb-2 flex items-center">
+                <Logo height={20} />
+                <LogoText className="text-2xl" />
+              </div>
+              <Link href={"/api/auth/signout"}>
+                <Button>{"Sign out"}</Button>
+              </Link>
             </div>
             <AntdTree {...treeProps} height={700} />
           </div>

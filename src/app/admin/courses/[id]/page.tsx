@@ -30,6 +30,7 @@ export default function AdminCoursePage({ params }: Props) {
     treeData,
     selectedId: null,
     setSelectedId: setSelectedTopicId,
+    courseId,
   });
 
   if (isLoading) {
