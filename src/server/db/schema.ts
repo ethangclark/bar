@@ -41,7 +41,7 @@ export const users = createTable("user", {
   emailVerified: timestamp("email_verified", {
     mode: "date",
     withTimezone: true,
-  }).defaultNow(),
+  }),
   tokensUsed: integer("tokens_used").default(0).notNull(),
   image: text("image"),
 });
