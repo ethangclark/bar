@@ -34,11 +34,7 @@ I will be handing you over to the student in a moment. Something very important 
 
 We're not going for a perfect bar exam score -- we're going for confidence in a passing score. Keeping them in the session longer than necessary will constitute a failure of purpose. So be efficient; if they're ready to move on, send the code. When in doubt, just ask them if they're ready to move on and respect their response.
 
-I am now handing off to the student. Please say hi and take over the session. (Also the student doesn't know I'm here, so don't mention me.)`;
-};
-
-const getConclusionPrompt = () => {
-  return `We're out of time/space for this tutoring session, and will have to start a new one. Reply with whatever notes you'll need to pick the session up where you left off.`;
+I am now handing you off to the student. Please say hi and take over the session. (Also the student doesn't know I'm here, so don't mention me unless I tell you otherwise.)`;
 };
 
 const model = "anthropic/claude-3.5-sonnet:beta";
@@ -183,7 +179,7 @@ export const tutoringSessionRouter = createTRPCRouter({
         conclusion: string | null;
         masteryDemonstrated: boolean;
       }> => {
-        const { content, tutoringSessionId } = input;
+        const { content: userMsg, tutoringSessionId } = input;
         const ogMessages = await getChatMessages({
           userId: ctx.userId,
           tutoringSessionId,
@@ -196,7 +192,7 @@ export const tutoringSessionRouter = createTRPCRouter({
           })),
           {
             role: "user" as const,
-            content,
+            content: userMsg,
           },
         ];
         const response = await getOpenRouterResponse(ctx.userId, {
@@ -209,12 +205,15 @@ export const tutoringSessionRouter = createTRPCRouter({
           tutoringSessionId,
           userId: ctx.userId,
           senderRole: "user",
-          content,
+          content: userMsg,
         });
         if (responseText.includes(masteryDemonstratedCode)) {
+          const conclusion =
+            "The student has demonstrated proficiency. Please continue tutoring them on the topic as they request."; // this string also exists in topic.tsx
           await db
             .update(dbSchema.tutoringSessions)
             .set({
+              conclusion,
               demonstratesMastery: true,
             })
             .where(
@@ -225,25 +224,25 @@ export const tutoringSessionRouter = createTRPCRouter({
             );
 
           return {
-            conclusion:
-              "The student has demonstrated proficiency. Please continue tutoring them on the topic as they request.", // this string also exists in topic.tsx
+            conclusion,
             masteryDemonstrated: true,
           };
         }
 
-        console.log("TOKENS~~~~~~~~~~~~~", response.usage.total_tokens);
-        if (response.usage.total_tokens > 1000) {
-          const response = await getOpenRouterResponse(ctx.userId, {
+        // console.log("TOKENS~~~~~~~~~~~~~", response.usage.total_tokens);
+        if (response.usage.total_tokens > 5000) {
+          const conclusionMessages = [
+            ...messagesWithUserMsg,
+            {
+              role: "user" as const,
+              content: `Sorry, before you respond: This tutoring session is about to run out of time/space. Reply with the notes you'll need to continue where we left off and I'll have them back to you in the new session.`,
+            },
+          ];
+          const conclusionResponse = await getOpenRouterResponse(ctx.userId, {
             model,
-            messages: [
-              ...messagesWithUserMsg,
-              {
-                role: "system",
-                content: getConclusionPrompt(),
-              },
-            ],
+            messages: conclusionMessages,
           });
-          const conclusion = getResponseText(response);
+          const conclusion = getResponseText(conclusionResponse);
           assertIsNotFailure(conclusion);
           await db
             .update(dbSchema.tutoringSessions)

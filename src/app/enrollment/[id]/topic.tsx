@@ -1,5 +1,5 @@
 import { Dropdown, type MenuProps, Spin, Modal, Button } from "antd";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Editor } from "~/app/_components/Editor";
 import { PreformattedText } from "~/app/_components/PreformattedText";
 import { useCss } from "~/app/_hooks/useCss";
@@ -179,16 +179,6 @@ export function Topic({
   const [competionModalOpen, setCompletionModalOpen] = useState(false);
   const [sessionBumpModalOpen, setSessionBumpModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (selectedSession?.demonstratesMastery) {
-      void confetti({
-        spread: 100,
-        startVelocity: 40,
-      });
-      setCompletionModalOpen(true);
-    }
-  }, [selectedSession?.demonstratesMastery]);
-
   const isLoading = isCreatingSession || areMessagesLoading || sendingMessage;
 
   const onCancel = useCallback(async () => {
@@ -201,6 +191,8 @@ export function Topic({
     setCompletionModalOpen(false);
   }, [isLoading, startNewSession]);
 
+  const messageWrapperRef = useRef<HTMLDivElement>(null);
+
   return (
     <div
       className="flex h-full w-full flex-col items-center px-8"
@@ -212,23 +204,23 @@ export function Topic({
         onCancel={onCancel}
         footer={[
           isLoading && <Spin key="spin" className="mr-4" />,
-          <Button key="cancel" onClick={onCancel} disabled={isLoading}>
-            Cancel
+          <Button key="remain" onClick={onCancel} disabled={isLoading}>
+            Remain on this topic
           </Button>,
           <Button
-            key="ok"
+            key="next"
             type="primary"
             onClick={onTopicComplete}
             disabled={isLoading}
           >
-            OK
+            Next topic
           </Button>,
         ]}
       >
         <p>Great job! You've demonstrated mastery of this topic.</p>
         <p>
-          Click "OK" to move to the next topic, or "Cancel" to start another
-          session on this topic.
+          Click "Next topic" to move to the next topic, or "Remain on this
+          topic" to start another session on this topic.
         </p>
       </Modal>
       <Modal
@@ -272,7 +264,10 @@ export function Topic({
           className="outline-3 flex h-full w-full items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200"
           style={{ height: `calc(100vh - 300px)` }}
         >
-          <div className="flex h-full w-full flex-col overflow-y-auto p-4">
+          <div
+            className="flex h-full w-full flex-col overflow-y-auto p-4"
+            ref={messageWrapperRef}
+          >
             {messages?.map((m, idx) => {
               if (m.senderRole === "system") {
                 return null;
@@ -345,15 +340,28 @@ export function Topic({
                   if (masteryDemonstrated) {
                     // this will reload the tutoring sessions so we get the update to the `masteryDemonstrated` field
                     await refetchTutoringSessions();
+                    void confetti({
+                      spread: 100,
+                      startVelocity: 40,
+                    });
+                    setCompletionModalOpen(true);
                   }
-                  if (conclusion) {
+                  if (!masteryDemonstrated && conclusion) {
                     setSessionBumpModalOpen(true);
+                    await refetchTutoringSessions(); // reloads the session with conclusion populated
                     await startNewSession(conclusion);
                     setSessionBumpModalOpen(false);
                   }
+                  setTimeout(() => {
+                    // scroll to the bottom
+                    messageWrapperRef.current?.scrollTo({
+                      top: messageWrapperRef.current.scrollHeight,
+                      behavior: "smooth",
+                    });
+                  });
                 }
               }}
-              disabled={sendingMessage}
+              disabled={sendingMessage || selectedSession?.conclusion !== null}
               className="mr-4"
             />
             <VoiceRecorder
