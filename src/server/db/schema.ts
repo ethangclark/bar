@@ -219,7 +219,7 @@ export const courseEnrollmentsRelations = relations(
       fields: [courseEnrollments.courseId],
       references: [courses.id],
     }),
-    units: many(units),
+    tutoringSessions: many(tutoringSessions),
   }),
 );
 

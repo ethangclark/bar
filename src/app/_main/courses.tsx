@@ -1,6 +1,6 @@
 import { Button, Spin, Typography } from "antd";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { noop } from "~/common/utils/fnUtils";
 import { formatDayDate } from "~/common/utils/timeUtils";
 import { type CourseEnrollment, type CourseType } from "~/server/db/schema";
@@ -62,16 +62,19 @@ export function Courses() {
   } = api.course.enrollments.useQuery();
   const router = useRouter();
 
-  const options = useMemo(() => {
+  const { options, actionFuncs } = useMemo(() => {
     const options = Array<React.ReactNode>();
+    const actionFuncs = Array<() => unknown>();
     enrollments?.forEach((enrollment) => {
+      const actionFunc = () => router.push(`/enrollment/${enrollment.id}`);
+      actionFuncs.push(actionFunc);
       options.push(
         <Option
           key={enrollment.courseId}
           courseType={enrollment.course.courseType}
           enrollment={enrollment}
           onEnroll={noop}
-          onResume={() => router.push(`/enrollment/${enrollment.id}`)}
+          onResume={actionFunc}
         />,
       );
     });
@@ -84,20 +87,22 @@ export function Courses() {
       ) {
         return;
       }
+      const actionFunc = async () => {
+        await enroll({ courseId: course.id });
+        await refetchEnrollments();
+      };
+      actionFuncs.push(actionFunc);
       options.push(
         <Option
           key={course.id}
           courseType={course.courseType}
           enrollment={null}
-          onEnroll={async () => {
-            await enroll({ courseId: course.id });
-            await refetchEnrollments();
-          }}
+          onEnroll={actionFunc}
           onResume={noop}
         />,
       );
     });
-    return options;
+    return { options, actionFuncs };
   }, [
     availableCourses?.latestCourses,
     enroll,
@@ -106,7 +111,16 @@ export function Courses() {
     router,
   ]);
 
-  if (areAvailableCoursesLoading || areEnrollmentsLoading) {
+  const isLoading = areAvailableCoursesLoading || areEnrollmentsLoading;
+
+  // if there's only one option, just take it
+  useEffect(() => {
+    if (!isLoading && actionFuncs[0] && actionFuncs.length < 2) {
+      void actionFuncs[0]();
+    }
+  }, [actionFuncs, enrollments, isLoading]);
+
+  if (isLoading) {
     return <Spin />;
   }
 

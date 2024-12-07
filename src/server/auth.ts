@@ -84,7 +84,11 @@ export const emailProvider = Email({
 
     if (process.env.NODE_ENV !== "production") {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(result));
+      console.log(
+        "Email preview URL: %s",
+        nodemailer.getTestMessageUrl(result),
+      );
+      console.log("Login link: %s", url);
     }
   },
 });
