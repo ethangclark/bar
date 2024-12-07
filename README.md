@@ -8,6 +8,12 @@ Which do you learn faster from -- a lively conversation with someone who knows t
 
 Reverse the burn-out. Learn dynamically. Try SummitEd.ai for free.
 
+Unlimited FREE access as part of our beta program
+
+Reach 20% prep course completion and we'll email you a $20 Amazon gift card
+
+Visit summited.ai to get started
+
 # Create T3 App
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
