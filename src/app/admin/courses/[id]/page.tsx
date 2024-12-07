@@ -28,6 +28,7 @@ export default function AdminCoursePage({ params }: Props) {
 
   const treeProps = useTreeProps({
     treeData,
+    selectedId: null,
     setSelectedId: setSelectedTopicId,
   });
 

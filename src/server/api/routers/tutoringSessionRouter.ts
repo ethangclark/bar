@@ -12,13 +12,16 @@ import {
   type TopicContext,
 } from "~/server/db/schema";
 
-const getInitialSystemPrompt = (tc: TopicContext) => {
+const getInitialSystemPrompt = (
+  tc: TopicContext,
+  prevConclusion: string | null,
+) => {
   return `You are conducting an informal bar exam prep tutoring session. This session is focused on the topic of "${tc.topic.name}", which the student is studying as part of the chapter "${tc.unit.name}: ${tc.module.name}".
 
 The goal of the tutoring session is to efficiently and informally get the student to demonstrate topic proficiency sufficient for bar exam preparation.
 
 Before engaging in the session, generate an approach you will take to quickly 1) assess the student's current level in the area and 2) guide them to a level of understanding that will allow them to succeed on the bar exam. (If level 1 reveals that they are already at the necessary level, you will skip step 2.)
-
+${prevConclusion ? `\nThe previous session concluded with the following notes:\n\n"""\n${prevConclusion}\n"""\n` : ""}
 Ensure that your approach ruthlessly ignores details that will not directly contribute to the student's success on the bar exam. Focus on proficiency of the core bar exam material, and breeze through the rest.`;
 };
 
@@ -32,6 +35,10 @@ I will be handing you over to the student in a moment. Something very important 
 We're not going for a perfect bar exam score -- we're going for confidence in a passing score. Keeping them in the session longer than necessary will constitute a failure of purpose. So be efficient; if they're ready to move on, send the code. When in doubt, just ask them if they're ready to move on and respect their response.
 
 I am now handing off to the student. Please say hi and take over the session. (Also the student doesn't know I'm here, so don't mention me.)`;
+};
+
+const getConclusionPrompt = () => {
+  return `We're out of time/space for this tutoring session, and will have to start a new one. Reply with whatever notes you'll need to pick the session up where you left off.`;
 };
 
 const model = "anthropic/claude-3.5-sonnet:beta";
@@ -78,10 +85,11 @@ export const tutoringSessionRouter = createTRPCRouter({
       z.object({
         enrollmentId: z.string(),
         topicContext: topicContextSchema,
+        prevConclusion: z.string().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { enrollmentId, topicContext } = input;
+      const { enrollmentId, topicContext, prevConclusion } = input;
       const [session, ...excess] = await db
         .insert(dbSchema.tutoringSessions)
         .values({
@@ -93,7 +101,10 @@ export const tutoringSessionRouter = createTRPCRouter({
       if (!session || excess.length > 0) {
         throw new Error("Failed to create tutoring session");
       }
-      const initialSystemPrompt = getInitialSystemPrompt(topicContext);
+      const initialSystemPrompt = getInitialSystemPrompt(
+        topicContext,
+        prevConclusion,
+      );
       const initialMessage = {
         role: "system" as const,
         content: initialSystemPrompt,
@@ -164,52 +175,95 @@ export const tutoringSessionRouter = createTRPCRouter({
 
   sendMessage: protectedProcedure
     .input(z.object({ tutoringSessionId: z.string(), content: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { content, tutoringSessionId } = input;
-      const messages = await getChatMessages({
-        userId: ctx.userId,
-        tutoringSessionId,
-      });
+    .mutation(
+      async ({
+        ctx,
+        input,
+      }): Promise<{
+        conclusion: string | null;
+        masteryDemonstrated: boolean;
+      }> => {
+        const { content, tutoringSessionId } = input;
+        const ogMessages = await getChatMessages({
+          userId: ctx.userId,
+          tutoringSessionId,
+        });
 
-      const response = await getOpenRouterResponse(ctx.userId, {
-        model,
-        messages: [
-          ...messages.map((m) => ({
+        const messagesWithUserMsg = [
+          ...ogMessages.map((m) => ({
             role: m.senderRole,
             content: m.content,
           })),
           {
-            role: "user",
+            role: "user" as const,
             content,
           },
-        ],
-      });
-      const responseText = getResponseText(response);
-      assertIsNotFailure(responseText);
-      await db.insert(dbSchema.chatMessages).values({
-        tutoringSessionId,
-        userId: ctx.userId,
-        senderRole: "user",
-        content,
-      });
-      const masteryDemonstrated = responseText.includes(
-        masteryDemonstratedCode,
-      );
-      if (masteryDemonstrated) {
-        await db
-          .update(dbSchema.tutoringSessions)
-          .set({
-            demonstratesMastery: true,
-          })
-          .where(eq(dbSchema.tutoringSessions.id, tutoringSessionId));
-      } else {
+        ];
+        const response = await getOpenRouterResponse(ctx.userId, {
+          model,
+          messages: messagesWithUserMsg,
+        });
+        const responseText = getResponseText(response);
+        assertIsNotFailure(responseText);
+        await db.insert(dbSchema.chatMessages).values({
+          tutoringSessionId,
+          userId: ctx.userId,
+          senderRole: "user",
+          content,
+        });
+        if (responseText.includes(masteryDemonstratedCode)) {
+          await db
+            .update(dbSchema.tutoringSessions)
+            .set({
+              demonstratesMastery: true,
+            })
+            .where(
+              and(
+                eq(dbSchema.tutoringSessions.userId, ctx.userId),
+                eq(dbSchema.tutoringSessions.id, tutoringSessionId),
+              ),
+            );
+
+          return {
+            conclusion:
+              "The student has demonstrated proficiency. Please continue tutoring them on the topic as they request.", // this string also exists in topic.tsx
+            masteryDemonstrated: true,
+          };
+        }
+
+        console.log("TOKENS~~~~~~~~~~~~~", response.usage.total_tokens);
+        if (response.usage.total_tokens > 1000) {
+          const response = await getOpenRouterResponse(ctx.userId, {
+            model,
+            messages: [
+              ...messagesWithUserMsg,
+              {
+                role: "system",
+                content: getConclusionPrompt(),
+              },
+            ],
+          });
+          const conclusion = getResponseText(response);
+          assertIsNotFailure(conclusion);
+          await db
+            .update(dbSchema.tutoringSessions)
+            .set({ conclusion })
+            .where(
+              and(
+                eq(dbSchema.tutoringSessions.userId, ctx.userId),
+                eq(dbSchema.tutoringSessions.id, tutoringSessionId),
+              ),
+            );
+          return { conclusion, masteryDemonstrated: false };
+        }
+
         await db.insert(dbSchema.chatMessages).values({
           tutoringSessionId,
           userId: ctx.userId,
           senderRole: "assistant",
           content: responseText,
         });
-      }
-      return { masteryDemonstrated };
-    }),
+        return { conclusion: null, masteryDemonstrated: false };
+      },
+    ),
 });

@@ -7,6 +7,7 @@ import { formatDateTime } from "~/common/utils/timeUtils";
 import { type TutoringSession, type TopicContext } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 import confetti from "canvas-confetti";
+import { useNotify } from "~/app/_hooks/useNotify";
 
 function sortSessionsEarliestFirst(sessions: TutoringSession[]) {
   return sessions
@@ -57,20 +58,24 @@ function useSelectedSession({
   const { mutateAsync: createSession, isPending: isCreatingSession } =
     api.tutoringSession.createTutoringSession.useMutation();
 
-  const startNewSession = useCallback(async () => {
-    setSelectedSessionId(null);
-    await createSession({
-      enrollmentId,
-      topicContext,
-    });
-    const newSessions = await refetchTutoringSessions();
-    setSelectedSessionId(getMostRecentSession(newSessions)?.id ?? null);
-  }, [createSession, enrollmentId, refetchTutoringSessions, topicContext]);
+  const startNewSession = useCallback(
+    async (prevConclusion: string | null) => {
+      setSelectedSessionId(null);
+      await createSession({
+        enrollmentId,
+        topicContext,
+        prevConclusion,
+      });
+      const newSessions = await refetchTutoringSessions();
+      setSelectedSessionId(getMostRecentSession(newSessions)?.id ?? null);
+    },
+    [createSession, enrollmentId, refetchTutoringSessions, topicContext],
+  );
 
   // if there are no sessions available, start a new one
   useEffect(() => {
     if (topicTutoringSessions.length === 0) {
-      void startNewSession();
+      void startNewSession(null);
     }
   }, [startNewSession, topicTutoringSessions.length]);
 
@@ -154,7 +159,8 @@ export function Topic({
   const { mutateAsync: sendMessage, isPending: sendingMessage } =
     api.tutoringSession.sendMessage.useMutation();
 
-  const [modalOpen, setModalOpen] = useState(false);
+  const [competionModalOpen, setCompletionModalOpen] = useState(false);
+  const [sessionBumpModalOpen, setSessionBumpModalOpen] = useState(false);
 
   useEffect(() => {
     if (selectedSession?.demonstratesMastery) {
@@ -162,7 +168,7 @@ export function Topic({
         spread: 100,
         startVelocity: 40,
       });
-      setModalOpen(true);
+      setCompletionModalOpen(true);
     }
   }, [selectedSession?.demonstratesMastery]);
 
@@ -172,18 +178,20 @@ export function Topic({
     if (isLoading) {
       return;
     }
-    await startNewSession();
-    setModalOpen(false);
+    await startNewSession(
+      "The student has demonstrated proficiency. Please continue tutoring them on the topic as they request.", // this string also exists in tutoringSessionRouter.ts
+    );
+    setCompletionModalOpen(false);
   }, [isLoading, startNewSession]);
 
   return (
     <div
-      className="mb-2 flex h-full w-full flex-col items-center px-8"
+      className="flex h-full w-full flex-col items-center px-8"
       style={{ width: 672 }}
     >
       <Modal
         title="Module complete"
-        open={modalOpen}
+        open={competionModalOpen}
         onCancel={onCancel}
         footer={[
           isLoading && <Spin key="spin" className="mr-4" />,
@@ -205,6 +213,19 @@ export function Topic({
           Click "OK" to move to the next topic, or "Cancel" to start another
           session on this topic.
         </p>
+      </Modal>
+      <Modal
+        title="A new session is starting"
+        open={sessionBumpModalOpen}
+        footer={<></>}
+      >
+        <p className="mb-4">
+          Maximum session length reached. Starting a new session that will pick
+          up where you left off.
+        </p>
+        <div className="w-full text-center">
+          <Spin />
+        </div>
       </Modal>
       <div className="self-start">
         <div>
@@ -232,7 +253,7 @@ export function Topic({
       <div className="flex flex-col items-center">
         <div
           className="outline-3 flex h-full w-full items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200"
-          style={{ height: `calc(100vh - 280px)` }}
+          style={{ height: `calc(100vh - 300px)` }}
         >
           <div className="flex h-full w-full flex-col overflow-y-auto p-4">
             {messages?.map((m, idx) => {
@@ -282,20 +303,20 @@ export function Topic({
             position: "relative",
             bottom: 0,
             width: 562,
-            marginTop: 24,
+            marginTop: 20,
             marginBottom: -100,
           }}
         >
           <Editor
             value={v}
             setValue={setV}
-            placeholder="Compose your response"
+            placeholder="Compose your message..."
             height={70}
             onKeyDown={async (e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 if (!selectedSession || isLoading) return; // do nothing :/
-                const { masteryDemonstrated } = await sendMessage({
+                const { masteryDemonstrated, conclusion } = await sendMessage({
                   tutoringSessionId: selectedSession.id,
                   content: v,
                 });
@@ -305,10 +326,20 @@ export function Topic({
                   // this will reload the tutoring sessions so we get the update to the `masteryDemonstrated` field
                   await refetchTutoringSessions();
                 }
+                if (conclusion) {
+                  setSessionBumpModalOpen(true);
+                  await startNewSession(conclusion);
+                  setSessionBumpModalOpen(false);
+                }
               }
             }}
             disabled={sendingMessage}
           />
+          <div className="w-full text-center text-xs text-gray-400">
+            Press enter to send. Response may take a few seconds. Let the tutor
+            know if you're done with the topic, or want help in a particular
+            area. Email questions and issues to hello@summited.ai
+          </div>
         </div>
       </div>
     </div>
