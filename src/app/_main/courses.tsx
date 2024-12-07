@@ -1,4 +1,4 @@
-import { Button, Card, Spin, Typography } from "antd";
+import { Button, Spin, Typography } from "antd";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { noop } from "~/common/utils/fnUtils";
@@ -51,7 +51,7 @@ function Option({
   );
 }
 
-export function Main() {
+export function Courses() {
   const { data: availableCourses, isLoading: areAvailableCoursesLoading } =
     api.course.available.useQuery();
   const { mutateAsync: enroll } = api.course.enroll.useMutation();
