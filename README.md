@@ -10,7 +10,7 @@ Reverse the burn-out. Learn dynamically. Try SummitEd.ai for free.
 
 Unlimited FREE access as part of our beta program
 
-Reach 20% prep course completion and we'll email you a $20 Amazon gift card
+$20 gift card available for students who reach 20% course completion and participate in a short product feedback interview
 
 Visit summited.ai to get started
 

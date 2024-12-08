@@ -1,5 +1,5 @@
 "use client";
-import { Tree as AntdTree, Button, Spin } from "antd";
+import { Tree as AntdTree, Button, Modal, Spin } from "antd";
 import { z } from "zod";
 import { ClientOnly } from "~/app/_components/ClientOnly";
 import { Page } from "~/app/_components/Page";
@@ -7,7 +7,7 @@ import { api } from "~/trpc/react";
 import { Topic } from "./topic";
 import { useCourseTreeData } from "./useCourseTreeData";
 import { useTreeProps } from "./useTreeProps";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Logo, LogoText } from "~/app/_components/Logo";
 import { Slideout } from "./slideout";
 import { MenuOutlined } from "@ant-design/icons";
@@ -69,6 +69,15 @@ export default function CoursePage({ params }: Props) {
     return r.data;
   }, [refetchSessions]);
 
+  const [newUserModalOpen, setNewUserModalOpen] = useState(false);
+  const newUserModalShownRef = useRef(false);
+  useEffect(() => {
+    if (!isLoading && !newUserModalShownRef.current) {
+      newUserModalShownRef.current = true;
+      setNewUserModalOpen(true);
+    }
+  }, [isLoading]);
+
   if (isLoading) {
     return <Spin />;
   }
@@ -92,6 +101,32 @@ export default function CoursePage({ params }: Props) {
   return (
     <Page>
       <ClientOnly>
+        <Modal
+          title="Welcome"
+          onCancel={() => setNewUserModalOpen(false)}
+          onOk={() => setNewUserModalOpen(false)}
+          open={newUserModalOpen}
+        >
+          <div className="flex flex-col gap-2">
+            <p>
+              Summit is a chat-based tutor that will guide you through an
+              extensive course of bar exam preparation study.
+            </p>
+            <p>
+              If you prefer speaking over typing, tap the microphone to start
+              and stop dictating a message.
+            </p>
+            <p>
+              Skip ahead or go back to any topic you like using the navigation
+              menu.
+            </p>
+            <p>
+              If you have any questions, comments, or issues, reach out to us at
+              hello@summited.ai.
+            </p>
+            <p>Happy studying, and good luck on the exam!</p>
+          </div>
+        </Modal>
         <div className="flex flex-grow flex-wrap justify-start">
           <div className="mr-6 hidden xl:block">{tree}</div>
           <div className="xl:hidden">
