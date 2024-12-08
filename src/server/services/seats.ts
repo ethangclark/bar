@@ -9,5 +9,5 @@ export async function getSeatsRemaining() {
       ne(dbSchema.users.email, ""), // Ensures email is not an empty string
     ),
   });
-  return Math.max(61 - allUsers.length, 0);
+  return Math.max(61 - allUsers.length - 999, 0);
 }
