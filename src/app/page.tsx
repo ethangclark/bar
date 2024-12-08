@@ -62,20 +62,22 @@ export default function Home() {
                   <span className="font-bold">{seatsRemaining}</span>
                 </p>
               </div>
-              <div className="flex gap-4">
-                <a
-                  href="/api/auth/signin"
-                  className="rounded-full bg-blue-500 px-10 py-3 font-semibold text-white no-underline transition hover:bg-blue-600"
-                >
-                  Sign up
-                </a>
-                <a
-                  href="/api/auth/signin"
-                  className="rounded-full bg-gray-300 px-10 py-3 font-semibold no-underline transition hover:bg-blue-200"
-                >
-                  Sign in
-                </a>
-              </div>
+              {(seatsRemaining ?? 0) > 0 && (
+                <div className="flex gap-4">
+                  <a
+                    href="/api/auth/signin"
+                    className="rounded-full bg-blue-500 px-10 py-3 font-semibold text-white no-underline transition hover:bg-blue-600"
+                  >
+                    Sign up
+                  </a>
+                  <a
+                    href="/api/auth/signin"
+                    className="rounded-full bg-gray-300 px-10 py-3 font-semibold no-underline transition hover:bg-blue-200"
+                  >
+                    Sign in
+                  </a>
+                </div>
+              )}
             </div>
             <div
               className="text-sm text-gray-500"

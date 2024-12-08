@@ -8,6 +8,7 @@ import {
 import { db } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
 import { getLatestCoursesByType } from "~/server/services/course";
+import { getSeatsRemaining } from "~/server/services/seats";
 
 export const courseRouter = createTRPCRouter({
   available: publicProcedure.query(async () => {
@@ -39,6 +40,10 @@ export const courseRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const seatsRemaining = await getSeatsRemaining();
+      if (seatsRemaining <= 0) {
+        throw new Error("No seats remaining");
+      }
       const userId = ctx.session.user.id;
       await db.insert(dbSchema.courseEnrollments).values({
         userId,
