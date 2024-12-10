@@ -194,10 +194,7 @@ export function Topic({
   const messageWrapperRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div
-      className="flex h-full w-full flex-col items-center px-8"
-      style={{ width: 672 }}
-    >
+    <div className="flex h-full w-[350px] flex-col items-center px-2 md:w-[672px] md:px-8">
       <Modal
         title="Module complete"
         open={competionModalOpen}
@@ -312,11 +309,11 @@ export function Topic({
           </div>
         </div>
         <div
+          className="w-[350px] lg:w-[562px]"
           style={{
             height: 100,
             position: "relative",
             bottom: 0,
-            width: 562,
             marginTop: 20,
             marginBottom: -100,
           }}

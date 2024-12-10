@@ -127,7 +127,7 @@ export default function CoursePage({ params }: Props) {
             <p>Happy studying, and good luck on the exam!</p>
           </div>
         </Modal>
-        <div className="flex flex-grow flex-wrap justify-start">
+        <div className="flex flex-grow flex-col flex-wrap justify-start sm:flex-row">
           <div className="mr-6 hidden xl:block">{tree}</div>
           <div className="xl:hidden">
             <Slideout

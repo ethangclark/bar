@@ -24,7 +24,7 @@ export default function RootLayout({
             <ConfigProvider
               theme={/*{ token: { colorPrimary: "#2a9d8f" } }*/ undefined}
             >
-              <main className="flex min-h-screen flex-col items-center">
+              <main className="fixed left-0 right-0 top-0 flex min-h-screen flex-col items-center">
                 <div
                   style={{ maxWidth: 1280 }}
                   className="flex min-h-screen flex-col items-center"
