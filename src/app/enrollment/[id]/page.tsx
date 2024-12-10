@@ -72,11 +72,11 @@ export default function CoursePage({ params }: Props) {
   const [newUserModalOpen, setNewUserModalOpen] = useState(false);
   const newUserModalShownRef = useRef(false);
   useEffect(() => {
-    if (!isLoading && !newUserModalShownRef.current) {
+    if (tutoringSessions && tutoringSessions.length === 0) {
       newUserModalShownRef.current = true;
       setNewUserModalOpen(true);
     }
-  }, [isLoading]);
+  }, [tutoringSessions]);
 
   if (isLoading) {
     return <Spin />;

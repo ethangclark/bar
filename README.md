@@ -10,10 +10,10 @@ Reverse the burn-out. Learn dynamically. Try SummitEd.ai for free.
 
 Unlimited FREE access as part of our beta program
 
-$20 gift card available for students who reach 20% course completion and participate in a short product feedback interview
+Optional: $20 gift card available for students who reach 20% course completion and participate in a short product feedback interview
 
-Visit summited.ai to get started
-
+Visit SummitEd.ai to get started
+ 
 # Create T3 App
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
