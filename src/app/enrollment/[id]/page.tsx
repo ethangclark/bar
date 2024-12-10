@@ -78,27 +78,27 @@ export default function CoursePage({ params }: Props) {
     }
   }, [tutoringSessions]);
 
+  const PanelContent = useCallback(
+    ({ width }: { width?: number }) => (
+      <div style={{ marginBottom: -20, width }}>
+        <div className="mb-2 flex justify-between">
+          <div className="mb-2 flex items-center">
+            <Logo height={20} />
+            <LogoText className="text-2xl" />
+          </div>
+          <Link href={"/api/auth/signout"}>
+            <Button>{"Sign out"}</Button>
+          </Link>
+        </div>
+        <AntdTree {...treeProps} height={700} />
+      </div>
+    ),
+    [treeProps],
+  );
+
   if (isLoading) {
     return <Spin />;
   }
-
-  const treeWidthCn = "width-[300px] md:width-[400px]"; // coupled to slideoutWidthCn
-  const slideoutWidthCn = "width-[350px] md:width-[450px]"; // coupled to treeWidthCn
-
-  const tree = (
-    <div className={treeWidthCn} style={{ marginBottom: -20 }}>
-      <div className="mb-2 flex justify-between">
-        <div className="mb-2 flex items-center">
-          <Logo height={20} />
-          <LogoText className="text-2xl" />
-        </div>
-        <Link href={"/api/auth/signout"}>
-          <Button>{"Sign out"}</Button>
-        </Link>
-      </div>
-      <AntdTree {...treeProps} height={700} />
-    </div>
-  );
 
   return (
     <Page>
@@ -130,7 +130,9 @@ export default function CoursePage({ params }: Props) {
           </div>
         </Modal>
         <div className="flex flex-grow flex-col flex-wrap justify-start sm:flex-row">
-          <div className="mr-6 hidden xl:block">{tree}</div>
+          <div className="mr-6 hidden xl:block">
+            {<PanelContent width={400} />}
+          </div>
           <div className="flex flex-grow justify-center">
             {selectedTopicContext && (
               <Topic
@@ -144,9 +146,10 @@ export default function CoursePage({ params }: Props) {
                   <div className="xl:hidden">
                     <Slideout
                       trigger={<MenuOutlined className="mr-4 text-2xl" />}
-                      slideoutClassName={slideoutWidthCn}
                     >
-                      {tree}
+                      {/* can't specify width prompt -- gotta let it do its own width styling in mobile mode */}
+                      {/* (this is hidden in desktop mode) */}
+                      <PanelContent />
                     </Slideout>
                   </div>
                 }
