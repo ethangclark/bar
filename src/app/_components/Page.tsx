@@ -13,7 +13,7 @@ export function Page({
   const isClientSide = useIsForSureClientSide();
   return (
     <div
-      className={`flex flex-grow flex-col items-center px-8 py-12 ${className}`}
+      className={`flex flex-grow flex-col items-center px-6 py-10 lg:px-8 lg:py-12 ${className}`}
       style={{
         minWidth: `calc(100vw - ${isClientSide ? scrollbarWidth : 0}px)`,
       }}

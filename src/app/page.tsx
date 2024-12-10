@@ -16,12 +16,14 @@ export default function Home() {
   return (
     <ClientOnly>
       <Page>
-        <div className="flex flex-col items-center">
+        <div className="mb-5 flex flex-col items-center">
           <div className="flex items-center">
             <Logo height={h} />
-            <LogoText className="text-6xl" />
+            <LogoText className="text-4xl lg:text-6xl" />
           </div>
-          <h1 className="text-2xl font-bold">February 2025 Bar Exam Prep</h1>
+          <h1 className="text-lg font-bold lg:text-2xl">
+            February 2025 Bar Exam Prep
+          </h1>
         </div>
         {isLoggedIn ? (
           <div className="mt-20 flex flex-grow flex-col items-center justify-between">
@@ -37,15 +39,12 @@ export default function Home() {
           </div>
         ) : (
           <div className="flex flex-grow flex-col items-center justify-between">
-            <div className="mb-4 flex flex-grow flex-col items-center justify-center gap-8">
-              <h1
-                className="w-full pb-8 text-center font-bold"
-                style={{ fontSize: 108, lineHeight: "120px" }}
-              >
+            <div className="mb-4 flex flex-grow flex-col items-center justify-center lg:gap-8">
+              <h1 className="w-full pb-8 text-center text-4xl font-bold lg:text-[108px] lg:leading-[120px]">
                 Pass the bar with confidence
               </h1>
               <div
-                className="flex flex-col items-center gap-8 text-center"
+                className="mb-6 flex flex-col items-center gap-6 text-center lg:gap-8"
                 style={{ maxWidth: 450 }}
               >
                 <p>
@@ -80,7 +79,7 @@ export default function Home() {
               )}
             </div>
             <div
-              className="text-sm text-gray-500"
+              className="text-center text-sm text-gray-500"
               style={{ marginBottom: -24 }}
             >
               Questions? Comments? Email us at hello@summited.ai
