@@ -129,14 +129,6 @@ export default function CoursePage({ params }: Props) {
         </Modal>
         <div className="flex flex-grow flex-col flex-wrap justify-start sm:flex-row">
           <div className="mr-6 hidden xl:block">{tree}</div>
-          <div className="xl:hidden">
-            <Slideout
-              trigger={<MenuOutlined className="text-2xl" />}
-              width={treeWidth + 50}
-            >
-              {tree}
-            </Slideout>
-          </div>
           <div className="flex flex-grow justify-center">
             {selectedTopicContext && (
               <Topic
@@ -146,6 +138,16 @@ export default function CoursePage({ params }: Props) {
                 topicTutoringSessions={topicTutoringSessions}
                 refetchTutoringSessions={streamlinedRefetch}
                 onTopicComplete={selectNextTopic}
+                topLeftCorner={
+                  <div className="xl:hidden">
+                    <Slideout
+                      trigger={<MenuOutlined className="mr-4 text-2xl" />}
+                      width={treeWidth + 50}
+                    >
+                      {tree}
+                    </Slideout>
+                  </div>
+                }
               />
             )}
           </div>

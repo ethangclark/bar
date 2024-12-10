@@ -19,9 +19,9 @@ export default function Home() {
         <div className="mb-5 flex flex-col items-center">
           <div className="flex items-center">
             <Logo height={h} />
-            <LogoText className="text-4xl lg:text-6xl" />
+            <LogoText className="text-4xl md:text-6xl" />
           </div>
-          <h1 className="text-lg font-bold lg:text-2xl">
+          <h1 className="text-lg font-bold md:text-2xl">
             February 2025 Bar Exam Prep
           </h1>
         </div>
@@ -39,12 +39,12 @@ export default function Home() {
           </div>
         ) : (
           <div className="flex flex-grow flex-col items-center justify-between">
-            <div className="mb-4 flex flex-grow flex-col items-center justify-center lg:gap-8">
-              <h1 className="w-full pb-8 text-center text-4xl font-bold lg:text-[108px] lg:leading-[120px]">
+            <div className="mb-4 flex flex-grow flex-col items-center justify-center md:gap-8">
+              <h1 className="w-full pb-8 text-center text-4xl font-bold md:text-[108px] md:leading-[120px]">
                 Pass the bar with confidence
               </h1>
               <div
-                className="mb-6 flex flex-col items-center gap-6 text-center lg:gap-8"
+                className="mb-6 flex flex-col items-center gap-6 text-center md:gap-8"
                 style={{ maxWidth: 450 }}
               >
                 <p>

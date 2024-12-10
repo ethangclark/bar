@@ -1,5 +1,12 @@
 import { Dropdown, type MenuProps, Spin, Modal, Button } from "antd";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Editor } from "~/app/_components/Editor";
 import { PreformattedText } from "~/app/_components/PreformattedText";
 import { useCss } from "~/app/_hooks/useCss";
@@ -105,12 +112,14 @@ export function Topic({
   topicTutoringSessions,
   refetchTutoringSessions,
   onTopicComplete,
+  topLeftCorner,
 }: {
   enrollmentId: string;
   topicContext: TopicContext;
   topicTutoringSessions: TutoringSession[];
   refetchTutoringSessions: () => Promise<TutoringSession[]>;
   onTopicComplete: () => void;
+  topLeftCorner: ReactNode;
 }) {
   const { courseType, unit, module, topic } = topicContext;
 
@@ -233,12 +242,15 @@ export function Topic({
           <Spin />
         </div>
       </Modal>
-      <div className="w-full self-start">
+      <div className="md:text-md w-full self-start text-sm">
         <div>
-          <div>
-            {courseType.name} &gt; {unit.name} &gt; {module.name}
+          <div className="flex w-full justify-between">
+            <div className="justify-self-end">{topLeftCorner}</div>
+            <div className="md:text-md flex-wrap items-center text-xs">
+              {courseType.name} &gt; {unit.name} &gt; {module.name}
+            </div>
           </div>
-          <div className="mb-2 text-2xl">{topic.name}</div>
+          <div className="mb-2 text-lg md:text-2xl">{topic.name}</div>
         </div>
         <div className="mb-4 text-sm" id={dropdownWrapperId}>
           <Dropdown.Button
@@ -309,7 +321,7 @@ export function Topic({
           </div>
         </div>
         <div
-          className="w-[350px] lg:w-[562px]"
+          className="w-[350px] md:w-[562px]"
           style={{
             height: 100,
             position: "relative",
@@ -370,8 +382,8 @@ export function Topic({
           </div>
           <div className="w-full text-center text-xs text-gray-400">
             Press enter to send. Response may take a few seconds. Let the tutor
-            know if you're done with the topic, or want help in a particular
-            area. Email questions and issues to hello@summited.ai
+            know if you're done with the topic, or need help. Email questions
+            and issues to hello@summited.ai
           </div>
         </div>
       </div>
