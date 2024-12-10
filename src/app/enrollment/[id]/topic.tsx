@@ -244,8 +244,8 @@ export function Topic({
       </Modal>
       <div className="md:text-md w-full self-start text-sm">
         <div>
-          <div className="flex w-full justify-between">
-            <div className="justify-self-end">{topLeftCorner}</div>
+          <div className="flex w-full">
+            <div>{topLeftCorner}</div>
             <div className="md:text-md flex-wrap items-center text-xs">
               {courseType.name} &gt; {unit.name} &gt; {module.name}
             </div>

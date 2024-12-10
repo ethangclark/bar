@@ -82,9 +82,11 @@ export default function CoursePage({ params }: Props) {
     return <Spin />;
   }
 
-  const treeWidth = 400;
+  const treeWidthCn = "width-[300px] md:width-[400px]"; // coupled to slideoutWidthCn
+  const slideoutWidthCn = "width-[350px] md:width-[450px]"; // coupled to treeWidthCn
+
   const tree = (
-    <div style={{ width: treeWidth }} className="mb-10">
+    <div className={treeWidthCn} style={{ marginBottom: -20 }}>
       <div className="mb-2 flex justify-between">
         <div className="mb-2 flex items-center">
           <Logo height={20} />
@@ -142,7 +144,7 @@ export default function CoursePage({ params }: Props) {
                   <div className="xl:hidden">
                     <Slideout
                       trigger={<MenuOutlined className="mr-4 text-2xl" />}
-                      width={treeWidth + 50}
+                      slideoutClassName={slideoutWidthCn}
                     >
                       {tree}
                     </Slideout>
