@@ -4,6 +4,7 @@ import { courseRouter } from "./routers/courseRouter";
 import { tutoringSessionRouter } from "./routers/tutoringSessionRouter";
 import { transcriptionRouter } from "./routers/transcriptionRouter";
 import { authRouter } from "./routers/authRouter";
+import { variantRouter } from "./routers/variantRouter";
 
 /**
  * This is the primary router for your server.
@@ -17,6 +18,7 @@ export const appRouter = createTRPCRouter({
   chat: tutoringSessionRouter,
   trascription: transcriptionRouter,
   tutoringSession: tutoringSessionRouter,
+  variants: variantRouter,
 });
 
 // export type definition of API

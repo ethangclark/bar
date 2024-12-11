@@ -200,9 +200,10 @@ export const variantOptions = createTable(
     value: text("value").notNull(),
   },
   (variantOption) => ({
-    compoundKey: primaryKey({
-      columns: [variantOption.variantTypeId, variantOption.value],
-    }),
+    variantTypeValueIndex: index("variant_option_variant_type_value_idx").on(
+      variantOption.variantTypeId,
+      variantOption.value,
+    ),
   }),
 );
 export type VariantOption = InferSelectModel<typeof variantOptions>;
