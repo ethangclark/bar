@@ -17,14 +17,23 @@ type Props = {
 export default function AdminCoursePage({ params }: Props) {
   const courseId = z.string().parse(params.id);
 
-  const { isLoading, data } = api.course.courseDetail.useQuery({ courseId });
+  const { isLoading, data: course } = api.course.courseDetail.useQuery({
+    courseId,
+  });
+  const variantTypes = api.variants.types.useQuery({
+    courseTypeId: course?.courseType.id ?? null,
+  });
 
-  const { treeData, setSelectedTopicId, selectedTopicContext } =
-    useCourseTreeData({
-      course: data ?? null,
-      tutoringSessions: [],
-      isLoading,
-    });
+  const {
+    treeData,
+    setSelectedTopicId,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    selectedTopicContext: _,
+  } = useCourseTreeData({
+    course: course ?? null,
+    tutoringSessions: [],
+    isLoading,
+  });
 
   const treeProps = useTreeProps({
     treeData,
@@ -41,13 +50,19 @@ export default function AdminCoursePage({ params }: Props) {
       <Title>Admin - course</Title>
       <ClientOnly>
         <div className="flex">
-          <Tree {...treeProps} />
+          <div className="mr-8">
+            <Tree {...treeProps} />
+          </div>
           <div className="border p-10">
-            <div className="mb-5">(select a topic to make this pane work)</div>
-            <div>selected topic:</div>
-            <div className="mb-5 text-2xl">
-              {selectedTopicContext?.topic.name}
-            </div>
+            <div className="mb-5 text-xl">Variants:</div>
+            {variantTypes.data?.map((vt) => (
+              <div key={vt.id}>
+                <h2>{vt.name}</h2>
+                {vt.options.map((o) => (
+                  <div key={o.id}>{o.value}</div>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </ClientOnly>

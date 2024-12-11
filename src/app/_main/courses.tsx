@@ -18,35 +18,32 @@ function Option({
   onResume: () => void;
 }) {
   return (
-    <div className="mb-4 flex items-center rounded-2xl border px-8 py-4">
-      <div className="mr-8">
-        <Typography.Title level={3} className="mb-0">
-          {courseType.name}
-        </Typography.Title>
-        {enrollment && (
-          <>
-            <Typography.Paragraph className="mb-0">
-              Started on {formatDayDate(enrollment.startDate)}
-            </Typography.Paragraph>
-            {/* <Button type="text" className="px-0 text-gray-500">
-            Create new enrollment
-          </Button> */}
-          </>
-        )}
-      </div>
-      <div className="">
-        {enrollment ? (
-          <>
-            <Button size="large" onClick={onResume} type="primary">
-              Resume
-            </Button>
-          </>
-        ) : (
-          <Button size="large" disabled={!!enrollment} onClick={onEnroll}>
-            Enroll
+    <div className="mb-4 flex flex-col items-center rounded-2xl border px-8 py-4">
+      <Typography.Title level={3} className="mb-0">
+        {courseType.name}
+      </Typography.Title>
+      {enrollment ? (
+        <>
+          <Typography.Paragraph className="mb-2">
+            Started on {formatDayDate(enrollment.startDate)}
+          </Typography.Paragraph>
+          <Button
+            size="large"
+            onClick={onResume}
+            type="primary"
+            className="px-12"
+          >
+            Resume
           </Button>
-        )}
-      </div>
+          <Button type="text" className="text-gray-500">
+            Begin new course
+          </Button>
+        </>
+      ) : (
+        <Button size="large" disabled={!!enrollment} onClick={onEnroll}>
+          Enroll
+        </Button>
+      )}
     </div>
   );
 }

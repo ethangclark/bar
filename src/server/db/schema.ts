@@ -148,11 +148,75 @@ export const courseTypes = createTable(
 export type CourseType = InferSelectModel<typeof courseTypes>;
 export const courseTypesRelations = relations(courseTypes, ({ many }) => ({
   courses: many(courses),
+  courseTypeVariants: many(variantTypes),
 }));
 export const courseTypeSchema = z.object({
   id: z.string(),
   name: z.string(),
 }) satisfies z.ZodType<CourseType>;
+
+// E.g.: jurisdiction would be a course type variant on the bar exam course type.
+// A course type could have multiple variants types.
+export const variantTypes = createTable(
+  "variant_type",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    courseTypeId: uuid("course_type_id")
+      .notNull()
+      .references(() => courseTypes.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+  },
+  (variantType) => ({
+    courseTypeIdIdx: index("variant_type_course_type_id_idx").on(
+      variantType.courseTypeId,
+    ),
+    nameIndex: index("variant_type_name_idx").on(variantType.name),
+  }),
+);
+export type VariantType = InferSelectModel<typeof variantTypes>;
+export const variantTypesRelations = relations(
+  variantTypes,
+  ({ one, many }) => ({
+    courseType: one(courseTypes, {
+      fields: [variantTypes.courseTypeId],
+      references: [courseTypes.id],
+    }),
+    options: many(variantOptions),
+  }),
+);
+export const variantTypeSchema = z.object({
+  id: z.string(),
+  courseTypeId: z.string(),
+  name: z.string(),
+}) satisfies z.ZodType<VariantType>;
+
+export const variantOptions = createTable(
+  "variant_option",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    variantTypeId: uuid("variant_type_id")
+      .notNull()
+      .references(() => variantTypes.id, { onDelete: "cascade" }),
+    value: text("value").notNull(),
+  },
+  (variantOption) => ({
+    variantTypeValueIndex: index("variant_option_variant_type_value_idx").on(
+      variantOption.variantTypeId,
+      variantOption.value,
+    ),
+  }),
+);
+export type VariantOption = InferSelectModel<typeof variantOptions>;
+export const variantOptionsRelations = relations(
+  variantOptions,
+  ({ one, many }) => ({
+    courseTypeVariant: one(variantTypes, {
+      fields: [variantOptions.variantTypeId],
+      references: [variantTypes.id],
+    }),
+    selections: many(variantSelections),
+  }),
+);
 
 export const courses = createTable(
   "course",
@@ -220,6 +284,40 @@ export const courseEnrollmentsRelations = relations(
       references: [courses.id],
     }),
     tutoringSessions: many(tutoringSessions),
+  }),
+);
+
+export const variantSelections = createTable(
+  "variant_selection",
+  {
+    enrollmentId: uuid("enrollment_id")
+      .notNull()
+      .references(() => courseEnrollments.id, { onDelete: "cascade" }),
+    variantOptionId: uuid("variant_option_id")
+      .notNull()
+      .references(() => variantOptions.id, { onDelete: "cascade" }),
+  },
+  (variantSelection) => ({
+    compoundKey: primaryKey({
+      columns: [
+        variantSelection.enrollmentId,
+        variantSelection.variantOptionId,
+      ],
+    }),
+  }),
+);
+export type VariantSelection = InferSelectModel<typeof variantSelections>;
+export const variantSelectionsRelations = relations(
+  variantSelections,
+  ({ one }) => ({
+    enrollment: one(courseEnrollments, {
+      fields: [variantSelections.enrollmentId],
+      references: [courseEnrollments.id],
+    }),
+    variantOption: one(variantOptions, {
+      fields: [variantSelections.variantOptionId],
+      references: [variantOptions.id],
+    }),
   }),
 );
 

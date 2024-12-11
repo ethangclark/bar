@@ -36,6 +36,13 @@
       "when": 1733608833141,
       "tag": "0004_sloppy_red_wolf",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1733888113456,
+      "tag": "0005_square_raza",
+      "breakpoints": true
     }
   ]
 }
