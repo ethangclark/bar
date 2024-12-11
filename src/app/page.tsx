@@ -1,30 +1,18 @@
 "use client";
 
-import { ClientOnly } from "./_components/ClientOnly";
-import { Page } from "./_components/Page";
-import { Courses } from "./_main/courses";
-import { Logo, LogoText } from "./_components/Logo";
-import { api } from "~/trpc/react";
 import Link from "next/link";
+import { api } from "~/trpc/react";
+import { BigTitlePage } from "./_components/BigTitlePage";
+import { ClientOnly } from "./_components/ClientOnly";
+import { Courses } from "./_main/courses";
 
 export default function Home() {
-  const h = 50;
-
   const { data: isLoggedIn } = api.auth.isLoggedIn.useQuery();
   const { data: seatsRemaining } = api.auth.seatsRemaining.useQuery();
 
   return (
     <ClientOnly>
-      <Page>
-        <div className="mb-5 flex flex-col items-center">
-          <div className="flex items-center">
-            <Logo height={h} />
-            <LogoText className="text-4xl md:text-6xl" />
-          </div>
-          <h1 className="text-lg font-bold md:text-2xl">
-            February 2025 Bar Exam Prep
-          </h1>
-        </div>
+      <BigTitlePage>
         {isLoggedIn ? (
           <div className="mt-20 flex flex-grow flex-col items-center justify-between">
             <div>
@@ -86,7 +74,7 @@ export default function Home() {
             </div>
           </div>
         )}
-      </Page>
+      </BigTitlePage>
     </ClientOnly>
   );
 }
