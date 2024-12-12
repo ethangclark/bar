@@ -14,9 +14,9 @@ import { type AdapterAccount } from "next-auth/adapters";
 import { z } from "zod";
 import { createSelectSchema } from "drizzle-zod";
 
-export const createTable = pgTableCreator((name) => `drizzle_${name}`);
+export const pgTable = pgTableCreator((name) => `drizzle_${name}`);
 
-export const posts = createTable(
+export const posts = pgTable(
   "post",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -29,13 +29,13 @@ export const posts = createTable(
       .defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
-  (example) => ({
-    createdByIdIdx: index("post_created_by_id_idx").on(example.createdById),
-    nameIndex: index("post_name_idx").on(example.name),
-  }),
+  (example) => [
+    index("post_created_by_id_idx").on(example.createdById),
+    index("post_name_idx").on(example.name),
+  ],
 );
 
-export const users = createTable("user", {
+export const users = pgTable("user", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name"),
   email: text("email").notNull(),
@@ -53,7 +53,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   enrollments: many(enrollments),
 }));
 
-export const ipUsers = createTable(
+export const ipUsers = pgTable(
   "ip_user",
   {
     ipAddress: text("ip_address").notNull().primaryKey(),
@@ -61,16 +61,14 @@ export const ipUsers = createTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
   },
-  (ipu) => ({
-    userIdIdx: index("ip_user_user_id_idx").on(ipu.userId),
-  }),
+  (ipu) => [index("ip_user_user_id_idx").on(ipu.userId)],
 );
 export type IpUser = InferSelectModel<typeof ipUsers>;
 export const ipUsersRelations = relations(ipUsers, ({ one }) => ({
   user: one(users, { fields: [ipUsers.userId], references: [users.id] }),
 }));
 
-export const accounts = createTable(
+export const accounts = pgTable(
   "account",
   {
     userId: uuid("user_id")
@@ -87,19 +85,19 @@ export const accounts = createTable(
     id_token: text("id_token"),
     session_state: text("session_state"),
   },
-  (account) => ({
-    compoundKey: primaryKey({
+  (account) => [
+    primaryKey({
       columns: [account.provider, account.providerAccountId],
     }),
-    userIdIdx: index("account_user_id_idx").on(account.userId),
-  }),
+    index("account_user_id_idx").on(account.userId),
+  ],
 );
 export type Account = InferSelectModel<typeof accounts>;
 export const accountsRelations = relations(accounts, ({ one }) => ({
   user: one(users, { fields: [accounts.userId], references: [users.id] }),
 }));
 
-export const sessions = createTable(
+export const sessions = pgTable(
   "session",
   {
     sessionToken: text("session_token").notNull().primaryKey(),
@@ -111,16 +109,14 @@ export const sessions = createTable(
       withTimezone: true,
     }).notNull(),
   },
-  (session) => ({
-    userIdIdx: index("session_user_id_idx").on(session.userId),
-  }),
+  (session) => [index("session_user_id_idx").on(session.userId)],
 );
 export type Session = InferSelectModel<typeof sessions>;
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, { fields: [sessions.userId], references: [users.id] }),
 }));
 
-export const verificationTokens = createTable(
+export const verificationTokens = pgTable(
   "verification_token",
   {
     identifier: text("identifier").notNull(),
@@ -130,21 +126,17 @@ export const verificationTokens = createTable(
       withTimezone: true,
     }).notNull(),
   },
-  (vt) => ({
-    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  }),
+  (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })],
 );
 export type VerificationToken = InferSelectModel<typeof verificationTokens>;
 
-export const courseTypes = createTable(
+export const courseTypes = pgTable(
   "course_type",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull(),
   },
-  (course) => ({
-    nameIndex: index("course_type_name_idx").on(course.name),
-  }),
+  (course) => [index("course_type_name_idx").on(course.name)],
 );
 export type CourseType = InferSelectModel<typeof courseTypes>;
 export const courseTypesRelations = relations(courseTypes, ({ many }) => ({
@@ -155,7 +147,7 @@ export const courseTypeSchema = createSelectSchema(courseTypes);
 
 // E.g.: jurisdiction would be a course type variant on the bar exam course type.
 // A course type could have multiple variants types.
-export const variantTypes = createTable(
+export const variantTypes = pgTable(
   "variant_type",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -164,12 +156,10 @@ export const variantTypes = createTable(
       .references(() => courseTypes.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
   },
-  (variantType) => ({
-    courseTypeIdIdx: index("variant_type_course_type_id_idx").on(
-      variantType.courseTypeId,
-    ),
-    nameIndex: index("variant_type_name_idx").on(variantType.name),
-  }),
+  (variantType) => [
+    index("variant_type_course_type_id_idx").on(variantType.courseTypeId),
+    index("variant_type_name_idx").on(variantType.name),
+  ],
 );
 export type VariantType = InferSelectModel<typeof variantTypes>;
 export const variantTypesRelations = relations(
@@ -184,7 +174,7 @@ export const variantTypesRelations = relations(
 );
 export const variantTypeSchema = createSelectSchema(variantTypes);
 
-export const variantOptions = createTable(
+export const variantOptions = pgTable(
   "variant_option",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -193,12 +183,12 @@ export const variantOptions = createTable(
       .references(() => variantTypes.id, { onDelete: "cascade" }),
     value: text("value").notNull(),
   },
-  (variantOption) => ({
-    variantTypeValueIndex: index("variant_option_variant_type_value_idx").on(
+  (variantOption) => [
+    index("variant_option_variant_type_value_idx").on(
       variantOption.variantTypeId,
       variantOption.value,
     ),
-  }),
+  ],
 );
 export type VariantOption = InferSelectModel<typeof variantOptions>;
 export const variantOptionsRelations = relations(
@@ -212,7 +202,7 @@ export const variantOptionsRelations = relations(
   }),
 );
 
-export const courses = createTable(
+export const courses = pgTable(
   "course",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -223,9 +213,7 @@ export const courses = createTable(
       .notNull()
       .defaultNow(),
   },
-  (course) => ({
-    typeIdIdx: index("course_type_id_idx").on(course.typeId),
-  }),
+  (course) => [index("course_type_id_idx").on(course.typeId)],
 );
 export type Course = InferSelectModel<typeof courses>;
 export const coursesRelations = relations(courses, ({ one, many }) => ({
@@ -238,7 +226,7 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
 }));
 export const courseSchema = createSelectSchema(courses);
 
-export const enrollments = createTable(
+export const enrollments = pgTable(
   "enrollment",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -252,10 +240,10 @@ export const enrollments = createTable(
       .notNull()
       .defaultNow(),
   },
-  (enrollment) => ({
-    userIdIdx: index("enrollment_user_id_idx").on(enrollment.userId),
-    courseIdIdx: index("enrollment_course_id_idx").on(enrollment.courseId),
-  }),
+  (enrollment) => [
+    index("enrollment_user_id_idx").on(enrollment.userId),
+    index("enrollment_course_id_idx").on(enrollment.courseId),
+  ],
 );
 export type Enrollment = InferSelectModel<typeof enrollments>;
 export const enrollmentsRelations = relations(enrollments, ({ one, many }) => ({
@@ -270,7 +258,7 @@ export const enrollmentsRelations = relations(enrollments, ({ one, many }) => ({
   tutoringSessions: many(tutoringSessions),
 }));
 
-export const variantSelections = createTable(
+export const variantSelections = pgTable(
   "variant_selection",
   {
     enrollmentId: uuid("enrollment_id")
@@ -280,14 +268,14 @@ export const variantSelections = createTable(
       .notNull()
       .references(() => variantOptions.id, { onDelete: "cascade" }),
   },
-  (variantSelection) => ({
-    compoundKey: primaryKey({
+  (variantSelection) => [
+    primaryKey({
       columns: [
         variantSelection.enrollmentId,
         variantSelection.variantOptionId,
       ],
     }),
-  }),
+  ],
 );
 export type VariantSelection = InferSelectModel<typeof variantSelections>;
 export const variantSelectionsRelations = relations(
@@ -304,7 +292,7 @@ export const variantSelectionsRelations = relations(
   }),
 );
 
-export const units = createTable(
+export const units = pgTable(
   "unit",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -313,10 +301,10 @@ export const units = createTable(
       .notNull()
       .references(() => courses.id, { onDelete: "cascade" }),
   },
-  (unit) => ({
-    courseIdIdx: index("unit_course_id_idx").on(unit.courseId),
-    nameIndex: index("unit_name_idx").on(unit.name),
-  }),
+  (unit) => [
+    index("unit_course_id_idx").on(unit.courseId),
+    index("unit_name_idx").on(unit.name),
+  ],
 );
 export type Unit = InferSelectModel<typeof units>;
 export const unitsRelations = relations(units, ({ one, many }) => ({
@@ -328,7 +316,7 @@ export const unitsRelations = relations(units, ({ one, many }) => ({
 }));
 export const unitSchema = createSelectSchema(units);
 
-export const modules = createTable(
+export const modules = pgTable(
   "module",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -337,10 +325,10 @@ export const modules = createTable(
       .notNull()
       .references(() => units.id, { onDelete: "cascade" }),
   },
-  (module) => ({
-    unitIdIdx: index("module_unit_id_idx").on(module.unitId),
-    nameIndex: index("module_name_idx").on(module.name),
-  }),
+  (module) => [
+    index("module_unit_id_idx").on(module.unitId),
+    index("module_name_idx").on(module.name),
+  ],
 );
 export type Module = InferSelectModel<typeof modules>;
 export const modulesRelations = relations(modules, ({ one, many }) => ({
@@ -352,7 +340,7 @@ export const modulesRelations = relations(modules, ({ one, many }) => ({
 }));
 export const moduleSchema = createSelectSchema(modules);
 
-export const topics = createTable(
+export const topics = pgTable(
   "topic",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -361,10 +349,10 @@ export const topics = createTable(
       .notNull()
       .references(() => modules.id, { onDelete: "cascade" }),
   },
-  (topic) => ({
-    moduleIdIdx: index("topic_module_id_idx").on(topic.moduleId),
-    nameIndex: index("topic_name_idx").on(topic.name),
-  }),
+  (topic) => [
+    index("topic_module_id_idx").on(topic.moduleId),
+    index("topic_name_idx").on(topic.name),
+  ],
 );
 export type Topic = InferSelectModel<typeof topics>;
 export const topicsRelations = relations(topics, ({ one }) => ({
@@ -401,7 +389,7 @@ export type DetailedEnrollment = Enrollment & {
   course: DetailedCourse;
 };
 
-export const tutoringSessions = createTable(
+export const tutoringSessions = pgTable(
   "tutoring_session",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -420,15 +408,13 @@ export const tutoringSessions = createTable(
       .notNull()
       .defaultNow(),
   },
-  (tutoringSession) => ({
-    userIdIdx: index("tutoring_session_user_id_idx").on(tutoringSession.userId),
-    topicIdIdx: index("tutoring_session_topic_id_idx").on(
-      tutoringSession.topicId,
-    ),
-    enrollmentIdIdx: index("tutoring_session_enrollment_id_idx").on(
+  (tutoringSession) => [
+    index("tutoring_session_user_id_idx").on(tutoringSession.userId),
+    index("tutoring_session_topic_id_idx").on(tutoringSession.topicId),
+    index("tutoring_session_enrollment_id_idx").on(
       tutoringSession.enrollmentId,
     ),
-  }),
+  ],
 );
 export type TutoringSession = InferSelectModel<typeof tutoringSessions>;
 export const tutoringSessionsRelations = relations(
@@ -457,7 +443,7 @@ export const senderRoleEnum = pgEnum("sender_role", [
 export const senderRoleSchema = z.enum(senderRoleEnum.enumValues);
 export type SenderRole = z.infer<typeof senderRoleSchema>;
 
-export const chatMessages = createTable(
+export const chatMessages = pgTable(
   "chat_message",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -473,12 +459,10 @@ export const chatMessages = createTable(
       .notNull()
       .defaultNow(),
   },
-  (cm) => ({
-    userIdIdx: index("chat_message_user_id_idx").on(cm.userId),
-    tutoringSessionIdIdx: index("chat_message_tutoring_session_id_idx").on(
-      cm.tutoringSessionId,
-    ),
-  }),
+  (cm) => [
+    index("chat_message_user_id_idx").on(cm.userId),
+    index("chat_message_tutoring_session_id_idx").on(cm.tutoringSessionId),
+  ],
 );
 export type ChatMessage = InferSelectModel<typeof chatMessages>;
 export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
