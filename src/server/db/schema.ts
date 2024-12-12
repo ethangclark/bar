@@ -479,7 +479,7 @@ export const tutoringSessionsRelations = relations(
 );
 
 export const chatMessages = createTable(
-  "tutor_chat_message",
+  "chat_message",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     userId: uuid("user_id")
@@ -494,11 +494,11 @@ export const chatMessages = createTable(
       .notNull()
       .defaultNow(),
   },
-  (tcm) => ({
-    userIdIdx: index("tutor_chat_message_user_id_idx").on(tcm.userId),
-    tutoringSessionIdIdx: index(
-      "tutor_chat_message_tutoring_session_id_idx",
-    ).on(tcm.tutoringSessionId),
+  (cm) => ({
+    userIdIdx: index("chat_message_user_id_idx").on(cm.userId),
+    tutoringSessionIdIdx: index("chat_message_tutoring_session_id_idx").on(
+      cm.tutoringSessionId,
+    ),
   }),
 );
 export type ChatMessage = Omit<

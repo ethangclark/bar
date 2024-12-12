@@ -43,6 +43,13 @@
       "when": 1733888113456,
       "tag": "0005_square_raza",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1734045629412,
+      "tag": "0006_known_omega_red",
+      "breakpoints": true
     }
   ]
 }
