@@ -49,7 +49,7 @@ export type User = InferSelectModel<typeof users>;
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   sessions: many(sessions),
-  courseEnrollments: many(courseEnrollments),
+  enrollments: many(enrollments),
 }));
 
 export const ipUsers = createTable(
@@ -148,7 +148,7 @@ export const courseTypes = createTable(
 export type CourseType = InferSelectModel<typeof courseTypes>;
 export const courseTypesRelations = relations(courseTypes, ({ many }) => ({
   courses: many(courses),
-  courseTypeVariants: many(variantTypes),
+  variantTypes: many(variantTypes),
 }));
 export const courseTypeSchema = z.object({
   id: z.string(),
@@ -225,7 +225,7 @@ export const courses = createTable(
     typeId: uuid("type_id")
       .notNull()
       .references(() => courseTypes.id, { onDelete: "cascade" }),
-    creationDate: timestamp("creation_date", { withTimezone: true })
+    createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
   },
@@ -240,16 +240,16 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
     references: [courseTypes.id],
   }),
   units: many(units),
-  enrollments: many(courseEnrollments),
+  enrollments: many(enrollments),
 }));
 export const courseSchema = z.object({
   id: z.string(),
   typeId: z.string(),
-  creationDate: z.date(),
+  createdAt: z.date(),
 }) satisfies z.ZodType<Course>;
 
-export const courseEnrollments = createTable(
-  "course_enrollment",
+export const enrollments = createTable(
+  "enrollment",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     userId: uuid("user_id")
@@ -262,37 +262,30 @@ export const courseEnrollments = createTable(
       .notNull()
       .defaultNow(),
   },
-  (courseEnrollment) => ({
-    userIdIdx: index("course_enrollment_user_id_idx").on(
-      courseEnrollment.userId,
-    ),
-    courseIdIdx: index("course_enrollment_course_id_idx").on(
-      courseEnrollment.courseId,
-    ),
+  (enrollment) => ({
+    userIdIdx: index("enrollment_user_id_idx").on(enrollment.userId),
+    courseIdIdx: index("enrollment_course_id_idx").on(enrollment.courseId),
   }),
 );
-export type CourseEnrollment = InferSelectModel<typeof courseEnrollments>;
-export const courseEnrollmentsRelations = relations(
-  courseEnrollments,
-  ({ one, many }) => ({
-    user: one(users, {
-      fields: [courseEnrollments.userId],
-      references: [users.id],
-    }),
-    course: one(courses, {
-      fields: [courseEnrollments.courseId],
-      references: [courses.id],
-    }),
-    tutoringSessions: many(tutoringSessions),
+export type Enrollment = InferSelectModel<typeof enrollments>;
+export const enrollmentsRelations = relations(enrollments, ({ one, many }) => ({
+  user: one(users, {
+    fields: [enrollments.userId],
+    references: [users.id],
   }),
-);
+  course: one(courses, {
+    fields: [enrollments.courseId],
+    references: [courses.id],
+  }),
+  tutoringSessions: many(tutoringSessions),
+}));
 
 export const variantSelections = createTable(
   "variant_selection",
   {
     enrollmentId: uuid("enrollment_id")
       .notNull()
-      .references(() => courseEnrollments.id, { onDelete: "cascade" }),
+      .references(() => enrollments.id, { onDelete: "cascade" }),
     variantOptionId: uuid("variant_option_id")
       .notNull()
       .references(() => variantOptions.id, { onDelete: "cascade" }),
@@ -310,9 +303,9 @@ export type VariantSelection = InferSelectModel<typeof variantSelections>;
 export const variantSelectionsRelations = relations(
   variantSelections,
   ({ one }) => ({
-    enrollment: one(courseEnrollments, {
+    enrollment: one(enrollments, {
       fields: [variantSelections.enrollmentId],
-      references: [courseEnrollments.id],
+      references: [enrollments.id],
     }),
     variantOption: one(variantOptions, {
       fields: [variantSelections.variantOptionId],
@@ -426,7 +419,7 @@ export const detailedCourseSchema = courseSchema.extend({
   ),
 });
 export type DetailedCourse = z.infer<typeof detailedCourseSchema>;
-export type DetailedEnrollment = CourseEnrollment & {
+export type DetailedEnrollment = Enrollment & {
   course: DetailedCourse;
 };
 
@@ -442,7 +435,7 @@ export const tutoringSessions = createTable(
       .references(() => topics.id, { onDelete: "cascade" }),
     enrollmentId: uuid("enrollment_id")
       .notNull()
-      .references(() => courseEnrollments.id, { onDelete: "cascade" }),
+      .references(() => enrollments.id, { onDelete: "cascade" }),
     conclusion: text("conclusion"),
     demonstratesMastery: boolean("demonstrates_mastery").default(false),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -471,9 +464,9 @@ export const tutoringSessionsRelations = relations(
       fields: [tutoringSessions.topicId],
       references: [topics.id],
     }),
-    enrollment: one(courseEnrollments, {
+    enrollment: one(enrollments, {
       fields: [tutoringSessions.enrollmentId],
-      references: [courseEnrollments.id],
+      references: [enrollments.id],
     }),
   }),
 );

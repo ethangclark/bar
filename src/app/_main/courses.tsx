@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { noop } from "~/common/utils/fnUtils";
 import { formatDayDate } from "~/common/utils/timeUtils";
-import { type CourseEnrollment, type CourseType } from "~/server/db/schema";
+import { type Enrollment, type CourseType } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
 function Option({
@@ -13,7 +13,7 @@ function Option({
   onResume,
 }: {
   courseType: CourseType;
-  enrollment: CourseEnrollment | null;
+  enrollment: Enrollment | null;
   onEnroll: () => void;
   onResume: () => void;
 }) {

@@ -24,22 +24,22 @@ async function primeSessions() {
     throw new Error("Ethan user not found");
   }
   for (const course of latestCourses) {
-    let enrollment = await db.query.courseEnrollments.findFirst({
+    let enrollment = await db.query.enrollments.findFirst({
       where: and(
-        eq(dbSchema.courseEnrollments.userId, ethanUser.id),
-        eq(dbSchema.courseEnrollments.courseId, course.id),
+        eq(dbSchema.enrollments.userId, ethanUser.id),
+        eq(dbSchema.enrollments.courseId, course.id),
       ),
     });
     if (!enrollment) {
       console.log("Enrolling Ethan in course", course.courseType.name);
-      await db.insert(dbSchema.courseEnrollments).values({
+      await db.insert(dbSchema.enrollments).values({
         userId: ethanUser.id,
         courseId: course.id,
       });
-      enrollment = await db.query.courseEnrollments.findFirst({
+      enrollment = await db.query.enrollments.findFirst({
         where: and(
-          eq(dbSchema.courseEnrollments.userId, ethanUser.id),
-          eq(dbSchema.courseEnrollments.courseId, course.id),
+          eq(dbSchema.enrollments.userId, ethanUser.id),
+          eq(dbSchema.enrollments.courseId, course.id),
         ),
       });
       if (!enrollment) {

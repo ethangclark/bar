@@ -20,8 +20,8 @@ export const courseRouter = createTRPCRouter({
 
   enrollments: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
-    const courseEnrollments = await db.query.courseEnrollments.findMany({
-      where: eq(dbSchema.courseEnrollments.userId, userId),
+    const enrollments = await db.query.enrollments.findMany({
+      where: eq(dbSchema.enrollments.userId, userId),
       with: {
         course: {
           with: {
@@ -30,7 +30,7 @@ export const courseRouter = createTRPCRouter({
         },
       },
     });
-    return courseEnrollments;
+    return enrollments;
   }),
 
   enroll: protectedProcedure
@@ -45,7 +45,7 @@ export const courseRouter = createTRPCRouter({
         throw new Error("No seats remaining");
       }
       const userId = ctx.session.user.id;
-      await db.insert(dbSchema.courseEnrollments).values({
+      await db.insert(dbSchema.enrollments).values({
         userId,
         courseId: input.courseId,
       });
@@ -59,10 +59,10 @@ export const courseRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const courseEnrollment = await db.query.courseEnrollments.findFirst({
+      const enrollment = await db.query.enrollments.findFirst({
         where: and(
-          eq(dbSchema.courseEnrollments.userId, userId),
-          eq(dbSchema.courseEnrollments.id, input.enrollmentId),
+          eq(dbSchema.enrollments.userId, userId),
+          eq(dbSchema.enrollments.id, input.enrollmentId),
         ),
         with: {
           course: {
@@ -81,10 +81,10 @@ export const courseRouter = createTRPCRouter({
           },
         },
       });
-      if (!courseEnrollment) {
+      if (!enrollment) {
         throw new Error("Course enrollment not found");
       }
-      return courseEnrollment;
+      return enrollment;
     }),
 
   courses: publicProcedure.query(async () => {
