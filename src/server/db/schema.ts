@@ -3,6 +3,7 @@ import {
   boolean,
   index,
   integer,
+  pgEnum,
   pgTableCreator,
   primaryKey,
   text,
@@ -11,7 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 import { z } from "zod";
-import { type Role, roleSchema } from "../ai/llm/schemas";
+import { createSelectSchema } from "drizzle-zod";
 
 export const createTable = pgTableCreator((name) => `drizzle_${name}`);
 
@@ -150,10 +151,7 @@ export const courseTypesRelations = relations(courseTypes, ({ many }) => ({
   courses: many(courses),
   variantTypes: many(variantTypes),
 }));
-export const courseTypeSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-}) satisfies z.ZodType<CourseType>;
+export const courseTypeSchema = createSelectSchema(courseTypes);
 
 // E.g.: jurisdiction would be a course type variant on the bar exam course type.
 // A course type could have multiple variants types.
@@ -184,11 +182,7 @@ export const variantTypesRelations = relations(
     options: many(variantOptions),
   }),
 );
-export const variantTypeSchema = z.object({
-  id: z.string(),
-  courseTypeId: z.string(),
-  name: z.string(),
-}) satisfies z.ZodType<VariantType>;
+export const variantTypeSchema = createSelectSchema(variantTypes);
 
 export const variantOptions = createTable(
   "variant_option",
@@ -242,11 +236,7 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
   units: many(units),
   enrollments: many(enrollments),
 }));
-export const courseSchema = z.object({
-  id: z.string(),
-  typeId: z.string(),
-  createdAt: z.date(),
-}) satisfies z.ZodType<Course>;
+export const courseSchema = createSelectSchema(courses);
 
 export const enrollments = createTable(
   "enrollment",
@@ -336,11 +326,7 @@ export const unitsRelations = relations(units, ({ one, many }) => ({
   }),
   modules: many(modules),
 }));
-export const unitSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  courseId: z.string(),
-}) satisfies z.ZodType<Unit>;
+export const unitSchema = createSelectSchema(units);
 
 export const modules = createTable(
   "module",
@@ -364,11 +350,7 @@ export const modulesRelations = relations(modules, ({ one, many }) => ({
   }),
   topics: many(topics),
 }));
-export const moduleSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  unitId: z.string(),
-}) satisfies z.ZodType<Module>;
+export const moduleSchema = createSelectSchema(modules);
 
 export const topics = createTable(
   "topic",
@@ -391,11 +373,7 @@ export const topicsRelations = relations(topics, ({ one }) => ({
     references: [modules.id],
   }),
 }));
-export const topicSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  moduleId: z.string(),
-}) satisfies z.ZodType<Topic>;
+export const topicSchema = createSelectSchema(topics);
 
 export const topicContextSchema = z.object({
   course: courseSchema,
@@ -471,6 +449,14 @@ export const tutoringSessionsRelations = relations(
   }),
 );
 
+export const senderRoleEnum = pgEnum("sender_role", [
+  "user",
+  "assistant",
+  "system",
+]);
+export const senderRoleSchema = z.enum(senderRoleEnum.enumValues);
+export type SenderRole = z.infer<typeof senderRoleSchema>;
+
 export const chatMessages = createTable(
   "chat_message",
   {
@@ -481,7 +467,7 @@ export const chatMessages = createTable(
     tutoringSessionId: uuid("tutoring_session_id")
       .notNull()
       .references(() => tutoringSessions.id, { onDelete: "cascade" }),
-    senderRole: text("sender_role").notNull(),
+    senderRole: senderRoleEnum("sender_role").notNull(),
     content: text("content").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -494,12 +480,7 @@ export const chatMessages = createTable(
     ),
   }),
 );
-export type ChatMessage = Omit<
-  InferSelectModel<typeof chatMessages>,
-  "senderRole"
-> & {
-  senderRole: Role;
-};
+export type ChatMessage = InferSelectModel<typeof chatMessages>;
 export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
   user: one(users, {
     fields: [chatMessages.userId],
@@ -510,11 +491,4 @@ export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
     references: [tutoringSessions.id],
   }),
 }));
-export const chatMessageSchema = z.object({
-  id: z.string(),
-  userId: z.string(),
-  tutoringSessionId: z.string(),
-  senderRole: roleSchema,
-  content: z.string(),
-  createdAt: z.date(),
-}) satisfies z.ZodType<ChatMessage>;
+export const chatMessageSchema = createSelectSchema(chatMessages);

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SenderRole, senderRoleSchema } from "~/server/db/schema";
 
 // see https://openrouter.ai/docs/requests for other addable fields
 
@@ -28,8 +29,8 @@ export type ImageContentPart = z.infer<typeof imageContentSchema>;
 const contentPartSchema = z.union([textContentSchema, imageContentSchema]);
 export type ContentPart = z.infer<typeof contentPartSchema>;
 
-export const roleSchema = z.enum(["user", "assistant", "system"]);
-export type Role = z.infer<typeof roleSchema>;
+export const roleSchema = senderRoleSchema;
+export type Role = SenderRole;
 
 const message = z.object({
   role: roleSchema,

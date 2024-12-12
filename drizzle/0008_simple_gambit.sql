@@ -1,0 +1,2 @@
+CREATE TYPE "public"."sender_role" AS ENUM('user', 'assistant', 'system');--> statement-breakpoint
+ALTER TABLE "drizzle_chat_message" ALTER COLUMN "sender_role" SET DATA TYPE sender_role USING "sender_role"::sender_role;
