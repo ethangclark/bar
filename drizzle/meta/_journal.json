@@ -64,6 +64,13 @@
       "when": 1734046834716,
       "tag": "0008_simple_gambit",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1734047788759,
+      "tag": "0009_loose_chameleon",
+      "breakpoints": true
     }
   ]
 }
