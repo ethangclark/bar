@@ -1,4 +1,4 @@
-import { relations, type InferSelectModel } from "drizzle-orm";
+import { relations, type InferSelectModel, sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -8,6 +8,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
@@ -168,12 +169,21 @@ export const courses = pgTable(
     typeId: uuid("type_id")
       .notNull()
       .references(() => courseTypes.id, { onDelete: "cascade" }),
+    variant: text("variant"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
     acceptingEnrollments: boolean("accepting_enrollments").default(false),
   },
-  (course) => [index("course_type_id_idx").on(course.typeId)],
+  (course) => [
+    index("course_type_id_idx").on(course.typeId),
+
+    // Partial unique index to ensure only one course per variant can accept enrollments
+    uniqueIndex("courses_variant_accepting_enrollments_idx")
+      // Use coalesce to treat null variant as a unique 'placeholder'
+      .on(sql`COALESCE(${course.variant}, '___NULL___')`)
+      .where(sql`${course.acceptingEnrollments} = true`),
+  ],
 );
 export type Course = InferSelectModel<typeof courses>;
 export const coursesRelations = relations(courses, ({ one, many }) => ({
