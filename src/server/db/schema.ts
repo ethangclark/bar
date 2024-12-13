@@ -171,6 +171,7 @@ export const courses = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    acceptingEnrollments: boolean("accepting_enrollments").default(false),
   },
   (course) => [index("course_type_id_idx").on(course.typeId)],
 );
@@ -184,30 +185,6 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
   enrollments: many(enrollments),
 }));
 export const courseSchema = createSelectSchema(courses);
-
-export const enrollableCourses = pgTable(
-  "enrollable_course",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    courseId: uuid("course_id")
-      .notNull()
-      .references(() => courses.id, { onDelete: "cascade" }),
-  },
-  (enrollableCourse) => [
-    index("enrollable_course_course_id_idx").on(enrollableCourse.courseId),
-  ],
-);
-export type EnrollableCourse = InferSelectModel<typeof enrollableCourses>;
-export const enrollableCoursesRelations = relations(
-  enrollableCourses,
-  ({ one }) => ({
-    course: one(courses, {
-      fields: [enrollableCourses.courseId],
-      references: [courses.id],
-    }),
-  }),
-);
-export const enrollableCourseSchema = createSelectSchema(enrollableCourses);
 
 export const enrollments = pgTable(
   "enrollment",

@@ -71,6 +71,13 @@
       "when": 1734047788759,
       "tag": "0009_loose_chameleon",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1734059200800,
+      "tag": "0010_narrow_sinister_six",
+      "breakpoints": true
     }
   ]
 }
