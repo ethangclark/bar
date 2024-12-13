@@ -3,18 +3,17 @@ import "~/env";
 import { db } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
 import { getUnits } from "./getUnits";
-
-const courseName = "Bar Exam Prep";
+import { generalBarName } from "../utils/constants";
 
 async function ensureCourseType() {
   let courseType = await db.query.courseTypes.findFirst({
-    where: eq(dbSchema.courseTypes.name, courseName),
+    where: eq(dbSchema.courseTypes.name, generalBarName),
   });
   if (!courseType) {
     [courseType] = await db
       .insert(dbSchema.courseTypes)
       .values({
-        name: courseName,
+        name: generalBarName,
       })
       .returning();
   }
