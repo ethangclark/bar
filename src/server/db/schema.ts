@@ -34,6 +34,14 @@ export const posts = pgTable(
     index("post_name_idx").on(example.name),
   ],
 );
+export type Post = InferSelectModel<typeof posts>;
+export const postsRelations = relations(posts, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [posts.createdById],
+    references: [users.id],
+  }),
+}));
+export const postSchema = createSelectSchema(posts);
 
 export const users = pgTable("user", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -52,6 +60,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   enrollments: many(enrollments),
 }));
+export const userSchema = createSelectSchema(users);
 
 export const ipUsers = pgTable(
   "ip_user",
@@ -67,6 +76,7 @@ export type IpUser = InferSelectModel<typeof ipUsers>;
 export const ipUsersRelations = relations(ipUsers, ({ one }) => ({
   user: one(users, { fields: [ipUsers.userId], references: [users.id] }),
 }));
+export const ipUserSchema = createSelectSchema(ipUsers);
 
 export const accounts = pgTable(
   "account",
@@ -96,6 +106,7 @@ export type Account = InferSelectModel<typeof accounts>;
 export const accountsRelations = relations(accounts, ({ one }) => ({
   user: one(users, { fields: [accounts.userId], references: [users.id] }),
 }));
+export const accountSchema = createSelectSchema(accounts);
 
 export const sessions = pgTable(
   "session",
@@ -115,6 +126,7 @@ export type Session = InferSelectModel<typeof sessions>;
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, { fields: [sessions.userId], references: [users.id] }),
 }));
+export const sessionSchema = createSelectSchema(sessions);
 
 export const verificationTokens = pgTable(
   "verification_token",
@@ -129,6 +141,11 @@ export const verificationTokens = pgTable(
   (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })],
 );
 export type VerificationToken = InferSelectModel<typeof verificationTokens>;
+export const verificationTokensRelations = relations(
+  verificationTokens,
+  ({}) => ({}),
+);
+export const verificationTokensSchema = createSelectSchema(verificationTokens);
 
 export const courseTypes = pgTable(
   "course_type",
@@ -168,6 +185,30 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
 }));
 export const courseSchema = createSelectSchema(courses);
 
+export const enrollableCourses = pgTable(
+  "enrollable_course",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => courses.id, { onDelete: "cascade" }),
+  },
+  (enrollableCourse) => [
+    index("enrollable_course_course_id_idx").on(enrollableCourse.courseId),
+  ],
+);
+export type EnrollableCourse = InferSelectModel<typeof enrollableCourses>;
+export const enrollableCoursesRelations = relations(
+  enrollableCourses,
+  ({ one }) => ({
+    course: one(courses, {
+      fields: [enrollableCourses.courseId],
+      references: [courses.id],
+    }),
+  }),
+);
+export const enrollableCourseSchema = createSelectSchema(enrollableCourses);
+
 export const enrollments = pgTable(
   "enrollment",
   {
@@ -199,6 +240,7 @@ export const enrollmentsRelations = relations(enrollments, ({ one, many }) => ({
   }),
   tutoringSessions: many(tutoringSessions),
 }));
+export const enrollmentSchema = createSelectSchema(enrollments);
 
 export const units = pgTable(
   "unit",
@@ -342,6 +384,7 @@ export const tutoringSessionsRelations = relations(
     }),
   }),
 );
+export const tutoringSessionSchema = createSelectSchema(tutoringSessions);
 
 export const senderRoleEnum = pgEnum("sender_role", [
   "user",
