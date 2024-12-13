@@ -10,7 +10,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { getServerAuthSession } from "~/server/auth";
+import { getServerAuthSession } from "~/server/auth/auth";
 import { db } from "~/server/db";
 import { ipUsers, users } from "~/server/db/schema";
 import { eq } from "drizzle-orm";

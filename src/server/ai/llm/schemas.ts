@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { SenderRole, senderRoleSchema } from "~/server/db/schema";
+import { type SenderRole, senderRoleSchema } from "~/server/db/schema";
 
 // see https://openrouter.ai/docs/requests for other addable fields
 

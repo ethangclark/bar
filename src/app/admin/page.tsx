@@ -20,7 +20,7 @@ export default function AdminPage() {
           <div key={course.id}>
             <h2>{course.courseType.name}</h2>
             <p>Course ID: {course.id}</p>
-            <p>Created: {formatDateTime(course.creationDate)}</p>
+            <p>Created: {formatDateTime(course.createdAt)}</p>
             <Link href={`/admin/courses/${course.id}`}>
               <Button type="primary">Edit</Button>
             </Link>

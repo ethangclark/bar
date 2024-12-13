@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { CreatePost } from "~/app/test/_components/create-post";
-import { getServerAuthSession } from "~/server/auth";
+import { getServerAuthSession } from "~/server/auth/auth";
 import { api } from "~/trpc/server";
 
 export default async function Home() {

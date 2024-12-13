@@ -12,7 +12,7 @@ export async function getLatestCoursesByType() {
       courseType: {
         id: dbSchema.courseTypes.id,
         name: dbSchema.courseTypes.name,
-        creationDate: dbSchema.courses.creationDate,
+        creationDate: dbSchema.courses.createdAt,
       },
     })
     .from(dbSchema.courses)
@@ -21,13 +21,13 @@ export async function getLatestCoursesByType() {
       eq(dbSchema.courses.typeId, dbSchema.courseTypes.id),
     )
     .where(
-      sql`(${dbSchema.courses.typeId}, ${dbSchema.courses.creationDate}) in (
-        select ${dbSchema.courses.typeId}, max(${dbSchema.courses.creationDate})
+      sql`(${dbSchema.courses.typeId}, ${dbSchema.courses.createdAt}) in (
+        select ${dbSchema.courses.typeId}, max(${dbSchema.courses.createdAt})
         from ${dbSchema.courses}
         group by ${dbSchema.courses.typeId}
       )`,
     )
-    .orderBy(desc(dbSchema.courses.creationDate));
+    .orderBy(desc(dbSchema.courses.createdAt));
 
   return latestCourses;
 }

@@ -20,9 +20,6 @@ export default function AdminCoursePage({ params }: Props) {
   const { isLoading, data: course } = api.course.courseDetail.useQuery({
     courseId,
   });
-  const variantTypes = api.variants.types.useQuery({
-    courseTypeId: course?.courseType.id ?? null,
-  });
 
   const {
     treeData,
@@ -53,17 +50,7 @@ export default function AdminCoursePage({ params }: Props) {
           <div className="mr-8">
             <Tree {...treeProps} />
           </div>
-          <div className="border p-10">
-            <div className="mb-5 text-xl">Variants:</div>
-            {variantTypes.data?.map((vt) => (
-              <div key={vt.id}>
-                <h2>{vt.name}</h2>
-                {vt.options.map((o) => (
-                  <div key={o.id}>{o.value}</div>
-                ))}
-              </div>
-            ))}
-          </div>
+          <div className="border p-10"></div>
         </div>
       </ClientOnly>
     </Page>
