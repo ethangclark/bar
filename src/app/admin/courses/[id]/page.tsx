@@ -17,7 +17,7 @@ type Props = {
 export default function AdminCoursePage({ params }: Props) {
   const courseId = z.string().parse(params.id);
 
-  const { isLoading, data: course } = api.course.courseDetail.useQuery({
+  const { isLoading, data: course } = api.courses.courseDetail.useQuery({
     courseId,
   });
 

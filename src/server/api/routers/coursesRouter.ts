@@ -7,15 +7,12 @@ import {
 } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
-import { getLatestCoursesByType } from "~/server/services/course";
+import { getOpenCourses } from "~/server/services/course";
 import { getSeatsRemaining } from "~/server/services/seats";
 
-export const courseRouter = createTRPCRouter({
+export const coursesRouter = createTRPCRouter({
   available: publicProcedure.query(async () => {
-    const latestCourses = await getLatestCoursesByType();
-    return {
-      latestCourses,
-    };
+    return getOpenCourses();
   }),
 
   enrollments: protectedProcedure.query(async ({ ctx }) => {

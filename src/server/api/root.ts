@@ -1,6 +1,6 @@
 import { postRouter } from "~/server/api/routers/postRouter";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
-import { courseRouter } from "./routers/courseRouter";
+import { coursesRouter } from "./routers/coursesRouter";
 import { tutoringSessionRouter } from "./routers/tutoringSessionRouter";
 import { transcriptionRouter } from "./routers/transcriptionRouter";
 import { authRouter } from "./routers/authRouter";
@@ -12,7 +12,7 @@ import { authRouter } from "./routers/authRouter";
  */
 export const appRouter = createTRPCRouter({
   auth: authRouter,
-  course: courseRouter,
+  courses: coursesRouter,
   post: postRouter,
   chat: tutoringSessionRouter,
   trascription: transcriptionRouter,

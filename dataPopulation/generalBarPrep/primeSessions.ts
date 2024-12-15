@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
-import { getLatestCoursesByType } from "~/server/services/course";
+import { getOpenCourses } from "~/server/services/course";
 import { createTutoringSession } from "~/server/services/tutoringSession";
 
 // async function getFirstEmailVerifiedUser() {
@@ -16,14 +16,17 @@ import { createTutoringSession } from "~/server/services/tutoringSession";
 // }
 
 async function primeSessions() {
-  const latestCourses = await getLatestCoursesByType();
+  const openCourses = await getOpenCourses();
   const ethanUser = await db.query.users.findFirst({
     where: eq(dbSchema.users.email, "ethangclark@gmail.com"),
   });
   if (!ethanUser) {
     throw new Error("Ethan user not found");
   }
-  for (const course of latestCourses) {
+  for (const course of openCourses) {
+    if (Math.random() < 2) {
+      throw Error("the below code is bad");
+    }
     let enrollment = await db.query.enrollments.findFirst({
       where: and(
         eq(dbSchema.enrollments.userId, ethanUser.id),

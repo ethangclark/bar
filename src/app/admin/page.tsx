@@ -8,7 +8,7 @@ import { formatDateTime } from "~/common/utils/timeUtils";
 import Link from "next/link";
 
 export default function AdminPage() {
-  const { isLoading, data } = api.course.courses.useQuery();
+  const { isLoading, data } = api.courses.courses.useQuery();
   if (isLoading) {
     return <Spin />;
   }

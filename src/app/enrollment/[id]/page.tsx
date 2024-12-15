@@ -23,7 +23,7 @@ export default function CoursePage({ params }: Props) {
   const enrollmentId = z.string().parse(params.id);
 
   const { isLoading: isEnrollmentLoading, data: enrollment } =
-    api.course.enrollment.useQuery({ enrollmentId });
+    api.courses.enrollment.useQuery({ enrollmentId });
   const {
     refetch: refetchSessions,
     isLoading: areSessionsLoading,

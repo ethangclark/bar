@@ -169,7 +169,7 @@ export const courses = pgTable(
     typeId: uuid("type_id")
       .notNull()
       .references(() => courseTypes.id, { onDelete: "cascade" }),
-    variant: text("variant"),
+    flavor: text("flavor"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -178,10 +178,10 @@ export const courses = pgTable(
   (course) => [
     index("course_type_id_idx").on(course.typeId),
 
-    // Partial unique index to ensure only one course per variant can accept enrollments
-    uniqueIndex("courses_variant_accepting_enrollments_idx")
-      // Use coalesce to treat null variant as a unique 'placeholder'
-      .on(sql`COALESCE(${course.variant}, '___NULL___')`)
+    // Partial unique index to ensure only one course per flavor can accept enrollments
+    uniqueIndex("course_flavor_accepting_enrollments_idx")
+      // Use coalesce to treat null flavor as a unique 'placeholder'
+      .on(sql`COALESCE(${course.flavor}, '___NULL___')`)
       .where(sql`${course.acceptingEnrollments} = true`),
   ],
 );

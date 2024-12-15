@@ -49,14 +49,14 @@ function Option({
 }
 
 export function Courses() {
-  const { data: availableCourses, isLoading: areAvailableCoursesLoading } =
-    api.course.available.useQuery();
-  const { mutateAsync: enroll } = api.course.enroll.useMutation();
+  const { data: openCourses, isLoading: areAvailableCoursesLoading } =
+    api.courses.available.useQuery();
+  const { mutateAsync: enroll } = api.courses.enroll.useMutation();
   const {
     data: enrollments,
     isLoading: areEnrollmentsLoading,
     refetch: refetchEnrollments,
-  } = api.course.enrollments.useQuery();
+  } = api.courses.enrollments.useQuery();
   const router = useRouter();
 
   const { options, actionFuncs } = useMemo(() => {
@@ -75,11 +75,11 @@ export function Courses() {
         />,
       );
     });
-    availableCourses?.latestCourses.forEach((course) => {
+    openCourses?.forEach((course) => {
       if (
         enrollments?.some(
           (enrollment) =>
-            enrollment.course.courseType.id === course.courseTypeId,
+            enrollment.course.courseType.id === course.courseType.id,
         )
       ) {
         return;
@@ -100,24 +100,18 @@ export function Courses() {
       );
     });
     return { options, actionFuncs };
-  }, [
-    availableCourses?.latestCourses,
-    enroll,
-    enrollments,
-    refetchEnrollments,
-    router,
-  ]);
+  }, [openCourses, enroll, enrollments, refetchEnrollments, router]);
 
   const isLoading = areAvailableCoursesLoading || areEnrollmentsLoading;
 
-  // if there's only one option, just take it
+  // if there's only one option, just take it, and keep showing loading screen
+  const isOnlyOneOption = actionFuncs.length === 1;
   useEffect(() => {
-    if (!isLoading && actionFuncs[0] && actionFuncs.length < 2) {
-      void actionFuncs[0]();
+    if (!isLoading && isOnlyOneOption) {
+      void actionFuncs[0]?.();
     }
-  }, [actionFuncs, enrollments, isLoading]);
-
-  if (isLoading) {
+  }, [actionFuncs, isLoading, isOnlyOneOption]);
+  if (isLoading || isOnlyOneOption) {
     return <Spin />;
   }
 
