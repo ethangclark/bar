@@ -3,3 +3,7 @@ export function getBaseUrl() {
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return `http://localhost:${process.env.PORT ?? 4000}`;
 }
+
+export function getTrpcUrl() {
+  return `${getBaseUrl()}/api/trpc`;
+}

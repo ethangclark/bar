@@ -24,7 +24,7 @@ export const env = createEnv({
     ANTHROPIC_API_KEY: z.string(),
     HEADFUL: z.boolean(),
     OPENROUTER_API_KEY: z.string(),
-    PORT: z.string(),
+    PORT: z.string().default("3000"),
   },
 
   /**

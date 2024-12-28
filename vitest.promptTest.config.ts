@@ -4,8 +4,8 @@ import { create } from "mutative";
 
 const asDefineParam: Parameters<typeof defineConfig>[0] = defaultConfig;
 
-const testTimeout = process.env.TEST_TIMOUT
-  ? parseInt(process.env.TEST_TIMOUT)
+const testTimeout = process.env.TEST_TIMEOUT
+  ? parseInt(process.env.TEST_TIMEOUT)
   : 30000;
 
 const config = create(asDefineParam, (draft) => {
