@@ -10,23 +10,13 @@ Reverse the burn-out. Learn dynamically. Try SummitEd.ai for free.
 
 Unlimited FREE access as part of our beta program
 
-Optional: $20 gift card available for students who reach 20% course completion and participate in a short product feedback interview
-
 Visit SummitEd.ai to get started
 
-### Reddit post
+### Instructions for data population
 
-Introducing: tutored bar prep lessons for ALL bar topics (free, beta)
-
-Howdy. I’ve created Summited.ai, which features a tutor called Summit that guides you through all (yes, all) bar prep topics.
-Specifically it covers civil procedure, constitutional law, contracts, criminal law, criminal procedure, evidence, real property, torts, and all of the possible essay topics (business associations, conflict of laws, family law, trusts and estates, secured transactions).
-It's free (yes, actually free) if you sign up during the beta. I'm just looking to get people using it.
-Summit (the tutor) asks you questions about your knowledge on each topic, and then works with you to build your understanding until you're up to speed. It'll break down topic nuances, answer questions, and quiz you to make sure you're at the right level of understanding.
-All it requires is your email address so it can keep track of what topics you've covered. I'll be sending emails out to people that complete 20% or more of the material to see if you'd be up for a zoom meeting to give feedback. No pressure if you're not interested.
-It's not a perfect app, but it'll be getting better every day. Feedback appreciated, but not required.
-Best of luck to everyone this February!
-
-https://www.reddit.com/r/barexam/comments/1hase73/introducing_tutored_bar_prep_lessons_for_all_bar/
+0. Create an account using `ethangclark@gmail.com` (this is the admin account)
+1. Run `npx tsx dataPopulation/generalBarPrep/populate.tsx`
+2. Update `acceptingEnrollments` to `true` for the `flavor: null` course that was created
 
 # Create T3 App
 

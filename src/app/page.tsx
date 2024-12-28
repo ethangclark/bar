@@ -36,9 +36,10 @@ export default function Home() {
                 style={{ maxWidth: 450 }}
               >
                 <p>
-                  SummitEd is an instant chat and voice-based tutor that reviews
-                  all the material you need to pass the bar, drilling into areas
-                  of improvement until you've reached proficiency.
+                  SummitEd.ai provides an instant chat and voice-based tutor
+                  that reviews all the material you need to pass the bar,
+                  drilling into areas of improvement until you've reached
+                  proficiency.
                 </p>
                 <p>
                   We are providing <span className="font-bold">free</span>{" "}
