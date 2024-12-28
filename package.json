@@ -10,13 +10,13 @@
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/server/db/migrate.ts",
-    "dev": "yarn docker && next dev -p 4000",
+    "dev": "yarn docker && PORT=4000 tsx src/server.ts",
     "lint": "npx tsc --noEmit && next lint",
     "test": "vitest",
     "lt": "yarn lint && yarn test --run",
     "test:prompts": "TEST_TIMOUT=99999999 TEST_TYPE=prompt_test tsx promptTest.ts",
     "test:coverage": "vitest --run --coverage.reporter=text",
-    "start": "yarn db:migrate && next start"
+    "start": "yarn db:migrate && tsx src/server.ts"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.18.2",
