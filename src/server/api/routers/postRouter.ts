@@ -34,4 +34,11 @@ export const postRouter = createTRPCRouter({
       orderBy: (posts, { desc }) => [desc(posts.createdAt)],
     });
   }),
+
+  subscribe: publicProcedure.subscription(async function* () {
+    while (true) {
+      await new Promise((r) => setTimeout(r, 1000));
+      yield Math.random();
+    }
+  }),
 });

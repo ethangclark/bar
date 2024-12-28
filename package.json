@@ -10,13 +10,13 @@
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/server/db/migrate.ts",
-    "dev": "yarn docker && PORT=4000 tsx src/server.ts",
+    "dev": "yarn docker && PORT=4000 next dev",
     "lint": "npx tsc --noEmit && next lint",
     "test": "vitest",
     "lt": "yarn lint && yarn test --run",
     "test:prompts": "TEST_TIMEOUT=99999999 TEST_TYPE=prompt_test tsx promptTest.ts",
     "test:coverage": "vitest --run --coverage.reporter=text",
-    "start": "yarn db:migrate && tsx src/server.ts"
+    "start": "yarn db:migrate && next start"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.18.2",
@@ -26,10 +26,10 @@
     "@auth/drizzle-adapter": "^1.7.4",
     "@simbathesailor/use-what-changed": "^2.0.0",
     "@t3-oss/env-nextjs": "^0.10.1",
-    "@tanstack/react-query": "^5.25.0",
-    "@trpc/client": "next",
-    "@trpc/react-query": "next",
-    "@trpc/server": "next",
+    "@tanstack/react-query": "^5.62.11",
+    "@trpc/client": "^11.0.0-rc.677",
+    "@trpc/react-query": "^11.0.0-rc.677",
+    "@trpc/server": "^11.0.0-rc.677",
     "antd": "^5.17.3",
     "canvas-confetti": "^1.9.3",
     "dayjs": "^1.11.11",
@@ -51,7 +51,6 @@
     "server-only": "^0.0.1",
     "superjson": "^2.2.1",
     "tsx": "^4.11.0",
-    "ws": "^8.18.0",
     "zod": "^3.23.3"
   },
   "devDependencies": {
@@ -62,7 +61,6 @@
     "@types/nodemailer": "^6.4.15",
     "@types/react": "^18.2.57",
     "@types/react-dom": "^18.2.19",
-    "@types/ws": "^8.5.13",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
     "@vitest/coverage-v8": "^2.0.5",

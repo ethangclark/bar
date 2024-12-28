@@ -16,6 +16,9 @@ export function CreatePost() {
     },
   });
 
+  const sleh = api.post.subscribe.useSubscription();
+  console.log(sleh);
+
   return (
     <form
       onSubmit={(e) => {
