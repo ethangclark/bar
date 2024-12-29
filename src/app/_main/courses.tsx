@@ -49,14 +49,10 @@ function Option({
 }
 
 export function Courses() {
-  const { data: openCourses, isLoading: areAvailableCoursesLoading } =
-    api.courses.available.useQuery();
+  const { data, isLoading, refetch } =
+    api.courses.availableAndEnrollments.useQuery();
+  const { openCourses, enrollments } = data ?? {};
   const { mutateAsync: enroll } = api.courses.enroll.useMutation();
-  const {
-    data: enrollments,
-    isLoading: areEnrollmentsLoading,
-    refetch: refetchEnrollments,
-  } = api.courses.enrollments.useQuery();
   const router = useRouter();
 
   const { options, actionFuncs } = useMemo(() => {
@@ -86,7 +82,7 @@ export function Courses() {
       }
       const actionFunc = async () => {
         await enroll({ courseId: course.id });
-        await refetchEnrollments();
+        await refetch();
       };
       actionFuncs.push(actionFunc);
       options.push(
@@ -100,9 +96,7 @@ export function Courses() {
       );
     });
     return { options, actionFuncs };
-  }, [openCourses, enroll, enrollments, refetchEnrollments, router]);
-
-  const isLoading = areAvailableCoursesLoading || areEnrollmentsLoading;
+  }, [enroll, enrollments, openCourses, refetch, router]);
 
   // if there's only one option, just take it, and keep showing loading screen
   const isOnlyOneOption = actionFuncs.length === 1;

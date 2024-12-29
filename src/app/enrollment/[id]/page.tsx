@@ -22,17 +22,14 @@ type Props = {
 export default function CoursePage({ params }: Props) {
   const enrollmentId = z.string().parse(params.id);
 
-  const { isLoading: isEnrollmentLoading, data: enrollment } =
-    api.courses.enrollment.useQuery({ enrollmentId });
   const {
-    refetch: refetchSessions,
-    isLoading: areSessionsLoading,
-    data: tutoringSessions,
-  } = api.tutoringSession.enrollmentTutoringSessions.useQuery({
+    isLoading,
+    data: enrollment,
+    refetch,
+  } = api.courses.enrollment.useQuery({
     enrollmentId,
   });
-
-  const isLoading = isEnrollmentLoading || areSessionsLoading;
+  const tutoringSessions = enrollment?.tutoringSessions;
 
   const {
     treeData,
@@ -61,13 +58,13 @@ export default function CoursePage({ params }: Props) {
     [selectedTopicContext?.topic.id, tutoringSessions],
   );
 
-  const streamlinedRefetch = useCallback(async () => {
-    const r = await refetchSessions();
+  const refetchTutoringSessions = useCallback(async () => {
+    const r = await refetch();
     if (!r.data) {
       throw new Error("Failed to refetch sessions");
     }
-    return r.data;
-  }, [refetchSessions]);
+    return r.data.tutoringSessions;
+  }, [refetch]);
 
   const [newUserModalOpen, setNewUserModalOpen] = useState(false);
   const newUserModalShownRef = useRef(false);
@@ -140,7 +137,7 @@ export default function CoursePage({ params }: Props) {
                 enrollmentId={enrollmentId}
                 topicContext={selectedTopicContext}
                 topicTutoringSessions={topicTutoringSessions}
-                refetchTutoringSessions={streamlinedRefetch}
+                refetchTutoringSessions={refetchTutoringSessions}
                 onTopicComplete={selectNextTopic}
                 topLeftCorner={
                   <div className="xl:hidden">

@@ -36,22 +36,6 @@ async function getChatMessages({
 }
 
 export const tutoringSessionRouter = createTRPCRouter({
-  enrollmentTutoringSessions: protectedProcedure
-    .input(
-      z.object({
-        enrollmentId: z.string(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const { enrollmentId } = input;
-      const tutoringSessions = await db.query.tutoringSessions.findMany({
-        where: and(
-          eq(dbSchema.tutoringSessions.enrollmentId, enrollmentId),
-          eq(dbSchema.tutoringSessions.userId, ctx.session.user.id),
-        ),
-      });
-      return tutoringSessions;
-    }),
   createTutoringSession: protectedProcedure
     .input(createSessionParamSchema)
     .mutation(async ({ ctx, input }) => {

@@ -8,7 +8,22 @@ import {
 import { db } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
 import { getOpenCourses } from "~/server/services/course";
+import { getEnrollment } from "~/server/services/enrollment";
 import { getSeatsRemaining } from "~/server/services/seats";
+
+async function getEnrollments(userId: string) {
+  const enrollments = await db.query.enrollments.findMany({
+    where: eq(dbSchema.enrollments.userId, userId),
+    with: {
+      course: {
+        with: {
+          courseType: true,
+        },
+      },
+    },
+  });
+  return enrollments;
+}
 
 export const coursesRouter = createTRPCRouter({
   available: publicProcedure.query(async () => {
@@ -17,17 +32,17 @@ export const coursesRouter = createTRPCRouter({
 
   enrollments: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
-    const enrollments = await db.query.enrollments.findMany({
-      where: eq(dbSchema.enrollments.userId, userId),
-      with: {
-        course: {
-          with: {
-            courseType: true,
-          },
-        },
-      },
-    });
+    const enrollments = await getEnrollments(userId);
     return enrollments;
+  }),
+
+  availableAndEnrollments: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+    const [openCourses, enrollments] = await Promise.all([
+      getOpenCourses(),
+      getEnrollments(userId),
+    ]);
+    return { openCourses, enrollments };
   }),
 
   enroll: protectedProcedure
@@ -56,28 +71,8 @@ export const coursesRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const enrollment = await db.query.enrollments.findFirst({
-        where: and(
-          eq(dbSchema.enrollments.userId, userId),
-          eq(dbSchema.enrollments.id, input.enrollmentId),
-        ),
-        with: {
-          course: {
-            with: {
-              courseType: true,
-              units: {
-                with: {
-                  modules: {
-                    with: {
-                      topics: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      });
+      const { enrollmentId } = input;
+      const enrollment = await getEnrollment({ userId, enrollmentId });
       if (!enrollment) {
         throw new Error("Course enrollment not found");
       }

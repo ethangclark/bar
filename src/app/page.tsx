@@ -7,8 +7,8 @@ import { ClientOnly } from "./_components/ClientOnly";
 import { Courses } from "./_main/courses";
 
 export default function Home() {
-  const { data: isLoggedIn } = api.auth.isLoggedIn.useQuery();
-  const { data: seatsRemaining } = api.auth.seatsRemaining.useQuery();
+  const { data } = api.auth.seatsRemaining.useQuery();
+  const { isLoggedIn, seatsRemaining } = data ?? {};
 
   return (
     <ClientOnly>
