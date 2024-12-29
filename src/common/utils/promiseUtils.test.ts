@@ -1,5 +1,5 @@
 import { splitPromise } from "./promiseUtils";
-import { ShouldNeverHappen } from "./errorUtils";
+import { ShouldNeverHappenError } from "./errorUtils";
 import { noop } from "./fnUtils";
 
 describe("splitPromise", () => {
@@ -32,7 +32,7 @@ describe("splitPromise", () => {
       executor(noop /* second arg not defined */);
     } as unknown as PromiseConstructor;
 
-    expect(() => splitPromise<string>()).toThrow(ShouldNeverHappen);
+    expect(() => splitPromise<string>()).toThrow(ShouldNeverHappenError);
 
     global.Promise = originalPromise;
   });

@@ -9,7 +9,7 @@ function writeToLogs(
   action: Action = "write",
 ) {
   if (env.NODE_ENV === "production") {
-    console.log(`Attempted to log at ${fileName}`, Error().stack);
+    console.log(`Attempted to log at ${fileName}`, new Error().stack);
     return;
   }
   console.log(

@@ -1,29 +1,16 @@
-import { assertError, ShouldNeverHappen, assertNever } from "./errorUtils";
-
-// Tests for assertError function
-describe("assertError", () => {
-  it("should not throw an error when given an Error instance", () => {
-    const error = new Error("Test error");
-    expect(() => assertError(error)).not.toThrow();
-  });
-
-  it("should throw an error when given a non-Error instance", () => {
-    const nonError = "This is not an error";
-    expect(() => assertError(nonError)).toThrow(nonError);
-  });
-});
+import { ShouldNeverHappenError, assertNever } from "./errorUtils";
 
 // Tests for ShouldNeverHappen class
 describe("ShouldNeverHappen", () => {
   it("should have a default message", () => {
-    const error = new ShouldNeverHappen();
+    const error = new ShouldNeverHappenError();
     expect(error.message).toBe("This should never happen.");
     expect(error.name).toBe("ShouldNeverHappen");
   });
 
   it("should allow a custom message", () => {
     const customMessage = "Custom error message";
-    const error = new ShouldNeverHappen(customMessage);
+    const error = new ShouldNeverHappenError(customMessage);
     expect(error.message).toBe(customMessage);
     expect(error.name).toBe("ShouldNeverHappen");
   });
@@ -34,7 +21,7 @@ describe("assertNever", () => {
   it("should throw a ShouldNeverHappen error", () => {
     // @ts-expect-error: Forcing a value to trigger assertNever
     const unexpectedValue: never = "unexpected";
-    expect(() => assertNever(unexpectedValue)).toThrow(ShouldNeverHappen);
+    expect(() => assertNever(unexpectedValue)).toThrow(ShouldNeverHappenError);
     expect(() => assertNever(unexpectedValue)).toThrow(
       "Unexpected value that should never be reached",
     );

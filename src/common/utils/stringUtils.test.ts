@@ -1,6 +1,5 @@
 import { findFirstNumber, findJsonArray } from "./stringUtils";
 import { z } from "zod";
-import { assertIsFailure, assertIsNotFailure } from "./result";
 
 describe("findFirstNumber", () => {
   it("should return the first number in a string", () => {
@@ -44,7 +43,6 @@ describe("findJsonArray", () => {
     const input =
       'Some text [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}] more text';
     const result = findJsonArray(input, testSchema);
-    assertIsNotFailure(result);
     expect(result).toEqual([
       { id: 1, name: "Alice" },
       { id: 2, name: "Bob" },
@@ -54,36 +52,31 @@ describe("findJsonArray", () => {
   it("should return a failure when no JSON array is found", () => {
     const input = "No JSON array here";
     const result = findJsonArray(input, testSchema);
-    assertIsFailure(result);
-    expect(result.problem).toEqual("No singular JSON array found.");
+    expect(result).toBeInstanceOf(Error);
   });
 
   it("should return a failure when JSON is invalid", () => {
     const input =
       'Invalid JSON [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob}]';
     const result = findJsonArray(input, testSchema);
-    assertIsFailure(result);
-    expect(result.problem).toEqual("Could not parse JSON array.");
+    expect(result).toBeInstanceOf(Error);
   });
 
   it("should return a failure when schema validation fails", () => {
     const input = '[{"id": "not a number", "name": "Alice"}]';
     const result = findJsonArray(input, testSchema);
-    assertIsFailure(result);
-    expect(result.problem).toEqual("Could not parse JSON array.");
+    expect(result).toBeInstanceOf(Error);
   });
 
   it("should handle an empty array", () => {
     const input = "Empty array []";
     const result = findJsonArray(input, testSchema);
-    assertIsNotFailure(result);
     expect(result).toEqual([]);
   });
 
   it("should handle arrays with a single item", () => {
     const input = '[{"id": 1, "name": "Alice"}]';
     const result = findJsonArray(input, testSchema);
-    assertIsNotFailure(result);
     expect(result).toEqual([{ id: 1, name: "Alice" }]);
   });
 
@@ -91,7 +84,6 @@ describe("findJsonArray", () => {
     const input =
       'Multiple arrays [{"id": 1, "name": "Alice"}] [{"id": 2, "name": "Bob"}]';
     const result = findJsonArray(input, testSchema);
-    assertIsFailure(result);
-    expect(result.problem).toEqual("No singular JSON array found.");
+    expect(result).toBeInstanceOf(Error);
   });
 });

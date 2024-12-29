@@ -1,4 +1,4 @@
-import { ShouldNeverHappen } from "./errorUtils";
+import { ShouldNeverHappenError } from "./errorUtils";
 
 export function splitPromise<T>() {
   let resolve: ((value: T) => void) | undefined;
@@ -7,7 +7,7 @@ export function splitPromise<T>() {
     resolve = res;
     reject = rej;
   });
-  if (!resolve || !reject) throw new ShouldNeverHappen();
+  if (!resolve || !reject) throw new ShouldNeverHappenError();
   return { resolve, reject, promise };
 }
 

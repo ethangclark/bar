@@ -1,4 +1,3 @@
-import { type Result } from "~/common/utils/result";
 import { vi } from "vitest";
 
 export const getResponseFromLlm = vi.fn(
@@ -9,12 +8,13 @@ export const getResponseFromLlm = vi.fn(
     maxTokens?: number;
     pngBuffers?: Buffer[];
   }): Promise<
-    Result<{
-      response: string;
-      tokensUsed: number;
-      promptTokens: number;
-      completionTokens: number;
-    }>
+    | {
+        response: string;
+        tokensUsed: number;
+        promptTokens: number;
+        completionTokens: number;
+      }
+    | Error
   > => {
     // Mock implementation
     return {

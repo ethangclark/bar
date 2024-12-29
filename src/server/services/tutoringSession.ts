@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { assertIsNotFailure } from "~/common/utils/result";
 import { getOpenRouterResponse } from "~/server/ai/llm";
 import { getResponseText } from "~/server/ai/llm/responseText";
 import { db } from "~/server/db";
@@ -68,7 +67,9 @@ export async function createTutoringSession(
     messages: [initialMessage],
   });
   const initialResponseText = getResponseText(initialResponse);
-  assertIsNotFailure(initialResponseText);
+  if (initialResponseText instanceof Error) {
+    return initialResponseText;
+  }
 
   const handoffSystemPrompt = getHandoffPrompt(topicContext);
   const handedOffResponse = await getOpenRouterResponse(userId, {
@@ -86,7 +87,9 @@ export async function createTutoringSession(
     ],
   });
   const handedOffResponseText = getResponseText(handedOffResponse);
-  assertIsNotFailure(handedOffResponseText);
+  if (handedOffResponseText instanceof Error) {
+    return handedOffResponseText;
+  }
   await db.insert(dbSchema.chatMessages).values({
     tutoringSessionId: session.id,
     userId: userId,

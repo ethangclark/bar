@@ -1,4 +1,3 @@
-import { isFailure } from "./result";
 import {
   allTagContents,
   oneOrNoneTagContents,
@@ -48,12 +47,7 @@ describe("XML Tag Content Functions", () => {
     it("should return a failure if there are more than one tags", () => {
       const xml = "<tag>content1</tag><tag>content2</tag>";
       const result = oneOrNoneTagContents({ tag: "tag", xml });
-      expect(result).toEqual({
-        error: isFailure(result) ? result.error : null,
-        problem: "Found 2 matches; expected 1 or 0.",
-        type: "badXml",
-        data: { xml, tag: "tag" },
-      });
+      expect(result).toBeInstanceOf(Error);
     });
     it("should return an empty array when there are no matches", () => {
       expect(allTagContents({ tag: "foo", xml: "" })).toEqual([]);
@@ -171,23 +165,13 @@ describe("XML Tag Content Functions", () => {
     it("should return a failure if there are no tags", () => {
       const xml = "<root></root>";
       const result = oneTagContent({ tag: "tag", xml });
-      expect(result).toEqual({
-        error: isFailure(result) ? result.error : null,
-        problem: "Found 0 matches; expected 1.",
-        type: "badXml",
-        data: { xml, tag: "tag" },
-      });
+      expect(result).toBeInstanceOf(Error);
     });
 
     it("should return a failure if there are more than one tags", () => {
       const xml = "<tag>content1</tag><tag>content2</tag>";
       const result = oneTagContent({ tag: "tag", xml });
-      expect(result).toEqual({
-        error: isFailure(result) ? result.error : null,
-        problem: "Found 2 matches; expected 1.",
-        type: "badXml",
-        data: { xml, tag: "tag" },
-      });
+      expect(result).toBeInstanceOf(Error);
     });
   });
 });

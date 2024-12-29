@@ -1,5 +1,3 @@
-import { failure, failureType } from "./result";
-
 export function allTagContents({ tag, xml }: { tag: string; xml: string }) {
   const startTag = `<${tag}>`;
   const endTag = `</${tag}>`;
@@ -37,11 +35,7 @@ export function oneOrNoneTagContents({
   const matches = allTagContents({ tag, xml: xml });
   const match = matches[0];
   if (matches.length > 1) {
-    return failure(
-      `Found ${matches.length} matches; expected 1 or 0.`,
-      failureType.badXml,
-      { xml, tag },
-    );
+    return new Error(`Found ${matches.length} matches; expected 1 or 0.`);
   }
   return match ?? null;
 }
@@ -50,11 +44,7 @@ export function oneTagContent({ tag, xml }: { tag: string; xml: string }) {
   const matches = allTagContents({ tag, xml });
   const match = matches[0];
   if (match === undefined || matches.length !== 1) {
-    return failure(
-      `Found ${matches.length} matches; expected 1.`,
-      failureType.badXml,
-      { xml, tag },
-    );
+    return new Error(`Found ${matches.length} matches; expected 1.`);
   }
   return match;
 }

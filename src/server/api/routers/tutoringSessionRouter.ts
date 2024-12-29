@@ -1,6 +1,5 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { assertIsNotFailure } from "~/common/utils/result";
 import { getOpenRouterResponse } from "~/server/ai/llm";
 import { getResponseText } from "~/server/ai/llm/responseText";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -87,7 +86,9 @@ export const tutoringSessionRouter = createTRPCRouter({
           messages: messagesWithUserMsg,
         });
         const responseText = getResponseText(response);
-        assertIsNotFailure(responseText);
+        if (responseText instanceof Error) {
+          throw responseText;
+        }
         await db.insert(dbSchema.chatMessages).values({
           tutoringSessionId,
           userId: ctx.userId,
@@ -130,7 +131,9 @@ export const tutoringSessionRouter = createTRPCRouter({
             messages: conclusionMessages,
           });
           const conclusion = getResponseText(conclusionResponse);
-          assertIsNotFailure(conclusion);
+          if (conclusion instanceof Error) {
+            throw conclusion;
+          }
           await db
             .update(dbSchema.tutoringSessions)
             .set({ conclusion })

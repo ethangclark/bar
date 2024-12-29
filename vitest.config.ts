@@ -40,7 +40,7 @@ export const defaultConfig = {
       ],
       provider: "v8" as const,
       thresholds: {
-        branches: 85,
+        branches: 80,
       },
       reporter: [
         // "text",

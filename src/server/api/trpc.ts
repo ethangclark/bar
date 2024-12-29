@@ -31,14 +31,14 @@ import { queryUser } from "~/server/services/user";
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const ipAddressHeader = opts.headers.get("x-forwarded-for") ?? "";
   const ipAddress = ipAddressHeader.split(",")[0];
-  if (!ipAddress) throw Error("IP address not found");
+  if (!ipAddress) throw new Error("IP address not found");
 
   const session = await getServerAuthSession();
 
   const user = await (async () => {
     if (session?.user) {
       const u = await queryUser(session.user.id);
-      if (!u) throw Error("Session user not found");
+      if (!u) throw new Error("Session user not found");
       return u;
     }
 
@@ -52,7 +52,9 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     // create a new user automatically
     const [user] = await db.insert(users).values({ email: "" }).returning();
     if (!user)
-      throw Error("User (ip addr only) created via create statement not found");
+      throw new Error(
+        "User (ip addr only) created via create statement not found",
+      );
 
     await db.insert(ipUsers).values({
       ipAddress,
