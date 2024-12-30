@@ -5,11 +5,11 @@ import { ClientOnly } from "~/client/components/ClientOnly";
 import { Page } from "~/client/components/Page";
 import { api } from "~/trpc/react";
 import { TopicLesson } from "~/client/topicLesson/topicLesson";
-import { useCourseTreeData } from "../../../client/topicLesson/useCourseTreeData";
-import { useTreeProps } from "../../../client/topicLesson/useTreeProps";
+import { useCourseTreeData } from "~/client/topicLesson/useCourseTreeData";
+import { useTreeProps } from "~/client/topicLesson/useTreeProps";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Logo, LogoText } from "~/client/components/Logo";
-import { Slideout } from "../../../client/topicLesson/slideout";
+import { Slideout } from "~/client/topicLesson/slideout";
 import { MenuOutlined } from "@ant-design/icons";
 import Link from "next/link";
 

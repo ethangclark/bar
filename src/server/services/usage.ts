@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
-import { db } from "../db";
-import { users } from "../db/schema";
+import { db } from "~/server/db";
+import { users } from "~/server/db/schema";
 import { getUser } from "./user";
 
 export async function determineIfUsageOk(userId: string) {

@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { api } from "~/trpc/react";
-import { BigTitlePage } from "../client/components/BigTitlePage";
-import { ClientOnly } from "../client/components/ClientOnly";
-import { Courses } from "../client/courseList/courses";
+import { BigTitlePage } from "~/client/components/BigTitlePage";
+import { ClientOnly } from "~/client/components/ClientOnly";
+import { Courses } from "~/client/courseList/courses";
 
 export default function Home() {
   const { data } = api.auth.seatsRemaining.useQuery();
