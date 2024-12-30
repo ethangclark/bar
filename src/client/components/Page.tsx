@@ -1,6 +1,6 @@
 "use client";
 
-import { scrollbarWidth } from "~/app/_utils/scrollbarWidth";
+import { scrollbarWidth } from "~/client/utils/_utils/scrollbarWidth";
 import { useIsForSureClientSide } from "./ClientOnly";
 
 export function Page({

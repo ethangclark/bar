@@ -1,15 +1,15 @@
 "use client";
 import { Tree as AntdTree, Button, Modal, Spin } from "antd";
 import { z } from "zod";
-import { ClientOnly } from "~/app/_components/ClientOnly";
-import { Page } from "~/app/_components/Page";
+import { ClientOnly } from "~/client/components/ClientOnly";
+import { Page } from "~/client/components/Page";
 import { api } from "~/trpc/react";
-import { Topic } from "./topic";
-import { useCourseTreeData } from "./useCourseTreeData";
-import { useTreeProps } from "./useTreeProps";
+import { TopicLesson } from "~/client/topicLesson/topicLesson";
+import { useCourseTreeData } from "../../../client/topicLesson/useCourseTreeData";
+import { useTreeProps } from "../../../client/topicLesson/useTreeProps";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Logo, LogoText } from "~/app/_components/Logo";
-import { Slideout } from "./slideout";
+import { Logo, LogoText } from "~/client/components/Logo";
+import { Slideout } from "../../../client/topicLesson/slideout";
 import { MenuOutlined } from "@ant-design/icons";
 import Link from "next/link";
 
@@ -132,7 +132,7 @@ export default function CoursePage({ params }: Props) {
           </div>
           <div className="flex flex-grow justify-center">
             {selectedTopicContext && (
-              <Topic
+              <TopicLesson
                 key={selectedTopicContext.topic.id}
                 enrollmentId={enrollmentId}
                 topicContext={selectedTopicContext}

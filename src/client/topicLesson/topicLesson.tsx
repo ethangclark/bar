@@ -7,14 +7,14 @@ import {
   useRef,
   useState,
 } from "react";
-import { Editor } from "~/app/_components/Editor";
-import { PreformattedText } from "~/app/_components/PreformattedText";
-import { useCss } from "~/app/_hooks/useCss";
+import { Editor } from "~/client/components/Editor";
+import { PreformattedText } from "~/client/components/PreformattedText";
+import { useCss } from "~/client/hooks/useCss";
 import { formatDateTime } from "~/common/utils/timeUtils";
 import { type TutoringSession, type TopicContext } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 import confetti from "canvas-confetti";
-import { VoiceRecorder } from "../voiceRecorder";
+import { VoiceRecorder } from "./voiceRecorder";
 import { type AudioData } from "~/common/utils/types";
 
 function sortSessionsEarliestFirst(sessions: TutoringSession[]) {
@@ -106,7 +106,7 @@ function getSessionLabel(session: TutoringSession, idx: number) {
   return `Session ${idx + 1}: ${formatDateTime(session.createdAt)}`;
 }
 
-export function Topic({
+export function TopicLesson({
   enrollmentId,
   topicContext,
   topicTutoringSessions,

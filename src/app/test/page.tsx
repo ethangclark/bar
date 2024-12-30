@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { CreatePost } from "~/app/test/_components/create-post";
+import { CreatePost } from "~/client/test/create-post";
 import { getServerAuthSession } from "~/server/auth/auth";
 import { api } from "~/trpc/server";
 

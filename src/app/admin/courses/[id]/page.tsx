@@ -1,12 +1,12 @@
 "use client";
 import { Spin, Tree } from "antd";
 import { z } from "zod";
-import { useCourseTreeData } from "~/app/enrollment/[id]/useCourseTreeData";
-import { useTreeProps } from "~/app/enrollment/[id]/useTreeProps";
+import { useCourseTreeData } from "~/client/topicLesson/useCourseTreeData";
+import { useTreeProps } from "~/client/topicLesson/useTreeProps";
 import { api } from "~/trpc/react";
-import { ClientOnly } from "~/app/_components/ClientOnly";
-import { Page } from "~/app/_components/Page";
-import { Title } from "~/app/_components/Title";
+import { ClientOnly } from "~/client/components/ClientOnly";
+import { Page } from "~/client/components/Page";
+import { Title } from "~/client/components/Title";
 
 type Props = {
   params: {
