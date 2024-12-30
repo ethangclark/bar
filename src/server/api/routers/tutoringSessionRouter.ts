@@ -1,10 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import {
-  getOpenRouterResponse,
-  streamOpenRouterResponse,
+  getLlmResponse,
+  // streamLlmResponse
 } from "~/server/ai/llm";
-import { getResponseText } from "~/server/ai/llm/responseText";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
@@ -84,20 +83,19 @@ export const tutoringSessionRouter = createTRPCRouter({
             content: userMsg,
           },
         ];
-        const gen = streamOpenRouterResponse(ctx.userId, {
+        // const gen = streamLlmResponse(ctx.userId, {
+        //   model,
+        //   messages: messagesWithUserMsg,
+        // });
+        // for await (const response of gen) {
+        //   console.log("STREAMING RESPONSE", response);
+        // }
+        const response = await getLlmResponse(ctx.userId, {
           model,
           messages: messagesWithUserMsg,
         });
-        for await (const response of gen) {
-          console.log("STREAMING RESPONSE", response);
-        }
-        const response = await getOpenRouterResponse(ctx.userId, {
-          model,
-          messages: messagesWithUserMsg,
-        });
-        const responseText = getResponseText(response);
-        if (responseText instanceof Error) {
-          throw responseText;
+        if (response instanceof Error) {
+          throw response;
         }
         await db.insert(dbSchema.chatMessages).values({
           tutoringSessionId,
@@ -105,7 +103,7 @@ export const tutoringSessionRouter = createTRPCRouter({
           senderRole: "user",
           content: userMsg,
         });
-        if (responseText.includes(masteryDemonstratedCode)) {
+        if (response.includes(masteryDemonstratedCode)) {
           const conclusion =
             "The student has demonstrated proficiency. Please continue tutoring them on the topic as they request."; // this string also exists in topic.tsx
           await db
@@ -127,8 +125,12 @@ export const tutoringSessionRouter = createTRPCRouter({
           };
         }
 
-        // console.log("TOKENS~~~~~~~~~~~~~", response.usage.total_tokens);
-        if (response.usage.total_tokens > 5000) {
+        // truncate the conversation if it's too long
+        if (
+          messagesWithUserMsg.map((m) => m.content).join("").length +
+            response.length >
+          50000
+        ) {
           const conclusionMessages = [
             ...messagesWithUserMsg,
             {
@@ -136,11 +138,10 @@ export const tutoringSessionRouter = createTRPCRouter({
               content: `Sorry, before you respond: This tutoring session is about to run out of time/space. Reply with the notes you'll need to continue where we left off and I'll have them back to you in the new session.`,
             },
           ];
-          const conclusionResponse = await getOpenRouterResponse(ctx.userId, {
+          const conclusion = await getLlmResponse(ctx.userId, {
             model,
             messages: conclusionMessages,
           });
-          const conclusion = getResponseText(conclusionResponse);
           if (conclusion instanceof Error) {
             throw conclusion;
           }
@@ -160,7 +161,7 @@ export const tutoringSessionRouter = createTRPCRouter({
           tutoringSessionId,
           userId: ctx.userId,
           senderRole: "assistant",
-          content: responseText,
+          content: response,
         });
         return { conclusion: null, masteryDemonstrated: false };
       },

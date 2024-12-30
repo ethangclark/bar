@@ -1,6 +1,11 @@
-import { type OpenRouterResponse } from "./schemas";
+import {
+  type StreamingOpenRouterResponse,
+  type OpenRouterResponse,
+} from "./schemas";
 
-export function getResponseText(response: OpenRouterResponse): string | Error {
+export function parseResponseText(
+  response: OpenRouterResponse,
+): string | Error {
   if (!response.choices[0] || response.choices.length > 1) {
     return new Error("Unexpected choices array in response.");
   }
@@ -16,4 +21,14 @@ export function getResponseText(response: OpenRouterResponse): string | Error {
     return c.text;
   }
   return new Error("Unexpected content type.");
+}
+
+export function parseStreamingResponseText(
+  response: StreamingOpenRouterResponse,
+): string | null | Error {
+  if (!response.choices[0] || response.choices.length > 1) {
+    return new Error("Unexpected choices array in response.");
+  }
+  const content = response.choices[0].delta.content;
+  return content;
 }

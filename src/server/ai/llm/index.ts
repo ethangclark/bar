@@ -1,101 +1,27 @@
-import { env } from "~/env";
-import {
-  openRouterResponseSchema,
-  type OpenRouterRequest,
-  streamingOpenRouterResponseSchema,
-  type StreamingOpenRouterResponse,
-} from "./schemas";
-import { assertUsageOk, incrementUsage } from "~/server/services/usage";
+import { type OpenRouterRequest } from "./schemas";
+import { getOpenRouterResponse, streamOpenRouterResponse } from "./openRouter";
+import { parseResponseText, parseStreamingResponseText } from "./responseText";
 
-export async function getOpenRouterResponse(
+export async function getLlmResponse(
   userId: string,
   request: OpenRouterRequest,
 ) {
-  await assertUsageOk(userId);
-  const response = await fetch(
-    "https://openrouter.ai/api/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(request),
-    },
-  );
-  const json = await response.json();
-  const result = openRouterResponseSchema.parse(json);
-  await incrementUsage(userId, result.usage.total_tokens);
-  return result;
+  const response = await getOpenRouterResponse(userId, request);
+  return parseResponseText(response);
 }
 
-export async function* streamOpenRouterResponse(
+export async function* streamLlmResponse(
   userId: string,
   request: OpenRouterRequest,
-): AsyncGenerator<StreamingOpenRouterResponse> {
-  await assertUsageOk(userId);
-
-  const response = await fetch(
-    "https://openrouter.ai/api/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ ...request, stream: true }),
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  const reader = response.body?.getReader();
-  if (!reader) {
-    throw new Error("Failed to get reader from response body");
-  }
-
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
-
-    // Process each complete JSON object in the buffer
-    let boundary;
-    while ((boundary = buffer.indexOf("\n")) !== -1) {
-      const line = buffer.slice(0, boundary).trim();
-      buffer = buffer.slice(boundary + 1);
-
-      if (line.startsWith("data: ")) {
-        const jsonStr = line.slice(6);
-        if (jsonStr === "[DONE]") {
-          return;
-        }
-
-        try {
-          const json = JSON.parse(jsonStr);
-          const result = streamingOpenRouterResponseSchema.parse(json);
-          yield result;
-        } catch (error) {
-          console.error("Error parsing JSON:", error);
-        }
-      }
+): AsyncGenerator<string | null> {
+  const gen = streamOpenRouterResponse(userId, request);
+  let next = await gen.next();
+  while (!next.done) {
+    const parsed = parseStreamingResponseText(next.value);
+    if (parsed instanceof Error) {
+      return parsed;
     }
-  }
-
-  // Handle any remaining data in the buffer
-  if (buffer.trim()) {
-    try {
-      const json = JSON.parse(buffer);
-      const result = streamingOpenRouterResponseSchema.parse(json);
-      yield result;
-    } catch (error) {
-      console.error("Error parsing JSON:", error);
-    }
+    yield parsed;
+    next = await gen.next();
   }
 }

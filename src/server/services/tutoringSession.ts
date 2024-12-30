@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { getOpenRouterResponse } from "~/server/ai/llm";
-import { getResponseText } from "~/server/ai/llm/responseText";
+import { getLlmResponse } from "~/server/ai/llm";
 import { db } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
 import { topicContextSchema, type TopicContext } from "~/server/db/schema";
@@ -62,23 +61,22 @@ export async function createTutoringSession(
     role: "system" as const,
     content: initialSystemPrompt,
   };
-  const initialResponse = await getOpenRouterResponse(userId, {
+  const initialResponse = await getLlmResponse(userId, {
     model,
     messages: [initialMessage],
   });
-  const initialResponseText = getResponseText(initialResponse);
-  if (initialResponseText instanceof Error) {
-    return initialResponseText;
+  if (initialResponse instanceof Error) {
+    return initialResponse;
   }
 
   const handoffSystemPrompt = getHandoffPrompt(topicContext);
-  const handedOffResponse = await getOpenRouterResponse(userId, {
+  const handedOffResponse = await getLlmResponse(userId, {
     model,
     messages: [
       initialMessage,
       {
         role: "assistant",
-        content: initialResponseText,
+        content: initialResponse,
       },
       {
         role: "system",
@@ -86,9 +84,8 @@ export async function createTutoringSession(
       },
     ],
   });
-  const handedOffResponseText = getResponseText(handedOffResponse);
-  if (handedOffResponseText instanceof Error) {
-    return handedOffResponseText;
+  if (handedOffResponse instanceof Error) {
+    return handedOffResponse;
   }
   await db.insert(dbSchema.chatMessages).values({
     tutoringSessionId: session.id,
@@ -100,7 +97,7 @@ export async function createTutoringSession(
     tutoringSessionId: session.id,
     userId: userId,
     senderRole: "assistant",
-    content: initialResponseText,
+    content: initialResponse,
   });
   await db.insert(dbSchema.chatMessages).values({
     tutoringSessionId: session.id,
@@ -112,7 +109,7 @@ export async function createTutoringSession(
     tutoringSessionId: session.id,
     userId: userId,
     senderRole: "assistant",
-    content: handedOffResponseText,
+    content: handedOffResponse,
   });
   return session;
 }
