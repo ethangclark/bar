@@ -9,6 +9,7 @@ const modelSchema = z.enum([
   "google/gemini-flash-1.5",
   "google/gemini-flash-1.5-8b",
   "openai/o1-preview-2024-09-12",
+  "deepseek/deepseek-chat",
 ]);
 export type Model = z.infer<typeof modelSchema>;
 
@@ -45,17 +46,26 @@ const openRouterRequest = z.object({
 });
 export type OpenRouterRequest = z.infer<typeof openRouterRequest>;
 
+const errorResponseSchema = z.object({
+  code: z.number(),
+  message: z.string(),
+});
+
 const nonStreamingChoiceSchema = z.object({
-  finish_reason: z.string().optional(),
+  finish_reason: z.string().nullable().optional(),
   message: message,
-  error: z
-    .object({
-      code: z.number(),
-      message: z.string(),
-    })
-    .optional(),
+  error: errorResponseSchema.optional(),
 });
 export type NonStreamingChoice = z.infer<typeof nonStreamingChoiceSchema>;
+
+const streamingChoiceSchema = z.object({
+  finish_reason: z.string().nullable().optional(),
+  delta: z.object({
+    role: roleSchema,
+    content: z.string().nullable(),
+  }),
+  error: errorResponseSchema.optional(),
+});
 
 const responseUsageSchema = z.object({
   prompt_tokens: z.number(),
@@ -70,3 +80,15 @@ export const openRouterResponseSchema = z.object({
   usage: responseUsageSchema,
 });
 export type OpenRouterResponse = z.infer<typeof openRouterResponseSchema>;
+
+export const streamingOpenRouterResponseSchema = z.object({
+  id: z.string(),
+  choices: z.array(streamingChoiceSchema),
+  // Usage data is always returned for non-streaming.
+  // When streaming, you will get one usage object at
+  // the end accompanied by an empty choices array.
+  usage: responseUsageSchema.optional(),
+});
+export type StreamingOpenRouterResponse = z.infer<
+  typeof streamingOpenRouterResponseSchema
+>;

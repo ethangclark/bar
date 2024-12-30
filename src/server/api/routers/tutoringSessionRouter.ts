@@ -1,6 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { getOpenRouterResponse } from "~/server/ai/llm";
+import {
+  getOpenRouterResponse,
+  streamOpenRouterResponse,
+} from "~/server/ai/llm";
 import { getResponseText } from "~/server/ai/llm/responseText";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
@@ -12,7 +15,7 @@ import {
   masteryDemonstratedCode,
 } from "~/server/services/tutoringSession";
 
-const model = "anthropic/claude-3.5-sonnet:beta";
+const model = "deepseek/deepseek-chat";
 
 async function getChatMessages({
   userId,
@@ -81,6 +84,13 @@ export const tutoringSessionRouter = createTRPCRouter({
             content: userMsg,
           },
         ];
+        const gen = streamOpenRouterResponse(ctx.userId, {
+          model,
+          messages: messagesWithUserMsg,
+        });
+        for await (const response of gen) {
+          console.log("STREAMING RESPONSE", response);
+        }
         const response = await getOpenRouterResponse(ctx.userId, {
           model,
           messages: messagesWithUserMsg,

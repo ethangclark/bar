@@ -30,7 +30,7 @@ We're not going for a perfect bar exam score -- we're going for confidence in a 
 I am now handing you off to the student. Please say hi and take over the session. (Also the student doesn't know I'm here, so don't mention me unless I tell you otherwise.)`;
 };
 
-const model = "anthropic/claude-3.5-sonnet:beta";
+const model = "deepseek/deepseek-chat";
 
 export const createSessionParamSchema = z.object({
   enrollmentId: z.string(),
