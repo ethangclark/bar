@@ -39,3 +39,5 @@ export const audioDataSchema = z.object({
 });
 // Types for the audio data structure
 export type AudioData = z.infer<typeof audioDataSchema>;
+
+export const identity = <T>(x: T) => x;

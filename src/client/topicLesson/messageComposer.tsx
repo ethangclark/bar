@@ -4,6 +4,8 @@ import { Editor } from "~/client/components/Editor";
 import { VoiceRecorder } from "./voiceRecorder";
 import { type AudioData } from "~/common/utils/types";
 import { type TutoringSession } from "~/server/db/schema";
+import { focusedEnrollmentStore } from "./stores/focusedEnrollmentStore";
+import { messagesStore } from "./stores/messagesStore";
 
 interface MessageComposerProps {
   value: string;
@@ -17,8 +19,6 @@ interface MessageComposerProps {
     masteryDemonstrated: boolean;
     conclusion: string | null;
   }>;
-  refetchMessages: () => Promise<unknown>;
-  refetchTutoringSessions: () => Promise<TutoringSession[]>;
   onSessionBump: (conclusion: string) => Promise<void>;
   onMastery: () => void;
 }
@@ -32,8 +32,6 @@ export function MessageComposer({
   conclusion,
   handleAudioData,
   onSend,
-  refetchMessages,
-  refetchTutoringSessions,
   onSessionBump,
   onMastery,
 }: MessageComposerProps) {
@@ -46,11 +44,11 @@ export function MessageComposer({
         if (!selectedSession || sendingMessage) return;
 
         const { masteryDemonstrated, conclusion } = await onSend(value);
-        await refetchMessages();
+        await messagesStore.refetch();
         setValue("");
 
         if (masteryDemonstrated) {
-          await refetchTutoringSessions(); // reload session with updated mastery
+          await focusedEnrollmentStore.refetchEnrollment(); // reload session with updated mastery
           void confetti({
             spread: 100,
             startVelocity: 40,
@@ -59,7 +57,7 @@ export function MessageComposer({
         }
 
         if (!masteryDemonstrated && conclusion) {
-          await refetchTutoringSessions(); // reload with conclusion
+          await focusedEnrollmentStore.refetchEnrollment(); // reload with conclusion
           await onSessionBump(conclusion);
         }
 
@@ -77,8 +75,6 @@ export function MessageComposer({
       sendingMessage,
       selectedSession,
       onSend,
-      refetchMessages,
-      refetchTutoringSessions,
       setValue,
       onSessionBump,
       onMastery,

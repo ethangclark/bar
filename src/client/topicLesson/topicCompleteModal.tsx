@@ -1,17 +1,16 @@
 import { Modal, Button, Spin } from "antd";
+import { selectedTopicStore } from "./stores/selectedTopicStore";
 
 interface TopicCompleteModalProps {
   open: boolean;
   isLoading: boolean;
   onCancel: () => void;
-  onTopicComplete: () => void;
 }
 
 export function TopicCompleteModal({
   open,
   isLoading,
   onCancel,
-  onTopicComplete,
 }: TopicCompleteModalProps) {
   return (
     <Modal
@@ -26,7 +25,7 @@ export function TopicCompleteModal({
         <Button
           key="next"
           type="primary"
-          onClick={onTopicComplete}
+          onClick={() => selectedTopicStore.selectNextTopic()}
           disabled={isLoading}
         >
           Next topic

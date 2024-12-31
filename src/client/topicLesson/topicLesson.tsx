@@ -1,53 +1,35 @@
 import { useCallback, useRef, useState } from "react";
-import { api } from "~/trpc/react";
-import { type TutoringSession, type TopicContext } from "~/server/db/schema";
 import { type AudioData } from "~/common/utils/types";
-import { useSelectedSession } from "./useSelectedSession";
-import { TopicCompleteModal } from "./topicCompleteModal";
-import { SessionBumpModal } from "./sessionBumpModal";
-import { TopicHeader } from "./topicHeader";
-import { SessionSelector } from "./sessionSelector";
-import { MessagesDisplay } from "./messagesDisplay";
+import { type TopicContext } from "~/server/db/schema";
+import { api } from "~/trpc/react";
 import { MessageComposer } from "./messageComposer";
+import { MessagesDisplay } from "./messagesDisplay";
+import { SessionBumpModal } from "./sessionBumpModal";
+import { SessionSelector } from "./sessionSelector";
+import {
+  selectedSessionStore,
+  useAutoStartSession,
+} from "./stores/selectedSessionStore";
+import { TopicCompleteModal } from "./topicCompleteModal";
+import { TopicHeader } from "./topicHeader";
+import { messagesStore } from "./stores/messagesStore";
 
 interface TopicProps {
   enrollmentId: string;
   topicContext: TopicContext;
-  topicTutoringSessions: TutoringSession[];
-  refetchTutoringSessions: () => Promise<TutoringSession[]>;
-  onTopicComplete: () => void;
   topLeftCorner: React.ReactNode;
 }
 
 export function TopicLesson({
   enrollmentId,
   topicContext,
-  topicTutoringSessions,
-  refetchTutoringSessions,
-  onTopicComplete,
   topLeftCorner,
 }: TopicProps) {
   const { courseType, unit, module, topic } = topicContext;
 
-  const {
-    isCreatingSession,
-    selectedSession,
-    setSelectedSessionId,
-    startNewSession,
-  } = useSelectedSession({
-    enrollmentId,
-    topicContext,
-    topicTutoringSessions,
-    refetchTutoringSessions,
-  });
+  useAutoStartSession({ enrollmentId });
 
-  const {
-    isLoading: areMessagesLoading,
-    data: messages,
-    refetch: refetchMessages,
-  } = api.tutoringSession.chatMessages.useQuery({
-    tutoringSessionId: selectedSession?.id ?? null,
-  });
+  const { isCreatingSession, selectedSession } = selectedSessionStore;
 
   const { mutateAsync: transcribe, isPending: isTranscribing } =
     api.trascription.transcribe.useMutation();
@@ -72,18 +54,21 @@ export function TopicLesson({
   const [completionModalOpen, setCompletionModalOpen] = useState(false);
   const [sessionBumpModalOpen, setSessionBumpModalOpen] = useState(false);
 
-  const isLoading = isCreatingSession || areMessagesLoading || sendingMessage;
+  const isLoading =
+    isCreatingSession || messagesStore.isLoading || sendingMessage;
   const messageWrapperRef = useRef<HTMLDivElement>(null);
 
   const onCancel = useCallback(async () => {
     if (isLoading) {
       return;
     }
-    await startNewSession(
-      "The student has demonstrated proficiency. Please continue tutoring them on the topic as they request.",
-    );
+    await selectedSessionStore.startNewSession({
+      enrollmentId,
+      prevConclusion:
+        "The student has demonstrated proficiency. Please continue tutoring them on the topic as they request.",
+    });
     setCompletionModalOpen(false);
-  }, [isLoading, startNewSession]);
+  }, [enrollmentId, isLoading]);
 
   const onSend = useCallback(
     async (content: string) => {
@@ -99,12 +84,15 @@ export function TopicLesson({
   );
 
   const onSessionBump = useCallback(
-    async (conclusion: string) => {
+    async (prevConclusion: string) => {
       setSessionBumpModalOpen(true);
-      await startNewSession(conclusion);
+      await selectedSessionStore.startNewSession({
+        enrollmentId,
+        prevConclusion,
+      });
       setSessionBumpModalOpen(false);
     },
-    [startNewSession],
+    [enrollmentId],
   );
 
   const onMastery = useCallback(() => {
@@ -117,7 +105,6 @@ export function TopicLesson({
         open={completionModalOpen}
         isLoading={isLoading}
         onCancel={onCancel}
-        onTopicComplete={onTopicComplete}
       />
       <SessionBumpModal open={sessionBumpModalOpen} />
 
@@ -129,15 +116,11 @@ export function TopicLesson({
         topLeftCorner={topLeftCorner}
       />
 
-      <SessionSelector
-        sessions={topicTutoringSessions}
-        selectedSessionId={selectedSession?.id ?? null}
-        onSelect={setSelectedSessionId}
-      />
+      <SessionSelector />
 
       <MessagesDisplay
-        messages={messages}
-        isLoading={isCreatingSession || areMessagesLoading || sendingMessage}
+        messages={messagesStore.data}
+        isLoading={isLoading}
         messageWrapperRef={messageWrapperRef}
       />
 
@@ -150,8 +133,6 @@ export function TopicLesson({
         conclusion={selectedSession?.conclusion}
         handleAudioData={handleAudioData}
         onSend={onSend}
-        refetchMessages={refetchMessages}
-        refetchTutoringSessions={refetchTutoringSessions}
         onSessionBump={onSessionBump}
         onMastery={onMastery}
       />

@@ -1,46 +1,36 @@
-import { Dropdown } from "antd";
 import type { MenuProps } from "antd";
+import { Dropdown } from "antd";
+import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
-import { type TutoringSession } from "~/server/db/schema";
-import { getSessionLabel, sortSessionsEarliestFirst } from "./utils";
 import { useCss } from "~/client/hooks/useCss";
+import { selectedSessionStore } from "./stores/selectedSessionStore";
+import { selectedTopicStore } from "./stores/selectedTopicStore";
+import { getSessionLabel } from "./utils";
 
-interface SessionSelectorProps {
-  sessions: TutoringSession[];
-  selectedSessionId: string | null;
-  onSelect: (sessionId: string) => void;
-}
-
-export function SessionSelector({
-  sessions,
-  selectedSessionId,
-  onSelect,
-}: SessionSelectorProps) {
-  const sessionsEarliestFirst = useMemo(
-    () => sortSessionsEarliestFirst(sessions),
-    [sessions],
-  );
+export const SessionSelector = observer(function SessionSelector() {
+  const { topicSessionsEarliestFirst } = selectedTopicStore;
+  const selectedSessionId = selectedSessionStore.sessionId;
 
   const menuItems = useMemo((): MenuProps["items"] => {
-    return sessionsEarliestFirst
+    return topicSessionsEarliestFirst
       .map((session, idx) => ({
         key: session.id,
         label: getSessionLabel(session, idx),
-        onClick: () => onSelect(session.id),
+        onClick: () => selectedTopicStore.selectTopic(session.id),
       }))
       .reverse();
-  }, [onSelect, sessionsEarliestFirst]);
+  }, [topicSessionsEarliestFirst]);
 
   const selectedLabel = useMemo(() => {
-    const selectedSession = sessionsEarliestFirst.find(
+    const selectedSession = topicSessionsEarliestFirst.find(
       (s) => s.id === selectedSessionId,
     );
     if (!selectedSession) return "";
     return getSessionLabel(
       selectedSession,
-      sessionsEarliestFirst.map((s) => s.id).indexOf(selectedSession.id),
+      topicSessionsEarliestFirst.map((s) => s.id).indexOf(selectedSession.id),
     );
-  }, [selectedSessionId, sessionsEarliestFirst]);
+  }, [selectedSessionId, topicSessionsEarliestFirst]);
 
   const { id: dropdownWrapperId } = useCss(
     (id) =>
@@ -54,4 +44,4 @@ export function SessionSelector({
       </Dropdown.Button>
     </div>
   );
-}
+});

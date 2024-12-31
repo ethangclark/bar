@@ -5,8 +5,9 @@ import { api } from "~/trpc/react";
 import { BigTitlePage } from "~/client/components/BigTitlePage";
 import { ClientOnly } from "~/client/components/ClientOnly";
 import { Courses } from "~/client/courseList/courses";
+import { observer } from "mobx-react-lite";
 
-export default function Home() {
+export default observer(function Home() {
   const { data } = api.auth.seatsRemaining.useQuery();
   const { isLoggedIn, seatsRemaining } = data ?? {};
 
@@ -78,4 +79,4 @@ export default function Home() {
       </BigTitlePage>
     </ClientOnly>
   );
-}
+});

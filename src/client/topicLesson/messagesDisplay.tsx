@@ -8,7 +8,7 @@ function Message({ children }: { children: React.ReactNode }) {
 }
 
 interface MessagesDisplayProps {
-  messages: ChatMessage[] | undefined;
+  messages: ChatMessage[] | null | undefined;
   isLoading: boolean;
   messageWrapperRef: RefObject<HTMLDivElement>;
 }

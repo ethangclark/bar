@@ -1,17 +1,17 @@
 "use client";
+import { MenuOutlined } from "@ant-design/icons";
 import { Tree as AntdTree, Button, Modal, Spin } from "antd";
+import { observer } from "mobx-react-lite";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { ClientOnly } from "~/client/components/ClientOnly";
-import { Page } from "~/client/components/Page";
-import { api } from "~/trpc/react";
-import { TopicLesson } from "~/client/topicLesson/topicLesson";
-import { useCourseTreeData } from "~/client/topicLesson/useCourseTreeData";
-import { useTreeProps } from "~/client/topicLesson/useTreeProps";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Logo, LogoText } from "~/client/components/Logo";
+import { Page } from "~/client/components/Page";
 import { Slideout } from "~/client/topicLesson/slideout";
-import { MenuOutlined } from "@ant-design/icons";
-import Link from "next/link";
+import { focusedEnrollmentStore } from "~/client/topicLesson/stores/focusedEnrollmentStore";
+import { selectedTopicStore } from "~/client/topicLesson/stores/selectedTopicStore";
+import { TopicLesson } from "~/client/topicLesson/topicLesson";
 
 type Props = {
   params: {
@@ -19,61 +19,27 @@ type Props = {
   };
 };
 
-export default function CoursePage({ params }: Props) {
+export default observer(function CoursePage({ params }: Props) {
   const enrollmentId = z.string().parse(params.id);
 
-  const {
-    isLoading,
-    data: enrollment,
-    refetch,
-  } = api.courses.enrollment.useQuery({
-    enrollmentId,
-  });
+  useEffect(() => {
+    void focusedEnrollmentStore.loadEnrollment(enrollmentId);
+  }, [enrollmentId]);
+
+  const { enrollment, isLoading, hasLoadedOnce } = focusedEnrollmentStore;
+
   const tutoringSessions = enrollment?.tutoringSessions;
 
-  const {
-    treeData,
-    selectedTopicId,
-    setSelectedTopicId,
-    selectedTopicContext,
-    selectNextTopic,
-  } = useCourseTreeData({
-    course: enrollment?.course ?? null,
-    tutoringSessions: tutoringSessions ?? [],
-    isLoading,
-  });
-
-  const treeProps = useTreeProps({
-    treeData,
-    selectedId: selectedTopicId,
-    setSelectedId: setSelectedTopicId,
-    courseId: enrollment?.course.id ?? null,
-  });
-
-  const topicTutoringSessions = useMemo(
-    () =>
-      (tutoringSessions ?? []).filter(
-        (s) => s.topicId === selectedTopicContext?.topic.id,
-      ),
-    [selectedTopicContext?.topic.id, tutoringSessions],
-  );
-
-  const refetchTutoringSessions = useCallback(async () => {
-    const r = await refetch();
-    if (!r.data) {
-      throw new Error("Failed to refetch sessions");
-    }
-    return r.data.tutoringSessions;
-  }, [refetch]);
+  const { selectedTopicContext, treeProps } = selectedTopicStore;
 
   const [newUserModalOpen, setNewUserModalOpen] = useState(false);
   const newUserModalShownRef = useRef(false);
   useEffect(() => {
-    if (tutoringSessions && tutoringSessions.length === 0) {
+    if (hasLoadedOnce && tutoringSessions && tutoringSessions.length === 0) {
       newUserModalShownRef.current = true;
       setNewUserModalOpen(true);
     }
-  }, [tutoringSessions]);
+  }, [hasLoadedOnce, tutoringSessions]);
 
   const PanelContent = useCallback(
     ({ width }: { width?: number }) => (
@@ -136,9 +102,6 @@ export default function CoursePage({ params }: Props) {
                 key={selectedTopicContext.topic.id}
                 enrollmentId={enrollmentId}
                 topicContext={selectedTopicContext}
-                topicTutoringSessions={topicTutoringSessions}
-                refetchTutoringSessions={refetchTutoringSessions}
-                onTopicComplete={selectNextTopic}
                 topLeftCorner={
                   <div className="xl:hidden">
                     <Slideout
@@ -158,4 +121,4 @@ export default function CoursePage({ params }: Props) {
       </ClientOnly>
     </Page>
   );
-}
+});

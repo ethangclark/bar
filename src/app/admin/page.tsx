@@ -1,11 +1,10 @@
 "use client";
-import { api } from "~/trpc/react";
+import { Spin } from "antd";
 import { ClientOnly } from "~/client/components/ClientOnly";
 import { Page } from "~/client/components/Page";
 import { Title } from "~/client/components/Title";
-import { Button, Spin } from "antd";
 import { formatDateTime } from "~/common/utils/timeUtils";
-import Link from "next/link";
+import { api } from "~/trpc/react";
 
 export default function AdminPage() {
   const { isLoading, data } = api.courses.courses.useQuery();
@@ -21,9 +20,9 @@ export default function AdminPage() {
             <h2>{course.courseType.name}</h2>
             <p>Course ID: {course.id}</p>
             <p>Created: {formatDateTime(course.createdAt)}</p>
-            <Link href={`/admin/courses/${course.id}`}>
+            {/* <Link href={`/admin/courses/${course.id}`}>
               <Button type="primary">Edit</Button>
-            </Link>
+            </Link> */}
           </div>
         ))}
       </ClientOnly>

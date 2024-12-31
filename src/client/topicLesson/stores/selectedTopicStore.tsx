@@ -1,24 +1,11 @@
-"use client";
-import { type TreeDataNode } from "antd";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  type TutoringSession,
-  type DetailedCourse,
-  type TopicContext,
-} from "~/server/db/schema";
-import { TitleWithPct } from "./pctDisplay";
-
-function useTotalTopics(course: DetailedCourse | null) {
-  return useMemo(() => {
-    let total = 0;
-    course?.units.forEach((unit) => {
-      unit.modules.forEach((module) => {
-        total += module.topics.length;
-      });
-    });
-    return total;
-  }, [course?.units]);
-}
+import { makeAutoObservable } from "mobx";
+import { identity } from "~/common/utils/types";
+import { type DetailedCourse, type TopicContext } from "~/server/db/schema";
+import { focusedEnrollmentStore } from "./focusedEnrollmentStore";
+import { TitleWithPct } from "../pctDisplay";
+import { DownOutlined } from "@ant-design/icons";
+import { z } from "zod";
+import { sortSessionsEarliestFirst } from "../utils";
 
 function getFirstIncompleteTopic(
   course: DetailedCourse,
@@ -45,73 +32,38 @@ function getFirstIncompleteTopic(
   return null;
 }
 
-function getMasteredTopicIds(tutoringSessions: TutoringSession[]) {
-  return new Set(
-    tutoringSessions.filter((a) => a.demonstratesMastery).map((a) => a.topicId),
-  );
-}
-
-function useTopicSelection({
-  isLoading,
-  course,
-  tutoringSessions,
-}: {
-  isLoading: boolean;
-  course: DetailedCourse | null;
-  tutoringSessions: TutoringSession[];
-}) {
-  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
-
-  const gottaWait = isLoading || course === null;
-
-  const selectNextTopic = useCallback(() => {
-    if (gottaWait) {
+class SelectedTopicStore {
+  constructor() {
+    makeAutoObservable(this);
+  }
+  selectedTopicId = identity<string | null>(null);
+  get isTopicSelected() {
+    return this.selectedTopicId !== null;
+  }
+  selectTopic(topicId: string | null) {
+    this.selectedTopicId = topicId;
+  }
+  selectNextTopic() {
+    const { isLoading, course, masteredTopicIds } = focusedEnrollmentStore;
+    if (isLoading || course === null) {
       return;
     }
-    const masteredTopicIds = getMasteredTopicIds(tutoringSessions);
     const nextTopic = getFirstIncompleteTopic(
       course,
       masteredTopicIds,
-      selectedTopicId,
+      this.selectedTopicId,
     );
-    setSelectedTopicId(nextTopic?.id ?? null);
-  }, [course, gottaWait, selectedTopicId, tutoringSessions]);
-
-  useEffect(() => {
-    if (!gottaWait && !selectedTopicId) {
-      selectNextTopic();
-    }
-  }, [gottaWait, selectNextTopic, selectedTopicId]);
-
-  return { selectedTopicId, setSelectedTopicId, selectNextTopic };
-}
-
-export function useCourseTreeData({
-  course,
-  tutoringSessions,
-  isLoading,
-}: {
-  course: DetailedCourse | null;
-  tutoringSessions: TutoringSession[];
-  isLoading: boolean;
-}) {
-  const totalTopics = useTotalTopics(course);
-
-  const { selectedTopicId, setSelectedTopicId, selectNextTopic } =
-    useTopicSelection({
-      isLoading,
-      course,
-      tutoringSessions,
-    });
-
-  const selectedTopicContext = useMemo((): TopicContext | null => {
-    if (!selectedTopicId || !course) {
+    this.selectTopic(nextTopic?.id ?? null);
+  }
+  get selectedTopicContext(): TopicContext | null {
+    const { course } = focusedEnrollmentStore;
+    if (!this.selectedTopicId || !course) {
       return null;
     }
     for (const unit of course.units) {
       for (const mod of unit.modules) {
         for (const topic of mod.topics) {
-          if (topic.id === selectedTopicId) {
+          if (topic.id === this.selectedTopicId) {
             return {
               topic,
               module: mod,
@@ -124,13 +76,22 @@ export function useCourseTreeData({
       }
     }
     return null;
-  }, [course, selectedTopicId]);
-
-  const treeData = useMemo((): TreeDataNode[] => {
+  }
+  get topicTutoringSessions() {
+    const { tutoringSessions } = focusedEnrollmentStore;
+    const { selectedTopicContext } = this;
+    return (tutoringSessions ?? []).filter(
+      (s) => s.topicId === selectedTopicContext?.topic.id,
+    );
+  }
+  get topicSessionsEarliestFirst() {
+    return sortSessionsEarliestFirst(this.topicTutoringSessions);
+  }
+  get treeData() {
+    const { course, masteredTopicIds, totalTopics } = focusedEnrollmentStore;
     if (!course) {
       return [];
     }
-    const masteredTopicIds = getMasteredTopicIds(tutoringSessions);
     return [
       {
         title: (
@@ -180,13 +141,23 @@ export function useCourseTreeData({
         }),
       },
     ];
-  }, [tutoringSessions, course, totalTopics]);
-
-  return {
-    treeData,
-    selectedTopicId,
-    setSelectedTopicId,
-    selectedTopicContext,
-    selectNextTopic,
-  };
+  }
+  get treeProps() {
+    const { course } = focusedEnrollmentStore;
+    return {
+      switcherIcon: <DownOutlined />,
+      treeData: this.treeData,
+      selectedKeys: this.selectedTopicId ? [this.selectedTopicId] : [],
+      onSelect: ([rawKey, ...rest]: React.Key[]) => {
+        if (!rawKey || rest.length > 0) {
+          return;
+        }
+        const key = z.string().parse(rawKey);
+        this.selectTopic(key);
+      },
+      defaultExpandedKeys: course ? [course.id] : [], // we want the root course node expanded
+    };
+  }
 }
+
+export const selectedTopicStore = new SelectedTopicStore();

@@ -1,19 +1,12 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  loggerLink,
-  splitLink,
-  unstable_httpSubscriptionLink,
-  unstable_httpBatchStreamLink,
-} from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
 import { useState } from "react";
-import SuperJSON from "superjson";
-import { getTrpcUrl } from "~/common/utils/urlUtils";
 
 import { type AppRouter } from "~/server/api/root";
+import { links } from "./links";
 
 const createQueryClient = () => new QueryClient();
 
@@ -43,38 +36,10 @@ export type RouterInputs = inferRouterInputs<AppRouter>;
  */
 export type RouterOutputs = inferRouterOutputs<AppRouter>;
 
-const linkOpts = {
-  transformer: SuperJSON,
-  url: getTrpcUrl(),
-  headers: () => {
-    const headers = new Headers();
-    headers.set("x-trpc-source", "nextjs-react");
-    return headers;
-  },
-} as const;
-
 export function TRPCReactProvider(props: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
 
-  const [trpcClient] = useState(() =>
-    api.createClient({
-      links: [
-        loggerLink({
-          // enabled: () => false,
-          enabled: (op) =>
-            process.env.NODE_ENV === "development" ||
-            (op.direction === "down" && op.result instanceof Error),
-        }),
-        splitLink({
-          // uses the httpSubscriptionLink for subscriptions
-          condition: (op) => op.type === "subscription",
-          true: unstable_httpSubscriptionLink(linkOpts),
-          false: unstable_httpBatchStreamLink(linkOpts),
-          // false: httpLink(linkOpts),
-        }),
-      ],
-    }),
-  );
+  const [trpcClient] = useState(() => api.createClient({ links }));
 
   return (
     <QueryClientProvider client={queryClient}>
