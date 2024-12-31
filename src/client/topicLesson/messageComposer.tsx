@@ -3,17 +3,16 @@ import confetti from "canvas-confetti";
 import { Editor } from "~/client/components/Editor";
 import { VoiceRecorder } from "./voiceRecorder";
 import { type AudioData } from "~/common/utils/types";
-import { type TutoringSession } from "~/server/db/schema";
 import { focusedEnrollmentStore } from "./stores/focusedEnrollmentStore";
 import { messagesStore } from "./stores/messagesStore";
+import { selectedSessionStore } from "./stores/selectedSessionStore";
+import { LoadStatus } from "~/common/utils/loading";
 
 interface MessageComposerProps {
   value: string;
   setValue: (val: string) => void;
   isTranscribing: boolean;
   sendingMessage: boolean;
-  selectedSession: TutoringSession | null;
-  conclusion?: string | null;
   handleAudioData: (audioData: AudioData) => Promise<void>;
   onSend: (content: string) => Promise<{
     masteryDemonstrated: boolean;
@@ -28,14 +27,18 @@ export function MessageComposer({
   setValue,
   isTranscribing,
   sendingMessage,
-  selectedSession,
-  conclusion,
   handleAudioData,
   onSend,
   onSessionBump,
   onMastery,
 }: MessageComposerProps) {
   const messageWrapperRef = useRef<HTMLDivElement>(null);
+
+  const { selectedSession } = selectedSessionStore;
+
+  const disabled =
+    sendingMessage ||
+    (!(selectedSession instanceof LoadStatus) && !!selectedSession?.conclusion);
 
   const onKeyDown = useCallback(
     async (e: KeyboardEvent) => {
@@ -99,7 +102,7 @@ export function MessageComposer({
           placeholder="Compose your message..."
           height={70}
           onKeyDown={onKeyDown}
-          disabled={sendingMessage || conclusion !== null}
+          disabled={disabled}
           className="mr-4"
         />
         <VoiceRecorder

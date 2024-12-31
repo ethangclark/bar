@@ -1,4 +1,5 @@
 import { makeAutoObservable } from "mobx";
+import { LoadStatus } from "~/common/utils/loading";
 import { QueryStore } from "~/common/utils/queryStore";
 import { trpc } from "~/trpc/proxy";
 
@@ -8,24 +9,27 @@ class FocusedEnrollmentStore {
   constructor() {
     makeAutoObservable(this);
   }
-  get isLoading() {
-    return enrollmentQueryStore.isLoading;
-  }
-  get hasLoadedOnce() {
-    return enrollmentQueryStore.hasLoadedOnce;
-  }
   get enrollment() {
     return enrollmentQueryStore.data;
   }
   get course() {
-    return this.enrollment?.course ?? null;
+    if (this.enrollment instanceof LoadStatus) {
+      return this.enrollment;
+    }
+    return this.enrollment.course;
   }
   get tutoringSessions() {
-    return this.enrollment?.tutoringSessions ?? [];
+    if (this.enrollment instanceof LoadStatus) {
+      return this.enrollment;
+    }
+    return this.enrollment.tutoringSessions;
   }
   get masteredTopicIds() {
+    if (this.enrollment instanceof LoadStatus) {
+      return this.enrollment;
+    }
     return new Set(
-      (this.enrollment?.tutoringSessions ?? [])
+      this.enrollment.tutoringSessions
         .filter((a) => a.demonstratesMastery)
         .map((a) => a.topicId),
     );
@@ -37,6 +41,9 @@ class FocusedEnrollmentStore {
     return await enrollmentQueryStore.refetch();
   }
   get totalTopics() {
+    if (this.enrollment instanceof LoadStatus) {
+      return 0;
+    }
     let total = 0;
     this.enrollment?.course.units.forEach((unit) => {
       unit.modules.forEach((module) => {

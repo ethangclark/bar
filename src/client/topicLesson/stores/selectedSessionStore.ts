@@ -5,6 +5,7 @@ import { trpc } from "~/trpc/proxy";
 import { focusedEnrollmentStore } from "./focusedEnrollmentStore";
 import { selectedTopicStore } from "./selectedTopicStore";
 import { getMostRecentSession } from "../utils";
+import { LoadStatus, notFound } from "~/common/utils/loading";
 
 class SelectedSessionStore {
   constructor() {
@@ -13,11 +14,11 @@ class SelectedSessionStore {
   sessionId = identity<string | null>(null);
   isCreatingSession = false;
   get selectedSession() {
-    return (
-      selectedTopicStore.topicTutoringSessions.find(
-        (s) => s.id === this.sessionId,
-      ) ?? null
-    );
+    const sessions = selectedTopicStore.topicTutoringSessions;
+    if (sessions instanceof LoadStatus) {
+      return sessions;
+    }
+    return sessions.find((s) => s.id === this.sessionId) ?? notFound;
   }
   async startNewSession({
     enrollmentId,
@@ -48,15 +49,15 @@ class SelectedSessionStore {
 export const selectedSessionStore = new SelectedSessionStore();
 
 autorun(() => {
-  const topicSessions = selectedTopicStore.topicTutoringSessions;
-  if (topicSessions.length === 0) {
+  const sessions = selectedTopicStore.topicTutoringSessions;
+  if (sessions instanceof LoadStatus || sessions.length === 0) {
     return;
   }
   const selectedId = selectedSessionStore.sessionId;
-  if (topicSessions.some((s) => s.id === selectedId)) {
+  if (sessions.some((s) => s.id === selectedId)) {
     return;
   }
-  const mostRecent = getMostRecentSession(topicSessions);
+  const mostRecent = getMostRecentSession(sessions);
   if (mostRecent) {
     selectedSessionStore.sessionId = mostRecent.id;
   }
@@ -68,11 +69,8 @@ export function useAutoStartSession({
   enrollmentId: string;
 }) {
   useEffect(() => {
-    if (
-      focusedEnrollmentStore.hasLoadedOnce &&
-      !focusedEnrollmentStore.isLoading &&
-      selectedTopicStore.topicTutoringSessions.length === 0
-    ) {
+    const sessions = selectedTopicStore.topicTutoringSessions;
+    if (!(sessions instanceof LoadStatus) && sessions.length === 0) {
       void selectedSessionStore.startNewSession({
         enrollmentId,
         prevConclusion: null,

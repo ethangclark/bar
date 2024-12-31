@@ -6,6 +6,7 @@ import { TitleWithPct } from "../pctDisplay";
 import { DownOutlined } from "@ant-design/icons";
 import { z } from "zod";
 import { sortSessionsEarliestFirst } from "../utils";
+import { LoadStatus } from "~/common/utils/loading";
 
 function getFirstIncompleteTopic(
   course: DetailedCourse,
@@ -44,8 +45,11 @@ class SelectedTopicStore {
     this.selectedTopicId = topicId;
   }
   selectNextTopic() {
-    const { isLoading, course, masteredTopicIds } = focusedEnrollmentStore;
-    if (isLoading || course === null) {
+    const { course, masteredTopicIds } = focusedEnrollmentStore;
+    if (
+      course instanceof LoadStatus ||
+      masteredTopicIds instanceof LoadStatus
+    ) {
       return;
     }
     const nextTopic = getFirstIncompleteTopic(
@@ -57,7 +61,7 @@ class SelectedTopicStore {
   }
   get selectedTopicContext(): TopicContext | null {
     const { course } = focusedEnrollmentStore;
-    if (!this.selectedTopicId || !course) {
+    if (!this.selectedTopicId || course instanceof LoadStatus) {
       return null;
     }
     for (const unit of course.units) {
@@ -80,16 +84,25 @@ class SelectedTopicStore {
   get topicTutoringSessions() {
     const { tutoringSessions } = focusedEnrollmentStore;
     const { selectedTopicContext } = this;
+    if (tutoringSessions instanceof LoadStatus) {
+      return tutoringSessions;
+    }
     return (tutoringSessions ?? []).filter(
       (s) => s.topicId === selectedTopicContext?.topic.id,
     );
   }
   get topicSessionsEarliestFirst() {
+    if (this.topicTutoringSessions instanceof LoadStatus) {
+      return this.topicTutoringSessions;
+    }
     return sortSessionsEarliestFirst(this.topicTutoringSessions);
   }
   get treeData() {
     const { course, masteredTopicIds, totalTopics } = focusedEnrollmentStore;
-    if (!course) {
+    if (
+      course instanceof LoadStatus ||
+      masteredTopicIds instanceof LoadStatus
+    ) {
       return [];
     }
     return [
@@ -155,7 +168,7 @@ class SelectedTopicStore {
         const key = z.string().parse(rawKey);
         this.selectTopic(key);
       },
-      defaultExpandedKeys: course ? [course.id] : [], // we want the root course node expanded
+      defaultExpandedKeys: course instanceof LoadStatus ? [] : [course.id], // we want the root course node expanded
     };
   }
 }
@@ -163,8 +176,11 @@ class SelectedTopicStore {
 export const selectedTopicStore = new SelectedTopicStore();
 
 autorun(() => {
-  const { hasLoadedOnce, isLoading } = focusedEnrollmentStore;
-  if (hasLoadedOnce && !isLoading && !selectedTopicStore.isTopicSelected) {
+  const { enrollment } = focusedEnrollmentStore;
+  if (
+    !(enrollment instanceof LoadStatus) &&
+    !selectedTopicStore.isTopicSelected
+  ) {
     selectedTopicStore.selectNextTopic();
   }
 });

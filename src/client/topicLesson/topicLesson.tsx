@@ -1,4 +1,6 @@
-import { useCallback, useRef, useState } from "react";
+import { observer } from "mobx-react-lite";
+import { useCallback, useState } from "react";
+import { LoadStatus } from "~/common/utils/loading";
 import { type AudioData } from "~/common/utils/types";
 import { type TopicContext } from "~/server/db/schema";
 import { api } from "~/trpc/react";
@@ -12,8 +14,6 @@ import {
 } from "./stores/selectedSessionStore";
 import { TopicCompleteModal } from "./topicCompleteModal";
 import { TopicHeader } from "./topicHeader";
-import { messagesStore } from "./stores/messagesStore";
-import { observer } from "mobx-react-lite";
 
 interface TopicProps {
   enrollmentId: string;
@@ -55,9 +55,7 @@ export const TopicLesson = observer(function TopicLesson({
   const [completionModalOpen, setCompletionModalOpen] = useState(false);
   const [sessionBumpModalOpen, setSessionBumpModalOpen] = useState(false);
 
-  const isLoading =
-    isCreatingSession || messagesStore.isLoading || sendingMessage;
-  const messageWrapperRef = useRef<HTMLDivElement>(null);
+  const isLoading = isCreatingSession || sendingMessage;
 
   const onCancel = useCallback(async () => {
     if (isLoading) {
@@ -73,8 +71,8 @@ export const TopicLesson = observer(function TopicLesson({
 
   const onSend = useCallback(
     async (content: string) => {
-      if (!selectedSession) {
-        throw new Error("No selected session");
+      if (selectedSession instanceof LoadStatus) {
+        throw new Error("No session selected");
       }
       return await sendMessage({
         tutoringSessionId: selectedSession.id,
@@ -119,19 +117,13 @@ export const TopicLesson = observer(function TopicLesson({
 
       <SessionSelector />
 
-      <MessagesDisplay
-        messages={messagesStore.data}
-        isLoading={isLoading}
-        messageWrapperRef={messageWrapperRef}
-      />
+      <MessagesDisplay />
 
       <MessageComposer
         value={v}
         setValue={setV}
         isTranscribing={isTranscribing}
         sendingMessage={sendingMessage}
-        selectedSession={selectedSession}
-        conclusion={selectedSession?.conclusion}
         handleAudioData={handleAudioData}
         onSend={onSend}
         onSessionBump={onSessionBump}

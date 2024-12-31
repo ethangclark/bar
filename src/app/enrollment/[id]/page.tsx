@@ -12,6 +12,7 @@ import { Slideout } from "~/client/topicLesson/slideout";
 import { focusedEnrollmentStore } from "~/client/topicLesson/stores/focusedEnrollmentStore";
 import { selectedTopicStore } from "~/client/topicLesson/stores/selectedTopicStore";
 import { TopicLesson } from "~/client/topicLesson/topicLesson";
+import { Loading, LoadStatus } from "~/common/utils/loading";
 
 type Props = {
   params: {
@@ -26,20 +27,21 @@ export default observer(function CoursePage({ params }: Props) {
     void focusedEnrollmentStore.loadEnrollment(enrollmentId);
   }, [enrollmentId]);
 
-  const { enrollment, isLoading, hasLoadedOnce } = focusedEnrollmentStore;
-
-  const tutoringSessions = enrollment?.tutoringSessions;
+  const { enrollment } = focusedEnrollmentStore;
 
   const { selectedTopicContext, treeProps } = selectedTopicStore;
 
   const [newUserModalOpen, setNewUserModalOpen] = useState(false);
   const newUserModalShownRef = useRef(false);
   useEffect(() => {
-    if (hasLoadedOnce && tutoringSessions && tutoringSessions.length === 0) {
+    if (
+      !(enrollment instanceof LoadStatus) &&
+      enrollment.tutoringSessions.length === 0
+    ) {
       newUserModalShownRef.current = true;
       setNewUserModalOpen(true);
     }
-  }, [hasLoadedOnce, tutoringSessions]);
+  }, [enrollment]);
 
   const PanelContent = useCallback(
     ({ width }: { width?: number }) => (
@@ -59,7 +61,7 @@ export default observer(function CoursePage({ params }: Props) {
     [treeProps],
   );
 
-  if (isLoading) {
+  if (enrollment instanceof Loading) {
     return <Spin />;
   }
 
