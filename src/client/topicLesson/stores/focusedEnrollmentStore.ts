@@ -1,8 +1,8 @@
 import { makeAutoObservable } from "mobx";
-import { createQueryStore } from "~/common/utils/queryStore";
+import { QueryStore } from "~/common/utils/queryStore";
 import { trpc } from "~/trpc/proxy";
 
-const enrollmentQueryStore = createQueryStore(trpc.courses.enrollment.query);
+const enrollmentQueryStore = new QueryStore(trpc.courses.enrollment.query);
 
 class FocusedEnrollmentStore {
   constructor() {

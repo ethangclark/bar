@@ -1,9 +1,9 @@
 import { autorun } from "mobx";
-import { createQueryStore } from "~/common/utils/queryStore";
 import { trpc } from "~/trpc/proxy";
 import { selectedSessionStore } from "./selectedSessionStore";
+import { QueryStore } from "~/common/utils/queryStore";
 
-export const messagesStore = createQueryStore(
+export const messagesStore = new QueryStore(
   trpc.tutoringSession.chatMessages.query,
 );
 
