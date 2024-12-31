@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { autorun, makeAutoObservable } from "mobx";
 import { identity } from "~/common/utils/types";
 import { type DetailedCourse, type TopicContext } from "~/server/db/schema";
 import { focusedEnrollmentStore } from "./focusedEnrollmentStore";
@@ -161,3 +161,10 @@ class SelectedTopicStore {
 }
 
 export const selectedTopicStore = new SelectedTopicStore();
+
+autorun(() => {
+  const { hasLoadedOnce, isLoading } = focusedEnrollmentStore;
+  if (hasLoadedOnce && !isLoading && !selectedTopicStore.isTopicSelected) {
+    selectedTopicStore.selectNextTopic();
+  }
+});
