@@ -38,13 +38,14 @@ export function MessageComposer({
 
   const disabled =
     sendingMessage ||
-    (!(selectedSession instanceof Status) && !!selectedSession?.conclusion);
+    selectedSession instanceof Status ||
+    !!selectedSession.conclusion;
 
   const onKeyDown = useCallback(
     async (e: KeyboardEvent) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        if (!selectedSession || sendingMessage) return;
+        if (disabled) return;
 
         const { masteryDemonstrated, conclusion } = await onSend(value);
         await messagesStore.refetch();
