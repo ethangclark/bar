@@ -12,6 +12,9 @@ class SelectedSessionStore {
     makeAutoObservable(this);
   }
   sessionId = identity<string | null>(null);
+  selectSession(sessionId: string) {
+    this.sessionId = sessionId;
+  }
   isCreatingSession = false;
   get selectedSession() {
     const sessions = selectedTopicStore.topicTutoringSessions;

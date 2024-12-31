@@ -20,7 +20,9 @@ export const SessionSelector = observer(function SessionSelector() {
       .map((session, idx) => ({
         key: session.id,
         label: getSessionLabel(session, idx),
-        onClick: () => selectedTopicStore.selectTopic(session.id),
+        onClick: () => {
+          selectedSessionStore.selectSession(session.id);
+        },
       }))
       .reverse();
   }, [topicSessionsEarliestFirst]);
