@@ -9,7 +9,7 @@ function Message({ children }: { children: React.ReactNode }) {
 }
 
 export const MessagesDisplay = observer(function MessagesDisplay() {
-  const { data: messages } = messagesStore;
+  const { messages } = messagesStore;
   return (
     <div
       className="outline-3 flex h-full w-full items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200"
