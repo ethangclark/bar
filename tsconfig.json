@@ -24,7 +24,6 @@
     "types": ["vitest/globals"]
   },
   "include": [
-    // ".eslintrc.cjs.bkp",
     "eslint.config.js",
     "next-env.d.ts",
     "**/*.ts",
