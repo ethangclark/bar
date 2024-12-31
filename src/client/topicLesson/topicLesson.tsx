@@ -13,6 +13,7 @@ import {
 import { TopicCompleteModal } from "./topicCompleteModal";
 import { TopicHeader } from "./topicHeader";
 import { messagesStore } from "./stores/messagesStore";
+import { observer } from "mobx-react-lite";
 
 interface TopicProps {
   enrollmentId: string;
@@ -20,7 +21,7 @@ interface TopicProps {
   topLeftCorner: React.ReactNode;
 }
 
-export function TopicLesson({
+export const TopicLesson = observer(function TopicLesson({
   enrollmentId,
   topicContext,
   topLeftCorner,
@@ -138,4 +139,4 @@ export function TopicLesson({
       />
     </div>
   );
-}
+});
