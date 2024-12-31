@@ -1,4 +1,4 @@
-import { type OpenRouterRequest } from "./schemas";
+import { type OpenRouterRequest } from "./llmSchemas";
 import { getOpenRouterResponse, streamOpenRouterResponse } from "./openRouter";
 import { parseResponseText, parseStreamingResponseText } from "./responseText";
 

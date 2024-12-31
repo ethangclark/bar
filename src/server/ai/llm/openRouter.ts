@@ -4,7 +4,7 @@ import {
   type OpenRouterRequest,
   streamingOpenRouterResponseSchema,
   type StreamingOpenRouterResponse,
-} from "./schemas";
+} from "./llmSchemas";
 import { assertUsageOk, incrementUsage } from "~/server/services/usage";
 
 export async function getOpenRouterResponse(

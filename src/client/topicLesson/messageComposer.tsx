@@ -1,4 +1,4 @@
-import { useCallback, useRef, type KeyboardEvent } from "react";
+import { useCallback, useRef, type KeyboardEvent, useEffect } from "react";
 import confetti from "canvas-confetti";
 import { Editor } from "~/client/components/Editor";
 import { VoiceRecorder } from "./voiceRecorder";
@@ -7,6 +7,9 @@ import { focusedEnrollmentStore } from "./stores/focusedEnrollmentStore";
 import { messagesStore } from "./stores/messagesStore";
 import { selectedSessionStore } from "./stores/selectedSessionStore";
 import { Status } from "~/common/utils/status";
+import { trpc } from "~/trpc/proxy";
+import { noop } from "~/common/utils/fnUtils";
+import { type MessageStreamItem } from "~/common/schemas/messageStreamingSchemas";
 
 interface MessageComposerProps {
   value: string;
@@ -21,6 +24,8 @@ interface MessageComposerProps {
   onSessionBump: (conclusion: string) => Promise<void>;
   onMastery: () => void;
 }
+
+let sent = false;
 
 export function MessageComposer({
   value,
@@ -41,11 +46,44 @@ export function MessageComposer({
     selectedSession instanceof Status ||
     !!selectedSession.conclusion;
 
+  const unsubscribeRef = useRef(noop);
+  useEffect(() => {
+    unsubscribeRef.current();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSessionStore.selectedSession]);
+
   const onKeyDown = useCallback(
     async (e: KeyboardEvent) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         if (disabled) return;
+
+        const { selectedSession } = selectedSessionStore;
+        if (selectedSession instanceof Status) return;
+
+        if (sent) return;
+        sent = true;
+
+        const sub = trpc.tutoringSession.streamMessage.subscribe(
+          {
+            tutoringSessionId: selectedSession.id,
+            content: value,
+          },
+          {
+            onData(data: MessageStreamItem) {
+              console.log({ data });
+              if (data.done) {
+                sub.unsubscribe();
+              } else {
+                messagesStore.appendToStreamingMessage(data.delta);
+              }
+            },
+          },
+        );
+        unsubscribeRef.current = () => {
+          sub.unsubscribe();
+        };
+        return;
 
         const { masteryDemonstrated, conclusion } = await onSend(value);
         await messagesStore.refetch();
@@ -74,15 +112,7 @@ export function MessageComposer({
         });
       }
     },
-    [
-      value,
-      sendingMessage,
-      selectedSession,
-      onSend,
-      setValue,
-      onSessionBump,
-      onMastery,
-    ],
+    [disabled, value, onSend, setValue, onMastery, onSessionBump],
   );
 
   return (
