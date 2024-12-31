@@ -5,7 +5,7 @@ import { trpc } from "~/trpc/proxy";
 import { focusedEnrollmentStore } from "./focusedEnrollmentStore";
 import { selectedTopicStore } from "./selectedTopicStore";
 import { getMostRecentSession } from "../utils";
-import { LoadStatus, notFound } from "~/common/utils/loading";
+import { Status, notFound } from "~/common/utils/status";
 
 class SelectedSessionStore {
   constructor() {
@@ -18,7 +18,7 @@ class SelectedSessionStore {
   isCreatingSession = false;
   get selectedSession() {
     const sessions = selectedTopicStore.topicTutoringSessions;
-    if (sessions instanceof LoadStatus) {
+    if (sessions instanceof Status) {
       return sessions;
     }
     return sessions.find((s) => s.id === this.sessionId) ?? notFound;
@@ -53,7 +53,7 @@ export const selectedSessionStore = new SelectedSessionStore();
 
 autorun(() => {
   const sessions = selectedTopicStore.topicTutoringSessions;
-  if (sessions instanceof LoadStatus || sessions.length === 0) {
+  if (sessions instanceof Status || sessions.length === 0) {
     return;
   }
   const selectedId = selectedSessionStore.sessionId;
@@ -73,7 +73,7 @@ export function useAutoStartSession({
 }) {
   useEffect(() => {
     const sessions = selectedTopicStore.topicTutoringSessions;
-    if (!(sessions instanceof LoadStatus) && sessions.length === 0) {
+    if (!(sessions instanceof Status) && sessions.length === 0) {
       void selectedSessionStore.startNewSession({
         enrollmentId,
         prevConclusion: null,

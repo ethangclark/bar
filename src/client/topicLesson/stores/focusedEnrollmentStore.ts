@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { LoadStatus } from "~/common/utils/loading";
+import { Status } from "~/common/utils/status";
 import { QueryStore } from "~/common/utils/queryStore";
 import { trpc } from "~/trpc/proxy";
 
@@ -13,19 +13,19 @@ class FocusedEnrollmentStore {
     return enrollmentQueryStore.data;
   }
   get course() {
-    if (this.enrollment instanceof LoadStatus) {
+    if (this.enrollment instanceof Status) {
       return this.enrollment;
     }
     return this.enrollment.course;
   }
   get tutoringSessions() {
-    if (this.enrollment instanceof LoadStatus) {
+    if (this.enrollment instanceof Status) {
       return this.enrollment;
     }
     return this.enrollment.tutoringSessions;
   }
   get masteredTopicIds() {
-    if (this.enrollment instanceof LoadStatus) {
+    if (this.enrollment instanceof Status) {
       return this.enrollment;
     }
     return new Set(
@@ -41,7 +41,7 @@ class FocusedEnrollmentStore {
     return await enrollmentQueryStore.refetch();
   }
   get totalTopics() {
-    if (this.enrollment instanceof LoadStatus) {
+    if (this.enrollment instanceof Status) {
       return 0;
     }
     let total = 0;

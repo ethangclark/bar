@@ -6,7 +6,7 @@ import { type AudioData } from "~/common/utils/types";
 import { focusedEnrollmentStore } from "./stores/focusedEnrollmentStore";
 import { messagesStore } from "./stores/messagesStore";
 import { selectedSessionStore } from "./stores/selectedSessionStore";
-import { LoadStatus } from "~/common/utils/loading";
+import { Status } from "~/common/utils/status";
 
 interface MessageComposerProps {
   value: string;
@@ -38,7 +38,7 @@ export function MessageComposer({
 
   const disabled =
     sendingMessage ||
-    (!(selectedSession instanceof LoadStatus) && !!selectedSession?.conclusion);
+    (!(selectedSession instanceof Status) && !!selectedSession?.conclusion);
 
   const onKeyDown = useCallback(
     async (e: KeyboardEvent) => {

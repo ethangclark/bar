@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { identity } from "~/common/utils/types";
-import { loading, type LoadStatus, neverLoaded } from "./loading";
+import { loading, type Status, neverLoaded } from "./status";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class QueryStore<T extends (...args: any[]) => Promise<any>> {
@@ -11,7 +11,7 @@ export class QueryStore<T extends (...args: any[]) => Promise<any>> {
     this.fn = fn;
     makeAutoObservable(this);
   }
-  data = identity<LoadStatus | Awaited<ReturnType<T>>>(neverLoaded);
+  data = identity<Status | Awaited<ReturnType<T>>>(neverLoaded);
   async fetch(...args: Parameters<T>): Promise<ReturnType<T>> {
     this.lastArgs = args;
     runInAction(() => {

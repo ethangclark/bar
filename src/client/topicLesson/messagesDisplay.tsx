@@ -1,7 +1,7 @@
 import { Spin } from "antd";
 import { observer } from "mobx-react-lite";
 import { PreformattedText } from "~/client/components/PreformattedText";
-import { Loading, LoadStatus } from "~/common/utils/loading";
+import { Loading, Status } from "~/common/utils/status";
 import { messagesStore } from "./stores/messagesStore";
 
 function Message({ children }: { children: React.ReactNode }) {
@@ -16,7 +16,7 @@ export const MessagesDisplay = observer(function MessagesDisplay() {
       style={{ height: `calc(100vh - 300px)` }}
     >
       <div className="flex h-full w-full flex-col overflow-y-auto p-4">
-        {!(messages instanceof LoadStatus) &&
+        {!(messages instanceof Status) &&
           messages.map((m, idx) => {
             if (m.senderRole === "system") {
               return null;

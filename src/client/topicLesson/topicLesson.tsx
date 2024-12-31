@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
 import { useCallback, useState } from "react";
-import { LoadStatus } from "~/common/utils/loading";
+import { Status } from "~/common/utils/status";
 import { type AudioData } from "~/common/utils/types";
 import { type TopicContext } from "~/server/db/schema";
 import { api } from "~/trpc/react";
@@ -71,7 +71,7 @@ export const TopicLesson = observer(function TopicLesson({
 
   const onSend = useCallback(
     async (content: string) => {
-      if (selectedSession instanceof LoadStatus) {
+      if (selectedSession instanceof Status) {
         throw new Error("No session selected");
       }
       return await sendMessage({

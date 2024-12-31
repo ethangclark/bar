@@ -6,14 +6,14 @@ import { useCss } from "~/client/hooks/useCss";
 import { selectedSessionStore } from "./stores/selectedSessionStore";
 import { selectedTopicStore } from "./stores/selectedTopicStore";
 import { getSessionLabel } from "./utils";
-import { LoadStatus } from "~/common/utils/loading";
+import { Status } from "~/common/utils/status";
 
 export const SessionSelector = observer(function SessionSelector() {
   const { topicSessionsEarliestFirst } = selectedTopicStore;
   const selectedSessionId = selectedSessionStore.sessionId;
 
   const menuItems = useMemo((): MenuProps["items"] => {
-    if (topicSessionsEarliestFirst instanceof LoadStatus) {
+    if (topicSessionsEarliestFirst instanceof Status) {
       return [];
     }
     return topicSessionsEarliestFirst
@@ -28,7 +28,7 @@ export const SessionSelector = observer(function SessionSelector() {
   }, [topicSessionsEarliestFirst]);
 
   const selectedLabel = useMemo(() => {
-    if (topicSessionsEarliestFirst instanceof LoadStatus) return "";
+    if (topicSessionsEarliestFirst instanceof Status) return "";
     const selectedSession = topicSessionsEarliestFirst.find(
       (s) => s.id === selectedSessionId,
     );

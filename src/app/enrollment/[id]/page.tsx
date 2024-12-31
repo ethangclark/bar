@@ -12,7 +12,7 @@ import { Slideout } from "~/client/topicLesson/slideout";
 import { focusedEnrollmentStore } from "~/client/topicLesson/stores/focusedEnrollmentStore";
 import { selectedTopicStore } from "~/client/topicLesson/stores/selectedTopicStore";
 import { TopicLesson } from "~/client/topicLesson/topicLesson";
-import { Loading, LoadStatus } from "~/common/utils/loading";
+import { Loading, Status } from "~/common/utils/status";
 
 type Props = {
   params: {
@@ -35,7 +35,7 @@ export default observer(function CoursePage({ params }: Props) {
   const newUserModalShownRef = useRef(false);
   useEffect(() => {
     if (
-      !(enrollment instanceof LoadStatus) &&
+      !(enrollment instanceof Status) &&
       enrollment.tutoringSessions.length === 0
     ) {
       newUserModalShownRef.current = true;
