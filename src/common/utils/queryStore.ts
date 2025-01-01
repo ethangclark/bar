@@ -9,27 +9,28 @@ import { loading, type Status, neverLoaded, NeverLoaded } from "./status";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class QueryStore<T extends (...args: any[]) => Promise<any>> {
+  private readonly initialState = {
+    data: identity<Status | Awaited<ReturnType<T>>>(neverLoaded),
+    swr: identity<Status | Awaited<ReturnType<T>>>(neverLoaded),
+    lastArgs: undefined as Parameters<T> | undefined,
+    lastLoadIdInitiated: -Infinity,
+    nextLoadId: 1,
+    lastLoadIdCompleted: -Infinity,
+  };
+
+  data = this.initialState.data;
+  swr = this.initialState.swr;
+  private lastArgs = this.initialState.lastArgs;
+  private lastLoadIdInitiated = this.initialState.lastLoadIdInitiated;
+  private nextLoadId = this.initialState.nextLoadId;
+  private lastLoadIdCompleted = this.initialState.lastLoadIdCompleted;
+
   constructor(private fn: T) {
     makeAutoObservable(this);
   }
 
-  data = identity<Status | Awaited<ReturnType<T>>>(neverLoaded);
-
-  // stale-white-revalidate; will return the most recent data, even while reloading is occurring
-  swr = identity<Status | Awaited<ReturnType<T>>>(neverLoaded);
-
-  private lastArgs: Parameters<T> | undefined = undefined;
-  private lastLoadIdInitiated = -Infinity;
-  private nextLoadId = 1;
-  private lastLoadIdCompleted = -Infinity;
-
   reset() {
-    this.data = neverLoaded;
-    this.swr = neverLoaded;
-    this.lastArgs = undefined;
-    this.lastLoadIdInitiated = -Infinity;
-    this.nextLoadId = 1;
-    this.lastLoadIdCompleted = -Infinity;
+    Object.assign(this, this.initialState);
   }
 
   async fetch(...args: Parameters<T>): Promise<ReturnType<T>> {

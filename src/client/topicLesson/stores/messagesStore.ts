@@ -1,4 +1,4 @@
-import { autorun, makeAutoObservable, runInAction } from "mobx";
+import { makeAutoObservable, reaction, runInAction } from "mobx";
 import { trpc } from "~/trpc/proxy";
 import { selectedSessionStore } from "./selectedSessionStore";
 import { QueryStore } from "~/common/utils/queryStore";
@@ -17,6 +17,18 @@ const messagesQueryStore = new QueryStore(
 class MessagesStore {
   constructor() {
     makeAutoObservable(this);
+    reaction(
+      () => selectedSessionStore.sessionId,
+      (sessionId) => {
+        if (sessionId === null) {
+          messagesQueryStore.reset();
+        } else {
+          void messagesQueryStore.fetch({
+            tutoringSessionId: sessionId,
+          });
+        }
+      },
+    );
   }
   userMessage = "";
   setUserMessage(value: string) {
@@ -57,16 +69,6 @@ class MessagesStore {
       },
     ];
   }
-  async fetchLatest() {
-    const { sessionId } = selectedSessionStore;
-    if (sessionId === null) {
-      messagesQueryStore.reset();
-    } else {
-      void messagesQueryStore.fetch({
-        tutoringSessionId: sessionId,
-      });
-    }
-  }
   async sendUserMessage() {
     const { selectedSession } = selectedSessionStore;
     if (selectedSession instanceof Status) return;
@@ -94,7 +96,7 @@ class MessagesStore {
             inst.userMessageBeingProcessed = null;
           });
           const { masteryDemonstrated, conclusion } = data;
-          void inst.fetchLatest().then(async () => {
+          void messagesQueryStore.refetch().then(async () => {
             if (masteryDemonstrated) {
               await focusedEnrollmentStore.refetchEnrollment(); // reload enrollment data noting new topic completion
               void confetti({
@@ -120,7 +122,3 @@ class MessagesStore {
 }
 
 export const messagesStore = new MessagesStore();
-
-autorun(() => {
-  void messagesStore.fetchLatest();
-});

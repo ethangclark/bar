@@ -1,5 +1,5 @@
 import { identity } from "@trpc/server/unstable-core-do-not-import";
-import { autorun, makeAutoObservable, runInAction } from "mobx";
+import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
 import { trpc } from "~/trpc/proxy";
 import { focusedEnrollmentStore } from "./focusedEnrollmentStore";
 import { selectedTopicStore } from "./selectedTopicStore";
@@ -9,6 +9,30 @@ import { Status, notFound } from "~/common/utils/status";
 class SelectedSessionStore {
   constructor() {
     makeAutoObservable(this);
+    reaction(
+      () => selectedTopicStore.topicTutoringSessions,
+      (sessions) => {
+        if (sessions instanceof Status || sessions.length === 0) {
+          return;
+        }
+        const selectedId = this.sessionId;
+        if (sessions.some((s) => s.id === selectedId)) {
+          return;
+        }
+        const mostRecent = getMostRecentSession(sessions);
+        if (mostRecent) {
+          this.selectSession(mostRecent.id);
+        }
+      },
+    );
+    autorun(() => {
+      const sessions = selectedTopicStore.topicTutoringSessions;
+      if (!(sessions instanceof Status) && sessions.length === 0) {
+        void selectedSessionStore.startNewSession({
+          prevConclusion: null,
+        });
+      }
+    });
   }
   sessionId = identity<string | null>(null);
   selectSession(sessionId: string) {
@@ -45,27 +69,3 @@ class SelectedSessionStore {
 }
 
 export const selectedSessionStore = new SelectedSessionStore();
-
-autorun(() => {
-  const sessions = selectedTopicStore.topicTutoringSessions;
-  if (sessions instanceof Status || sessions.length === 0) {
-    return;
-  }
-  const selectedId = selectedSessionStore.sessionId;
-  if (sessions.some((s) => s.id === selectedId)) {
-    return;
-  }
-  const mostRecent = getMostRecentSession(sessions);
-  if (mostRecent) {
-    selectedSessionStore.selectSession(mostRecent.id);
-  }
-});
-
-autorun(() => {
-  const sessions = selectedTopicStore.topicTutoringSessions;
-  if (!(sessions instanceof Status) && sessions.length === 0) {
-    void selectedSessionStore.startNewSession({
-      prevConclusion: null,
-    });
-  }
-});

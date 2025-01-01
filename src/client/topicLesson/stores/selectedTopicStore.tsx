@@ -1,4 +1,4 @@
-import { autorun, makeAutoObservable } from "mobx";
+import { makeAutoObservable, reaction } from "mobx";
 import { identity } from "~/common/utils/types";
 import { type DetailedCourse, type TopicContext } from "~/server/db/schema";
 import { focusedEnrollmentStore } from "./focusedEnrollmentStore";
@@ -36,6 +36,18 @@ function getFirstIncompleteTopic(
 class SelectedTopicStore {
   constructor() {
     makeAutoObservable(this);
+    reaction(
+      () => focusedEnrollmentStore.enrollment,
+
+      (enrollment) => {
+        if (
+          !(enrollment instanceof Status) &&
+          !selectedTopicStore.isTopicSelected
+        ) {
+          selectedTopicStore.selectNextTopic();
+        }
+      },
+    );
   }
   selectedTopicId = identity<string | null>(null);
   get isTopicSelected() {
@@ -169,10 +181,3 @@ class SelectedTopicStore {
 }
 
 export const selectedTopicStore = new SelectedTopicStore();
-
-autorun(() => {
-  const { enrollment } = focusedEnrollmentStore;
-  if (!(enrollment instanceof Status) && !selectedTopicStore.isTopicSelected) {
-    selectedTopicStore.selectNextTopic();
-  }
-});
