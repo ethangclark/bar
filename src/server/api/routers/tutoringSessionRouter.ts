@@ -57,6 +57,14 @@ async function processLlmResponse({
       content: userMsg,
     })
     .returning();
+
+  await db.insert(dbSchema.chatMessages).values({
+    tutoringSessionId,
+    userId,
+    senderRole: "assistant",
+    content: response,
+  });
+
   if (response.includes(masteryDemonstratedCode)) {
     const conclusion =
       "The student has demonstrated proficiency. Please continue tutoring them on the topic as they request."; // this string also exists in topic.tsx
@@ -86,7 +94,7 @@ async function processLlmResponse({
       ...messagesWithUserMsg,
       {
         role: "user" as const,
-        content: `Sorry, before you respond: This tutoring session is about to run out of time/space. Reply with the notes you'll need to continue where we left off and I'll have them back to you in the new session.`,
+        content: `Sorry, but this tutoring session is about to run out of time/space. Reply with the notes you'll need to continue where we left off and I'll have them given back to you in the new session.`,
       },
     ];
     const conclusion = await getLlmResponse(userId, {
@@ -107,13 +115,6 @@ async function processLlmResponse({
       );
     return { conclusion, masteryDemonstrated: false };
   }
-
-  await db.insert(dbSchema.chatMessages).values({
-    tutoringSessionId,
-    userId,
-    senderRole: "assistant",
-    content: response,
-  });
   return { conclusion: null, masteryDemonstrated: false };
 }
 

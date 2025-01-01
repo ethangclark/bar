@@ -20,6 +20,7 @@ Ensure that your approach ruthlessly ignores details that will not directly cont
 // TODO: backend needs to wait to stream this code to the FE so the students can't figure it out --
 // need to do a continual check vs what's being streamed in and wait util we're sure chunks don't
 // include this before sending them to the FE
+// OR, EVEN BETTER: pass the response to another model that evaluates whether the first model things they've hit proficiency and use that to determine if proficiency has been demonstrated -- no codes required
 export const masteryDemonstratedCode = "PROFICIENCY_DEMONSTRATED";
 
 const getHandoffPrompt = (_: TopicContext) => {

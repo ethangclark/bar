@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { type AudioData } from "~/common/utils/types";
 import { type TopicContext } from "~/server/db/schema";
 import { api } from "~/trpc/react";
@@ -7,7 +7,6 @@ import { MessageComposer } from "./messageComposer";
 import { MessagesDisplay } from "./messagesDisplay";
 import { SessionBumpModal } from "./sessionBumpModal";
 import { SessionSelector } from "./sessionSelector";
-import { selectedSessionStore } from "./stores/selectedSessionStore";
 import { TopicCompleteModal } from "./topicCompleteModal";
 import { TopicHeader } from "./topicHeader";
 import { messagesStore } from "./stores/messagesStore";
@@ -22,8 +21,6 @@ export const TopicLesson = observer(function TopicLesson({
   topLeftCorner,
 }: TopicProps) {
   const { courseType, unit, module, topic } = topicContext;
-
-  const { isCreatingSession } = selectedSessionStore;
 
   const { mutateAsync: transcribe, isPending: isTranscribing } =
     api.trascription.transcribe.useMutation();
@@ -41,28 +38,9 @@ export const TopicLesson = observer(function TopicLesson({
     [transcribe],
   );
 
-  const [completionModalOpen, setCompletionModalOpen] = useState(false);
-
-  const isLoading = isCreatingSession || messagesStore.sendingMessage;
-
-  const onCancel = useCallback(async () => {
-    if (isLoading) {
-      return;
-    }
-    await selectedSessionStore.startNewSession({
-      prevConclusion:
-        "The student has demonstrated proficiency. Please continue tutoring them on the topic as they request.",
-    });
-    setCompletionModalOpen(false);
-  }, [isLoading]);
-
   return (
     <div className="flex h-full w-[350px] flex-col items-center px-2 md:w-[672px] md:px-8">
-      <TopicCompleteModal
-        open={completionModalOpen}
-        isLoading={isLoading}
-        onCancel={onCancel}
-      />
+      <TopicCompleteModal />
       <SessionBumpModal />
 
       <TopicHeader

@@ -1,32 +1,31 @@
-import { Modal, Button, Spin } from "antd";
+import { Modal, Button } from "antd";
 import { selectedTopicStore } from "./stores/selectedTopicStore";
+import { topicCompletionStore } from "./stores/topicCompletionStore";
+import { observer } from "mobx-react-lite";
 
-interface TopicCompleteModalProps {
-  open: boolean;
-  isLoading: boolean;
-  onCancel: () => void;
-}
-
-export function TopicCompleteModal({
-  open,
-  isLoading,
-  onCancel,
-}: TopicCompleteModalProps) {
+export const TopicCompleteModal = observer(function TopicCompleteModal() {
   return (
     <Modal
       title="Module complete"
-      open={open}
-      onCancel={onCancel}
+      open={topicCompletionStore.completionModalOpen}
+      onCancel={() =>
+        topicCompletionStore.dismissCompletionModalAndStayOnPage()
+      }
       footer={[
-        isLoading && <Spin key="spin" className="mr-4" />,
-        <Button key="remain" onClick={onCancel} disabled={isLoading}>
+        <Button
+          key="remain"
+          onClick={() =>
+            topicCompletionStore.dismissCompletionModalAndStayOnPage()
+          }
+        >
           Remain on this topic
         </Button>,
         <Button
           key="next"
           type="primary"
-          onClick={() => selectedTopicStore.selectNextTopic()}
-          disabled={isLoading}
+          onClick={() =>
+            topicCompletionStore.dismissCompletionModalGoToNextTopic()
+          }
         >
           Next topic
         </Button>,
@@ -39,4 +38,4 @@ export function TopicCompleteModal({
       </p>
     </Modal>
   );
-}
+});
