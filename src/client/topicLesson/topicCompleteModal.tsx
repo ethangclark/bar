@@ -1,5 +1,4 @@
 import { Modal, Button } from "antd";
-import { selectedTopicStore } from "./stores/selectedTopicStore";
 import { topicCompletionStore } from "./stores/topicCompletionStore";
 import { observer } from "mobx-react-lite";
 
