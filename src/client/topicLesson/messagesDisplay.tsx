@@ -4,6 +4,7 @@ import { PreformattedText } from "~/client/components/PreformattedText";
 import { Loading, Status } from "~/common/utils/status";
 import { messagesStore } from "./stores/messagesStore";
 import { useEffect, useRef } from "react";
+import { selectedSessionStore } from "./stores/selectedSessionStore";
 
 function Message({ children }: { children: React.ReactNode }) {
   return <div className="mb-4">{children}</div>;
@@ -24,6 +25,7 @@ export const MessagesDisplay = observer(function MessagesDisplay() {
       behavior: "smooth",
     });
   }, [msgArr.length, lastAssistantMsg]);
+
   return (
     <div
       className="outline-3 flex h-full w-full items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200"
@@ -68,7 +70,8 @@ export const MessagesDisplay = observer(function MessagesDisplay() {
             );
           })}
         <div className="flex w-full justify-center">
-          {messages instanceof Loading ? (
+          {selectedSessionStore.isCreatingSession ||
+          messages instanceof Loading ? (
             <div className="text-gray-500">
               Thinking helpful thoughts... One minute... <Spin />
             </div>

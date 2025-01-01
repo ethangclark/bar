@@ -97,6 +97,8 @@ class MessagesStore {
           });
           const { masteryDemonstrated, conclusion } = data;
           void messagesQueryStore.refetch().then(async () => {
+            console.log("received message", inst.streamingAssistantMessage);
+            inst.setStreamingAssistantMessage("");
             if (masteryDemonstrated) {
               await focusedEnrollmentStore.refetchEnrollment(); // reload enrollment data noting new topic completion
               void confetti({

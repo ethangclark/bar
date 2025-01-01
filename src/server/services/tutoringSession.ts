@@ -17,6 +17,9 @@ ${prevConclusion ? `\nThe previous session concluded with the following notes:\n
 Ensure that your approach ruthlessly ignores details that will not directly contribute to the student's success on the bar exam. Focus on proficiency of the core bar exam material, and breeze through the rest.`;
 };
 
+// TODO: backend needs to wait to stream this code to the FE so the students can't figure it out --
+// need to do a continual check vs what's being streamed in and wait util we're sure chunks don't
+// include this before sending them to the FE
 export const masteryDemonstratedCode = "PROFICIENCY_DEMONSTRATED";
 
 const getHandoffPrompt = (_: TopicContext) => {
