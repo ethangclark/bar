@@ -3,6 +3,7 @@ import { observer } from "mobx-react-lite";
 import { PreformattedText } from "~/client/components/PreformattedText";
 import { Loading, Status } from "~/common/utils/status";
 import { messagesStore } from "./stores/messagesStore";
+import { useEffect, useRef } from "react";
 
 function Message({ children }: { children: React.ReactNode }) {
   return <div className="mb-4">{children}</div>;
@@ -10,12 +11,28 @@ function Message({ children }: { children: React.ReactNode }) {
 
 export const MessagesDisplay = observer(function MessagesDisplay() {
   const { messages } = messagesStore;
+  const messagesWrapperRef = useRef<HTMLDivElement>(null);
+  const msgArr = messages instanceof Status ? [] : messages;
+  const lastAssistantMsg = msgArr
+    .slice()
+    .reverse()
+    .find((msg) => msg.senderRole === "assistant")?.content;
+  useEffect(() => {
+    // scroll to the bottom
+    messagesWrapperRef.current?.scrollTo({
+      top: messagesWrapperRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [msgArr.length, lastAssistantMsg]);
   return (
     <div
       className="outline-3 flex h-full w-full items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200"
       style={{ height: `calc(100vh - 300px)` }}
     >
-      <div className="flex h-full w-full flex-col overflow-y-auto p-4">
+      <div
+        className="flex h-full w-full flex-col overflow-y-auto p-4"
+        ref={messagesWrapperRef}
+      >
         {!(messages instanceof Status) &&
           messages.map((m, idx) => {
             if (m.senderRole === "system") {

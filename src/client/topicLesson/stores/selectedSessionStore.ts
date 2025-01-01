@@ -1,6 +1,5 @@
 import { identity } from "@trpc/server/unstable-core-do-not-import";
 import { autorun, makeAutoObservable, runInAction } from "mobx";
-import { useEffect } from "react";
 import { trpc } from "~/trpc/proxy";
 import { focusedEnrollmentStore } from "./focusedEnrollmentStore";
 import { selectedTopicStore } from "./selectedTopicStore";
@@ -23,14 +22,10 @@ class SelectedSessionStore {
     }
     return sessions.find((s) => s.id === this.sessionId) ?? notFound;
   }
-  async startNewSession({
-    enrollmentId,
-    prevConclusion,
-  }: {
-    enrollmentId: string;
-    prevConclusion: string | null;
-  }) {
-    if (!selectedTopicStore.selectedTopicContext) {
+  async startNewSession({ prevConclusion }: { prevConclusion: string | null }) {
+    const { selectedTopicContext } = selectedTopicStore;
+    const { enrollment } = focusedEnrollmentStore;
+    if (!selectedTopicContext || enrollment instanceof Status) {
       return;
     }
     runInAction(() => {
@@ -38,8 +33,8 @@ class SelectedSessionStore {
       this.sessionId = null;
     });
     await trpc.tutoringSession.createTutoringSession.mutate({
-      enrollmentId,
-      topicContext: selectedTopicStore.selectedTopicContext,
+      enrollmentId: enrollment.id,
+      topicContext: selectedTopicContext,
       prevConclusion,
     });
     runInAction(() => {
@@ -62,22 +57,15 @@ autorun(() => {
   }
   const mostRecent = getMostRecentSession(sessions);
   if (mostRecent) {
-    selectedSessionStore.sessionId = mostRecent.id;
+    selectedSessionStore.selectSession(mostRecent.id);
   }
 });
 
-export function useAutoStartSession({
-  enrollmentId,
-}: {
-  enrollmentId: string;
-}) {
-  useEffect(() => {
-    const sessions = selectedTopicStore.topicTutoringSessions;
-    if (!(sessions instanceof Status) && sessions.length === 0) {
-      void selectedSessionStore.startNewSession({
-        enrollmentId,
-        prevConclusion: null,
-      });
-    }
-  }, [enrollmentId]);
-}
+autorun(() => {
+  const sessions = selectedTopicStore.topicTutoringSessions;
+  if (!(sessions instanceof Status) && sessions.length === 0) {
+    void selectedSessionStore.startNewSession({
+      prevConclusion: null,
+    });
+  }
+});

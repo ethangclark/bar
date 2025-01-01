@@ -1,12 +1,14 @@
 import { Modal, Spin } from "antd";
+import { observer } from "mobx-react-lite";
+import { sessionBumpStore } from "./stores/sessionBumpStore";
 
-interface SessionBumpModalProps {
-  open: boolean;
-}
-
-export function SessionBumpModal({ open }: SessionBumpModalProps) {
+export const SessionBumpModal = observer(function SessionBumpModal() {
   return (
-    <Modal title="A new session is starting" open={open} footer={null}>
+    <Modal
+      title="A new session is starting"
+      open={sessionBumpStore.bumpingNotificationModalOpen}
+      footer={null}
+    >
       <p className="mb-4">
         Maximum session length reached. Starting a new session that will pick up
         where you left off.
@@ -16,4 +18,4 @@ export function SessionBumpModal({ open }: SessionBumpModalProps) {
       </div>
     </Modal>
   );
-}
+});

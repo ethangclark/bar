@@ -125,12 +125,9 @@ export const tutoringSessionRouter = createTRPCRouter({
       return session;
     }),
   chatMessages: protectedProcedure
-    .input(z.object({ tutoringSessionId: z.string().nullable() }))
+    .input(z.object({ tutoringSessionId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { tutoringSessionId } = input;
-      if (tutoringSessionId == null) {
-        return [];
-      }
       const messages = getChatMessages({
         userId: ctx.userId,
         tutoringSessionId,
@@ -141,8 +138,6 @@ export const tutoringSessionRouter = createTRPCRouter({
   sendMessage: protectedProcedure
     .input(z.object({ tutoringSessionId: z.string(), content: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // conclusion: string | null;
-      // masteryDemonstrated: boolean;
       const { content: userMsg, tutoringSessionId } = input;
       const { userId } = ctx;
       const ogMessages = await getChatMessages({

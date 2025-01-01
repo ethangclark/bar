@@ -102,7 +102,6 @@ export default observer(function CoursePage({ params }: Props) {
             {selectedTopicContext && (
               <TopicLesson
                 key={selectedTopicContext.topic.id}
-                enrollmentId={enrollmentId}
                 topicContext={selectedTopicContext}
                 topLeftCorner={
                   <div className="xl:hidden">

@@ -151,16 +151,17 @@ class SelectedTopicStore {
   }
   get treeProps() {
     const { course } = focusedEnrollmentStore;
+    const inst = this;
     return {
       switcherIcon: <DownOutlined />,
-      treeData: this.treeData,
-      selectedKeys: this.selectedTopicId ? [this.selectedTopicId] : [],
+      treeData: inst.treeData,
+      selectedKeys: inst.selectedTopicId ? [inst.selectedTopicId] : [],
       onSelect: ([rawKey, ...rest]: React.Key[]) => {
         if (!rawKey || rest.length > 0) {
           return;
         }
         const key = z.string().parse(rawKey);
-        this.selectTopic(key);
+        inst.selectTopic(key);
       },
       defaultExpandedKeys: course instanceof Status ? [] : [course.id], // we want the root course node expanded
     };

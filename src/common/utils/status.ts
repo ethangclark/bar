@@ -8,15 +8,8 @@ export const neverLoaded = new NeverLoaded();
 export class Loading extends Status {}
 export const loading = new Loading();
 
-// each type of data that we want to represent as stalely-cacheable
-// should have its own class that extends Status
-export function ReloadingStatus<T>() {
-  return class Reloading extends Status {
-    constructor(public staleData: T) {
-      super();
-    }
-  };
-}
+export class Reloading extends Loading {}
+export const reloading = new Reloading();
 
 export class NotFound extends Status {}
 export const notFound = new NotFound();
