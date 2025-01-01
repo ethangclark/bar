@@ -25,8 +25,6 @@ interface MessageComposerProps {
   onMastery: () => void;
 }
 
-let sent = false;
-
 export function MessageComposer({
   value,
   setValue,
@@ -60,9 +58,6 @@ export function MessageComposer({
 
         const { selectedSession } = selectedSessionStore;
         if (selectedSession instanceof Status) return;
-
-        if (sent) return;
-        sent = true;
 
         const sub = trpc.tutoringSession.streamMessage.subscribe(
           {

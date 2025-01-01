@@ -1,11 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { type MessageStreamItem } from "~/common/schemas/messageStreamingSchemas";
-import {
-  getLlmResponse,
-  streamLlmResponse,
-  // streamLlmResponse
-} from "~/server/ai/llm";
+import { getLlmResponse, streamLlmResponse } from "~/server/ai/llm";
+import { type Role } from "~/server/ai/llm/llmSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
@@ -38,6 +35,88 @@ async function getChatMessages({
   return sorted;
 }
 
+async function processLlmResponse({
+  response,
+  tutoringSessionId,
+  userId,
+  userMsg,
+  messagesWithUserMsg,
+}: {
+  response: string;
+  tutoringSessionId: string;
+  userId: string;
+  userMsg: string;
+  messagesWithUserMsg: Array<{ role: Role; content: string }>;
+}) {
+  await db
+    .insert(dbSchema.chatMessages)
+    .values({
+      tutoringSessionId,
+      userId,
+      senderRole: "user",
+      content: userMsg,
+    })
+    .returning();
+  if (response.includes(masteryDemonstratedCode)) {
+    const conclusion =
+      "The student has demonstrated proficiency. Please continue tutoring them on the topic as they request."; // this string also exists in topic.tsx
+    await db
+      .update(dbSchema.tutoringSessions)
+      .set({
+        conclusion,
+        demonstratesMastery: true,
+      })
+      .where(
+        and(
+          eq(dbSchema.tutoringSessions.userId, userId),
+          eq(dbSchema.tutoringSessions.id, tutoringSessionId),
+        ),
+      );
+
+    return { conclusion, masteryDemonstrated: true };
+  }
+
+  // truncate the conversation if it's too long
+  if (
+    messagesWithUserMsg.map((m) => m.content).join("").length +
+      response.length >
+    50000
+  ) {
+    const conclusionMessages = [
+      ...messagesWithUserMsg,
+      {
+        role: "user" as const,
+        content: `Sorry, before you respond: This tutoring session is about to run out of time/space. Reply with the notes you'll need to continue where we left off and I'll have them back to you in the new session.`,
+      },
+    ];
+    const conclusion = await getLlmResponse(userId, {
+      model,
+      messages: conclusionMessages,
+    });
+    if (conclusion instanceof Error) {
+      throw conclusion;
+    }
+    await db
+      .update(dbSchema.tutoringSessions)
+      .set({ conclusion })
+      .where(
+        and(
+          eq(dbSchema.tutoringSessions.userId, userId),
+          eq(dbSchema.tutoringSessions.id, tutoringSessionId),
+        ),
+      );
+    return { conclusion, masteryDemonstrated: false };
+  }
+
+  await db.insert(dbSchema.chatMessages).values({
+    tutoringSessionId,
+    userId,
+    senderRole: "assistant",
+    content: response,
+  });
+  return { conclusion: null, masteryDemonstrated: false };
+}
+
 export const tutoringSessionRouter = createTRPCRouter({
   createTutoringSession: protectedProcedure
     .input(createSessionParamSchema)
@@ -65,8 +144,9 @@ export const tutoringSessionRouter = createTRPCRouter({
       // conclusion: string | null;
       // masteryDemonstrated: boolean;
       const { content: userMsg, tutoringSessionId } = input;
+      const { userId } = ctx;
       const ogMessages = await getChatMessages({
-        userId: ctx.userId,
+        userId,
         tutoringSessionId,
       });
 
@@ -88,70 +168,13 @@ export const tutoringSessionRouter = createTRPCRouter({
       if (response instanceof Error) {
         throw response;
       }
-      await db.insert(dbSchema.chatMessages).values({
+      return processLlmResponse({
+        response,
         tutoringSessionId,
-        userId: ctx.userId,
-        senderRole: "user",
-        content: userMsg,
+        userId,
+        userMsg,
+        messagesWithUserMsg,
       });
-      if (response.includes(masteryDemonstratedCode)) {
-        const conclusion =
-          "The student has demonstrated proficiency. Please continue tutoring them on the topic as they request."; // this string also exists in topic.tsx
-        await db
-          .update(dbSchema.tutoringSessions)
-          .set({
-            conclusion,
-            demonstratesMastery: true,
-          })
-          .where(
-            and(
-              eq(dbSchema.tutoringSessions.userId, ctx.userId),
-              eq(dbSchema.tutoringSessions.id, tutoringSessionId),
-            ),
-          );
-
-        return { conclusion, masteryDemonstrated: true };
-      }
-
-      // truncate the conversation if it's too long
-      if (
-        messagesWithUserMsg.map((m) => m.content).join("").length +
-          response.length >
-        50000
-      ) {
-        const conclusionMessages = [
-          ...messagesWithUserMsg,
-          {
-            role: "user" as const,
-            content: `Sorry, before you respond: This tutoring session is about to run out of time/space. Reply with the notes you'll need to continue where we left off and I'll have them back to you in the new session.`,
-          },
-        ];
-        const conclusion = await getLlmResponse(ctx.userId, {
-          model,
-          messages: conclusionMessages,
-        });
-        if (conclusion instanceof Error) {
-          throw conclusion;
-        }
-        await db
-          .update(dbSchema.tutoringSessions)
-          .set({ conclusion })
-          .where(
-            and(
-              eq(dbSchema.tutoringSessions.userId, ctx.userId),
-              eq(dbSchema.tutoringSessions.id, tutoringSessionId),
-            ),
-          );
-        return { conclusion, masteryDemonstrated: false };
-      }
-
-      await db.insert(dbSchema.chatMessages).values({
-        tutoringSessionId,
-        userId: ctx.userId,
-        senderRole: "assistant",
-        content: response,
-      });
-      return { conclusion: null, masteryDemonstrated: false };
     }),
 
   streamMessage: protectedProcedure
@@ -160,11 +183,10 @@ export const tutoringSessionRouter = createTRPCRouter({
       ctx,
       input,
     }): AsyncGenerator<MessageStreamItem> {
-      // conclusion: string | null;
-      // masteryDemonstrated: boolean;
+      const { userId } = ctx;
       const { content: userMsg, tutoringSessionId } = input;
       const ogMessages = await getChatMessages({
-        userId: ctx.userId,
+        userId,
         tutoringSessionId,
       });
 
@@ -182,11 +204,20 @@ export const tutoringSessionRouter = createTRPCRouter({
         model,
         messages: messagesWithUserMsg,
       });
-      for await (const response of gen) {
-        if (typeof response === "string") {
-          yield { done: false, delta: response };
+      let response = "";
+      for await (const resp of gen) {
+        if (typeof resp === "string") {
+          response += resp;
+          yield { done: false, delta: resp };
         }
       }
-      yield { done: true, conclusion: null, masteryDemonstrated: false };
+      const result = await processLlmResponse({
+        response,
+        tutoringSessionId,
+        userId,
+        userMsg,
+        messagesWithUserMsg,
+      });
+      yield { done: true, ...result };
     }),
 });

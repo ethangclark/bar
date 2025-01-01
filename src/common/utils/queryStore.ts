@@ -2,10 +2,6 @@ import { makeAutoObservable, runInAction } from "mobx";
 import { identity } from "~/common/utils/types";
 import { loading, type Status, neverLoaded } from "./status";
 
-// could add a `swr` (stale-while-revalidate) field
-// (would require tracking request dispatch order so if they return out of order
-// we never override later-sent with earlier-sent)
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class QueryStore<T extends (...args: any[]) => Promise<any>> {
   private lastArgs: Parameters<T> | undefined = undefined;

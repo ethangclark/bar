@@ -3,6 +3,7 @@ import { trpc } from "~/trpc/proxy";
 import { selectedSessionStore } from "./selectedSessionStore";
 import { QueryStore } from "~/common/utils/queryStore";
 import { Status } from "~/common/utils/status";
+import { identity } from "@trpc/server/unstable-core-do-not-import";
 
 const messagesQueryStore = new QueryStore(
   trpc.tutoringSession.chatMessages.query,
@@ -12,6 +13,7 @@ class MessagesStore {
   constructor() {
     makeAutoObservable(this);
   }
+  userMessageBeingProcessed = identity<string | null>(null);
   streamingAssistantMessage = "";
   appendToStreamingMessage(message: string) {
     this.streamingAssistantMessage += message;
@@ -26,13 +28,18 @@ class MessagesStore {
       senderRole: m.senderRole,
       content: m.content,
     }));
-    if (!this.streamingAssistantMessage) {
+    if (!this.userMessageBeingProcessed) {
       return base;
     }
     return [
       ...base,
       {
-        id: "__streaming",
+        id: "___userMessageBeingProcessed",
+        senderRole: "user",
+        content: this.userMessageBeingProcessed,
+      },
+      {
+        id: "___streamingAssistantMessage",
         senderRole: "assistant",
         content: this.streamingAssistantMessage,
       },
