@@ -1,5 +1,5 @@
 export abstract class Status {
-  ___isStatus = true; // typescript can't handle truly-empty objects/classes
+  ___isStatus?: true; // typescript can't handle truly-empty objects/classes
 }
 
 export class NeverLoaded extends Status {}
