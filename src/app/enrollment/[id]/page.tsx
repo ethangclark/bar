@@ -1,7 +1,6 @@
 "use client";
 import { MenuOutlined } from "@ant-design/icons";
 import { Tree as AntdTree, Button, Modal, Spin } from "antd";
-import { observer } from "mobx-react-lite";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { z } from "zod";
@@ -9,9 +8,8 @@ import { ClientOnly } from "~/client/components/ClientOnly";
 import { Logo, LogoText } from "~/client/components/Logo";
 import { Page } from "~/client/components/Page";
 import { Slideout } from "~/client/topicLesson/slideout";
-import { focusedEnrollmentStore } from "~/client/topicLesson/stores/focusedEnrollmentStore";
-import { selectedTopicStore } from "~/client/topicLesson/stores/selectedTopicStore";
 import { TopicLesson } from "~/client/topicLesson/topicLesson";
+import { storeObserver } from "~/client/utils/storeObserver";
 import { Loading, Status } from "~/common/utils/status";
 
 type Props = {
@@ -20,12 +18,16 @@ type Props = {
   };
 };
 
-export default observer(function CoursePage({ params }: Props) {
+export default storeObserver<Props>(function CoursePage({
+  params,
+  focusedEnrollmentStore,
+  selectedTopicStore,
+}) {
   const enrollmentId = z.string().parse(params.id);
 
   useEffect(() => {
     void focusedEnrollmentStore.loadEnrollment(enrollmentId);
-  }, [enrollmentId]);
+  }, [enrollmentId, focusedEnrollmentStore]);
 
   const { enrollment } = focusedEnrollmentStore;
 

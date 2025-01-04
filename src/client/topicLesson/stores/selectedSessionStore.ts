@@ -1,13 +1,16 @@
 import { identity } from "@trpc/server/unstable-core-do-not-import";
 import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
 import { trpc } from "~/trpc/proxy";
-import { focusedEnrollmentStore } from "./focusedEnrollmentStore";
-import { selectedTopicStore } from "./selectedTopicStore";
+import { type FocusedEnrollmentStore } from "./focusedEnrollmentStore";
 import { getMostRecentSession } from "../utils";
 import { Status, notFound } from "~/common/utils/status";
+import { type SelectedTopicStore } from "./selectedTopicStore";
 
-class SelectedSessionStore {
-  constructor() {
+export class SelectedSessionStore {
+  constructor(
+    private focusedEnrollmentStore: FocusedEnrollmentStore,
+    private selectedTopicStore: SelectedTopicStore,
+  ) {
     makeAutoObservable(this);
     reaction(
       () => selectedTopicStore.topicTutoringSessions,
@@ -28,7 +31,7 @@ class SelectedSessionStore {
     autorun(() => {
       const sessions = selectedTopicStore.topicTutoringSessions;
       if (!(sessions instanceof Status) && sessions.length === 0) {
-        void selectedSessionStore.startNewSession({
+        void this.startNewSession({
           prevConclusion: null,
         });
       }
@@ -40,15 +43,15 @@ class SelectedSessionStore {
   }
   isCreatingSession = false;
   get selectedSession() {
-    const sessions = selectedTopicStore.topicTutoringSessions;
+    const sessions = this.selectedTopicStore.topicTutoringSessions;
     if (sessions instanceof Status) {
       return sessions;
     }
     return sessions.find((s) => s.id === this.sessionId) ?? notFound;
   }
   async startNewSession({ prevConclusion }: { prevConclusion: string | null }) {
-    const { selectedTopicContext } = selectedTopicStore;
-    const { enrollment } = focusedEnrollmentStore;
+    const { selectedTopicContext } = this.selectedTopicStore;
+    const { enrollment } = this.focusedEnrollmentStore;
     if (!selectedTopicContext || enrollment instanceof Status) {
       return;
     }
@@ -64,8 +67,6 @@ class SelectedSessionStore {
     runInAction(() => {
       this.isCreatingSession = false;
     });
-    await focusedEnrollmentStore.refetchEnrollment();
+    await this.focusedEnrollmentStore.refetchEnrollment();
   }
 }
-
-export const selectedSessionStore = new SelectedSessionStore();

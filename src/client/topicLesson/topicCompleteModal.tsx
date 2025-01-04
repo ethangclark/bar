@@ -1,8 +1,9 @@
 import { Modal, Button } from "antd";
-import { topicCompletionStore } from "./stores/topicCompletionStore";
-import { observer } from "mobx-react-lite";
+import { storeObserver } from "../utils/storeObserver";
 
-export const TopicCompleteModal = observer(function TopicCompleteModal() {
+export const TopicCompleteModal = storeObserver(function TopicCompleteModal({
+  topicCompletionStore,
+}) {
   return (
     <Modal
       title="Module complete"

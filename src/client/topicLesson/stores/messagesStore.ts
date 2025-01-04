@@ -1,21 +1,26 @@
 import { makeAutoObservable, reaction, runInAction } from "mobx";
 import { trpc } from "~/trpc/proxy";
-import { selectedSessionStore } from "./selectedSessionStore";
 import { QueryStore } from "~/common/utils/queryStore";
 import { Status } from "~/common/utils/status";
 import { type MessageStreamItem } from "~/common/schemas/messageStreamingSchemas";
 import { identity } from "@trpc/server/unstable-core-do-not-import";
-import { focusedEnrollmentStore } from "./focusedEnrollmentStore";
+import { type FocusedEnrollmentStore } from "./focusedEnrollmentStore";
 import confetti from "canvas-confetti";
-import { topicCompletionStore } from "./topicCompletionStore";
-import { sessionBumpStore } from "./sessionBumpStore";
+import { type SessionBumpStore } from "./sessionBumpStore";
+import { type SelectedSessionStore } from "./selectedSessionStore";
+import { type TopicCompletionStore } from "./topicCompletionStore";
 
 const messagesQueryStore = new QueryStore(
   trpc.tutoringSession.chatMessages.query,
 );
 
-class MessagesStore {
-  constructor() {
+export class MessagesStore {
+  constructor(
+    private focusedEnrollmentStore: FocusedEnrollmentStore,
+    private selectedSessionStore: SelectedSessionStore,
+    private sessionBumpStore: SessionBumpStore,
+    private topicCompletionStore: TopicCompletionStore,
+  ) {
     makeAutoObservable(this);
     reaction(
       () => selectedSessionStore.sessionId,
@@ -70,7 +75,7 @@ class MessagesStore {
     ];
   }
   async sendUserMessage() {
-    const { selectedSession } = selectedSessionStore;
+    const { selectedSession } = this.selectedSessionStore;
     if (selectedSession instanceof Status) return;
     const content = this.userMessage.trim();
     runInAction(() => {
@@ -100,20 +105,20 @@ class MessagesStore {
             console.log("received message", inst.streamingAssistantMessage);
             inst.setStreamingAssistantMessage("");
             if (masteryDemonstrated) {
-              await focusedEnrollmentStore.refetchEnrollment(); // reload enrollment data noting new topic completion
+              await inst.focusedEnrollmentStore.refetchEnrollment(); // reload enrollment data noting new topic completion
               void confetti({
                 spread: 100,
                 startVelocity: 40,
               });
-              topicCompletionStore.noteCompletion();
+              inst.topicCompletionStore.noteCompletion();
             }
 
             if (!masteryDemonstrated && conclusion) {
-              sessionBumpStore.openModal();
-              await selectedSessionStore.startNewSession({
+              inst.sessionBumpStore.openModal();
+              await inst.selectedSessionStore.startNewSession({
                 prevConclusion: conclusion,
               });
-              sessionBumpStore.closeModal();
+              inst.sessionBumpStore.closeModal();
             }
           });
         },
@@ -122,5 +127,3 @@ class MessagesStore {
     return;
   }
 }
-
-export const messagesStore = new MessagesStore();

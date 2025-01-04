@@ -1,9 +1,12 @@
 import { makeAutoObservable } from "mobx";
-import { selectedSessionStore } from "./selectedSessionStore";
-import { selectedTopicStore } from "./selectedTopicStore";
+import { type SelectedSessionStore } from "./selectedSessionStore";
+import { type SelectedTopicStore } from "./selectedTopicStore";
 
-class TopicCompletionStore {
-  constructor() {
+export class TopicCompletionStore {
+  constructor(
+    private selectedSessionStore: SelectedSessionStore,
+    private selectedTopicStore: SelectedTopicStore,
+  ) {
     makeAutoObservable(this);
   }
   completionModalOpen = false;
@@ -12,15 +15,13 @@ class TopicCompletionStore {
   }
   async dismissCompletionModalAndStayOnPage() {
     this.completionModalOpen = false;
-    await selectedSessionStore.startNewSession({
+    await this.selectedSessionStore.startNewSession({
       prevConclusion:
         "The student has demonstrated proficiency. Please continue tutoring them on the topic as they request.",
     });
   }
   dismissCompletionModalGoToNextTopic() {
     this.completionModalOpen = false;
-    selectedTopicStore.selectNextTopic();
+    this.selectedTopicStore.selectNextTopic();
   }
 }
-
-export const topicCompletionStore = new TopicCompletionStore();

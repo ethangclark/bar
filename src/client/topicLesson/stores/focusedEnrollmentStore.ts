@@ -3,14 +3,14 @@ import { Status } from "~/common/utils/status";
 import { QueryStore } from "~/common/utils/queryStore";
 import { trpc } from "~/trpc/proxy";
 
-const enrollmentQueryStore = new QueryStore(trpc.courses.enrollment.query);
+export class FocusedEnrollmentStore {
+  enrollmentQueryStore = new QueryStore(trpc.courses.enrollment.query);
 
-class FocusedEnrollmentStore {
   constructor() {
     makeAutoObservable(this);
   }
   get enrollment() {
-    return enrollmentQueryStore.data;
+    return this.enrollmentQueryStore.data;
   }
   get course() {
     if (this.enrollment instanceof Status) {
@@ -35,10 +35,10 @@ class FocusedEnrollmentStore {
     );
   }
   async loadEnrollment(enrollmentId: string) {
-    return await enrollmentQueryStore.fetch({ enrollmentId });
+    return await this.enrollmentQueryStore.fetch({ enrollmentId });
   }
   async refetchEnrollment() {
-    return await enrollmentQueryStore.refetch();
+    return await this.enrollmentQueryStore.refetch();
   }
   get totalTopics() {
     if (this.enrollment instanceof Status) {
@@ -53,5 +53,3 @@ class FocusedEnrollmentStore {
     return total;
   }
 }
-
-export const focusedEnrollmentStore = new FocusedEnrollmentStore();

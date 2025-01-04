@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 
-class SessionBumpStore {
+export class SessionBumpStore {
   constructor() {
     makeAutoObservable(this);
   }
@@ -12,5 +12,3 @@ class SessionBumpStore {
     this.bumpingNotificationModalOpen = false;
   }
 }
-
-export const sessionBumpStore = new SessionBumpStore();

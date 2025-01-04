@@ -1,8 +1,9 @@
 import { Modal, Spin } from "antd";
-import { observer } from "mobx-react-lite";
-import { sessionBumpStore } from "./stores/sessionBumpStore";
+import { storeObserver } from "../utils/storeObserver";
 
-export const SessionBumpModal = observer(function SessionBumpModal() {
+export const SessionBumpModal = storeObserver(function SessionBumpModal({
+  sessionBumpStore,
+}) {
   return (
     <Modal
       title="A new session is starting"

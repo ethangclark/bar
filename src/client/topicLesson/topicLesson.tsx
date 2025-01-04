@@ -1,4 +1,3 @@
-import { observer } from "mobx-react-lite";
 import { useCallback } from "react";
 import { type AudioData } from "~/common/utils/types";
 import { type TopicContext } from "~/server/db/schema";
@@ -9,17 +8,18 @@ import { SessionBumpModal } from "./sessionBumpModal";
 import { SessionSelector } from "./sessionSelector";
 import { TopicCompleteModal } from "./topicCompleteModal";
 import { TopicHeader } from "./topicHeader";
-import { messagesStore } from "./stores/messagesStore";
+import { storeObserver } from "../utils/storeObserver";
 
 interface TopicProps {
   topicContext: TopicContext;
   topLeftCorner: React.ReactNode;
 }
 
-export const TopicLesson = observer(function TopicLesson({
+export const TopicLesson = storeObserver<TopicProps>(function TopicLesson({
   topicContext,
   topLeftCorner,
-}: TopicProps) {
+  messagesStore,
+}) {
   const { courseType, unit, module, topic } = topicContext;
 
   const { mutateAsync: transcribe, isPending: isTranscribing } =
@@ -35,7 +35,7 @@ export const TopicLesson = observer(function TopicLesson({
       const prev = messagesStore.userMessage;
       messagesStore.setUserMessage(prev ? prev + " " + text : text);
     },
-    [transcribe],
+    [messagesStore, transcribe],
   );
 
   return (

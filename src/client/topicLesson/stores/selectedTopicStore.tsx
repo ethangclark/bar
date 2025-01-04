@@ -1,12 +1,12 @@
 import { makeAutoObservable, reaction } from "mobx";
 import { identity } from "~/common/utils/types";
 import { type DetailedCourse, type TopicContext } from "~/server/db/schema";
-import { focusedEnrollmentStore } from "./focusedEnrollmentStore";
 import { TitleWithPct } from "../pctDisplay";
 import { DownOutlined } from "@ant-design/icons";
 import { z } from "zod";
 import { sortSessionsEarliestFirst } from "../utils";
 import { Status } from "~/common/utils/status";
+import { type FocusedEnrollmentStore } from "./focusedEnrollmentStore";
 
 function getFirstIncompleteTopic(
   course: DetailedCourse,
@@ -33,18 +33,15 @@ function getFirstIncompleteTopic(
   return null;
 }
 
-class SelectedTopicStore {
-  constructor() {
+export class SelectedTopicStore {
+  constructor(private focusedEnrollmentStore: FocusedEnrollmentStore) {
     makeAutoObservable(this);
     reaction(
-      () => focusedEnrollmentStore.enrollment,
+      () => this.focusedEnrollmentStore.enrollment,
 
       (enrollment) => {
-        if (
-          !(enrollment instanceof Status) &&
-          !selectedTopicStore.isTopicSelected
-        ) {
-          selectedTopicStore.selectNextTopic();
+        if (!(enrollment instanceof Status) && !this.isTopicSelected) {
+          this.selectNextTopic();
         }
       },
     );
@@ -57,7 +54,7 @@ class SelectedTopicStore {
     this.selectedTopicId = topicId;
   }
   selectNextTopic() {
-    const { course, masteredTopicIds } = focusedEnrollmentStore;
+    const { course, masteredTopicIds } = this.focusedEnrollmentStore;
     if (course instanceof Status || masteredTopicIds instanceof Status) {
       return;
     }
@@ -69,7 +66,7 @@ class SelectedTopicStore {
     this.selectTopic(nextTopic?.id ?? null);
   }
   get selectedTopicContext(): TopicContext | null {
-    const { course } = focusedEnrollmentStore;
+    const { course } = this.focusedEnrollmentStore;
     if (!this.selectedTopicId || course instanceof Status) {
       return null;
     }
@@ -91,7 +88,7 @@ class SelectedTopicStore {
     return null;
   }
   get topicTutoringSessions() {
-    const { tutoringSessions } = focusedEnrollmentStore;
+    const { tutoringSessions } = this.focusedEnrollmentStore;
     const { selectedTopicContext } = this;
     if (tutoringSessions instanceof Status) {
       return tutoringSessions;
@@ -107,7 +104,8 @@ class SelectedTopicStore {
     return sortSessionsEarliestFirst(this.topicTutoringSessions);
   }
   get treeData() {
-    const { course, masteredTopicIds, totalTopics } = focusedEnrollmentStore;
+    const { course, masteredTopicIds, totalTopics } =
+      this.focusedEnrollmentStore;
     if (course instanceof Status || masteredTopicIds instanceof Status) {
       return [];
     }
@@ -162,7 +160,7 @@ class SelectedTopicStore {
     ];
   }
   get treeProps() {
-    const { course } = focusedEnrollmentStore;
+    const { course } = this.focusedEnrollmentStore;
     const inst = this;
     return {
       switcherIcon: <DownOutlined />,
@@ -179,5 +177,3 @@ class SelectedTopicStore {
     };
   }
 }
-
-export const selectedTopicStore = new SelectedTopicStore();

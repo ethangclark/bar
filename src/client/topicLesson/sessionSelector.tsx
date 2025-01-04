@@ -1,14 +1,15 @@
 import type { MenuProps } from "antd";
 import { Dropdown } from "antd";
-import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useCss } from "~/client/hooks/useCss";
-import { selectedSessionStore } from "./stores/selectedSessionStore";
-import { selectedTopicStore } from "./stores/selectedTopicStore";
 import { getSessionLabel } from "./utils";
 import { Status } from "~/common/utils/status";
+import { storeObserver } from "../utils/storeObserver";
 
-export const SessionSelector = observer(function SessionSelector() {
+export const SessionSelector = storeObserver(function SessionSelector({
+  selectedSessionStore,
+  selectedTopicStore,
+}) {
   const { topicSessionsEarliestFirst } = selectedTopicStore;
   const selectedSessionId = selectedSessionStore.sessionId;
 
@@ -25,7 +26,7 @@ export const SessionSelector = observer(function SessionSelector() {
         },
       }))
       .reverse();
-  }, [topicSessionsEarliestFirst]);
+  }, [selectedSessionStore, topicSessionsEarliestFirst]);
 
   const selectedLabel = useMemo(() => {
     if (topicSessionsEarliestFirst instanceof Status) return "";

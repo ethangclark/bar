@@ -1,16 +1,11 @@
 import { observer } from "mobx-react-lite";
 import { type BaseObject } from "~/common/utils/baseObject";
-import { messagesStore } from "../topicLesson/stores/messagesStore";
 import { type ComponentType } from "react";
-
-const stores = {
-  messagesStore: messagesStore,
-};
-type Stores = typeof stores;
+import { type Stores, stores } from "./allStores";
 
 export function storeObserver<P = BaseObject>(
   Component: ComponentType<P & Stores>,
-): ComponentType<P & Partial<Stores>> {
+): ComponentType<P> {
   const displayName =
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     Component.displayName || Component.name || "StoreObserver";

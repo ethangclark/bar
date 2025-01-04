@@ -1,16 +1,17 @@
 import { Spin } from "antd";
-import { observer } from "mobx-react-lite";
 import { PreformattedText } from "~/client/components/PreformattedText";
 import { Loading, Status } from "~/common/utils/status";
-import { messagesStore } from "./stores/messagesStore";
 import { useEffect, useRef } from "react";
-import { selectedSessionStore } from "./stores/selectedSessionStore";
+import { storeObserver } from "../utils/storeObserver";
 
 function Message({ children }: { children: React.ReactNode }) {
   return <div className="mb-4">{children}</div>;
 }
 
-export const MessagesDisplay = observer(function MessagesDisplay() {
+export const MessagesDisplay = storeObserver(function MessagesDisplay({
+  messagesStore,
+  selectedSessionStore,
+}) {
   const { messages } = messagesStore;
   const messagesWrapperRef = useRef<HTMLDivElement>(null);
   const msgArr = messages instanceof Status ? [] : messages;
