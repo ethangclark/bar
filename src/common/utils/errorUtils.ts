@@ -10,3 +10,9 @@ export function assertNever(_: never): never {
     `Unexpected value that should never be reached`,
   );
 }
+
+export function assertIsError(error: unknown): asserts error is Error {
+  if (!(error instanceof Error)) {
+    throw new Error("Expected an Error");
+  }
+}

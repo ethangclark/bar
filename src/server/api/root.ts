@@ -4,6 +4,7 @@ import { coursesRouter } from "./routers/coursesRouter";
 import { tutoringSessionRouter } from "./routers/tutoringSessionRouter";
 import { transcriptionRouter } from "./routers/transcriptionRouter";
 import { authRouter } from "./routers/authRouter";
+import { ltiRouter } from "./routers/ltiRouter";
 
 /**
  * This is the primary router for your server.
@@ -12,9 +13,10 @@ import { authRouter } from "./routers/authRouter";
  */
 export const appRouter = createTRPCRouter({
   auth: authRouter,
-  courses: coursesRouter,
-  post: postRouter,
   chat: tutoringSessionRouter,
+  courses: coursesRouter,
+  lti: ltiRouter,
+  post: postRouter,
   trascription: transcriptionRouter,
   tutoringSession: tutoringSessionRouter,
 });

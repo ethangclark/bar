@@ -414,3 +414,37 @@ export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
   }),
 }));
 export const chatMessageSchema = createSelectSchema(chatMessages);
+
+export const institutions = pgTable(
+  "institution",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    issuer: text("issuer").notNull(),
+    clientId: text("client_id").notNull(),
+    deploymentId: text("deployment_id").notNull(),
+    authEndpoint: text("auth_endpoint").notNull(),
+    jwksUrl: text("jwks_url").notNull(),
+  },
+  (institution) => [
+    index("institution_issuer_idx").on(institution.issuer),
+    index("institution_client_id_idx").on(institution.clientId),
+    index("institution_deployment_id_idx").on(institution.deploymentId),
+  ],
+);
+export type Institution = InferSelectModel<typeof institutions>;
+export const institutionsRelations = relations(institutions, ({}) => ({}));
+export const institutionSchema = createSelectSchema(institutions);
+
+export const assignments = pgTable(
+  "assignment",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    title: text("title").notNull(),
+    maxScore: integer("max_score").notNull(),
+  },
+  (assignment) => [index("assignment_title_idx").on(assignment.title)],
+);
+export type Assignment = InferSelectModel<typeof assignments>;
+export const assignmentsRelations = relations(assignments, ({}) => ({}));
+export const assignmentSchema = createSelectSchema(assignments);
