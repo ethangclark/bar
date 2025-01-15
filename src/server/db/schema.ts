@@ -414,3 +414,20 @@ export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
   }),
 }));
 export const chatMessageSchema = createSelectSchema(chatMessages);
+
+export const canvasUsers = pgTable(
+  "canvas_user",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    oauthRefreshToken: text("oauth_refresh_token").notNull(),
+    accessTokenLifespanMs: integer("access_token_lifespan_ms"),
+  },
+  (cu) => [index("canvas_user_user_id_idx").on(cu.userId)],
+);
+export type CanvasUser = InferSelectModel<typeof canvasUsers>;
+export const canvasUsersRelations = relations(canvasUsers, ({ one }) => ({
+  user: one(users, { fields: [canvasUsers.userId], references: [users.id] }),
+}));
+export const canvasUserSchema = createSelectSchema(canvasUsers);
