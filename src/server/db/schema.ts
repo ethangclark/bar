@@ -422,6 +422,9 @@ export const canvasUsers = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    exCanvasGlobalId: text("ex_canvas_global_id").notNull(),
+    exCanvasNonGlobalIdBkpJson: text("ex_canvas_non_global_id_bkp"),
+    exCanvasUserName: text("ex_canvas_user_name").notNull(),
     oauthRefreshToken: text("oauth_refresh_token").notNull(),
     accessTokenLifespanMs: integer("access_token_lifespan_ms"),
   },
