@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { ClientOnly } from "~/client/components/ClientOnly";
 import {
@@ -21,12 +21,15 @@ linkParams.append("redirect_uri", redirectUri);
 const Impl = () => {
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
+  const router = useRouter();
 
   const processCode = api.auth.processCanvasCode.useMutation();
 
   useEffect(() => {
     if (code) {
-      void processCode.mutateAsync({ code });
+      void processCode.mutateAsync({ code }).then(() => {
+        router.push("/courses");
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
