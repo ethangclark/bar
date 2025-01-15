@@ -11,6 +11,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
+import { createCanvasUser } from "~/server/services/canvasApiService";
 import { getSeatsRemaining } from "~/server/services/seats";
 
 const isLoggedIn = (session: Session | null) => session !== null;
@@ -26,6 +27,7 @@ export const authRouter = createTRPCRouter({
   processCanvasCode: protectedProcedure
     .input(z.object({ code: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const { userId } = ctx;
       const { code } = input;
 
       const params = new URLSearchParams();
@@ -34,36 +36,39 @@ export const authRouter = createTRPCRouter({
       params.append("client_id", clientId);
       params.append("client_secret", clientSecret);
       params.append("redirect_uri", redirectUri);
+
+      const tBefore = Date.now();
       const result = await fetch(
         `${canvasBaseUrl}/login/oauth2/token?${params.toString()}`,
         {
           method: "POST",
         },
       );
-      try {
-        const asJson = await result.json();
+      const asJson = await result.json();
 
-        // not currenlty using commented-out fields
-        const typed = z
-          .object({
-            access_token: z.string(),
-            // canvas_region: z.string(),
-            expires_in: z.number(), // time in seconds
-            refresh_token: z.string(),
-            // token_type: z.literal("Bearer"),
-            // user: z.object({
-            //   id: z.number(),
-            //   name: z.string(),
-            //   global_id: z.string(),
-            //   // effective_locale: z.string(),
-            // }),
-          })
-          .parse(asJson);
-        console.log({ userId: ctx.userId, typed });
-      } catch (e) {
-        const text = await result.text();
-        console.log({ text });
-        console.error(e);
-      }
+      // not currenlty using commented-out fields
+      const typed = z
+        .object({
+          access_token: z.string(),
+          // canvas_region: z.string(),
+          expires_in: z.number(), // time in seconds
+          refresh_token: z.string(),
+          // token_type: z.literal("Bearer"),
+          // user: z.object({
+          //   id: z.number(),
+          //   name: z.string(),
+          //   global_id: z.string(),
+          //   // effective_locale: z.string(),
+          // }),
+        })
+        .parse(asJson);
+
+      await createCanvasUser({
+        userId,
+        oauthRefreshToken: typed.refresh_token,
+        oauthAccessToken: typed.access_token,
+        accessTokenLifespanMs: typed.expires_in * 1000,
+        timestampBeforeCreation: tBefore,
+      });
     }),
 });

@@ -1,0 +1,1 @@
+ALTER TABLE "drizzle_canvas_user" ADD COLUMN "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL;

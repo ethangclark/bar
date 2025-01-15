@@ -418,6 +418,7 @@ export const chatMessageSchema = createSelectSchema(chatMessages);
 export const canvasUsers = pgTable(
   "canvas_user",
   {
+    id: uuid("id").primaryKey().defaultRandom(),
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
