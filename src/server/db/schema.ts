@@ -60,6 +60,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   sessions: many(sessions),
   enrollments: many(enrollments),
+  ipUsers: many(ipUsers),
 }));
 export const userSchema = createSelectSchema(users);
 
@@ -422,13 +423,17 @@ export const canvasUsers = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    exCanvasGlobalId: text("ex_canvas_global_id").notNull(),
-    exCanvasNonGlobalIdBkpJson: text("ex_canvas_non_global_id_bkp"),
-    exCanvasUserName: text("ex_canvas_user_name").notNull(),
+    canvasGlobalId: text("canvas_global_id").notNull(),
+    nonGlobalIdsArrJson: text("non_global_ids_arr_json").notNull(),
+    canvasUserName: text("canvas_user_name").notNull(),
     oauthRefreshToken: text("oauth_refresh_token").notNull(),
     accessTokenLifespanMs: integer("access_token_lifespan_ms"),
   },
-  (cu) => [index("canvas_user_user_id_idx").on(cu.userId)],
+  (cu) => [
+    index("canvas_user_user_id_idx").on(cu.userId),
+    // unique index to ensure only one canvas user per canvas global user id
+    uniqueIndex("canvas_user_canvas_global_id_idx").on(cu.canvasGlobalId),
+  ],
 );
 export type CanvasUser = InferSelectModel<typeof canvasUsers>;
 export const canvasUsersRelations = relations(canvasUsers, ({ one }) => ({

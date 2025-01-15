@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import {
   canvasBaseUrl,
@@ -66,15 +67,35 @@ export async function createCanvasUser({
 
   const lifespanMs = typed.expires_in * 1000;
 
-  // TODO: we should really only have one canvas user per canvas global user id??
-  await db.insert(dbSchema.canvasUsers).values({
-    userId,
-    exCanvasGlobalId: typed.user.global_id,
-    exCanvasNonGlobalIdBkpJson: JSON.stringify(typed.user.id),
-    exCanvasUserName: typed.user.name,
-    oauthRefreshToken: typed.refresh_token,
-    accessTokenLifespanMs: lifespanMs,
+  const existing = await db.query.canvasUsers.findFirst({
+    where: eq(dbSchema.canvasUsers.canvasGlobalId, typed.user.global_id),
   });
+  if (existing) {
+    const existingNonGlobalIds = z
+      .array(z.number())
+      .parse(existing.nonGlobalIdsArrJson);
+    const nonGlobalIdsArr = [
+      ...new Set([...existingNonGlobalIds, typed.user.id]),
+    ];
+    await db
+      .update(dbSchema.canvasUsers)
+      .set({
+        nonGlobalIdsArrJson: JSON.stringify(nonGlobalIdsArr),
+        canvasUserName: typed.user.name,
+        oauthRefreshToken: typed.refresh_token,
+        accessTokenLifespanMs: lifespanMs,
+      })
+      .where(eq(dbSchema.canvasUsers.canvasGlobalId, typed.user.global_id));
+  } else {
+    await db.insert(dbSchema.canvasUsers).values({
+      userId,
+      canvasGlobalId: typed.user.global_id,
+      nonGlobalIdsArrJson: JSON.stringify([typed.user.id]),
+      canvasUserName: typed.user.name,
+      oauthRefreshToken: typed.refresh_token,
+      accessTokenLifespanMs: lifespanMs,
+    });
+  }
 
   updateTokenCache(typed.refresh_token, {
     accessToken: typed.access_token,

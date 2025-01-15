@@ -121,7 +121,7 @@ export const createTRPCRouter = t.router;
  */
 export const publicProcedure = t.procedure;
 
-// TODO: Update this logic to not support ipUsers
+// TODO: Update this logic to not support ipUsers(??) (actually, this we need something like this? But probably keying off of a cookie or something, so multiple users with the same IP won't be conflated (although the problem with this is that some browsers won't respect cookies -- so maybe cookies by by default and IP as a fallback, the thought being that if cookie-refusers want to get themselves into a weird state, that's on them))
 /**
  * Protected (authenticated) procedure
  *
