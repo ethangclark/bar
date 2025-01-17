@@ -6,7 +6,7 @@ type Score = { type: "points"; points: number };
 
 export type IntegrationApi = {
   type: IntegrationType;
-  getActivities: (params: { userId: string }) => Promise<LmsCourse[]>;
+  getCourses: (params: { userId: string }) => Promise<LmsCourse[]>;
   setGrading: (params: {
     userId: string;
     activityId: string;

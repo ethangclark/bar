@@ -1,10 +1,6 @@
 import { type Session } from "next-auth";
 import { z } from "zod";
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { createCanvasUser } from "~/server/services/canvasApiService";
 import { getSeatsRemaining } from "~/server/services/seats";
 
@@ -18,7 +14,7 @@ export const authRouter = createTRPCRouter({
     const seatsRemaining = await getSeatsRemaining();
     return { isLoggedIn: isLoggedIn(ctx.session), seatsRemaining };
   }),
-  processCanvasCode: protectedProcedure
+  processCanvasCode: publicProcedure
     .input(z.object({ code: z.string(), canvasIntegrationId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { userId } = ctx;

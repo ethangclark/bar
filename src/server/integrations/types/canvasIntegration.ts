@@ -21,7 +21,7 @@ export async function createCanvasIntegrationApi(
   // TODO: update the `valid` field of the integraiton after first successful API call
   return {
     type: "canvas",
-    getActivities: () => Promise.resolve([]),
+    getCourses: () => Promise.resolve([]),
     setGrading: () => Promise.resolve(),
     submitScore: () => Promise.resolve(),
   };
