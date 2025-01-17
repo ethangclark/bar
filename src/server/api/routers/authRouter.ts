@@ -19,14 +19,15 @@ export const authRouter = createTRPCRouter({
     return { isLoggedIn: isLoggedIn(ctx.session), seatsRemaining };
   }),
   processCanvasCode: protectedProcedure
-    .input(z.object({ code: z.string() }))
+    .input(z.object({ code: z.string(), canvasIntegrationId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { userId } = ctx;
-      const { code } = input;
+      const { code, canvasIntegrationId } = input;
 
       await createCanvasUser({
         userId,
         oauthCode: code,
+        canvasIntegrationId,
       });
     }),
 });

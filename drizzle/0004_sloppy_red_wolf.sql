@@ -1,1 +1,0 @@
-ALTER TABLE "drizzle_user" ALTER COLUMN "email_verified" DROP DEFAULT;

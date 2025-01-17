@@ -4,7 +4,6 @@ import Link from "next/link";
 import { api } from "~/trpc/react";
 import { BigTitlePage } from "~/client/components/BigTitlePage";
 import { ClientOnly } from "~/client/components/ClientOnly";
-import { Courses } from "~/client/courseList/courses";
 
 export default function Home() {
   const { data } = api.auth.seatsRemaining.useQuery();
@@ -15,9 +14,7 @@ export default function Home() {
       <BigTitlePage>
         {isLoggedIn ? (
           <div className="mt-20 flex flex-grow flex-col items-center justify-between">
-            <div>
-              <Courses />
-            </div>
+            <div>Hello</div>
             <Link
               href={"/api/auth/signout"}
               className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"

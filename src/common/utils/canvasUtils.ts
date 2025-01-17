@@ -1,5 +1,11 @@
-export const canvasBaseUrl = `http://localhost:3000`;
-export const clientId = "10000000000001";
-export const clientSecret =
-  "7hFnty7P6aQxZk9v6LDnPm9t2ZATYKDYctCT84F8uk9rKxAmZHADGVfPvEehxmkA";
-export const redirectUri = "http://localhost:4000/login/canvas";
+import { getBaseUrl } from "./urlUtils";
+
+export const getRedirectUrl = (canvasSubdomain: string) =>
+  `${getBaseUrl()}/login/canvas/${canvasSubdomain}`;
+
+export const getCanvasBaseUrl = (canvasSubdomain: string) => {
+  if (process.env.NODE_ENV === "development") {
+    return "http://localhost:3000";
+  }
+  return `https://${canvasSubdomain}.instructure.com`;
+};

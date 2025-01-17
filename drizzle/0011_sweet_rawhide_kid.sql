@@ -1,2 +1,0 @@
-ALTER TABLE "drizzle_course" ADD COLUMN "variant" text;--> statement-breakpoint
-CREATE UNIQUE INDEX "courses_variant_accepting_enrollments_idx" ON "drizzle_course" USING btree (COALESCE("variant", '___NULL___')) WHERE "drizzle_course"."accepting_enrollments" = true;

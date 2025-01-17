@@ -1,11 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import {
-  canvasBaseUrl,
-  clientId,
-  clientSecret,
-  redirectUri,
-} from "~/common/utils/canvasUtils";
+import { getRedirectUrl } from "~/common/utils/canvasUtils";
 import { db } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
 
@@ -28,20 +23,32 @@ function updateTokenCache(
 export async function createCanvasUser({
   userId,
   oauthCode,
+  canvasIntegrationId,
 }: {
   userId: string;
   oauthCode: string;
+  canvasIntegrationId: string;
 }) {
+  const canvasIntegration = await db.query.canvasIntegrations.findFirst({
+    where: eq(dbSchema.canvasIntegrations.id, canvasIntegrationId),
+  });
+  if (!canvasIntegration) {
+    throw new Error("Canvas integration not found");
+  }
+
   const params = new URLSearchParams();
   params.append("code", oauthCode);
   params.append("grant_type", "authorization_code");
-  params.append("client_id", clientId);
-  params.append("client_secret", clientSecret);
-  params.append("redirect_uri", redirectUri);
+  params.append("client_id", canvasIntegration.clientId);
+  params.append("client_secret", canvasIntegration.clientSecret);
+  params.append(
+    "redirect_uri",
+    getRedirectUrl(canvasIntegration.canvasBaseUrl),
+  );
 
   const tBefore = Date.now();
   const result = await fetch(
-    `${canvasBaseUrl}/login/oauth2/token?${params.toString()}`,
+    `${canvasIntegration.canvasBaseUrl}/login/oauth2/token?${params.toString()}`,
     {
       method: "POST",
     },
@@ -89,6 +96,7 @@ export async function createCanvasUser({
   } else {
     await db.insert(dbSchema.canvasUsers).values({
       userId,
+      canvasIntegrationId: canvasIntegration.id,
       canvasGlobalId: typed.user.global_id,
       nonGlobalIdsArrJson: JSON.stringify([typed.user.id]),
       canvasUserName: typed.user.name,

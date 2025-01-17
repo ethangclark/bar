@@ -1,11 +1,11 @@
 {
-  "id": "d3e15c8f-0589-45d7-9470-76ef422eb362",
+  "id": "6a5bf78f-e969-40e6-b549-37d2c7cbe81b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.drizzle_account": {
-      "name": "drizzle_account",
+    "public.account": {
+      "name": "account",
       "schema": "",
       "columns": {
         "user_id": {
@@ -93,10 +93,10 @@
         }
       },
       "foreignKeys": {
-        "drizzle_account_user_id_drizzle_user_id_fk": {
-          "name": "drizzle_account_user_id_drizzle_user_id_fk",
-          "tableFrom": "drizzle_account",
-          "tableTo": "drizzle_user",
+        "account_user_id_user_id_fk": {
+          "name": "account_user_id_user_id_fk",
+          "tableFrom": "account",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -108,18 +108,21 @@
         }
       },
       "compositePrimaryKeys": {
-        "drizzle_account_provider_provider_account_id_pk": {
-          "name": "drizzle_account_provider_provider_account_id_pk",
+        "account_provider_provider_account_id_pk": {
+          "name": "account_provider_provider_account_id_pk",
           "columns": [
             "provider",
             "provider_account_id"
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "public.drizzle_activity": {
-      "name": "drizzle_activity",
+    "public.activity": {
+      "name": "activity",
       "schema": "",
       "columns": {
         "id": {
@@ -129,268 +132,46 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "topic_id": {
-          "name": "topic_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "enrollment_id": {
-          "name": "enrollment_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "conclusion": {
-          "name": "conclusion",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "demonstrates_mastery": {
-          "name": "demonstrates_mastery",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        }
-      },
-      "indexes": {
-        "activity_name_idx": {
-          "name": "activity_name_idx",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "activity_user_id_idx": {
-          "name": "activity_user_id_idx",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "activity_topic_id_idx": {
-          "name": "activity_topic_id_idx",
-          "columns": [
-            {
-              "expression": "topic_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "activity_enrollment_id_idx": {
-          "name": "activity_enrollment_id_idx",
-          "columns": [
-            {
-              "expression": "enrollment_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "drizzle_activity_user_id_drizzle_user_id_fk": {
-          "name": "drizzle_activity_user_id_drizzle_user_id_fk",
-          "tableFrom": "drizzle_activity",
-          "tableTo": "drizzle_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "drizzle_activity_topic_id_drizzle_topic_id_fk": {
-          "name": "drizzle_activity_topic_id_drizzle_topic_id_fk",
-          "tableFrom": "drizzle_activity",
-          "tableTo": "drizzle_topic",
-          "columnsFrom": [
-            "topic_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "drizzle_activity_enrollment_id_drizzle_course_enrollment_id_fk": {
-          "name": "drizzle_activity_enrollment_id_drizzle_course_enrollment_id_fk",
-          "tableFrom": "drizzle_activity",
-          "tableTo": "drizzle_course_enrollment",
-          "columnsFrom": [
-            "enrollment_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "public.drizzle_course_enrollment": {
-      "name": "drizzle_course_enrollment",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "course_id": {
-          "name": "course_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "start_date": {
-          "name": "start_date",
+        "due_at": {
+          "name": "due_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "course_enrollment_user_id_idx": {
-          "name": "course_enrollment_user_id_idx",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
+          "notNull": true
         },
-        "course_enrollment_course_id_idx": {
-          "name": "course_enrollment_course_id_idx",
-          "columns": [
-            {
-              "expression": "course_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "drizzle_course_enrollment_user_id_drizzle_user_id_fk": {
-          "name": "drizzle_course_enrollment_user_id_drizzle_user_id_fk",
-          "tableFrom": "drizzle_course_enrollment",
-          "tableTo": "drizzle_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "drizzle_course_enrollment_course_id_drizzle_course_id_fk": {
-          "name": "drizzle_course_enrollment_course_id_drizzle_course_id_fk",
-          "tableFrom": "drizzle_course_enrollment",
-          "tableTo": "drizzle_course",
-          "columnsFrom": [
-            "course_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "public.drizzle_course_type": {
-      "name": "drizzle_course_type",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "name": {
-          "name": "name",
+        "ex_id_json": {
+          "name": "ex_id_json",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "integration_id": {
+          "name": "integration_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
-        "course_type_name_idx": {
-          "name": "course_type_name_idx",
+        "activity_due_at_idx": {
+          "name": "activity_due_at_idx",
           "columns": [
             {
-              "expression": "name",
+              "expression": "due_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "activity_int_id_idx": {
+          "name": "activity_int_id_idx",
+          "columns": [
+            {
+              "expression": "integration_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -404,10 +185,13 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "public.drizzle_course": {
-      "name": "drizzle_course",
+    "public.activity_item": {
+      "name": "activity_item",
       "schema": "",
       "columns": {
         "id": {
@@ -417,26 +201,25 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "type_id": {
-          "name": "type_id",
+        "activity_id": {
+          "name": "activity_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "creation_date": {
-          "name": "creation_date",
-          "type": "timestamp with time zone",
+        "order_frac_idx": {
+          "name": "order_frac_idx",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         }
       },
       "indexes": {
-        "course_type_id_idx": {
-          "name": "course_type_id_idx",
+        "activity_item_activity_id_idx": {
+          "name": "activity_item_activity_id_idx",
           "columns": [
             {
-              "expression": "type_id",
+              "expression": "activity_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -449,12 +232,12 @@
         }
       },
       "foreignKeys": {
-        "drizzle_course_type_id_drizzle_course_type_id_fk": {
-          "name": "drizzle_course_type_id_drizzle_course_type_id_fk",
-          "tableFrom": "drizzle_course",
-          "tableTo": "drizzle_course_type",
+        "activity_item_activity_id_activity_id_fk": {
+          "name": "activity_item_activity_id_activity_id_fk",
+          "tableFrom": "activity_item",
+          "tableTo": "activity",
           "columnsFrom": [
-            "type_id"
+            "activity_id"
           ],
           "columnsTo": [
             "id"
@@ -464,10 +247,327 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "public.drizzle_ip_user": {
-      "name": "drizzle_ip_user",
+    "public.canvas_integration": {
+      "name": "canvas_integration",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "integration_id": {
+          "name": "integration_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "canvas_base_url": {
+          "name": "canvas_base_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client_secret": {
+          "name": "client_secret",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "validated": {
+          "name": "validated",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {
+        "canvas_int_int_id_idx": {
+          "name": "canvas_int_int_id_idx",
+          "columns": [
+            {
+              "expression": "integration_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "canvas_int_base_url_idx": {
+          "name": "canvas_int_base_url_idx",
+          "columns": [
+            {
+              "expression": "canvas_base_url",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "canvas_integration_integration_id_integration_id_fk": {
+          "name": "canvas_integration_integration_id_integration_id_fk",
+          "tableFrom": "canvas_integration",
+          "tableTo": "integration",
+          "columnsFrom": [
+            "integration_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.canvas_user": {
+      "name": "canvas_user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "canvas_global_id": {
+          "name": "canvas_global_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "non_global_ids_arr_json": {
+          "name": "non_global_ids_arr_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "canvas_user_name": {
+          "name": "canvas_user_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "oauth_refresh_token": {
+          "name": "oauth_refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "access_token_lifespan_ms": {
+          "name": "access_token_lifespan_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "canvas_integration_id": {
+          "name": "canvas_integration_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "canvas_user_user_id_idx": {
+          "name": "canvas_user_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "canvas_user_canvas_global_id_idx": {
+          "name": "canvas_user_canvas_global_id_idx",
+          "columns": [
+            {
+              "expression": "canvas_global_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "canvas_user_canvas_integration_id_idx": {
+          "name": "canvas_user_canvas_integration_id_idx",
+          "columns": [
+            {
+              "expression": "canvas_integration_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "canvas_user_user_id_user_id_fk": {
+          "name": "canvas_user_user_id_user_id_fk",
+          "tableFrom": "canvas_user",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "canvas_user_canvas_integration_id_canvas_integration_id_fk": {
+          "name": "canvas_user_canvas_integration_id_canvas_integration_id_fk",
+          "tableFrom": "canvas_user",
+          "tableTo": "canvas_integration",
+          "columnsFrom": [
+            "canvas_integration_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.info_block": {
+      "name": "info_block",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "activity_item_id": {
+          "name": "activity_item_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "info_block_activity_item_id_idx": {
+          "name": "info_block_activity_item_id_idx",
+          "columns": [
+            {
+              "expression": "activity_item_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "info_block_activity_item_id_activity_item_id_fk": {
+          "name": "info_block_activity_item_id_activity_item_id_fk",
+          "tableFrom": "info_block",
+          "tableTo": "activity_item",
+          "columnsFrom": [
+            "activity_item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.integration": {
+      "name": "integration",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "type": {
+          "name": "type",
+          "type": "integration_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ip_user": {
+      "name": "ip_user",
       "schema": "",
       "columns": {
         "ip_address": {
@@ -501,10 +601,10 @@
         }
       },
       "foreignKeys": {
-        "drizzle_ip_user_user_id_drizzle_user_id_fk": {
-          "name": "drizzle_ip_user_user_id_drizzle_user_id_fk",
-          "tableFrom": "drizzle_ip_user",
-          "tableTo": "drizzle_user",
+        "ip_user_user_id_user_id_fk": {
+          "name": "ip_user_user_id_user_id_fk",
+          "tableFrom": "ip_user",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -516,10 +616,13 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "public.drizzle_module": {
-      "name": "drizzle_module",
+    "public.message": {
+      "name": "message",
       "schema": "",
       "columns": {
         "id": {
@@ -529,25 +632,45 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "name": {
-          "name": "name",
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "thread_id": {
+          "name": "thread_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sender_role": {
+          "name": "sender_role",
+          "type": "sender_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "unit_id": {
-          "name": "unit_id",
-          "type": "uuid",
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {
-        "module_unit_id_idx": {
-          "name": "module_unit_id_idx",
+        "message_user_id_idx": {
+          "name": "message_user_id_idx",
           "columns": [
             {
-              "expression": "unit_id",
+              "expression": "user_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -558,11 +681,11 @@
           "method": "btree",
           "with": {}
         },
-        "module_name_idx": {
-          "name": "module_name_idx",
+        "message_thread_id_idx": {
+          "name": "message_thread_id_idx",
           "columns": [
             {
-              "expression": "name",
+              "expression": "thread_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -575,12 +698,25 @@
         }
       },
       "foreignKeys": {
-        "drizzle_module_unit_id_drizzle_unit_id_fk": {
-          "name": "drizzle_module_unit_id_drizzle_unit_id_fk",
-          "tableFrom": "drizzle_module",
-          "tableTo": "drizzle_unit",
+        "message_user_id_user_id_fk": {
+          "name": "message_user_id_user_id_fk",
+          "tableFrom": "message",
+          "tableTo": "user",
           "columnsFrom": [
-            "unit_id"
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "message_thread_id_thread_id_fk": {
+          "name": "message_thread_id_thread_id_fk",
+          "tableFrom": "message",
+          "tableTo": "thread",
+          "columnsFrom": [
+            "thread_id"
           ],
           "columnsTo": [
             "id"
@@ -590,10 +726,13 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "public.drizzle_post": {
-      "name": "drizzle_post",
+    "public.post": {
+      "name": "post",
       "schema": "",
       "columns": {
         "id": {
@@ -662,10 +801,10 @@
         }
       },
       "foreignKeys": {
-        "drizzle_post_created_by_id_drizzle_user_id_fk": {
-          "name": "drizzle_post_created_by_id_drizzle_user_id_fk",
-          "tableFrom": "drizzle_post",
-          "tableTo": "drizzle_user",
+        "post_created_by_id_user_id_fk": {
+          "name": "post_created_by_id_user_id_fk",
+          "tableFrom": "post",
+          "tableTo": "user",
           "columnsFrom": [
             "created_by_id"
           ],
@@ -677,10 +816,69 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "public.drizzle_session": {
-      "name": "drizzle_session",
+    "public.question": {
+      "name": "question",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "activity_item_id": {
+          "name": "activity_item_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "question_activity_item_id_idx": {
+          "name": "question_activity_item_id_idx",
+          "columns": [
+            {
+              "expression": "activity_item_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "question_activity_item_id_activity_id_fk": {
+          "name": "question_activity_item_id_activity_id_fk",
+          "tableFrom": "question",
+          "tableTo": "activity",
+          "columnsFrom": [
+            "activity_item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.session": {
+      "name": "session",
       "schema": "",
       "columns": {
         "session_token": {
@@ -720,10 +918,10 @@
         }
       },
       "foreignKeys": {
-        "drizzle_session_user_id_drizzle_user_id_fk": {
-          "name": "drizzle_session_user_id_drizzle_user_id_fk",
-          "tableFrom": "drizzle_session",
-          "tableTo": "drizzle_user",
+        "session_user_id_user_id_fk": {
+          "name": "session_user_id_user_id_fk",
+          "tableFrom": "session",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -735,10 +933,13 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "public.drizzle_topic": {
-      "name": "drizzle_topic",
+    "public.thread": {
+      "name": "thread",
       "schema": "",
       "columns": {
         "id": {
@@ -748,58 +949,28 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "name": {
-          "name": "name",
-          "type": "text",
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         },
-        "module_id": {
-          "name": "module_id",
+        "activity_item_id": {
+          "name": "activity_item_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         }
       },
-      "indexes": {
-        "topic_module_id_idx": {
-          "name": "topic_module_id_idx",
-          "columns": [
-            {
-              "expression": "module_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "topic_name_idx": {
-          "name": "topic_name_idx",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
-        "drizzle_topic_module_id_drizzle_module_id_fk": {
-          "name": "drizzle_topic_module_id_drizzle_module_id_fk",
-          "tableFrom": "drizzle_topic",
-          "tableTo": "drizzle_module",
+        "thread_activity_item_id_activity_item_id_fk": {
+          "name": "thread_activity_item_id_activity_item_id_fk",
+          "tableFrom": "thread",
+          "tableTo": "activity_item",
           "columnsFrom": [
-            "module_id"
+            "activity_item_id"
           ],
           "columnsTo": [
             "id"
@@ -809,10 +980,13 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "public.drizzle_unit": {
-      "name": "drizzle_unit",
+    "public.user_integrations": {
+      "name": "user_integrations",
       "schema": "",
       "columns": {
         "id": {
@@ -822,58 +996,40 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "name": {
-          "name": "name",
-          "type": "text",
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "course_id": {
-          "name": "course_id",
+        "integration_id": {
+          "name": "integration_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         }
       },
-      "indexes": {
-        "unit_course_id_idx": {
-          "name": "unit_course_id_idx",
-          "columns": [
-            {
-              "expression": "course_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "unit_name_idx": {
-          "name": "unit_name_idx",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
-        "drizzle_unit_course_id_drizzle_course_id_fk": {
-          "name": "drizzle_unit_course_id_drizzle_course_id_fk",
-          "tableFrom": "drizzle_unit",
-          "tableTo": "drizzle_course",
+        "user_integrations_user_id_user_id_fk": {
+          "name": "user_integrations_user_id_user_id_fk",
+          "tableFrom": "user_integrations",
+          "tableTo": "user",
           "columnsFrom": [
-            "course_id"
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "user_integrations_integration_id_integration_id_fk": {
+          "name": "user_integrations_integration_id_integration_id_fk",
+          "tableFrom": "user_integrations",
+          "tableTo": "integration",
+          "columnsFrom": [
+            "integration_id"
           ],
           "columnsTo": [
             "id"
@@ -883,10 +1039,13 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "public.drizzle_user": {
-      "name": "drizzle_user",
+    "public.user": {
+      "name": "user",
       "schema": "",
       "columns": {
         "id": {
@@ -912,8 +1071,7 @@
           "name": "email_verified",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
+          "notNull": false
         },
         "tokens_used": {
           "name": "tokens_used",
@@ -932,10 +1090,13 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "public.drizzle_verification_token": {
-      "name": "drizzle_verification_token",
+    "public.verification_token": {
+      "name": "verification_token",
       "schema": "",
       "columns": {
         "identifier": {
@@ -960,20 +1121,43 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {
-        "drizzle_verification_token_identifier_token_pk": {
-          "name": "drizzle_verification_token_identifier_token_pk",
+        "verification_token_identifier_token_pk": {
+          "name": "verification_token_identifier_token_pk",
           "columns": [
             "identifier",
             "token"
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
-  "enums": {},
+  "enums": {
+    "public.integration_type": {
+      "name": "integration_type",
+      "schema": "public",
+      "values": [
+        "canvas"
+      ]
+    },
+    "public.sender_role": {
+      "name": "sender_role",
+      "schema": "public",
+      "values": [
+        "user",
+        "assistant",
+        "system"
+      ]
+    }
+  },
   "schemas": {},
   "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},
