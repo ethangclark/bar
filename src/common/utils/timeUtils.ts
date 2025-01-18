@@ -8,7 +8,13 @@ export function formatDayDate(date: Date): string {
   return dayjs(date).format("YYYY-MM-DD");
 }
 
-export function formatDateTime(date: Date): string {
+export function formatDateTime(
+  date: Date,
+  mode: "excludeYear" | undefined = undefined,
+): string {
+  if (mode === "excludeYear") {
+    return dayjs(date).format("MMM D, h:mm A");
+  }
   return dayjs(date).format("MMM D, YYYY h:mm A");
 }
 

@@ -1,10 +1,11 @@
 import { type Activity, type IntegrationType } from "~/server/db/schema";
 import { type NarrowedCanvasEnrollmentType } from "../canvas/utils";
 
-type LmsAssignment = {
+export type LmsAssignment = {
   exIdJson: string;
   title: string;
   dueAt: Date | null;
+  lockedAt: Date | null;
   activity: Activity;
 };
 export type LmsCourse = {

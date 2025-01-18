@@ -84,6 +84,7 @@ export async function createCanvasIntegrationApi(
               return {
                 exIdJson: JSON.stringify(a.id),
                 dueAt: parseDateOrNull(a.dueAt),
+                lockedAt: parseDateOrNull(a.lockedAt),
                 title: a.name,
                 activity,
               };

@@ -237,6 +237,7 @@ export async function getCanvasAssignments({
     id: z.number(),
     name: z.string(),
     due_at: z.string().nullable(),
+    lock_at: z.string().nullable(),
     points_possible: z.number().nullable(),
     grading_type: z.enum([
       "gpa_scale",
