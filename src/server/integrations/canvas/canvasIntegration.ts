@@ -75,6 +75,7 @@ export async function createCanvasIntegrationApi(
 
           const lmsCourse: LmsCourse = {
             title: c.name,
+            enrolledAs: c.enrollments.map((e) => e.enrolledAs),
             assignments: rawAssignments.map((a) => {
               const activity = activityMap.get(JSON.stringify(a.id));
               if (!activity) {

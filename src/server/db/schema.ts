@@ -229,6 +229,8 @@ export const activityStatusEnum = pgEnum("activity_status", [
   "draft",
   "published",
 ]);
+export const activityStatusSchema = z.enum(activityStatusEnum.enumValues);
+export type ActivityStatus = z.infer<typeof activityStatusSchema>;
 
 export const activities = pgTable(
   "activity",

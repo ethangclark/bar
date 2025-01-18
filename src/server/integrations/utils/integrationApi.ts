@@ -1,14 +1,15 @@
 import { type Activity, type IntegrationType } from "~/server/db/schema";
+import { type NarrowedCanvasEnrollmentType } from "../canvas/utils";
 
 type LmsAssignment = {
   exIdJson: string;
   title: string;
   dueAt: Date | null;
   activity: Activity;
-  // enrolledAs: "student" | "teacher";
 };
 export type LmsCourse = {
   title: string;
+  enrolledAs: NarrowedCanvasEnrollmentType[];
   assignments: LmsAssignment[];
 };
 type Grading = { type: "points"; pointsPossible: number };

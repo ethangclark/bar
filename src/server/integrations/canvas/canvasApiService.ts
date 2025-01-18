@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getRedirectUrl } from "~/common/utils/canvasUtils";
-import { db, type DbOrTx } from "~/server/db";
+import { type DbOrTx } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
 import { updateTokenCache } from "./canvasTokenCache";
 import {
@@ -213,6 +213,7 @@ export async function getCanvasCourses({
     enrollments: rc.enrollments.map((e) => ({
       type: narrowCanvasEnrollmentType(e.type),
       enrollmentState: e.enrollment_state,
+      enrolledAs: narrowCanvasEnrollmentType(e.type),
     })),
     totalStudents: rc.total_students,
   }));
