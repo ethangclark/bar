@@ -1,7 +1,7 @@
 import { type Session } from "next-auth";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { createCanvasUser } from "~/server/services/canvasApiService";
+import { executeUserInitiation } from "~/server/integrations/canvas/canvasApiService";
 import { getSeatsRemaining } from "~/server/services/seats";
 
 const isLoggedIn = (session: Session | null) => session !== null;
@@ -20,7 +20,7 @@ export const authRouter = createTRPCRouter({
       const { userId } = ctx;
       const { code, canvasIntegrationId } = input;
 
-      await createCanvasUser({
+      await executeUserInitiation({
         userId,
         oauthCode: code,
         canvasIntegrationId,

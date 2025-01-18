@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "user_integrations_unique_pair_idx" ON "user_integrations" USING btree ("user_id","integration_id");

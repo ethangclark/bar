@@ -1,6 +1,15 @@
 import { type Activity, type IntegrationType } from "~/server/db/schema";
 
-export type LmsCourse = { id: string; title: string; activities: Activity[] };
+type LmsAssignment = {
+  id: string;
+  title: string;
+  activity: Activity | null;
+};
+export type LmsCourse = {
+  id: string;
+  title: string;
+  assignments: LmsAssignment[];
+};
 type Grading = { type: "points"; pointsPossible: number };
 type Score = { type: "points"; points: number };
 

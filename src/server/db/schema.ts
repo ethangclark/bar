@@ -163,15 +163,25 @@ export const integrationsRelations = relations(integrations, ({ many }) => ({
   canvasIntegrations: many(canvasIntegrations),
 }));
 
-export const userIntegrations = pgTable("user_integrations", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  integrationId: uuid("integration_id")
-    .notNull()
-    .references(() => integrations.id, { onDelete: "cascade" }),
-});
+export const userIntegrations = pgTable(
+  "user_integrations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    integrationId: uuid("integration_id")
+      .notNull()
+      .references(() => integrations.id, { onDelete: "cascade" }),
+  },
+  (ui) => [
+    // ensure userId/integrationId pair is unique
+    uniqueIndex("user_integrations_unique_pair_idx").on(
+      ui.userId,
+      ui.integrationId,
+    ),
+  ],
+);
 export type UserIntegration = InferSelectModel<typeof userIntegrations>;
 export const userIntegrationsRelations = relations(
   userIntegrations,

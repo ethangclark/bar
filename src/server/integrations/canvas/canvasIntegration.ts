@@ -3,6 +3,7 @@ import { db } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
 import { type Integration } from "~/server/db/schema";
 import { type IntegrationApi } from "../utils/integrationApi";
+import { getCanvasCourses } from "./canvasApiService";
 
 export async function createCanvasIntegrationApi(
   integration: Integration,
@@ -21,7 +22,21 @@ export async function createCanvasIntegrationApi(
   // TODO: update the `valid` field of the integraiton after first successful API call
   return {
     type: "canvas",
-    getCourses: () => Promise.resolve([]),
+    getCourses: async ({ userId }) => {
+      const canvasUsers = await db.query.canvasUsers.findMany({
+        where: eq(dbSchema.canvasUsers.userId, userId),
+      });
+      const canvasIntegrationIds = canvasUsers.map(
+        (cu) => cu.canvasIntegrationId,
+      );
+      const courseLists = await Promise.all(
+        canvasIntegrationIds.map(async (canvasIntegrationId) =>
+          getCanvasCourses({ userId, canvasIntegrationId }),
+        ),
+      );
+      console.log({ courseLists });
+      return [];
+    },
     setGrading: () => Promise.resolve(),
     submitScore: () => Promise.resolve(),
   };

@@ -9,28 +9,18 @@ export type Question = `${string}?`;
 
 export type MaybePromise<T = void> = T | Promise<T>;
 
+const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+type Literal = z.infer<typeof literalSchema>;
+export type Json = Literal | { [key: string]: Json } | Json[];
+export const jsonSchema: z.ZodType<Json> = z.lazy(() =>
+  z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)]),
+);
+
 export type JsonOrUndefined =
+  | Literal
   | undefined
-  | null
-  | boolean
-  | number
-  | string
   | JsonOrUndefined[]
   | { [key: string]: JsonOrUndefined };
-
-export type EnsureSubtype<T extends U, U> = T;
-
-export type NonEmptyArray<T> = [T, ...T[]];
-export function isNonEmptyArray<T>(value: unknown): value is NonEmptyArray<T> {
-  return Array.isArray(value) && value.length > 0;
-}
-export function assertIsNonEmptyArray<T>(
-  value: T[],
-): asserts value is NonEmptyArray<T> {
-  if (!isNonEmptyArray(value)) {
-    throw new Error("Expected a non-empty array");
-  }
-}
 
 export const audioDataSchema = z.object({
   data: z.string(), // base64 encoded audio
