@@ -1,10 +1,15 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getRedirectUrl } from "~/common/utils/canvasUtils";
-import { db } from "~/server/db";
+import { type DbOrTx } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
 import { updateTokenCache } from "./canvasTokenCache";
-import { getCanvasIntegration, makeCanvasRequest } from "./utils";
+import {
+  ambiguousEnrollmentTypeSchema,
+  getCanvasIntegration,
+  makeCanvasRequest,
+  narrowCanvasEnrollmentType,
+} from "./utils";
 
 async function getLoginResponse({
   canvasIntegrationId,
@@ -62,10 +67,11 @@ async function upsertUser(
   userId: string,
   canvasIntegrationId: string,
   loginResponse: LoginResponse,
+  tx: DbOrTx,
 ) {
   const { lifespanMs, refreshToken, canvasUser } = loginResponse;
 
-  const existing = await db.query.canvasUsers.findFirst({
+  const existing = await tx.query.canvasUsers.findFirst({
     where: eq(dbSchema.canvasUsers.canvasGlobalId, canvasUser.globalId),
   });
   if (existing) {
@@ -75,7 +81,7 @@ async function upsertUser(
     const nonGlobalIdsArr = [
       ...new Set([...existingNonGlobalIds, canvasUser.id]),
     ];
-    await db
+    await tx
       .update(dbSchema.canvasUsers)
       .set({
         nonGlobalIdsArrJson: JSON.stringify(nonGlobalIdsArr),
@@ -85,7 +91,7 @@ async function upsertUser(
       })
       .where(eq(dbSchema.canvasUsers.canvasGlobalId, canvasUser.globalId));
   } else {
-    await db.insert(dbSchema.canvasUsers).values({
+    await tx.insert(dbSchema.canvasUsers).values({
       userId,
       canvasIntegrationId,
       canvasGlobalId: canvasUser.globalId,
@@ -101,12 +107,14 @@ export async function executeUserInitiation({
   userId,
   oauthCode,
   canvasIntegrationId,
+  tx,
 }: {
   userId: string;
   oauthCode: string;
   canvasIntegrationId: string;
+  tx: DbOrTx;
 }) {
-  const canvasIntegration = await db.query.canvasIntegrations.findFirst({
+  const canvasIntegration = await tx.query.canvasIntegrations.findFirst({
     where: eq(dbSchema.canvasIntegrations.id, canvasIntegrationId),
   });
   if (!canvasIntegration) {
@@ -120,9 +128,9 @@ export async function executeUserInitiation({
     oauthCode,
   });
 
-  await upsertUser(userId, canvasIntegrationId, loginResponse);
+  await upsertUser(userId, canvasIntegrationId, loginResponse, tx);
 
-  await db
+  await tx
     .insert(dbSchema.userIntegrations)
     .values({
       userId,
@@ -142,54 +150,50 @@ export async function executeUserInitiation({
     lastRefreshedAt: tBefore,
     lifespanMs,
   });
-
-  // const enrollmentsResult = await fetch(
-  //   `${canvasBaseUrl}/api/v1/users/${typed.user.id}/enrollments`,
-  //   {
-  //     headers: {
-  //       Authorization: `Bearer ${typed.access_token}`,
-  //     },
-  //   },
-  // );
-  // const asJson2 = await enrollmentsResult.json();
-  // console.log(asJson2);
 }
 
 export async function getCanvasCourses({
   userId,
   canvasIntegrationId,
+  tx,
 }: {
   userId: string;
   canvasIntegrationId: string;
+  tx: DbOrTx;
 }) {
-  const canvasUsers = await db.query.canvasUsers.findMany({
+  const canvasUsers = await tx.query.canvasUsers.findMany({
     where: eq(dbSchema.canvasUsers.userId, userId),
   });
-  const courses = Array<{}>();
-  for (const canvasUser of canvasUsers) {
-    const responseSchema = z.array(
+  const courseSchema = z.object({
+    id: z.number(),
+    // uuid: z.string(),
+    name: z.string(),
+    course_code: z.string(),
+    workflow_state: z.enum([
+      "unpublished",
+      "available",
+      "completed",
+      "deleted",
+    ]),
+    start_at: z.string().nullable(),
+    end_at: z.string().nullable(),
+    enrollments: z.array(
       z.object({
-        id: z.number(),
-        uuid: z.string(),
-        name: z.string(),
-        course_code: z.string(),
-        workflow_state: z.enum([
-          "unpublished",
-          "available",
-          "completed",
+        type: ambiguousEnrollmentTypeSchema,
+        enrollment_state: z.enum([
+          "active",
+          "invited",
+          "creation_pending",
           "deleted",
+          "inactive",
         ]),
-        start_at: z.string().nullable(),
-        end_at: z.string().nullable(),
-        enrollments: z.array(
-          z.object({
-            type: z.enum(["StudentEnrollment", "TeacherEnrollment"]),
-            role: z.enum(["StudentEnrollment", "TeacherEnrollment"]),
-          }),
-        ),
-        total_students: z.number().nullable().optional(),
       }),
-    );
+    ),
+    total_students: z.number().nullable().optional(),
+  });
+  const rawCourses = Array<z.infer<typeof courseSchema>>();
+  for (const canvasUser of canvasUsers) {
+    const responseSchema = z.array(courseSchema);
     const coursesResult = await makeCanvasRequest({
       canvasIntegrationId,
       relPath: `/api/v1/courses`,
@@ -197,18 +201,19 @@ export async function getCanvasCourses({
       responseSchema,
       refreshToken: canvasUser.oauthRefreshToken,
     });
-    console.log({ coursesResult });
-    throw Error("REE");
+    rawCourses.push(...coursesResult);
   }
-  return courses;
-  // const enrollmentsResult = await fetch(
-  //   `${canvasBaseUrl}/api/v1/users/${typed.user.id}/enrollments`,
-  //   {
-  //     headers: {
-  //       Authorization: `Bearer ${typed.access_token}`,
-  //     },
-  //   },
-  // );
-  // const asJson2 = await enrollmentsResult.json();
-  // console.log(asJson2);
+  return rawCourses.map((rc) => ({
+    id: rc.id,
+    name: rc.name,
+    courseCode: rc.course_code,
+    workflowState: rc.workflow_state,
+    startAt: rc.start_at,
+    endAt: rc.end_at,
+    enrollments: rc.enrollments.map((e) => ({
+      type: narrowCanvasEnrollmentType(e.type),
+      enrollmentState: e.enrollment_state,
+    })),
+    totalStudents: rc.total_students,
+  }));
 }

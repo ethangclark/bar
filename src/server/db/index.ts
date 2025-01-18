@@ -18,3 +18,6 @@ if (env.NODE_ENV !== "production" && env.TEST_TYPE !== "prompt_test") {
 }
 
 export const db = drizzle(connection, { schema });
+
+type Tx = Parameters<Parameters<(typeof db)["transaction"]>[0]>[0];
+export type DbOrTx = typeof db | Tx;

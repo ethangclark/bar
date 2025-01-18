@@ -1,16 +1,16 @@
-import { db } from "~/server/db";
+import { type DbOrTx } from "~/server/db";
 import { eq } from "drizzle-orm";
 import { users } from "~/server/db/schema";
 import { env } from "~/env";
 
-export const queryUser = async (userId: string) => {
-  return await db.query.users.findFirst({
+export const queryUser = async (userId: string, tx: DbOrTx) => {
+  return await tx.query.users.findFirst({
     where: eq(users.id, userId),
   });
 };
 
-export const getUser = async (userId: string) => {
-  const user = await queryUser(userId);
+export const getUser = async (userId: string, tx: DbOrTx) => {
+  const user = await queryUser(userId, tx);
   if (!user) throw new Error("User not found");
   return user;
 };

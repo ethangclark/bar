@@ -6,12 +6,14 @@ import {
   type StreamingOpenRouterResponse,
 } from "./llmSchemas";
 import { assertUsageOk, incrementUsage } from "~/server/services/usage";
+import { type DbOrTx } from "~/server/db";
 
 export async function getOpenRouterResponse(
   userId: string,
   request: OpenRouterRequest,
+  tx: DbOrTx,
 ) {
-  await assertUsageOk(userId);
+  await assertUsageOk(userId, tx);
   const response = await fetch(
     "https://openrouter.ai/api/v1/chat/completions",
     {
@@ -25,15 +27,16 @@ export async function getOpenRouterResponse(
   );
   const json = await response.json();
   const result = openRouterResponseSchema.parse(json);
-  await incrementUsage(userId, result.usage.total_tokens);
+  await incrementUsage(userId, result.usage.total_tokens, tx);
   return result;
 }
 
 export async function* streamOpenRouterResponse(
   userId: string,
   request: OpenRouterRequest,
+  tx: DbOrTx,
 ): AsyncGenerator<StreamingOpenRouterResponse> {
-  await assertUsageOk(userId);
+  await assertUsageOk(userId, tx);
 
   const response = await fetch(
     "https://openrouter.ai/api/v1/chat/completions",

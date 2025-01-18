@@ -35,14 +35,14 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 
   const session = await getServerAuthSession();
 
-  const user = await (async () => {
+  const user = await db.transaction(async (tx) => {
     if (session?.user) {
-      const u = await queryUser(session.user.id);
+      const u = await queryUser(session.user.id, tx);
       if (!u) throw new Error("Session user not found");
       return u;
     }
 
-    const ipUser = await db.query.ipUsers.findFirst({
+    const ipUser = await tx.query.ipUsers.findFirst({
       where: eq(ipUsers.ipAddress, ipAddress),
       with: { user: true },
     });
@@ -50,18 +50,18 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
       return ipUser.user;
     }
     // create a new user automatically
-    const [user] = await db.insert(users).values({ email: "" }).returning();
-    if (!user)
+    const [u] = await tx.insert(users).values({ email: "" }).returning();
+    if (!u)
       throw new Error(
         "User (ip addr only) created via create statement not found",
       );
 
-    await db.insert(ipUsers).values({
+    await tx.insert(ipUsers).values({
       ipAddress,
-      userId: user.id,
+      userId: u.id,
     });
-    return user;
-  })();
+    return u;
+  });
 
   return {
     ipAddress,

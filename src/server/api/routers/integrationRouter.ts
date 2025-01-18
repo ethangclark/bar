@@ -17,35 +17,37 @@ export const integrationRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const { subdomain } = input;
       const canvasBaseUrl = getCanvasBaseUrl(subdomain);
-      const existing = await db.query.canvasIntegrations.findFirst({
-        where: eq(dbSchema.canvasIntegrations.canvasBaseUrl, canvasBaseUrl),
-        with: { integration: true },
-      });
-      let integration = existing?.integration;
-      if (existing?.validated) {
-        throw new Error("Valid integration already exists");
-      }
-      await db
-        .delete(dbSchema.canvasIntegrations)
-        .where(eq(dbSchema.canvasIntegrations.canvasBaseUrl, canvasBaseUrl));
-      if (!integration) {
-        const [intResult] = await db
-          .insert(dbSchema.integrations)
-          .values({
-            type: "canvas",
-          })
-          .returning();
-        if (!intResult) {
-          throw new Error("Failed to create integration");
+      await db.transaction(async (tx) => {
+        const existing = await tx.query.canvasIntegrations.findFirst({
+          where: eq(dbSchema.canvasIntegrations.canvasBaseUrl, canvasBaseUrl),
+          with: { integration: true },
+        });
+        let integration = existing?.integration;
+        if (existing?.validated) {
+          throw new Error("Valid integration already exists");
         }
-        integration = intResult;
-      }
+        await tx
+          .delete(dbSchema.canvasIntegrations)
+          .where(eq(dbSchema.canvasIntegrations.canvasBaseUrl, canvasBaseUrl));
+        if (!integration) {
+          const [intResult] = await tx
+            .insert(dbSchema.integrations)
+            .values({
+              type: "canvas",
+            })
+            .returning();
+          if (!intResult) {
+            throw new Error("Failed to create integration");
+          }
+          integration = intResult;
+        }
 
-      await db.insert(dbSchema.canvasIntegrations).values({
-        integrationId: integration.id,
-        canvasBaseUrl,
-        clientId: input.clientId,
-        clientSecret: input.clientSecret,
+        await tx.insert(dbSchema.canvasIntegrations).values({
+          integrationId: integration.id,
+          canvasBaseUrl,
+          clientId: input.clientId,
+          clientSecret: input.clientSecret,
+        });
       });
     }),
 });

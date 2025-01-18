@@ -15,6 +15,55 @@ export async function getCanvasIntegration(canvasIntegrationId: string) {
   return canvasIntegration;
 }
 
+export const narrowedCanvasEnrollmentTypeSchema = z.enum([
+  "student",
+  "teacher",
+  "ta",
+  "designer",
+  "observer",
+]);
+export type NarrowedCanvasEnrollmentType = z.infer<
+  typeof narrowedCanvasEnrollmentTypeSchema
+>;
+export const otherFormatCanvasEnrollmentTypeSchema = z.enum([
+  "StudentEnrollment",
+  "TeacherEnrollment",
+  "TaEnrollment",
+  "DesignerEnrollment",
+  "ObserverEnrollment",
+]);
+export type OtherFormatCanvasEnrollmentType = z.infer<
+  typeof otherFormatCanvasEnrollmentTypeSchema
+>;
+// using this out of paranoia because docs are insonsistent internally +
+// with values I'm seeing in empirical local testing
+// https://canvas.instructure.com/doc/api/enrollments.html#Enrollment (also see "Courses" section)
+export const ambiguousEnrollmentTypeSchema = z.union([
+  narrowedCanvasEnrollmentTypeSchema,
+  otherFormatCanvasEnrollmentTypeSchema,
+]);
+export type AmbiguousEnrollmentType = z.infer<
+  typeof ambiguousEnrollmentTypeSchema
+>;
+export function narrowCanvasEnrollmentType(
+  enrollmentType: AmbiguousEnrollmentType,
+): NarrowedCanvasEnrollmentType {
+  switch (enrollmentType) {
+    case "StudentEnrollment":
+      return "student";
+    case "TeacherEnrollment":
+      return "teacher";
+    case "TaEnrollment":
+      return "ta";
+    case "DesignerEnrollment":
+      return "designer";
+    case "ObserverEnrollment":
+      return "observer";
+    default:
+      return enrollmentType;
+  }
+}
+
 export async function makeCanvasRequest<T extends Json>({
   canvasIntegrationId,
   relPath,
@@ -74,6 +123,7 @@ export async function makeCanvasRequest<T extends Json>({
   });
 
   const asAnyJson = await result.json();
+  console.log("asAnyJson", JSON.stringify(asAnyJson, null, 2));
   const asResponseType = responseSchema.parse(asAnyJson);
   return asResponseType;
 }
