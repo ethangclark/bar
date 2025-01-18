@@ -1,17 +1,16 @@
 "use client";
 
-import { Spin } from "antd";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { z } from "zod";
-import { ClientOnly } from "~/client/components/ClientOnly";
 import { getCanvasBaseUrl, getRedirectUrl } from "~/common/utils/canvasUtils";
 import { api } from "~/trpc/react";
 import { CreateIntegration } from "./createIntegration";
+import { SpinPage } from "~/client/components/SpinPage";
 
 const state = Math.random().toString(36).substring(7); // could generate this legitimately + compare it in searchParams when invoked as callback
 
-const Impl = () => {
+export default function CanvasLoginPage() {
   const params = useParams();
   const { subdomain } = z.object({ subdomain: z.string() }).parse(params);
   const searchParams = useSearchParams();
@@ -49,7 +48,7 @@ const Impl = () => {
   }, [data, code, processCode, router]);
 
   if (isLoading) {
-    return <Spin />;
+    return <SpinPage />;
   }
 
   if (!linkParams) {
@@ -57,19 +56,13 @@ const Impl = () => {
   }
 
   return (
-    <ClientOnly>
-      <div>
-        <h1>Canvas Login Page</h1>
-        <a
-          href={`${getCanvasBaseUrl(subdomain)}/login/oauth2/auth?${linkParams}`}
-        >
-          Login with Canvas
-        </a>
-      </div>
-    </ClientOnly>
+    <div>
+      <h1>Canvas Login Page</h1>
+      <a
+        href={`${getCanvasBaseUrl(subdomain)}/login/oauth2/auth?${linkParams}`}
+      >
+        Login with Canvas
+      </a>
+    </div>
   );
-};
-
-export default function CanvasLoginPage() {
-  return <Impl />;
 }

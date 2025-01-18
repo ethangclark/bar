@@ -85,7 +85,10 @@ export function Assignment({
             lockedAt={assignment.lockedAt}
           />
         </div>
-        <Typography.Link className="text-2xl">
+        <Typography.Link
+          className="text-2xl"
+          href={`/activity/${assignment.activity.id}`}
+        >
           {assignment.title}
         </Typography.Link>
       </div>

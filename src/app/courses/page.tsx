@@ -2,11 +2,18 @@
 
 import { api } from "~/trpc/react";
 import { Assignment } from "~/client/components/Assignment";
+import { Page } from "~/client/components/Page";
+import { SpinPage } from "~/client/components/SpinPage";
 
 export default function Courses() {
-  const { data: courses } = api.courses.all.useQuery();
+  const { data: courses, isLoading } = api.courses.all.useQuery();
+
+  if (isLoading) {
+    return <SpinPage />;
+  }
+
   return (
-    <div>
+    <Page>
       <div className="mb-4 text-6xl">Courses</div>
       <div>
         {courses?.map((c, idx) => (
@@ -20,6 +27,6 @@ export default function Courses() {
           </div>
         ))}
       </div>
-    </div>
+    </Page>
   );
 }
