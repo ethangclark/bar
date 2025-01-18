@@ -4,7 +4,8 @@ type LmsAssignment = {
   exIdJson: string;
   title: string;
   dueAt: Date | null;
-  activity: Activity | null;
+  activity: Activity;
+  // enrolledAs: "student" | "teacher";
 };
 export type LmsCourse = {
   title: string;

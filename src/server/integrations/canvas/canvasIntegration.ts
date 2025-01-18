@@ -54,15 +54,39 @@ export async function createCanvasIntegrationApi(
           const activityMap = new Map(
             activites.map((a) => [a.exIdJson, a] as const),
           );
+          const missingActivitiesExIdJsons = exIdJsons.filter(
+            (eij) => !activityMap.has(eij),
+          );
+          if (missingActivitiesExIdJsons.length > 0) {
+            // create an activity for each missing assignment that doesn't have an associated one
+            const newActivities = await db
+              .insert(dbSchema.activities)
+              .values(
+                missingActivitiesExIdJsons.map((exIdJson) => ({
+                  exIdJson,
+                  integrationId: integration.id,
+                })),
+              )
+              .returning();
+            for (const a of newActivities) {
+              activityMap.set(a.exIdJson, a);
+            }
+          }
 
           const lmsCourse: LmsCourse = {
             title: c.name,
-            assignments: rawAssignments.map((a) => ({
-              exIdJson: JSON.stringify(a.id),
-              dueAt: parseDateOrNull(a.dueAt),
-              title: a.name,
-              activity: activityMap.get(JSON.stringify(a.id)) ?? null,
-            })),
+            assignments: rawAssignments.map((a) => {
+              const activity = activityMap.get(JSON.stringify(a.id));
+              if (!activity) {
+                throw new Error("Activity not found");
+              }
+              return {
+                exIdJson: JSON.stringify(a.id),
+                dueAt: parseDateOrNull(a.dueAt),
+                title: a.name,
+                activity,
+              };
+            }),
           };
           return lmsCourse;
         }),

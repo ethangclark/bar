@@ -210,7 +210,7 @@ export const canvasIntegrations = pgTable(
     validated: boolean("validated").default(false).notNull(),
   },
   (ci) => [
-    index("canvas_int_int_id_idx").on(ci.integrationId),
+    index("canvas_integration_id_idx").on(ci.integrationId),
     uniqueIndex("canvas_int_base_url_idx").on(ci.canvasBaseUrl),
   ],
 );
@@ -225,6 +225,11 @@ export const canvasIntegrationsRelations = relations(
   }),
 );
 
+export const activityStatusEnum = pgEnum("activity_status", [
+  "draft",
+  "published",
+]);
+
 export const activities = pgTable(
   "activity",
   {
@@ -233,10 +238,11 @@ export const activities = pgTable(
     integrationId: uuid("integration_id")
       .notNull()
       .references(() => integrations.id, { onDelete: "cascade" }),
+    status: activityStatusEnum("status").notNull().default("draft"),
   },
   (a) => [
     index("activity_ex_id_json_idx").on(a.exIdJson),
-    index("activity_int_id_idx").on(a.integrationId),
+    index("activity_integration_id_idx").on(a.integrationId),
   ],
 );
 export type Activity = InferSelectModel<typeof activities>;

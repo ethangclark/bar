@@ -25,15 +25,21 @@ export default function Courses() {
                       </div>
                     )}
                   </div>
-                  {a.activity ? (
-                    <div>View activity</div>
-                  ) : (
-                    <div>
-                      <Button type="primary" size="small">
-                        Create activity
-                      </Button>
-                    </div>
-                  )}
+                  <div>
+                    Activity status:{" "}
+                    <span
+                      className={`rounded border-2 p-1 font-bold ${((): string => {
+                        switch (a.activity.status) {
+                          case "draft":
+                            return "text-gray-500";
+                          case "published":
+                            return "text-green-500";
+                        }
+                      })()}`}
+                    >
+                      {a.activity.status}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
