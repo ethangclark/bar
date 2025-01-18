@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getRedirectUrl } from "~/common/utils/canvasUtils";
-import { type DbOrTx } from "~/server/db";
+import { db, type DbOrTx } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
 import { updateTokenCache } from "./canvasTokenCache";
 import {
@@ -215,5 +215,53 @@ export async function getCanvasCourses({
       enrollmentState: e.enrollment_state,
     })),
     totalStudents: rc.total_students,
+  }));
+}
+
+export async function getCanvasAssignments({
+  userId,
+  canvasIntegrationId,
+  canvasCourseId,
+  tx,
+}: {
+  userId: string;
+  canvasIntegrationId: string;
+  canvasCourseId: number;
+  tx: DbOrTx;
+}) {
+  const canvasUsers = await tx.query.canvasUsers.findMany({
+    where: eq(dbSchema.canvasUsers.userId, userId),
+  });
+  const assignmentSchema = z.object({
+    id: z.number(),
+    name: z.string(),
+    due_at: z.string().nullable(),
+    points_possible: z.number().nullable(),
+    grading_type: z.enum([
+      "gpa_scale",
+      "letter_grade",
+      "pass_fail",
+      "percent",
+      "points",
+    ]),
+  });
+  const rawAssignments = Array<z.infer<typeof assignmentSchema>>();
+  for (const canvasUser of canvasUsers) {
+    const responseSchema = z.array(assignmentSchema);
+    const assignmentsResult = await makeCanvasRequest({
+      canvasIntegrationId,
+      relPath: `/api/v1/users/${canvasUser.canvasGlobalId}/courses/${canvasCourseId}/assignments`,
+      method: "GET",
+      responseSchema,
+      refreshToken: canvasUser.oauthRefreshToken,
+    });
+    rawAssignments.push(...assignmentsResult);
+  }
+  return rawAssignments.map((ra) => ({
+    id: ra.id,
+    name: ra.name,
+    dueAt: ra.due_at,
+    pointsPossible: ra.points_possible,
+    gradingType: ra.grading_type,
   }));
 }

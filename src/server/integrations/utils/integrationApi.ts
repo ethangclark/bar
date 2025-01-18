@@ -3,6 +3,7 @@ import { type Activity, type IntegrationType } from "~/server/db/schema";
 type LmsAssignment = {
   exIdJson: string;
   title: string;
+  dueAt: Date | null;
   activity: Activity | null;
 };
 export type LmsCourse = {

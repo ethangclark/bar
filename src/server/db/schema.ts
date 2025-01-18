@@ -229,12 +229,13 @@ export const activities = pgTable(
   "activity",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    dueAt: timestamp("due_at", { withTimezone: true }).notNull(),
     exIdJson: text("ex_id_json").notNull(),
-    integrationId: uuid("integration_id"),
+    integrationId: uuid("integration_id")
+      .notNull()
+      .references(() => integrations.id, { onDelete: "cascade" }),
   },
   (a) => [
-    index("activity_due_at_idx").on(a.dueAt),
+    index("activity_ex_id_json_idx").on(a.exIdJson),
     index("activity_int_id_idx").on(a.integrationId),
   ],
 );

@@ -11,3 +11,14 @@ export function formatDayDate(date: Date): string {
 export function formatDateTime(date: Date): string {
   return dayjs(date).format("MMM D, YYYY h:mm A");
 }
+
+export function parseDateOrNull(date: string | null): Date | null {
+  if (!date) {
+    return null;
+  }
+  const asDayjsObj = dayjs(date);
+  if (!asDayjsObj.isValid()) {
+    return null;
+  }
+  return asDayjsObj.toDate();
+}

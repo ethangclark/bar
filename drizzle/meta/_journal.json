@@ -15,6 +15,13 @@
       "when": 1737228002799,
       "tag": "0001_exotic_paladin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737236508864,
+      "tag": "0002_third_tony_stark",
+      "breakpoints": true
     }
   ]
 }

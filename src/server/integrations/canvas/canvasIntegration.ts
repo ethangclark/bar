@@ -1,9 +1,10 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { db } from "~/server/db";
 import { dbSchema } from "~/server/db/dbSchema";
 import { type Integration } from "~/server/db/schema";
-import { type IntegrationApi } from "../utils/integrationApi";
-import { getCanvasCourses } from "./canvasApiService";
+import { type LmsCourse, type IntegrationApi } from "../utils/integrationApi";
+import { getCanvasAssignments, getCanvasCourses } from "./canvasApiService";
+import { parseDateOrNull } from "~/common/utils/timeUtils";
 
 async function getAllCanvasCourses(userId: string) {
   const canvasUsers = await db.query.canvasUsers.findMany({
@@ -37,12 +38,35 @@ export async function createCanvasIntegrationApi(
   return {
     type: "canvas",
     getCourses: async ({ userId }) => {
-      const allCourses = await getAllCanvasCourses(userId);
-      const lmsCourses = allCourses.map((c) => ({
-        title: c.name,
-        assignments: [],
-      }));
-      return lmsCourses;
+      const rawCourses = await getAllCanvasCourses(userId);
+      return Promise.all(
+        rawCourses.map(async (c) => {
+          const rawAssignments = await getCanvasAssignments({
+            userId,
+            canvasIntegrationId: canvasIntegration.id,
+            canvasCourseId: c.id,
+            tx: db,
+          });
+          const exIdJsons = rawAssignments.map((a) => JSON.stringify(a.id));
+          const activites = await db.query.activities.findMany({
+            where: inArray(dbSchema.activities.exIdJson, exIdJsons),
+          });
+          const activityMap = new Map(
+            activites.map((a) => [a.exIdJson, a] as const),
+          );
+
+          const lmsCourse: LmsCourse = {
+            title: c.name,
+            assignments: rawAssignments.map((a) => ({
+              exIdJson: JSON.stringify(a.id),
+              dueAt: parseDateOrNull(a.dueAt),
+              title: a.name,
+              activity: activityMap.get(JSON.stringify(a.id)) ?? null,
+            })),
+          };
+          return lmsCourse;
+        }),
+      );
     },
     setGrading: () => Promise.resolve(),
     submitScore: () => Promise.resolve(),
