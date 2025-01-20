@@ -6,12 +6,8 @@ import { ActivityItem } from "./ActivityItem";
 
 const newItemOptions = [
   {
-    type: "text",
-    label: "+ Add text",
-  },
-  {
-    type: "image",
-    label: "+ Add image",
+    type: "info",
+    label: "+ Add text/image information",
   },
   {
     type: "question",

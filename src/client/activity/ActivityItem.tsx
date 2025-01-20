@@ -5,14 +5,12 @@ export function ActivityItem({
 }: {
   activityItem: ActivityItemWithChildren;
 }) {
-  if (activityItem.question) {
-    return <div>{activityItem.question.content}</div>;
-  }
-  if (activityItem.infoText) {
-    return <div>{activityItem.infoText.content}</div>;
-  }
-  if (activityItem.infoImage) {
-    return <div>{activityItem.infoImage.url}</div>;
-  }
-  return null;
+  return (
+    <div>
+      {activityItem.infoBlock && <div>{activityItem.infoBlock.content}</div>}
+      {activityItem.question && (
+        <div className="text-2xl">{activityItem.question.content}</div>
+      )}
+    </div>
+  );
 }

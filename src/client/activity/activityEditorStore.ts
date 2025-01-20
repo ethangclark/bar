@@ -45,7 +45,7 @@ export class ActivityEditorStore {
     );
   }
 
-  addDraftItem(itemType: "question" | "text" | "image") {
+  addDraftItem(itemType: "info" | "question") {
     if (this.activity instanceof Status) {
       return;
     }

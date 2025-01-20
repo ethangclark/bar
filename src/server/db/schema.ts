@@ -1,11 +1,13 @@
-import { relations, type InferSelectModel } from "drizzle-orm";
+import { relations, type InferSelectModel, sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   index,
   integer,
   pgEnum,
   pgTableCreator,
   primaryKey,
+  serial,
   text,
   timestamp,
   uniqueIndex,
@@ -256,35 +258,7 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
   activityItems: many(activityItems),
 }));
 
-export const questions = pgTable("question", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  content: text("content").notNull(),
-});
-export type Question = InferSelectModel<typeof questions>;
-export const questionsRelations = relations(questions, ({ many }) => ({
-  activityItems: many(activityItems),
-}));
-
-export const infoTexts = pgTable("info_text", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  content: text("content").notNull(),
-});
-export type InfoText = InferSelectModel<typeof infoTexts>;
-export const infoTextsRelations = relations(infoTexts, ({ many }) => ({
-  activityItems: many(activityItems),
-}));
-
-export const infoImages = pgTable("info_image", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  url: text("url"),
-});
-export type InfoImage = InferSelectModel<typeof infoImages>;
-export const infoImagesRelations = relations(infoImages, ({ many }) => ({
-  activityItems: many(activityItems),
-}));
-
-// TODO: infoVideo (will require streaming storage setup of some sort)
-
+// should have a questionId XOR infoBlockId
 export const activityItems = pgTable(
   "activity_item",
   {
@@ -293,23 +267,27 @@ export const activityItems = pgTable(
       .notNull()
       .references(() => activities.id, { onDelete: "cascade" }),
     orderFracIdx: text("order_frac_idx").notNull(),
+    infoBlockId: uuid("info_block_id").references(() => infoBlocks.id, {
+      onDelete: "cascade",
+    }),
     questionId: uuid("question_id").references(() => questions.id, {
       onDelete: "cascade",
     }),
-    infoTextId: uuid("info_text_id").references(() => infoTexts.id, {
-      onDelete: "cascade",
-    }),
-    infoImageId: uuid("info_image_id").references(() => infoImages.id, {
-      onDelete: "cascade",
-    }),
   },
-  (ai) => [index("activity_item_activity_id_idx").on(ai.activityId)],
+  (ai) => [
+    index("activity_item_activity_id_idx").on(ai.activityId),
+    index("activity_item_info_block_id_idx").on(ai.infoBlockId),
+    index("activity_item_question_id_idx").on(ai.questionId),
+    check(
+      "activity_item_info_block_xor_question",
+      sql`(${ai.infoBlockId} IS NOT NULL AND ${ai.questionId} IS NULL) OR (${ai.infoBlockId} IS NULL AND ${ai.questionId} IS NOT NULL)`,
+    ),
+  ],
 );
 export type ActivityItem = InferSelectModel<typeof activityItems>;
 export type ActivityItemWithChildren = ActivityItem & {
   question: Question | null;
-  infoText: InfoText | null;
-  infoImage: InfoImage | null;
+  infoBlock: InfoBlockWithChildren | null;
 };
 export const activityItemRelations = relations(activityItems, ({ one }) => ({
   activity: one(activities, {
@@ -320,15 +298,44 @@ export const activityItemRelations = relations(activityItems, ({ one }) => ({
     fields: [activityItems.questionId],
     references: [questions.id],
   }),
-  infoText: one(infoTexts, {
-    fields: [activityItems.infoTextId],
-    references: [infoTexts.id],
+  infoBlock: one(infoBlocks, {
+    fields: [activityItems.infoBlockId],
+    references: [infoBlocks.id],
   }),
+}));
+
+export const questions = pgTable("question", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  content: text("content").notNull(),
+});
+export type Question = InferSelectModel<typeof questions>;
+
+export const infoBlocks = pgTable("info_text", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  content: text("content").notNull(),
+
+  // todo: infoVideoId (will require streaming storage setup of some sort)
+
+  infoImageId: uuid("info_image_id").references(() => infoImages.id, {
+    onDelete: "set null",
+  }),
+});
+export type InfoBlock = InferSelectModel<typeof infoBlocks>;
+export type InfoBlockWithChildren = InfoBlock & {
+  infoImage: InfoImage | null;
+};
+export const infoBlocksRelations = relations(infoBlocks, ({ one }) => ({
   infoImage: one(infoImages, {
-    fields: [activityItems.infoImageId],
+    fields: [infoBlocks.infoImageId],
     references: [infoImages.id],
   }),
 }));
+
+export const infoImages = pgTable("info_image", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  url: text("url").notNull(),
+});
+export type InfoImage = InferSelectModel<typeof infoImages>;
 
 export const threads = pgTable("thread", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -371,6 +378,7 @@ export const messages = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    order: serial("insert_order").notNull(),
   },
   (cm) => [
     index("message_user_id_idx").on(cm.userId),
