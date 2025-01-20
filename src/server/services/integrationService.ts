@@ -1,12 +1,11 @@
 import { eq } from "drizzle-orm";
 import { db } from "~/server/db";
-import { dbSchema } from "../db/dbSchema";
 import { createCanvasIntegrationApi } from "~/server/integrations/canvas/canvasIntegration";
 import { type IntegrationApi } from "~/server/integrations/utils/integrationApi";
 
 async function getIntegrations(userId: string) {
   const uis = await db.query.userIntegrations.findMany({
-    where: eq(dbSchema.userIntegrations.userId, userId),
+    where: eq(db.x.userIntegrations.userId, userId),
     with: {
       integration: {
         with: {

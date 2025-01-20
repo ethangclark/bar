@@ -18,7 +18,7 @@ export function formatDateTime(
   return dayjs(date).format("MMM D, YYYY h:mm A");
 }
 
-export function parseDateOrNull(date: string | null): Date | null {
+export function parseDateOrNull(date: string | null | undefined): Date | null {
   if (!date) {
     return null;
   }

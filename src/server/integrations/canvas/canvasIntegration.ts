@@ -1,14 +1,12 @@
 import { eq, inArray } from "drizzle-orm";
 import { db } from "~/server/db";
-import { dbSchema } from "~/server/db/dbSchema";
 import { type Integration } from "~/server/db/schema";
 import { type LmsCourse, type IntegrationApi } from "../utils/integrationApi";
 import { getCanvasAssignments, getCanvasCourses } from "./canvasApiService";
-import { parseDateOrNull } from "~/common/utils/timeUtils";
 
 async function getAllCanvasCourses(userId: string) {
   const canvasUsers = await db.query.canvasUsers.findMany({
-    where: eq(dbSchema.canvasUsers.userId, userId),
+    where: eq(db.x.canvasUsers.userId, userId),
   });
   const canvasIntegrationIds = canvasUsers.map((cu) => cu.canvasIntegrationId);
   const courseLists = await Promise.all(
@@ -25,7 +23,7 @@ export async function createCanvasIntegrationApi(
 ): Promise<IntegrationApi> {
   const [canvasIntegration, ...excess] =
     await db.query.canvasIntegrations.findMany({
-      where: eq(dbSchema.canvasIntegrations.integrationId, integration.id),
+      where: eq(db.x.canvasIntegrations.integrationId, integration.id),
     });
   if (excess.length > 0) {
     throw new Error("More than one canvas integration found for integration");
@@ -49,7 +47,7 @@ export async function createCanvasIntegrationApi(
           });
           const exIdJsons = rawAssignments.map((a) => JSON.stringify(a.id));
           const activites = await db.query.activities.findMany({
-            where: inArray(dbSchema.activities.exIdJson, exIdJsons),
+            where: inArray(db.x.activities.exIdJson, exIdJsons),
           });
           const activityMap = new Map(
             activites.map((a) => [a.exIdJson, a] as const),
@@ -60,7 +58,7 @@ export async function createCanvasIntegrationApi(
           if (missingActivitiesExIdJsons.length > 0) {
             // create an activity for each missing assignment that doesn't have an associated one
             const newActivities = await db
-              .insert(dbSchema.activities)
+              .insert(db.x.activities)
               .values(
                 missingActivitiesExIdJsons.map((exIdJson) => ({
                   exIdJson,
@@ -83,8 +81,8 @@ export async function createCanvasIntegrationApi(
               }
               return {
                 exIdJson: JSON.stringify(a.id),
-                dueAt: parseDateOrNull(a.dueAt),
-                lockedAt: parseDateOrNull(a.lockedAt),
+                dueAt: a.dueAt,
+                lockedAt: a.lockedAt,
                 title: a.name,
                 activity,
               };

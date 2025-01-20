@@ -1,8 +1,7 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getRedirectUrl } from "~/common/utils/canvasUtils";
-import { type DbOrTx } from "~/server/db";
-import { dbSchema } from "~/server/db/dbSchema";
+import { db, type DbOrTx } from "~/server/db";
 import { updateTokenCache } from "./canvasTokenCache";
 import {
   ambiguousEnrollmentTypeSchema,
@@ -10,6 +9,7 @@ import {
   makeCanvasRequest,
   narrowCanvasEnrollmentType,
 } from "./utils";
+import { parseDateOrNull } from "~/common/utils/timeUtils";
 
 async function getLoginResponse({
   canvasIntegrationId,
@@ -72,7 +72,7 @@ async function upsertUser(
   const { lifespanMs, refreshToken, canvasUser } = loginResponse;
 
   const existing = await tx.query.canvasUsers.findFirst({
-    where: eq(dbSchema.canvasUsers.canvasGlobalId, canvasUser.globalId),
+    where: eq(db.x.canvasUsers.canvasGlobalId, canvasUser.globalId),
   });
   if (existing) {
     const existingNonGlobalIds = z
@@ -82,16 +82,16 @@ async function upsertUser(
       ...new Set([...existingNonGlobalIds, canvasUser.id]),
     ];
     await tx
-      .update(dbSchema.canvasUsers)
+      .update(db.x.canvasUsers)
       .set({
         nonGlobalIdsArrJson: JSON.stringify(nonGlobalIdsArr),
         canvasUserName: canvasUser.name,
         oauthRefreshToken: refreshToken,
         accessTokenLifespanMs: lifespanMs,
       })
-      .where(eq(dbSchema.canvasUsers.canvasGlobalId, canvasUser.globalId));
+      .where(eq(db.x.canvasUsers.canvasGlobalId, canvasUser.globalId));
   } else {
-    await tx.insert(dbSchema.canvasUsers).values({
+    await tx.insert(db.x.canvasUsers).values({
       userId,
       canvasIntegrationId,
       canvasGlobalId: canvasUser.globalId,
@@ -115,7 +115,7 @@ export async function executeUserInitiation({
   tx: DbOrTx;
 }) {
   const canvasIntegration = await tx.query.canvasIntegrations.findFirst({
-    where: eq(dbSchema.canvasIntegrations.id, canvasIntegrationId),
+    where: eq(db.x.canvasIntegrations.id, canvasIntegrationId),
   });
   if (!canvasIntegration) {
     throw new Error("Canvas integration not found");
@@ -131,15 +131,15 @@ export async function executeUserInitiation({
   await upsertUser(userId, canvasIntegrationId, loginResponse, tx);
 
   await tx
-    .insert(dbSchema.userIntegrations)
+    .insert(db.x.userIntegrations)
     .values({
       userId,
       integrationId: canvasIntegration.integrationId,
     })
     .onConflictDoNothing({
       target: [
-        dbSchema.userIntegrations.userId,
-        dbSchema.userIntegrations.integrationId,
+        db.x.userIntegrations.userId,
+        db.x.userIntegrations.integrationId,
       ],
     });
 
@@ -162,7 +162,7 @@ export async function getCanvasCourses({
   tx: DbOrTx;
 }) {
   const canvasUsers = await tx.query.canvasUsers.findMany({
-    where: eq(dbSchema.canvasUsers.userId, userId),
+    where: eq(db.x.canvasUsers.userId, userId),
   });
   const courseSchema = z.object({
     id: z.number(),
@@ -231,7 +231,7 @@ export async function getCanvasAssignments({
   tx: DbOrTx;
 }) {
   const canvasUsers = await tx.query.canvasUsers.findMany({
-    where: eq(dbSchema.canvasUsers.userId, userId),
+    where: eq(db.x.canvasUsers.userId, userId),
   });
   const assignmentSchema = z.object({
     id: z.number(),
@@ -262,7 +262,8 @@ export async function getCanvasAssignments({
   return rawAssignments.map((ra) => ({
     id: ra.id,
     name: ra.name,
-    dueAt: ra.due_at,
+    dueAt: parseDateOrNull(ra.due_at),
+    lockedAt: parseDateOrNull(ra.lock_at),
     pointsPossible: ra.points_possible,
     gradingType: ra.grading_type,
   }));

@@ -4,7 +4,6 @@ import { getCanvasBaseUrl } from "~/common/utils/canvasUtils";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
-import { dbSchema } from "~/server/db/dbSchema";
 
 export const canvasRouter = createTRPCRouter({
   loginDeets: publicProcedure
@@ -14,7 +13,7 @@ export const canvasRouter = createTRPCRouter({
       const baseUrl = getCanvasBaseUrl(subdomain);
       const [canvasIntegration, ...excess] =
         await db.query.canvasIntegrations.findMany({
-          where: eq(dbSchema.canvasIntegrations.canvasBaseUrl, baseUrl),
+          where: eq(db.x.canvasIntegrations.canvasBaseUrl, baseUrl),
         });
       if (excess.length > 0) {
         throw new Error(

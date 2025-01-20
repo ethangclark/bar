@@ -2,12 +2,11 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { type Json } from "~/common/utils/types";
 import { db } from "~/server/db";
-import { dbSchema } from "~/server/db/dbSchema";
 import { getCachedAccessToken, updateTokenCache } from "./canvasTokenCache";
 
 export async function getCanvasIntegration(canvasIntegrationId: string) {
   const canvasIntegration = await db.query.canvasIntegrations.findFirst({
-    where: eq(dbSchema.canvasIntegrations.id, canvasIntegrationId),
+    where: eq(db.x.canvasIntegrations.id, canvasIntegrationId),
   });
   if (!canvasIntegration) {
     throw new Error("Canvas integration not found");

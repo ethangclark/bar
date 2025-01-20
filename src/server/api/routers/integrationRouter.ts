@@ -3,7 +3,6 @@ import { z } from "zod";
 import { getCanvasBaseUrl } from "~/common/utils/canvasUtils";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
-import { dbSchema } from "~/server/db/dbSchema";
 
 export const integrationRouter = createTRPCRouter({
   createCanvasIntegration: publicProcedure
@@ -19,7 +18,7 @@ export const integrationRouter = createTRPCRouter({
       const canvasBaseUrl = getCanvasBaseUrl(subdomain);
       await db.transaction(async (tx) => {
         const existing = await tx.query.canvasIntegrations.findFirst({
-          where: eq(dbSchema.canvasIntegrations.canvasBaseUrl, canvasBaseUrl),
+          where: eq(db.x.canvasIntegrations.canvasBaseUrl, canvasBaseUrl),
           with: { integration: true },
         });
         let integration = existing?.integration;
@@ -27,11 +26,11 @@ export const integrationRouter = createTRPCRouter({
           throw new Error("Valid integration already exists");
         }
         await tx
-          .delete(dbSchema.canvasIntegrations)
-          .where(eq(dbSchema.canvasIntegrations.canvasBaseUrl, canvasBaseUrl));
+          .delete(db.x.canvasIntegrations)
+          .where(eq(db.x.canvasIntegrations.canvasBaseUrl, canvasBaseUrl));
         if (!integration) {
           const [intResult] = await tx
-            .insert(dbSchema.integrations)
+            .insert(db.x.integrations)
             .values({
               type: "canvas",
             })
@@ -42,7 +41,7 @@ export const integrationRouter = createTRPCRouter({
           integration = intResult;
         }
 
-        await tx.insert(dbSchema.canvasIntegrations).values({
+        await tx.insert(db.x.canvasIntegrations).values({
           integrationId: integration.id,
           canvasBaseUrl,
           clientId: input.clientId,

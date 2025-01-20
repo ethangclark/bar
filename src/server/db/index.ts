@@ -17,7 +17,9 @@ if (env.NODE_ENV !== "production" && env.TEST_TYPE !== "prompt_test") {
   globalForDb.connection = connection;
 }
 
-export const db = drizzle(connection, { schema });
+export const db = Object.assign(drizzle(connection, { schema }), {
+  x: schema,
+});
 
 type Tx = Parameters<Parameters<(typeof db)["transaction"]>[0]>[0];
 export type DbOrTx = typeof db | Tx;
