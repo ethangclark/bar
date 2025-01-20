@@ -276,7 +276,7 @@ export const infoTextsRelations = relations(infoTexts, ({ many }) => ({
 
 export const infoImages = pgTable("info_image", {
   id: uuid("id").primaryKey().defaultRandom(),
-  url: text("url").notNull(),
+  url: text("url"),
 });
 export type InfoImage = InferSelectModel<typeof infoImages>;
 export const infoImagesRelations = relations(infoImages, ({ many }) => ({
