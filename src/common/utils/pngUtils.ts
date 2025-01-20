@@ -1,10 +1,14 @@
 export const pngAsUrlPrefix = "data:image/png;base64,";
 
-export function pngAsUrlToBase64(pngUrl: string) {
-  return pngUrl.slice(pngAsUrlPrefix.length);
+export function isPngContainedAsUrl(url: string) {
+  return url.startsWith(pngAsUrlPrefix);
 }
-export function pngAsUrlToBuffer(pngUrl: string) {
-  return Buffer.from(pngAsUrlToBase64(pngUrl), "base64");
+
+export function pngAsUrlToBase64(pngAsUrl: string) {
+  return pngAsUrl.slice(pngAsUrlPrefix.length);
+}
+export function pngAsUrlToBuffer(pngAsUrl: string) {
+  return Buffer.from(pngAsUrlToBase64(pngAsUrl), "base64");
 }
 export function pngBase64ToBuffer(pngBase64: string) {
   return Buffer.from(pngBase64, "base64");

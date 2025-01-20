@@ -3,7 +3,7 @@ import { db } from "~/server/db";
 import { createCanvasIntegrationApi } from "~/server/integrations/canvas/canvasIntegration";
 import { type IntegrationApi } from "~/server/integrations/utils/integrationApi";
 
-async function getIntegrations(userId: string) {
+export async function getIntegrations(userId: string) {
   const uis = await db.query.userIntegrations.findMany({
     where: eq(db.x.userIntegrations.userId, userId),
     with: {

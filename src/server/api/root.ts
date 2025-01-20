@@ -5,6 +5,7 @@ import { transcriptionRouter } from "./routers/transcriptionRouter";
 import { authRouter } from "./routers/authRouter";
 import { canvasRouter } from "./routers/canvasRouter";
 import { integrationRouter } from "./routers/integrationRouter";
+import { activityRouter } from "./routers/activityRouter";
 
 /**
  * This is the primary router for your server.
@@ -12,6 +13,7 @@ import { integrationRouter } from "./routers/integrationRouter";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
+  activity: activityRouter,
   auth: authRouter,
   canvas: canvasRouter,
   courses: coursesRouter,

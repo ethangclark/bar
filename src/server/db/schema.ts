@@ -253,8 +253,37 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
     fields: [activities.integrationId],
     references: [integrations.id],
   }),
-  infoBlocks: many(infoBlocks),
+  activityItems: many(activityItems),
 }));
+
+export const questions = pgTable("question", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  content: text("content").notNull(),
+});
+export type Question = InferSelectModel<typeof questions>;
+export const questionsRelations = relations(questions, ({ many }) => ({
+  activityItems: many(activityItems),
+}));
+
+export const infoTexts = pgTable("info_text", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  content: text("content").notNull(),
+});
+export type InfoText = InferSelectModel<typeof infoTexts>;
+export const infoTextsRelations = relations(infoTexts, ({ many }) => ({
+  activityItems: many(activityItems),
+}));
+
+export const infoImages = pgTable("info_image", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  url: text("url").notNull(),
+});
+export type InfoImage = InferSelectModel<typeof infoImages>;
+export const infoImagesRelations = relations(infoImages, ({ many }) => ({
+  activityItems: many(activityItems),
+}));
+
+// TODO: infoVideo (will require streaming storage setup of some sort)
 
 export const activityItems = pgTable(
   "activity_item",
@@ -264,6 +293,15 @@ export const activityItems = pgTable(
       .notNull()
       .references(() => activities.id, { onDelete: "cascade" }),
     orderFracIdx: text("order_frac_idx").notNull(),
+    questionId: uuid("question_id").references(() => questions.id, {
+      onDelete: "cascade",
+    }),
+    infoTextId: uuid("info_text_id").references(() => infoTexts.id, {
+      onDelete: "cascade",
+    }),
+    infoImageId: uuid("info_image_id").references(() => infoImages.id, {
+      onDelete: "cascade",
+    }),
   },
   (ai) => [index("activity_item_activity_id_idx").on(ai.activityId)],
 );
@@ -273,43 +311,17 @@ export const activityItemRelations = relations(activityItems, ({ one }) => ({
     fields: [activityItems.activityId],
     references: [activities.id],
   }),
-}));
-
-export const infoBlocks = pgTable(
-  "info_block",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    // content: text("content").notNull(), // TODO
-    activityItemId: uuid("activity_item_id")
-      .notNull()
-      .references(() => activityItems.id, { onDelete: "cascade" }),
-  },
-  (ib) => [index("info_block_activity_item_id_idx").on(ib.activityItemId)],
-);
-export type InfoBlock = InferSelectModel<typeof infoBlocks>;
-export const infoBlocksRelations = relations(infoBlocks, ({ one }) => ({
-  activityItem: one(activities, {
-    fields: [infoBlocks.activityItemId],
-    references: [activities.id],
+  question: one(questions, {
+    fields: [activityItems.questionId],
+    references: [questions.id],
   }),
-}));
-
-export const questions = pgTable(
-  "question",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    // content: text("content").notNull(), // TODO
-    activityItemId: uuid("activity_item_id")
-      .notNull()
-      .references(() => activities.id, { onDelete: "cascade" }),
-  },
-  (q) => [index("question_activity_item_id_idx").on(q.activityItemId)],
-);
-export type Question = InferSelectModel<typeof questions>;
-export const questionsRelations = relations(questions, ({ one }) => ({
-  activityItem: one(activities, {
-    fields: [questions.activityItemId],
-    references: [activities.id],
+  infoText: one(infoTexts, {
+    fields: [activityItems.infoTextId],
+    references: [infoTexts.id],
+  }),
+  infoImage: one(infoImages, {
+    fields: [activityItems.infoImageId],
+    references: [infoImages.id],
   }),
 }));
 

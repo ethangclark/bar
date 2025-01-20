@@ -1,4 +1,8 @@
-import { type Activity, type IntegrationType } from "~/server/db/schema";
+import {
+  type Integration,
+  type Activity,
+  type IntegrationType,
+} from "~/server/db/schema";
 import { type NarrowedCanvasEnrollmentType } from "../canvas/utils";
 
 export type LmsAssignment = {
@@ -18,6 +22,7 @@ type Score = { type: "points"; points: number };
 
 export type IntegrationApi = {
   type: IntegrationType;
+  integration: Integration;
   getCourses: (params: { userId: string }) => Promise<LmsCourse[]>;
   setGrading: (params: {
     userId: string;

@@ -35,6 +35,7 @@ export async function createCanvasIntegrationApi(
   // TODO: update the `valid` field of the integraiton after first successful API call
   return {
     type: "canvas",
+    integration,
     getCourses: async ({ userId }) => {
       const rawCourses = await getAllCanvasCourses(userId);
       return Promise.all(
