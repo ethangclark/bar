@@ -1,7 +1,7 @@
 "use client";
 
 import { scrollbarWidth } from "~/client/utils/scrollbarWidth";
-import { useIsForSureClientSide } from "./ClientOnly";
+import { useIsClientSide } from "~/client/utils/isClientSide";
 
 export function Page({
   children,
@@ -10,7 +10,7 @@ export function Page({
   children: React.ReactNode;
   className?: string;
 }) {
-  const isClientSide = useIsForSureClientSide();
+  const isClientSide = useIsClientSide();
   return (
     <div
       className={`flex flex-grow flex-col items-center px-2 py-5 sm:px-6 sm:py-10 md:px-8 md:py-12 ${className}`}
