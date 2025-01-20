@@ -11,6 +11,8 @@ export default function ActivityPage() {
 
   return (
     <Page>
+      {/* TOOD: weave together editor and assignment taker views somehow,
+      taking into account course.enrolledAs fields */}
       <ActivityEditor activityId={activityId} />
     </Page>
   );

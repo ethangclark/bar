@@ -3,13 +3,13 @@
 import { api } from "~/trpc/react";
 import { Assignment } from "~/client/components/Assignment";
 import { Page } from "~/client/components/Page";
-import { SpinPage } from "~/client/components/SpinPage";
+import { LoadingPage } from "~/client/components/Loading";
 
 export default function Courses() {
   const { data: courses, isLoading } = api.courses.all.useQuery();
 
   if (isLoading) {
-    return <SpinPage />;
+    return <LoadingPage />;
   }
 
   return (

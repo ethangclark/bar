@@ -306,6 +306,11 @@ export const activityItems = pgTable(
   (ai) => [index("activity_item_activity_id_idx").on(ai.activityId)],
 );
 export type ActivityItem = InferSelectModel<typeof activityItems>;
+export type ActivityItemWithChildren = ActivityItem & {
+  question: Question | null;
+  infoText: InfoText | null;
+  infoImage: InfoImage | null;
+};
 export const activityItemRelations = relations(activityItems, ({ one }) => ({
   activity: one(activities, {
     fields: [activityItems.activityId],

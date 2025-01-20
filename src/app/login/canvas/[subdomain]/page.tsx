@@ -6,7 +6,7 @@ import { z } from "zod";
 import { getCanvasBaseUrl, getRedirectUrl } from "~/common/utils/canvasUtils";
 import { api } from "~/trpc/react";
 import { CreateIntegration } from "./createIntegration";
-import { SpinPage } from "~/client/components/SpinPage";
+import { LoadingPage } from "~/client/components/Loading";
 
 const state = Math.random().toString(36).substring(7); // could generate this legitimately + compare it in searchParams when invoked as callback
 
@@ -48,7 +48,7 @@ export default function CanvasLoginPage() {
   }, [data, code, processCode, router]);
 
   if (isLoading) {
-    return <SpinPage />;
+    return <LoadingPage />;
   }
 
   if (!linkParams) {

@@ -9,6 +9,14 @@ export class ActivityEditorStore {
     makeAutoObservable(this);
   }
 
+  get activity() {
+    return this.query.data;
+  }
+
+  clearActivity() {
+    this.query.reset();
+  }
+
   loadActivity(activityId: string) {
     void this.query.fetch({ activityId }).then((activity) => {
       console.log({ activity });

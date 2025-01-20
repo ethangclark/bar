@@ -1,11 +1,9 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
+import { assertNever } from "~/common/utils/errorUtils";
+import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
+import { type LmsAssignment } from "~/server/integrations/utils/integrationApi";
 import { getIntegrationApis } from "~/server/services/integrationService";
 
 async function getActivity(activityId: string) {
@@ -49,32 +47,33 @@ export const activityRouter = createTRPCRouter({
       // ensure that the activity is associated with an assignment that's visible to the user
       // (hiding unpublished assignments from students)
       const courses = await integrationApi.getCourses({ userId });
-      if (
-        !courses.some((c) =>
-          c.assignments.some((a): boolean => {
-            const exists = a.activity?.id === activity.id;
-            if (!exists) {
-              return false;
-            }
-            if (
-              c.enrolledAs.includes("teacher") ||
-              c.enrolledAs.includes("ta") ||
-              c.enrolledAs.includes("designer")
-            ) {
-              return true;
-            }
-            switch (a.activity.status) {
-              case "published":
-                return true;
-              case "draft":
-                return false;
-            }
-          }),
-        )
-      ) {
+      let assignment: LmsAssignment | null = null;
+      for (const course of courses) {
+        for (const a of course.assignments) {
+          if (a.activity?.id !== activity.id) {
+            continue;
+          }
+          if (
+            course.enrolledAs.includes("teacher") ||
+            course.enrolledAs.includes("ta") ||
+            course.enrolledAs.includes("designer")
+          ) {
+            assignment = a;
+          }
+          switch (a.activity.status) {
+            case "published":
+              assignment = a;
+            case "draft":
+              // do nothing;
+              continue;
+          }
+          assertNever(a.activity.status);
+        }
+      }
+      if (!assignment) {
         throw new Error("Activity not found");
       }
 
-      return activity;
+      return { assignment, ...activity };
     }),
 });
