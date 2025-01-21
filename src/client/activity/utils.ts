@@ -8,39 +8,53 @@ export function createDraftActivityItemWithChildren({
 }: {
   activityId: string;
   afterOrderFracIdx: string | null;
-  itemType: "info" | "question";
+  itemType: "question" | "text" | "image";
 }): ActivityItemWithChildren {
   const base = {
     id: Math.random().toString(),
     activityId,
     orderFracIdx: generateKeyBetween(afterOrderFracIdx, null),
-    questionId: null,
-    question: null,
-    infoBlockId: null,
-    infoBlock: null,
+    questions: [],
+    infoTexts: [],
+    infoImages: [],
   };
   const childId = Math.random().toString();
   switch (itemType) {
-    case "info": {
-      return {
-        ...base,
-        infoBlockId: childId,
-        infoBlock: {
-          id: childId,
-          content: "",
-          infoImageId: null,
-          infoImage: null,
-        },
-      };
-    }
     case "question": {
       return {
         ...base,
-        questionId: childId,
-        question: {
-          id: childId,
-          content: "",
-        },
+        questions: [
+          {
+            id: childId,
+            activityItemId: base.id,
+            content: "",
+          },
+        ],
+      };
+    }
+    case "text": {
+      return {
+        ...base,
+        infoTexts: [
+          {
+            id: childId,
+            activityItemId: base.id,
+            content: "",
+          },
+        ],
+      };
+    }
+    case "image": {
+      return {
+        ...base,
+        infoImages: [
+          {
+            id: childId,
+            activityItemId: base.id,
+            url: "",
+            textAlternative: "",
+          },
+        ],
       };
     }
   }

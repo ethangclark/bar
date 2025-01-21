@@ -28,7 +28,7 @@ export class QueryStore<T extends (...args: any[]) => Promise<any>> {
     Object.assign(this, this.initialState);
   }
 
-  async fetch(...args: Parameters<T>): Promise<ReturnType<T>> {
+  async fetch(...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> {
     this.lastArgs = args;
     const loadId = this.nextLoadId;
     runInAction(() => {

@@ -12,12 +12,9 @@ async function getActivity(activityId: string) {
     with: {
       activityItems: {
         with: {
-          question: true,
-          infoBlock: {
-            with: {
-              infoImage: true,
-            },
-          },
+          questions: true,
+          infoTexts: true,
+          infoImages: true,
         },
       },
     },

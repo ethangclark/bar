@@ -43,6 +43,13 @@
       "when": 1737408000301,
       "tag": "0005_cold_forgotten_one",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1737431676431,
+      "tag": "0006_gifted_microbe",
+      "breakpoints": true
     }
   ]
 }

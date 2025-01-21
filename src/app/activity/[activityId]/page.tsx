@@ -12,7 +12,7 @@ export default storeObserver(function ActivityPage({ activityEditorStore }) {
   const { activityId } = z.object({ activityId: z.string() }).parse(params);
 
   useEffect(() => {
-    activityEditorStore.loadActivity(activityId);
+    void activityEditorStore.loadActivity(activityId);
     return () => activityEditorStore.clearActivity();
   }, [activityEditorStore, activityId]);
 

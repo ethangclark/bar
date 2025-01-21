@@ -6,8 +6,12 @@ import { ActivityItem } from "./ActivityItem";
 
 const newItemOptions = [
   {
-    type: "info",
-    label: "+ Add text/image information",
+    type: "text",
+    label: "+ Add text",
+  },
+  {
+    type: "image",
+    label: "+ Add an image",
   },
   {
     type: "question",
@@ -18,17 +22,17 @@ const newItemOptions = [
 export const ActivityEditor = storeObserver(function ActivityEditor({
   activityEditorStore,
 }) {
-  const { activity, sortedActivityItemDrafts } = activityEditorStore;
+  const { savedActivity, sortedItemDrafts } = activityEditorStore;
 
-  if (activity instanceof Status) {
+  if (savedActivity instanceof Status || sortedItemDrafts instanceof Status) {
     return <CenteredLoading />;
   }
 
   return (
     <div>
-      <div className="text-6xl">{activity.assignment.title}</div>
-      {sortedActivityItemDrafts.map((item) => (
-        <ActivityItem key={item.id} activityItem={item} />
+      <div className="text-6xl">{savedActivity.assignment.title}</div>
+      {sortedItemDrafts.map((draft) => (
+        <ActivityItem key={draft.id} item={draft} />
       ))}
       <div>
         {newItemOptions.map((option) => (
