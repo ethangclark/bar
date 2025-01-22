@@ -273,11 +273,6 @@ export const activityItems = pgTable(
   (ai) => [index("activity_item_activity_id_idx").on(ai.activityId)],
 );
 export type ActivityItem = InferSelectModel<typeof activityItems>;
-export type ActivityItemWithChildren = ActivityItem & {
-  questions: Question[];
-  infoTexts: InfoText[];
-  infoImages: InfoImage[];
-};
 export const activityItemRelations = relations(
   activityItems,
   ({ one, many }) => ({
@@ -290,6 +285,7 @@ export const activityItemRelations = relations(
     infoImages: many(infoImages),
   }),
 );
+export const activityItemSchema = createSelectSchema(activityItems);
 
 export const questions = pgTable("question", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -305,6 +301,7 @@ export const questionsRelations = relations(questions, ({ one }) => ({
     references: [activityItems.id],
   }),
 }));
+export const questionSchema = createSelectSchema(questions);
 
 export const infoTexts = pgTable("info_text", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -320,6 +317,7 @@ export const infoTextsRelations = relations(infoTexts, ({ one }) => ({
     references: [activityItems.id],
   }),
 }));
+export const infoTextSchema = createSelectSchema(infoTexts);
 
 export const infoImages = pgTable("info_image", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -336,8 +334,18 @@ export const infoImagesRelations = relations(infoImages, ({ one }) => ({
     references: [activityItems.id],
   }),
 }));
+export const infoImageSchema = createSelectSchema(infoImages);
 
 // todo: infoVideo (will require video streaming solution)
+
+export const activityItemWithChildrenSchema = activityItemSchema.extend({
+  questions: z.array(questionSchema),
+  infoTexts: z.array(infoTextSchema),
+  infoImages: z.array(infoImageSchema),
+});
+export type ActivityItemWithChildren = z.infer<
+  typeof activityItemWithChildrenSchema
+>;
 
 export const threads = pgTable("thread", {
   id: uuid("id").primaryKey().defaultRandom(),
