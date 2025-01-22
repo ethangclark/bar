@@ -1,4 +1,4 @@
-import { type ActivityItemWithChildren } from "~/server/db/schema";
+import { InfoImage, type ActivityItemWithChildren } from "~/server/db/schema";
 import { storeObserver } from "../utils/storeObserver";
 import { Editor } from "../components/Editor";
 import { ImageFromDataUrl } from "../components/ImageFromDataUrl";
@@ -6,51 +6,67 @@ import { ImageUploader } from "../components/ImageUploader";
 
 const maxImgWidth = 400;
 
+function RowBox({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col items-center" style={{ width: maxImgWidth }}>
+      {children}
+    </div>
+  );
+}
+
+function Row({ children }: { children: React.ReactNode }) {
+  return <div className="flex">{children}</div>;
+}
+
+const InfoImage = storeObserver<{
+  item: ActivityItemWithChildren;
+  infoImage: InfoImage;
+}>(function InfoImage({ activityEditorStore, item, infoImage }) {
+  return (
+    <Row>
+      <RowBox>
+        <ImageFromDataUrl
+          alt={infoImage.textAlternative}
+          src={infoImage.url}
+          style={{
+            maxWidth: maxImgWidth,
+            maxHeight: 300,
+            marginBottom: 16,
+          }}
+        />
+        <ImageUploader
+          onFileSelect={({ imageDataUrl }) => {
+            console.log({ imageDataUrl });
+            activityEditorStore.setItemInfoImageDraftUrl({
+              itemId: item.id,
+              url: imageDataUrl,
+            });
+          }}
+        />
+      </RowBox>
+      <RowBox>
+        <div>Text alternative:</div>
+        <Editor
+          value={infoImage.textAlternative}
+          setValue={(v) => {
+            activityEditorStore.setItemInfoImageDraftTextAlternative({
+              itemId: item.id,
+              textAlternative: v,
+            });
+          }}
+        />
+      </RowBox>
+    </Row>
+  );
+});
+
 export const ActivityItem = storeObserver<{
   item: ActivityItemWithChildren;
 }>(function ActivityItem({ item, activityEditorStore }) {
   return (
     <div>
       {item.infoImages.map((infoImage) => (
-        <div key={infoImage.id} className="flex flex-col items-center">
-          <div className="flex">
-            <div
-              className="flex flex-col items-center"
-              style={{ width: maxImgWidth }}
-            >
-              <ImageFromDataUrl
-                alt={infoImage.textAlternative}
-                src={infoImage.url}
-                style={{
-                  maxWidth: maxImgWidth,
-                  maxHeight: 300,
-                  marginBottom: 16,
-                }}
-              />
-              <ImageUploader
-                onFileSelect={({ imageDataUrl }) => {
-                  console.log({ imageDataUrl });
-                  activityEditorStore.setItemInfoImageDraftUrl({
-                    itemId: item.id,
-                    url: imageDataUrl,
-                  });
-                }}
-              />
-            </div>
-            <div className="p-4" style={{ width: maxImgWidth }}>
-              <div>Text alternative:</div>
-              <Editor
-                value={infoImage.textAlternative}
-                setValue={(v) => {
-                  activityEditorStore.setItemInfoImageDraftTextAlternative({
-                    itemId: item.id,
-                    textAlternative: v,
-                  });
-                }}
-              />
-            </div>
-          </div>
-        </div>
+        <InfoImage key={infoImage.id} item={item} infoImage={infoImage} />
       ))}
       {item.infoTexts.map((infoText) => (
         <div key={infoText.id}>
