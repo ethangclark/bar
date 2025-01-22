@@ -1,4 +1,7 @@
-import { InfoImage, type ActivityItemWithChildren } from "~/server/db/schema";
+import {
+  type InfoImage,
+  type ActivityItemWithChildren,
+} from "~/server/db/schema";
 import { storeObserver } from "../utils/storeObserver";
 import { Editor } from "../components/Editor";
 import { ImageFromDataUrl } from "../components/ImageFromDataUrl";
@@ -10,7 +13,7 @@ import {
   GripVertical,
   Trash2,
 } from "lucide-react";
-import { Card, Tooltip } from "antd";
+import { Tooltip } from "antd";
 
 const maxImgWidth = 400;
 
@@ -54,10 +57,10 @@ function Row({ children }: { children: React.ReactNode }) {
   );
 }
 
-const InfoImage = storeObserver<{
+const InfoImageView = storeObserver<{
   item: ActivityItemWithChildren;
   infoImage: InfoImage;
-}>(function InfoImage({ activityEditorStore, item, infoImage }) {
+}>(function InfoImageView({ activityEditorStore, item, infoImage }) {
   return (
     <Row>
       <RowBox headerContent="Image">
@@ -103,7 +106,7 @@ export const ActivityItem = storeObserver<{
   return (
     <div>
       {item.infoImages.map((infoImage) => (
-        <InfoImage key={infoImage.id} item={item} infoImage={infoImage} />
+        <InfoImageView key={infoImage.id} item={item} infoImage={infoImage} />
       ))}
       {item.infoTexts.map((infoText) => (
         <div key={infoText.id}>
