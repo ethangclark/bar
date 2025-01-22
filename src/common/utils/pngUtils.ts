@@ -1,7 +1,19 @@
-export const pngAsUrlPrefix = "data:image/png;base64,";
+export const imageDataUrlPrefix = "data:image/";
+export type imageDataUrl =
+  `${typeof imageDataUrlPrefix}${string};base64,${string}`;
+
+export function isImageDataUrl(url: string): url is imageDataUrl {
+  return url.startsWith(imageDataUrlPrefix);
+}
+
+export const pngAsUrlPrefix = `${imageDataUrlPrefix}png;base64,`;
+export const jpegAsUrlPrefix = `${imageDataUrlPrefix}jpeg;base64,`;
 
 export function isPngContainedAsUrl(url: string) {
   return url.startsWith(pngAsUrlPrefix);
+}
+export function isJpegContainedAsUrl(url: string) {
+  return url.startsWith(jpegAsUrlPrefix);
 }
 
 export function pngAsUrlToBase64(pngAsUrl: string) {

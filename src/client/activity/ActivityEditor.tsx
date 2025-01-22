@@ -30,10 +30,14 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
 
   return (
     <div>
-      <div className="text-6xl">{savedActivity.assignment.title}</div>
-      {sortedItemDrafts.map((draft) => (
-        <ActivityItem key={draft.id} item={draft} />
-      ))}
+      <div className="mb-8 text-6xl">{savedActivity.assignment.title}</div>
+      <div>
+        {sortedItemDrafts.map((draft) => (
+          <div key={draft.id} className="mb-4 border-b pb-4">
+            <ActivityItem item={draft} />
+          </div>
+        ))}
+      </div>
       <div>
         {newItemOptions.map((option) => (
           <Button
