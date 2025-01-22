@@ -1,12 +1,13 @@
 import { Spin } from "antd";
 import { Page } from "./Page";
+import { Centered } from "./Centered";
 
 export const Loading = () => <Spin />;
 
 export const CenteredLoading = () => (
-  <div className="flex h-full w-full items-center justify-center">
-    <Spin />
-  </div>
+  <Centered>
+    <Loading />
+  </Centered>
 );
 
 export function LoadingPage() {

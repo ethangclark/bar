@@ -22,6 +22,7 @@ type EditorProps = {
   disabled?: boolean;
   className?: string;
   height?: number;
+  flexGrow?: number;
 };
 
 export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
@@ -36,6 +37,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
       disabled,
       className,
       height,
+      flexGrow,
     },
     ref,
   ) {
@@ -50,6 +52,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
           resize: "none",
           minHeight,
           height,
+          flexGrow,
         }}
         onKeyDown={onKeyDown}
         disabled={disabled}

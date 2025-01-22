@@ -42,12 +42,14 @@ export function ImageUploader({
     [notify, onFileSelect],
   );
   return (
-    <Upload.Dragger {...props}>
-      {contextHolder}
-      <div className="flex w-full items-center">
-        <FileImageOutlined className="mr-2" />
-        <p className="text-sm">Click or drag image files to upload</p>
-      </div>
-    </Upload.Dragger>
+    <div>
+      <Upload.Dragger {...props}>
+        {contextHolder}
+        <div className="flex w-full items-center">
+          <FileImageOutlined className="mr-2" />
+          <p className="text-sm">Click or drag image files to upload</p>
+        </div>
+      </Upload.Dragger>
+    </div>
   );
 }

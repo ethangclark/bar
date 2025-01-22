@@ -14,28 +14,35 @@ import {
   Trash2,
 } from "lucide-react";
 import { Tooltip } from "antd";
+import { Centered } from "../components/Centered";
 
-const maxImgWidth = 400;
+const boxWidth = 400;
 
 function RowBox({
   children,
-  headerContent,
-  helpContent,
+  header,
 }: {
   children: React.ReactNode;
-  headerContent: React.ReactNode;
-  helpContent?: React.ReactNode;
+  header?: {
+    content: React.ReactNode;
+    help?: React.ReactNode;
+  };
 }) {
   return (
-    <div className="flex flex-col items-center" style={{ width: maxImgWidth }}>
-      <div className="mb-1 flex items-center text-sm text-gray-600">
-        <div className="mr-1">{headerContent}</div>
-        {helpContent && (
-          <Tooltip title={helpContent}>
-            <CircleHelp size={16} />
-          </Tooltip>
-        )}
-      </div>
+    <div
+      className="flex flex-col items-center rounded border p-4 shadow"
+      style={{ width: boxWidth }}
+    >
+      {header && (
+        <div className="mb-3 flex items-center text-sm text-gray-700">
+          <div className="mr-1">{header.content}</div>
+          {header.help && (
+            <Tooltip title={header.help} className="text-gray-500">
+              <CircleHelp size={16} />
+            </Tooltip>
+          )}
+        </div>
+      )}
       {children}
     </div>
   );
@@ -43,15 +50,15 @@ function RowBox({
 
 function Row({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center ">
+    <div className="flex items-center space-x-2">
       <div className="flex flex-col items-center text-gray-500">
         <ArrowUp size={20} />
         <GripVertical className="my-1" />
         <ArrowDown size={20} />
       </div>
-      <div className="mx-2 flex rounded-xl border p-4 shadow">{children}</div>
+      <div className="flex space-x-4">{children}</div>
       <div className="text-gray-400">
-        <Trash2 />
+        <Trash2 size={20} />
       </div>
     </div>
   );
@@ -63,28 +70,36 @@ const InfoImageView = storeObserver<{
 }>(function InfoImageView({ activityEditorStore, item, infoImage }) {
   return (
     <Row>
-      <RowBox headerContent="Image">
-        <ImageFromDataUrl
-          alt={infoImage.textAlternative}
-          src={infoImage.url}
-          style={{
-            maxWidth: maxImgWidth,
-            marginBottom: 16,
-          }}
-        />
-        <ImageUploader
-          onFileSelect={({ imageDataUrl }) => {
-            console.log({ imageDataUrl });
-            activityEditorStore.setItemInfoImageDraftUrl({
-              itemId: item.id,
-              url: imageDataUrl,
-            });
-          }}
-        />
+      <RowBox>
+        <Centered>
+          <div className="flex flex-col items-center">
+            {infoImage.url && (
+              <ImageFromDataUrl
+                alt={infoImage.textAlternative}
+                src={infoImage.url}
+                style={{
+                  maxWidth: "100%",
+                  marginBottom: 16,
+                }}
+              />
+            )}
+            <ImageUploader
+              onFileSelect={({ imageDataUrl }) => {
+                console.log({ imageDataUrl });
+                activityEditorStore.setItemInfoImageDraftUrl({
+                  itemId: item.id,
+                  url: imageDataUrl,
+                });
+              }}
+            />
+          </div>
+        </Centered>
       </RowBox>
       <RowBox
-        headerContent="What Summit sees"
-        helpContent="Summit can't yet understand images, so this is the material it will use for teaching and evaluating"
+        header={{
+          content: "What Summit sees",
+          help: "Summit can't yet understand images, so this is the material it will use for teaching and evaluating",
+        }}
       >
         <Editor
           value={infoImage.textAlternative}
@@ -94,6 +109,7 @@ const InfoImageView = storeObserver<{
               textAlternative: v,
             });
           }}
+          flexGrow={1}
         />
       </RowBox>
     </Row>

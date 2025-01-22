@@ -7,7 +7,9 @@ import { ActivityEditor } from "~/client/activity/ActivityEditor";
 import { Page } from "~/client/components/Page";
 import { storeObserver } from "~/client/utils/storeObserver";
 
-export default storeObserver(function ActivityPage({ activityEditorStore }) {
+const ActivityPage = storeObserver(function ActivityPage({
+  activityEditorStore,
+}) {
   const params = useParams();
   const { activityId } = z.object({ activityId: z.string() }).parse(params);
 
@@ -24,3 +26,8 @@ export default storeObserver(function ActivityPage({ activityEditorStore }) {
     </Page>
   );
 });
+
+// I hate Next.js
+const Wrapped = () => <ActivityPage />;
+
+export default Wrapped;
