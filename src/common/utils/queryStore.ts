@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { identity } from "~/common/utils/types";
 import { loading, type Status, neverLoaded, NeverLoaded } from "./status";
+import { identity } from "./objectUtils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class QueryStore<T extends (...args: any[]) => Promise<any>> {

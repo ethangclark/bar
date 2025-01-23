@@ -32,6 +32,5 @@ export async function incrementUsage(
     .set({
       tokensUsed: sql`${users.tokensUsed} + ${tokensUsed}`,
     })
-    .where(eq(users.id, user.id))
-    .execute();
+    .where(eq(users.id, user.id));
 }

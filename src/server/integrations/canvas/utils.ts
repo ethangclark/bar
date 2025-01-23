@@ -3,6 +3,7 @@ import { z } from "zod";
 import { type Json } from "~/common/utils/types";
 import { db } from "~/server/db";
 import { getCachedAccessToken, updateTokenCache } from "./canvasTokenCache";
+import { assertError } from "~/common/utils/errorUtils";
 
 export async function getCanvasIntegration(canvasIntegrationId: string) {
   const canvasIntegration = await db.query.canvasIntegrations.findFirst({
@@ -116,13 +117,16 @@ export async function makeCanvasRequest<T extends Json>({
     }
   }
 
-  const result = await fetch(url, {
-    method,
-    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
-  });
-
-  const asAnyJson = await result.json();
-  console.log("asAnyJson", JSON.stringify(asAnyJson, null, 2));
-  const asResponseType = responseSchema.parse(asAnyJson);
-  return asResponseType;
+  try {
+    const result = await fetch(url, {
+      method,
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+    });
+    const asAnyJson = await result.json();
+    const asResponseType = responseSchema.parse(asAnyJson);
+    return asResponseType;
+  } catch (e) {
+    assertError(e);
+    throw new Error(`Canvas request failed: ${e.message}`);
+  }
 }

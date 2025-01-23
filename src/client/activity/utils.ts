@@ -1,6 +1,8 @@
 import { generateKeyBetween } from "fractional-indexing";
 import { type ActivityItemWithChildren } from "~/server/db/schema";
 
+const draftUuid = "00000000-0000-0000-0000-000000000000";
+
 export function createDraftActivityItemWithChildren({
   activityId,
   afterOrderFracIdx,
@@ -11,21 +13,20 @@ export function createDraftActivityItemWithChildren({
   itemType: "question" | "text" | "image";
 }): ActivityItemWithChildren {
   const base = {
-    id: Math.random().toString(),
+    id: draftUuid,
     activityId,
     orderFracIdx: generateKeyBetween(afterOrderFracIdx, null),
     questions: [],
     infoTexts: [],
     infoImages: [],
   };
-  const childId = Math.random().toString();
   switch (itemType) {
     case "question": {
       return {
         ...base,
         questions: [
           {
-            id: childId,
+            id: draftUuid,
             activityItemId: base.id,
             content: "",
           },
@@ -37,7 +38,7 @@ export function createDraftActivityItemWithChildren({
         ...base,
         infoTexts: [
           {
-            id: childId,
+            id: draftUuid,
             activityItemId: base.id,
             content: "",
           },
@@ -49,7 +50,7 @@ export function createDraftActivityItemWithChildren({
         ...base,
         infoImages: [
           {
-            id: childId,
+            id: draftUuid,
             activityItemId: base.id,
             url: "",
             textAlternative: "",

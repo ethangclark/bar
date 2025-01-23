@@ -21,3 +21,14 @@ export function filter<T, U extends T>(
   }
   return array.filter((item) => schema.safeParse(item).success) as U[];
 }
+
+export function invoke<T>(fn: () => T): T {
+  return fn();
+}
+
+export function asserted<T>(value: T | null | undefined): T {
+  if (isNullish(value)) {
+    throw new Error("Assertion failed");
+  }
+  return value;
+}

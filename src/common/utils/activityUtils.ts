@@ -1,11 +1,22 @@
 import { observable } from "mobx";
-import { type ActivityItemWithChildren } from "~/server/db/schema";
+import { z } from "zod";
+import {
+  activityItemWithChildrenSchema,
+  type ActivityItemWithChildren,
+} from "~/server/db/schema";
 
 export const createModifiedIdTracker = () => ({
   newItemFakeIds: observable.set<string>(),
   changedItemIds: observable.set<string>(),
   deletedItemIds: observable.set<string>(),
 });
+
+export const modificationOpsSchema = z.object({
+  toCreate: z.array(activityItemWithChildrenSchema),
+  toUpdate: z.array(activityItemWithChildrenSchema),
+  toDelete: z.array(z.string()),
+});
+export type ModificationOps = z.infer<typeof modificationOpsSchema>;
 
 export function getModificationOps(
   {
@@ -14,11 +25,7 @@ export function getModificationOps(
     deletedItemIds,
   }: ReturnType<typeof createModifiedIdTracker>,
   itemDrafts: ActivityItemWithChildren[],
-): {
-  toCreate: ActivityItemWithChildren[];
-  toUpdate: ActivityItemWithChildren[];
-  toDelete: string[];
-} {
+): ModificationOps {
   const toCreate = itemDrafts
     .filter((d) => newItemFakeIds.has(d.id))
     .filter((d) => !deletedItemIds.has(d.id));
@@ -32,4 +39,3 @@ export function getModificationOps(
     .map((d) => d.id);
   return { toCreate, toUpdate, toDelete };
 }
-export type ModificationOps = ReturnType<typeof getModificationOps>;

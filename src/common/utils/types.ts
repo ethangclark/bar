@@ -1,12 +1,5 @@
 import { z } from "zod";
 
-export type Sentence = `${string}.`;
-export function isSentence(value: unknown): value is Sentence {
-  return typeof value === "string" && value.endsWith(".");
-}
-
-export type Question = `${string}?`;
-
 export type MaybePromise<T = void> = T | Promise<T>;
 
 const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
@@ -29,5 +22,3 @@ export const audioDataSchema = z.object({
 });
 // Types for the audio data structure
 export type AudioData = z.infer<typeof audioDataSchema>;
-
-export const identity = <T>(x: T) => x;

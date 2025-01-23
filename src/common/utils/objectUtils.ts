@@ -2,6 +2,14 @@ export function objectEntries<T extends object>(obj: T) {
   return Object.entries(obj) as Array<[keyof T, T[keyof T]]>;
 }
 
+export function objectKeys<T extends object>(obj: T) {
+  return Object.keys(obj) as Array<keyof T>;
+}
+
+export function identity<T>(x: T) {
+  return x;
+}
+
 export function safeGet<T extends Record<string, unknown>>(
   obj: T,
   key: string,

@@ -43,8 +43,10 @@ export class ActivityEditorStore {
       this.modifiedIdTracker,
       this.itemDrafts,
     );
-    console.log({ modificationOps });
-    // TODO: post deltas
+    await trpc.activity.modifyActivity.mutate({
+      activityId: this.savedActivity.id,
+      modificationOps,
+    });
     this.modifiedIdTracker = createModifiedIdTracker();
     this.saving = false;
     await this.loadActivity(this.savedActivity.id);
