@@ -4,6 +4,7 @@ import { type Json } from "~/common/utils/types";
 import { db } from "~/server/db";
 import { getCachedAccessToken, updateTokenCache } from "./canvasTokenCache";
 import { assertError } from "~/common/utils/errorUtils";
+import { enrollmentTypeSchema } from "~/common/schemas/generalLmsSchemas";
 
 export async function getCanvasIntegration(canvasIntegrationId: string) {
   const canvasIntegration = await db.query.canvasIntegrations.findFirst({
@@ -15,13 +16,7 @@ export async function getCanvasIntegration(canvasIntegrationId: string) {
   return canvasIntegration;
 }
 
-export const narrowedCanvasEnrollmentTypeSchema = z.enum([
-  "student",
-  "teacher",
-  "ta",
-  "designer",
-  "observer",
-]);
+export const narrowedCanvasEnrollmentTypeSchema = enrollmentTypeSchema;
 export type NarrowedCanvasEnrollmentType = z.infer<
   typeof narrowedCanvasEnrollmentTypeSchema
 >;

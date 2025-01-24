@@ -4,7 +4,7 @@ import { Centered } from "./Centered";
 
 export const Loading = () => <Spin />;
 
-export const CenteredLoading = () => (
+export const LoadingCentered = () => (
   <Centered>
     <Loading />
   </Centered>
@@ -13,7 +13,7 @@ export const CenteredLoading = () => (
 export function LoadingPage() {
   return (
     <Page>
-      <CenteredLoading />
+      <LoadingCentered />
     </Page>
   );
 }

@@ -4,7 +4,10 @@ import { type ModificationOps } from "~/common/utils/activityUtils";
 import { assertNever } from "~/common/utils/errorUtils";
 import { asserted, invoke, noop } from "~/common/utils/fnUtils";
 import { db } from "~/server/db";
-import { type LmsAssignment } from "~/server/integrations/utils/integrationApi";
+import {
+  type LmsCourse,
+  type LmsAssignment,
+} from "~/server/integrations/utils/integrationApi";
 import { getIntegrationApis } from "~/server/services/integrationService";
 import {
   type Question,
@@ -63,17 +66,19 @@ export async function getActivity({
   // ensure that the activity is associated with an assignment that's visible to the user
   // (hiding unpublished assignments from students)
   const courses = await integrationApi.getCourses({ userId });
+  let course: LmsCourse | null = null;
   let assignment: LmsAssignment | null = null;
-  for (const course of courses) {
-    for (const a of course.assignments) {
+  for (const c of courses) {
+    for (const a of c.assignments) {
       if (a.activity?.id !== activity.id) {
         continue;
       }
       if (
-        course.enrolledAs.includes("teacher") ||
-        course.enrolledAs.includes("ta") ||
-        course.enrolledAs.includes("designer")
+        c.enrolledAs.includes("teacher") ||
+        c.enrolledAs.includes("ta") ||
+        c.enrolledAs.includes("designer")
       ) {
+        course = c;
         assignment = a;
       }
       switch (a.activity.status) {
@@ -86,11 +91,11 @@ export async function getActivity({
       assertNever(a.activity.status);
     }
   }
-  if (!assignment) {
+  if (!course || !assignment) {
     throw new Error("Activity not found");
   }
 
-  return { assignment, ...activity };
+  return { course, assignment, ...activity };
 }
 
 export async function assertActivityAccess({

@@ -1,6 +1,6 @@
 import { Button } from "antd";
 import { Status } from "~/common/utils/status";
-import { CenteredLoading } from "../components/Loading";
+import { LoadingCentered } from "../components/Loading";
 import { storeObserver } from "../utils/storeObserver";
 import { ActivityItem } from "./ActivityItem";
 
@@ -25,7 +25,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
   const { savedActivity, sortedItemDrafts } = activityEditorStore;
 
   if (savedActivity instanceof Status || sortedItemDrafts instanceof Status) {
-    return <CenteredLoading />;
+    return <LoadingCentered />;
   }
 
   return (
