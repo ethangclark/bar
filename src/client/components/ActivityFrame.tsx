@@ -1,42 +1,52 @@
 import { Fragment } from "react";
 
 type AvProps = {
-  privileged: boolean;
-  privilegedHeader: React.ReactNode;
-  baseHeader: React.ReactNode;
+  extended: boolean;
+  extendedHeader: React.ReactNode;
+  header: React.ReactNode;
   rows: Array<{
-    studentView: React.ReactNode;
-    teacherView: React.ReactNode;
+    left?: React.ReactNode;
+    main: React.ReactNode;
+    right?: React.ReactNode;
   }>;
-  baseFooter: React.ReactNode;
-  privilegedFooter: React.ReactNode;
+  footer: React.ReactNode;
+  extendedFooter: React.ReactNode;
 };
 
 const Spacer = () => <div />;
 
 export function ActivityFrame({
-  privileged,
-  privilegedHeader,
-  baseHeader,
+  extended,
+  extendedHeader,
+  header,
   rows,
-  baseFooter,
-  privilegedFooter,
+  footer,
+  extendedFooter,
 }: AvProps) {
   return (
-    <div className="grid grid-cols-2">
-      {privileged ? <div>{privilegedHeader}</div> : <Spacer />}
+    <div className="grid grid-cols-3">
       <Spacer />
-      <div>{baseHeader}</div>
+      {extended ? <div>{extendedHeader}</div> : <Spacer />}
       <Spacer />
-      {rows.map(({ studentView, teacherView }, idx) => (
+
+      <Spacer />
+      <div>{header}</div>
+      <Spacer />
+
+      {rows.map(({ left, main, right }, idx) => (
         <Fragment key={idx}>
-          <div>{studentView}</div>
-          {privileged ? <div>{teacherView}</div> : <Spacer />}
+          {left ? <div>{left}</div> : <Spacer />}
+          <div>{main}</div>
+          {right ? <div>{right}</div> : <Spacer />}
         </Fragment>
       ))}
-      <div>{baseFooter}</div>
+
       <Spacer />
-      {privileged ? <div>{privilegedFooter}</div> : <Spacer />}
+      <div>{footer}</div>
+      <Spacer />
+
+      <Spacer />
+      {extended ? <div>{extendedFooter}</div> : <Spacer />}
       <Spacer />
     </div>
   );

@@ -29,23 +29,23 @@ const ActivityPage = storeObserver(function ActivityPage({
         <LoadingCentered />
       ) : (
         <ActivityFrame
-          privileged={(["teacher", "designer"] as const).some((v) =>
+          extended={(["teacher", "designer"] as const).some((v) =>
             savedActivity.course.enrolledAs.includes(v),
           )}
-          privilegedHeader={<div>This be the teacher header</div>}
-          baseHeader={<div>This be the student header</div>}
+          extendedHeader={<div>This be the teacher header</div>}
+          header={<div>This be the student header</div>}
           rows={[
             {
-              studentView: <div>This be the student view of row 1</div>,
-              teacherView: <div>This be the teacher view of row 1</div>,
+              main: <div>This be the student main of row 1</div>,
+              right: <div>This be the teacher main of row 1</div>,
             },
             {
-              studentView: <div>This be the student view of row 2</div>,
-              teacherView: <div>This be the teacher view of row 2</div>,
+              left: <div>This be the teacher main of row 2</div>,
+              main: <div>This be the student main of row 2</div>,
             },
           ]}
-          baseFooter={<div>This be the student footer</div>}
-          privilegedFooter={<div>This be the teacher footer</div>}
+          footer={<div>This be the student footer</div>}
+          extendedFooter={<div>This be the teacher footer</div>}
         />
       )}
       <ActivityEditor />
