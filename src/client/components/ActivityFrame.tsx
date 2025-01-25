@@ -1,13 +1,10 @@
 import { Switch } from "antd";
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 
 type ActivityFrameProps = {
-  controls:
-    | { enabled: false }
-    | {
-        enabled: true;
-        toggleTitle: string;
-      };
+  teacherModeAvailable: boolean;
+  showControls: boolean;
+  setShowControls: (show: boolean) => void;
   header: React.ReactNode;
   rows: Array<{
     leftControl?: React.ReactNode;
@@ -37,28 +34,30 @@ const ControlsSection = ({
 );
 
 export function ActivityFrame({
-  controls,
+  teacherModeAvailable,
+  showControls: showControlsRaw,
+  setShowControls,
   header,
   rows,
   footer,
   footerControls,
 }: ActivityFrameProps) {
-  const [controlsVisible, setControlsVisible] = useState(false);
+  const showControls = teacherModeAvailable && showControlsRaw;
   const wrapControlCn = (cn: string) =>
-    `${cn} ${controls.enabled ? (controlsVisible ? "" : "invisible") : "hidden"}`;
+    `${cn} ${showControls ? "" : "invisible"}`;
   return (
     <div className="grid grid-cols-[repeat(3,_auto)]">
       <Spacer />
-      {controls.enabled ? (
+      {teacherModeAvailable ? (
         <ControlsSection className="mb-2 flex justify-center">
           <div className="my-[-4px] ml-1 mr-2 flex items-center justify-center">
             <Switch
               className="mr-2"
               size="small"
-              checked={controlsVisible}
-              onChange={(checked) => setControlsVisible(checked)}
+              checked={showControls}
+              onChange={(checked) => setShowControls(checked)}
             />{" "}
-            {controls.toggleTitle}
+            Show teacher controls
           </div>
         </ControlsSection>
       ) : (

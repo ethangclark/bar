@@ -8,7 +8,8 @@ import { ImageUploadLink } from "../components/ImageUploader";
 
 export const ActivityItem = storeObserver<{
   item: ActivityItemWithChildren;
-}>(function ActivityItem({ item, activityEditorStore }) {
+  showControls: boolean;
+}>(function ActivityItem({ item, showControls, activityEditorStore }) {
   return (
     <div className="flex flex-col items-center p-4" style={{ width: 400 }}>
       {item.infoImages.map((infoImage) => (
@@ -31,16 +32,18 @@ export const ActivityItem = storeObserver<{
                 <CircleHelp size={16} />
               </Tooltip>
             </div>
-            <span className="mx-2 text-gray-300">|</span>
-            <ImageUploadLink
-              label="Replace image"
-              onFileSelect={({ imageDataUrl }) => {
-                activityEditorStore.setItemInfoImageDraftUrl({
-                  itemId: item.id,
-                  url: imageDataUrl,
-                });
-              }}
-            />
+            <div className={showControls ? "" : "invisible"}>
+              <span className="mx-2 text-gray-300">|</span>
+              <ImageUploadLink
+                label="Replace image"
+                onFileSelect={({ imageDataUrl }) => {
+                  activityEditorStore.setItemInfoImageDraftUrl({
+                    itemId: item.id,
+                    url: imageDataUrl,
+                  });
+                }}
+              />
+            </div>
           </div>
           <Editor
             value={infoImage.textAlternative}

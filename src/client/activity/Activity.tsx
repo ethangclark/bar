@@ -8,32 +8,38 @@ import { storeObserver } from "~/client/utils/storeObserver";
 import { Status } from "~/common/utils/status";
 import { FooterControls } from "./FooterControls";
 import { ActivityItem } from "./ActivityItem";
+import { useState } from "react";
 
 export const Activity = storeObserver(function Activity({
   activityEditorStore,
 }) {
   const { savedActivity, itemDrafts } = activityEditorStore;
 
+  const [showControlsRaw, setShowControls] = useState(true);
+
   if (savedActivity instanceof Status || itemDrafts instanceof Status) {
     return <LoadingCentered />;
   }
 
-  const controls = (["teacher", "designer"] as const).some((v) =>
+  const teacherModeAvailable = (["teacher", "designer"] as const).some((v) =>
     savedActivity.course.enrolledAs.includes(v),
-  )
-    ? ({ enabled: true, toggleTitle: "Edit manually" } as const)
-    : ({ enabled: false } as const);
+  );
+
+  const showControls = teacherModeAvailable && showControlsRaw;
 
   return (
     <ActivityFrame
-      controls={controls}
+      teacherModeAvailable={teacherModeAvailable}
+      showControls={showControlsRaw}
+      setShowControls={setShowControls}
       header={
         <div className="mb-4 text-4xl">{savedActivity.assignment.title}</div>
       }
-      rows={itemDrafts.map((item) => ({
-        main: <ActivityItem item={item} />,
+      rows={itemDrafts.map((item, idx) => ({
+        main: <ActivityItem item={item} showControls={showControls} />,
         leftControl: (
           <div className={`flex flex-col items-center text-gray-500`}>
+            <span>Item {idx + 1}</span>
             <ArrowUp size={20} />
             {/* <GripVertical className="my-1" /> */
             /* this would be wacky with our flex-grid -- need to be thoughtful if we implement non-incremental reordering */}
