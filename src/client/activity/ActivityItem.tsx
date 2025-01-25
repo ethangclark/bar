@@ -15,7 +15,11 @@ export const ActivityItem = storeObserver<{
       {item.infoImages.map((infoImage) => (
         <div key={infoImage.id} className="w-full">
           <ImageFromDataUrl
-            alt={"Upload an image to include in activity"}
+            alt={
+              infoImage.url
+                ? infoImage.textAlternative
+                : "Upload an image to include in activity"
+            }
             src={infoImage.url}
             style={{
               maxWidth: "100%",
