@@ -36,7 +36,13 @@ export const Activity = storeObserver(function Activity({
         <div className="mb-4 text-4xl">{savedActivity.assignment.title}</div>
       }
       rows={itemDrafts.map((item, idx) => ({
-        main: <ActivityItem item={item} showControls={showControls} />,
+        main: (
+          <ActivityItem
+            item={item}
+            teacherModeAvailable={teacherModeAvailable}
+            showControls={showControls}
+          />
+        ),
         leftControl: (
           <div className={`flex flex-col items-center`}>
             <span>Item {idx + 1}</span>

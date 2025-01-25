@@ -60,7 +60,7 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
                 checked={!showControls}
                 onChange={(checked) => setShowControls(!checked)}
               />{" "}
-              Hide teacher controls
+              Show student content only
             </div>
             <span className="mx-3 mt-[-3px] text-2xl text-gray-200">|</span>
             <Button

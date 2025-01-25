@@ -8,18 +8,20 @@ import { ImageUploadLink } from "../components/ImageUploader";
 
 export const ActivityItem = storeObserver<{
   item: ActivityItemWithChildren;
+  teacherModeAvailable: boolean;
   showControls: boolean;
-}>(function ActivityItem({ item, showControls, activityEditorStore }) {
+}>(function ActivityItem({
+  item,
+  teacherModeAvailable,
+  showControls,
+  activityEditorStore,
+}) {
   return (
     <div className="flex flex-col items-center p-4" style={{ width: 500 }}>
       {item.infoImages.map((infoImage) => (
         <div key={infoImage.id} className="w-full">
           <ImageFromDataUrl
-            alt={
-              infoImage.url
-                ? infoImage.textAlternative
-                : "Upload an image to include in activity"
-            }
+            alt={infoImage.url ? infoImage.textAlternative : "Missing image"}
             src={infoImage.url}
             style={{
               maxWidth: "100%",
@@ -51,13 +53,13 @@ export const ActivityItem = storeObserver<{
           </div>
           <WysiwygEditor
             value={infoImage.textAlternative}
+            disabled={!teacherModeAvailable}
             setValue={(v) => {
               activityEditorStore.setItemInfoImageDraftTextAlternative({
                 itemId: item.id,
                 textAlternative: v,
               });
             }}
-            disabled={!showControls}
           />
         </div>
       ))}
@@ -65,6 +67,7 @@ export const ActivityItem = storeObserver<{
         <div key={infoText.id} className="w-full">
           <WysiwygEditor
             value={infoText.content}
+            disabled={!teacherModeAvailable}
             setValue={(v) => {
               activityEditorStore.setItemInfoTextDraftContent({
                 itemId: item.id,
@@ -78,6 +81,7 @@ export const ActivityItem = storeObserver<{
         <div key={question.id} className="w-full">
           <WysiwygEditor
             value={question.content}
+            disabled={!teacherModeAvailable}
             setValue={(v) => {
               activityEditorStore.setItemQuestionDraftContent({
                 itemId: item.id,
