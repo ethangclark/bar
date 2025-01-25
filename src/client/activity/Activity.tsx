@@ -38,12 +38,8 @@ export const Activity = storeObserver(function Activity({
       rows={itemDrafts.map((item, idx) => ({
         main: <ActivityItem item={item} showControls={showControls} />,
         leftControl: (
-          <div className={`flex flex-col items-center text-gray-500`}>
+          <div className={`flex flex-col items-center`}>
             <span>Item {idx + 1}</span>
-            <ArrowUp size={20} />
-            {/* <GripVertical className="my-1" /> */
-            /* this would be wacky with our flex-grid -- need to be thoughtful if we implement non-incremental reordering */}
-            <ArrowDown size={20} />
           </div>
         ),
       }))}
