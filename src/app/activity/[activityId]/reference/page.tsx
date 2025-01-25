@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { z } from "zod";
-import { Activity } from "~/client/activity/Activity";
+import { ActivityEditor } from "~/client/activity/ActivityEditor";
 import { Page } from "~/client/components/Page";
 import { storeObserver } from "~/client/utils/storeObserver";
 
@@ -20,7 +20,7 @@ const ActivityPage = storeObserver(function ActivityPage({
 
   return (
     <Page>
-      <Activity />
+      <ActivityEditor />
     </Page>
   );
 });

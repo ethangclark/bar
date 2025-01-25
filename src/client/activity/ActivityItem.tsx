@@ -1,20 +1,14 @@
+import { Tooltip } from "antd";
+import { CircleHelp } from "lucide-react";
 import {
-  type InfoImage,
   type ActivityItemWithChildren,
+  type InfoImage,
 } from "~/server/db/schema";
-import { storeObserver } from "../utils/storeObserver";
+import { Centered } from "../components/Centered";
 import { Editor } from "../components/Editor";
 import { ImageFromDataUrl } from "../components/ImageFromDataUrl";
 import { ImageUploader } from "../components/ImageUploader";
-import {
-  ArrowDown,
-  ArrowUp,
-  CircleHelp,
-  GripVertical,
-  Trash2,
-} from "lucide-react";
-import { Tooltip } from "antd";
-import { Centered } from "../components/Centered";
+import { storeObserver } from "../utils/storeObserver";
 
 const boxWidth = 400;
 
@@ -51,15 +45,7 @@ function RowBox({
 function Row({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center space-x-2">
-      <div className="flex flex-col items-center text-gray-500">
-        <ArrowUp size={20} />
-        <GripVertical className="my-1" />
-        <ArrowDown size={20} />
-      </div>
       <div className="flex space-x-4">{children}</div>
-      <div className="text-gray-400">
-        <Trash2 size={20} />
-      </div>
     </div>
   );
 }
