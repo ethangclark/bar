@@ -19,15 +19,15 @@ export const Activity = storeObserver(function Activity({
     return <LoadingCentered />;
   }
 
+  const controls = (["teacher", "designer"] as const).some((v) =>
+    savedActivity.course.enrolledAs.includes(v),
+  )
+    ? ({ enabled: true, toggleTitle: "Edit manually" } as const)
+    : ({ enabled: false } as const);
+
   return (
     <ActivityFrame
-      controls={
-        (["teacher", "designer"] as const).some((v) =>
-          savedActivity.course.enrolledAs.includes(v),
-        )
-          ? { enabled: true, toggleTitle: "Edit manually" }
-          : { enabled: false }
-      }
+      controls={controls}
       header={
         <div className="mb-4 text-4xl">{savedActivity.assignment.title}</div>
       }

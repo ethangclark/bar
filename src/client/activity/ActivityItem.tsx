@@ -1,54 +1,23 @@
-import {
-  type ActivityItemWithChildren,
-  type InfoImage,
-} from "~/server/db/schema";
-import { Centered } from "../components/Centered";
+import { type ActivityItemWithChildren } from "~/server/db/schema";
 import { Editor } from "../components/Editor";
 import { ImageFromDataUrl } from "../components/ImageFromDataUrl";
-import { ImageUploader } from "../components/ImageUploader";
 import { storeObserver } from "../utils/storeObserver";
-import { RowBox } from "./RowBox";
-
-const InfoImageView = storeObserver<{
-  item: ActivityItemWithChildren;
-  infoImage: InfoImage;
-}>(function InfoImageView({ activityEditorStore, item, infoImage }) {
-  return (
-    <RowBox>
-      <Centered>
-        <div className="flex flex-col items-center">
-          {infoImage.url && (
-            <ImageFromDataUrl
-              alt={infoImage.textAlternative}
-              src={infoImage.url}
-              style={{
-                maxWidth: "100%",
-                marginBottom: 16,
-              }}
-            />
-          )}
-          <ImageUploader
-            onFileSelect={({ imageDataUrl }) => {
-              console.log({ imageDataUrl });
-              activityEditorStore.setItemInfoImageDraftUrl({
-                itemId: item.id,
-                url: imageDataUrl,
-              });
-            }}
-          />
-        </div>
-      </Centered>
-    </RowBox>
-  );
-});
 
 export const ActivityItem = storeObserver<{
   item: ActivityItemWithChildren;
 }>(function ActivityItem({ item, activityEditorStore }) {
   return (
-    <div>
+    <div className="flex flex-col items-center p-4" style={{ width: 400 }}>
       {item.infoImages.map((infoImage) => (
-        <InfoImageView key={infoImage.id} item={item} infoImage={infoImage} />
+        <ImageFromDataUrl
+          key={infoImage.id}
+          alt={"Upload an image to include in activity"}
+          src={infoImage.url}
+          style={{
+            maxWidth: "100%",
+            marginBottom: 16,
+          }}
+        />
       ))}
       {item.infoTexts.map((infoText) => (
         <div key={infoText.id}>

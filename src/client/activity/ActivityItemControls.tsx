@@ -4,14 +4,25 @@ import {
 } from "~/server/db/schema";
 import { Editor } from "../components/Editor";
 import { storeObserver } from "../utils/storeObserver";
-import { RowBox } from "./RowBox";
+import { ImageUploader } from "../components/ImageUploader";
+import { Tooltip } from "antd";
+import { CircleHelp } from "lucide-react";
 
 const InfoImageControls = storeObserver<{
   item: ActivityItemWithChildren;
   infoImage: InfoImage;
 }>(function InfoImageControls({ activityEditorStore, item, infoImage }) {
   return (
-    <RowBox>
+    <div className="p-1">
+      <div className="mb-1 flex items-center text-sm text-gray-700">
+        <div className="mr-1">Image description</div>
+        <Tooltip
+          title="Summit can't understand images yet. This text describes the image to Summit so it knows what's being seen."
+          className="text-gray-500"
+        >
+          <CircleHelp size={16} />
+        </Tooltip>
+      </div>
       <Editor
         value={infoImage.textAlternative}
         setValue={(v) => {
@@ -21,8 +32,19 @@ const InfoImageControls = storeObserver<{
           });
         }}
         flexGrow={1}
+        className="mb-4"
       />
-    </RowBox>
+      <ImageUploader
+        label="Replace image"
+        onFileSelect={({ imageDataUrl }) => {
+          console.log({ imageDataUrl });
+          activityEditorStore.setItemInfoImageDraftUrl({
+            itemId: item.id,
+            url: imageDataUrl,
+          });
+        }}
+      />
+    </div>
   );
 });
 

@@ -1,15 +1,17 @@
 import { FileImageOutlined } from "@ant-design/icons";
 import { identity } from "@trpc/server/unstable-core-do-not-import";
 import type { UploadProps } from "antd";
-import { Upload } from "antd";
+import { Button, Upload } from "antd";
 import { useMemo } from "react";
 import { useNotify } from "../hooks/useNotify";
 import { isImageDataUrl } from "~/common/utils/pngUtils";
 
 export function ImageUploader({
   onFileSelect,
+  label = <p className="text-sm">Click or drag image files to upload</p>,
 }: {
   onFileSelect: (params: { imageDataUrl: string }) => void;
+  label?: React.ReactNode;
 }) {
   const [notify, contextHolder] = useNotify();
   const props = useMemo(
@@ -42,14 +44,12 @@ export function ImageUploader({
     [notify, onFileSelect],
   );
   return (
-    <div>
-      <Upload.Dragger {...props}>
-        {contextHolder}
-        <div className="flex w-full items-center">
-          <FileImageOutlined className="mr-2" />
-          <p className="text-sm">Click or drag image files to upload</p>
-        </div>
-      </Upload.Dragger>
-    </div>
+    <Upload.Dragger {...props}>
+      {contextHolder}
+      <div className="flex w-full items-center">
+        <FileImageOutlined className="mr-2" />
+        {label}
+      </div>
+    </Upload.Dragger>
   );
 }
