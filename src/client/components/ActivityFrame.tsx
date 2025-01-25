@@ -54,10 +54,10 @@ export function ActivityFrame({
             <Switch
               className="mr-2"
               size="small"
-              checked={showControls}
-              onChange={(checked) => setShowControls(checked)}
+              checked={!showControls}
+              onChange={(checked) => setShowControls(!checked)}
             />{" "}
-            Show teacher controls
+            Hide teacher controls
           </div>
         </ControlsSection>
       ) : (

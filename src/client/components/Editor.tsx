@@ -22,7 +22,6 @@ type EditorProps = {
   disabled?: boolean;
   className?: string;
   height?: number;
-  flexGrow?: number;
   paddingCn?: string;
   roundingCn?: string;
   outlineCn?: string;
@@ -35,12 +34,11 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
       setValue,
       width = "100%", // 516,
       placeholder = "Type here...",
-      minHeight = 64 /* smaller than this causes a bounce on load */,
+      minHeight = 32 /* smaller than this causes a bounce on load */,
       onKeyDown,
       disabled,
       className,
       height,
-      flexGrow,
       paddingCn = "p-2",
       roundingCn = "rounded-md",
       outlineCn = "outline outline-1 outline-gray-200 focus:outline focus:outline-gray-200",
@@ -58,7 +56,6 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
           resize: "none",
           minHeight,
           height,
-          flexGrow,
         }}
         onKeyDown={onKeyDown}
         disabled={disabled}
@@ -68,3 +65,24 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
     );
   },
 );
+
+export function WysiwygEditor({
+  value,
+  setValue,
+  disabled = false,
+}: {
+  value: string;
+  setValue: (value: string) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <Editor
+      value={value}
+      setValue={setValue}
+      paddingCn="p-1"
+      className="mx-[-4px] grow disabled:cursor-auto disabled:bg-white"
+      outlineCn="focus:outline focus:outline-gray-200 rounded-none"
+      disabled={disabled}
+    />
+  );
+}

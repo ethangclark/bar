@@ -1,5 +1,5 @@
 import { type ActivityItemWithChildren } from "~/server/db/schema";
-import { Editor } from "../components/Editor";
+import { Editor, WysiwygEditor } from "../components/Editor";
 import { ImageFromDataUrl } from "../components/ImageFromDataUrl";
 import { storeObserver } from "../utils/storeObserver";
 import { Tooltip } from "antd";
@@ -45,7 +45,7 @@ export const ActivityItem = storeObserver<{
               />
             </div>
           </div>
-          <Editor
+          <WysiwygEditor
             value={infoImage.textAlternative}
             setValue={(v) => {
               activityEditorStore.setItemInfoImageDraftTextAlternative({
@@ -53,10 +53,7 @@ export const ActivityItem = storeObserver<{
                 textAlternative: v,
               });
             }}
-            flexGrow={1}
-            paddingCn="p-1"
-            className="mx-[-4px] mb-4"
-            outlineCn="focus:outline focus:outline-gray-200 rounded-none"
+            disabled={!showControls}
           />
         </div>
       ))}
