@@ -1,5 +1,5 @@
 import { type ActivityItemWithChildren } from "~/server/db/schema";
-import { Editor, WysiwygEditor } from "../components/Editor";
+import { WysiwygEditor } from "../components/Editor";
 import { ImageFromDataUrl } from "../components/ImageFromDataUrl";
 import { storeObserver } from "../utils/storeObserver";
 import { Tooltip } from "antd";
@@ -13,7 +13,7 @@ export const ActivityItem = storeObserver<{
   return (
     <div className="flex flex-col items-center p-4" style={{ width: 500 }}>
       {item.infoImages.map((infoImage) => (
-        <div key={infoImage.id}>
+        <div key={infoImage.id} className="w-full">
           <ImageFromDataUrl
             alt={"Upload an image to include in activity"}
             src={infoImage.url}
@@ -58,8 +58,8 @@ export const ActivityItem = storeObserver<{
         </div>
       ))}
       {item.infoTexts.map((infoText) => (
-        <div key={infoText.id}>
-          <Editor
+        <div key={infoText.id} className="w-full">
+          <WysiwygEditor
             value={infoText.content}
             setValue={(v) => {
               activityEditorStore.setItemInfoTextDraftContent({
@@ -71,8 +71,8 @@ export const ActivityItem = storeObserver<{
         </div>
       ))}
       {item.questions.map((question) => (
-        <div key={question.id}>
-          <Editor
+        <div key={question.id} className="w-full">
+          <WysiwygEditor
             value={question.content}
             setValue={(v) => {
               activityEditorStore.setItemQuestionDraftContent({

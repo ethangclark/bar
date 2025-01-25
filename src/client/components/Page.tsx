@@ -13,7 +13,7 @@ export function Page({
   const isClientSide = useIsClientSide();
   return (
     <div
-      className={`flex flex-grow flex-col items-center px-2 py-5 sm:px-6 sm:py-10 md:px-8 md:py-12 ${className}`}
+      className={`flex flex-grow flex-col items-center px-2 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8 ${className}`}
       style={{
         minWidth: `calc(100vw - ${isClientSide ? scrollbarWidth : 0}px)`,
       }}
