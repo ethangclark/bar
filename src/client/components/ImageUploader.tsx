@@ -1,20 +1,21 @@
 import { FileImageOutlined } from "@ant-design/icons";
 import { identity } from "@trpc/server/unstable-core-do-not-import";
 import type { UploadProps } from "antd";
-import { Upload } from "antd";
+import { Button, Typography, Upload } from "antd";
 import { useMemo } from "react";
-import { useNotify } from "../hooks/useNotify";
+import { type Notify, useNotify } from "../hooks/useNotify";
 import { isImageDataUrl } from "~/common/utils/pngUtils";
 
-export function ImageUploader({
+type OnFileSelect = (params: { imageDataUrl: string }) => void;
+
+function useProps({
+  notify,
   onFileSelect,
-  label = <p className="text-sm">Click or drag image files to upload</p>,
 }: {
-  onFileSelect: (params: { imageDataUrl: string }) => void;
-  label?: React.ReactNode;
+  notify: Notify;
+  onFileSelect: OnFileSelect;
 }) {
-  const [notify, contextHolder] = useNotify();
-  const props = useMemo(
+  return useMemo(
     () =>
       identity<UploadProps>({
         name: "file",
@@ -43,6 +44,17 @@ export function ImageUploader({
       }),
     [notify, onFileSelect],
   );
+}
+
+export function ImageUploader({
+  onFileSelect,
+  label = <p className="text-sm">Click or drag image files to upload</p>,
+}: {
+  onFileSelect: OnFileSelect;
+  label?: React.ReactNode;
+}) {
+  const [notify, contextHolder] = useNotify();
+  const props = useProps({ notify, onFileSelect });
   return (
     <Upload.Dragger {...props}>
       {contextHolder}
@@ -51,5 +63,25 @@ export function ImageUploader({
         {label}
       </div>
     </Upload.Dragger>
+  );
+}
+
+export function ImageUploadLink({
+  onFileSelect,
+  label = <span className="text-sm">Upload image</span>,
+}: {
+  onFileSelect: OnFileSelect;
+  label?: React.ReactNode;
+}) {
+  const [notify, contextHolder] = useNotify();
+  const props = useProps({ notify, onFileSelect });
+  return (
+    <Upload {...props}>
+      {contextHolder}
+      <Typography.Link>
+        <FileImageOutlined className="mr-1" />
+        {label}
+      </Typography.Link>
+    </Upload>
   );
 }

@@ -4,6 +4,7 @@ import { ImageFromDataUrl } from "../components/ImageFromDataUrl";
 import { storeObserver } from "../utils/storeObserver";
 import { Tooltip } from "antd";
 import { CircleHelp } from "lucide-react";
+import { ImageUploadLink } from "../components/ImageUploader";
 
 export const ActivityItem = storeObserver<{
   item: ActivityItemWithChildren;
@@ -20,14 +21,26 @@ export const ActivityItem = storeObserver<{
               marginBottom: 4,
             }}
           />
-          <div className="flex items-center text-sm text-gray-700">
-            <div className="mr-1">Description</div>
-            <Tooltip
-              title="Summit can't understand images yet. This text describes the image to Summit so it knows what's being seen."
-              className="text-gray-500"
-            >
-              <CircleHelp size={16} />
-            </Tooltip>
+          <div className="flex items-center">
+            <div className="flex items-center text-sm text-gray-700">
+              <div className="mr-1">Description</div>
+              <Tooltip
+                title="Summit can't understand images yet. This text describes the image to Summit so it knows what's being seen."
+                className="text-gray-500"
+              >
+                <CircleHelp size={16} />
+              </Tooltip>
+            </div>
+            <span className="mx-2 text-gray-300">|</span>
+            <ImageUploadLink
+              label="Replace image"
+              onFileSelect={({ imageDataUrl }) => {
+                activityEditorStore.setItemInfoImageDraftUrl({
+                  itemId: item.id,
+                  url: imageDataUrl,
+                });
+              }}
+            />
           </div>
           <Editor
             value={infoImage.textAlternative}

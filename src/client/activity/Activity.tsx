@@ -8,7 +8,6 @@ import { storeObserver } from "~/client/utils/storeObserver";
 import { Status } from "~/common/utils/status";
 import { FooterControls } from "./FooterControls";
 import { ActivityItem } from "./ActivityItem";
-import { ActivityItemControls } from "./ActivityItemControls";
 
 export const Activity = storeObserver(function Activity({
   activityEditorStore,
@@ -41,7 +40,6 @@ export const Activity = storeObserver(function Activity({
             <ArrowDown size={20} />
           </div>
         ),
-        rightControl: <ActivityItemControls item={item} />,
       }))}
       footer={
         <div className="my-4">

@@ -1,7 +1,7 @@
 import { notification } from "antd";
 import { useCallback } from "react";
 
-type Notify = (params: { title: string; description: string }) => void;
+export type Notify = (params: { title: string; description: string }) => void;
 
 export function useNotify(): [Notify, React.ReactNode] {
   const [api, contextHolder] = notification.useNotification();
