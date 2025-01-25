@@ -1,33 +1,66 @@
-import { Fragment } from "react";
+import { Switch } from "antd";
+import { Fragment, useState } from "react";
 
-type AvProps = {
-  extended: boolean;
-  extendedHeader?: React.ReactNode;
+type ActivityFrameProps = {
+  controls:
+    | { enabled: false }
+    | {
+        enabled: true;
+        toggleTitle: string;
+      };
   header: React.ReactNode;
   rows: Array<{
-    left?: React.ReactNode;
+    leftControl?: React.ReactNode;
     main: React.ReactNode;
-    right?: React.ReactNode;
+    rightControl?: React.ReactNode;
   }>;
   footer: React.ReactNode;
-  extendedFooter?: React.ReactNode;
+  footerControls?: React.ReactNode;
 };
 
 const Spacer = () => <div />;
 
+const ControlsSection = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <div className={`h-full w-full ${className ?? ""}`}>
+    <div
+      className={`rounded-lg border-2 border-dotted border-blue-500 p-1 ${className ?? ""}`}
+    >
+      {children}
+    </div>
+  </div>
+);
+
 export function ActivityFrame({
-  extended,
-  extendedHeader,
+  controls,
   header,
   rows,
   footer,
-  extendedFooter,
-}: AvProps) {
+  footerControls,
+}: ActivityFrameProps) {
+  const [controlsVisible, setControlsVisible] = useState(false);
+  const wrapControlCn = (cn: string) =>
+    `${cn} ${controls.enabled ? (controlsVisible ? "" : "invisible") : "hidden"}`;
   return (
     <div className="grid grid-cols-[repeat(3,_auto)]">
       <Spacer />
-      {extended ? (
-        <div className="flex flex-col items-center">{extendedHeader}</div>
+      {controls.enabled ? (
+        <ControlsSection className="mb-2 flex justify-center">
+          <div className="my-[-4px] ml-1 mr-2 flex items-center justify-center">
+            <Switch
+              className="mr-2"
+              size="small"
+              checked={controlsVisible}
+              onChange={(checked) => setControlsVisible(checked)}
+            />{" "}
+            {controls.toggleTitle}
+          </div>
+        </ControlsSection>
       ) : (
         <Spacer />
       )}
@@ -37,16 +70,28 @@ export function ActivityFrame({
       <div className="flex flex-col items-center">{header}</div>
       <Spacer />
 
-      {rows.map(({ left, main, right }, idx) => (
+      {rows.map(({ leftControl: left, main, rightControl: right }, idx) => (
         <Fragment key={idx}>
           {left ? (
-            <div className="flex flex-col items-end">{left}</div>
+            <ControlsSection
+              className={wrapControlCn(
+                "mr-4 flex flex-col items-end justify-center",
+              )}
+            >
+              {left}
+            </ControlsSection>
           ) : (
             <Spacer />
           )}
           <div>{main}</div>
           {right ? (
-            <div className="flex flex-col items-start">{right}</div>
+            <ControlsSection
+              className={wrapControlCn(
+                "ml-4 flex flex-col items-start justify-center",
+              )}
+            >
+              {right}
+            </ControlsSection>
           ) : (
             <Spacer />
           )}
@@ -58,8 +103,12 @@ export function ActivityFrame({
       <Spacer />
 
       <Spacer />
-      {extended ? (
-        <div className="flex flex-col items-center">{extendedFooter}</div>
+      {footerControls ? (
+        <ControlsSection
+          className={wrapControlCn("mt-2 flex flex-col items-center")}
+        >
+          {footerControls}
+        </ControlsSection>
       ) : (
         <Spacer />
       )}

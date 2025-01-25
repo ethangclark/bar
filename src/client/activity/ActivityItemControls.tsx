@@ -2,53 +2,41 @@ import {
   type ActivityItemWithChildren,
   type InfoImage,
 } from "~/server/db/schema";
-import { Centered } from "../components/Centered";
 import { Editor } from "../components/Editor";
-import { ImageFromDataUrl } from "../components/ImageFromDataUrl";
-import { ImageUploader } from "../components/ImageUploader";
 import { storeObserver } from "../utils/storeObserver";
 import { RowBox } from "./RowBox";
 
-const InfoImageView = storeObserver<{
+const InfoImageControls = storeObserver<{
   item: ActivityItemWithChildren;
   infoImage: InfoImage;
-}>(function InfoImageView({ activityEditorStore, item, infoImage }) {
+}>(function InfoImageControls({ activityEditorStore, item, infoImage }) {
   return (
     <RowBox>
-      <Centered>
-        <div className="flex flex-col items-center">
-          {infoImage.url && (
-            <ImageFromDataUrl
-              alt={infoImage.textAlternative}
-              src={infoImage.url}
-              style={{
-                maxWidth: "100%",
-                marginBottom: 16,
-              }}
-            />
-          )}
-          <ImageUploader
-            onFileSelect={({ imageDataUrl }) => {
-              console.log({ imageDataUrl });
-              activityEditorStore.setItemInfoImageDraftUrl({
-                itemId: item.id,
-                url: imageDataUrl,
-              });
-            }}
-          />
-        </div>
-      </Centered>
+      <Editor
+        value={infoImage.textAlternative}
+        setValue={(v) => {
+          activityEditorStore.setItemInfoImageDraftTextAlternative({
+            itemId: item.id,
+            textAlternative: v,
+          });
+        }}
+        flexGrow={1}
+      />
     </RowBox>
   );
 });
 
-export const ActivityItem = storeObserver<{
+export const ActivityItemControls = storeObserver<{
   item: ActivityItemWithChildren;
-}>(function ActivityItem({ item, activityEditorStore }) {
+}>(function ActivityItemControls({ item, activityEditorStore }) {
   return (
     <div>
       {item.infoImages.map((infoImage) => (
-        <InfoImageView key={infoImage.id} item={item} infoImage={infoImage} />
+        <InfoImageControls
+          key={infoImage.id}
+          item={item}
+          infoImage={infoImage}
+        />
       ))}
       {item.infoTexts.map((infoText) => (
         <div key={infoText.id}>
