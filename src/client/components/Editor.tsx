@@ -23,6 +23,7 @@ type EditorProps = {
   className?: string;
   height?: number;
   flexGrow?: number;
+  paddingCn?: string;
   roundingCn?: string;
   outlineCn?: string;
 };
@@ -40,6 +41,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
       className,
       height,
       flexGrow,
+      paddingCn = "p-2",
       roundingCn = "rounded-md",
       outlineCn = "outline outline-1 outline-gray-200 focus:outline focus:outline-gray-200",
     },
@@ -60,7 +62,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
         }}
         onKeyDown={onKeyDown}
         disabled={disabled}
-        className={`p-2 ${roundingCn} ${outlineCn} ${className ?? ""}`}
+        className={`${paddingCn} ${roundingCn} ${outlineCn} ${className ?? ""}`}
         placeholder={placeholder}
       />
     );

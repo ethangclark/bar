@@ -38,7 +38,8 @@ export const ActivityItem = storeObserver<{
               });
             }}
             flexGrow={1}
-            className="mx-[-6px] mb-4"
+            paddingCn="p-1"
+            className="mx-[-4px] mb-4"
             outlineCn="focus:outline focus:outline-gray-200 rounded-none"
           />
         </div>
