@@ -13,9 +13,9 @@ import { ActivityItemControls } from "./ActivityItemControls";
 export const Activity = storeObserver(function Activity({
   activityEditorStore,
 }) {
-  const { savedActivity } = activityEditorStore;
+  const { savedActivity, itemDrafts } = activityEditorStore;
 
-  if (savedActivity instanceof Status) {
+  if (savedActivity instanceof Status || itemDrafts instanceof Status) {
     return <LoadingCentered />;
   }
 
@@ -31,8 +31,8 @@ export const Activity = storeObserver(function Activity({
       header={
         <div className="mb-4 text-4xl">{savedActivity.assignment.title}</div>
       }
-      rows={savedActivity.activityItems.map((ai) => ({
-        main: <ActivityItem item={ai} />,
+      rows={itemDrafts.map((item) => ({
+        main: <ActivityItem item={item} />,
         leftControl: (
           <div className={`flex flex-col items-center text-gray-500`}>
             <ArrowUp size={20} />
@@ -41,7 +41,7 @@ export const Activity = storeObserver(function Activity({
             <ArrowDown size={20} />
           </div>
         ),
-        rightControl: <ActivityItemControls item={ai} />,
+        rightControl: <ActivityItemControls item={item} />,
       }))}
       footer={
         <div className="my-4">

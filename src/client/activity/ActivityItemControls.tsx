@@ -14,26 +14,6 @@ const InfoImageControls = storeObserver<{
 }>(function InfoImageControls({ activityEditorStore, item, infoImage }) {
   return (
     <div className="p-1">
-      <div className="mb-1 flex items-center text-sm text-gray-700">
-        <div className="mr-1">Image description</div>
-        <Tooltip
-          title="Summit can't understand images yet. This text describes the image to Summit so it knows what's being seen."
-          className="text-gray-500"
-        >
-          <CircleHelp size={16} />
-        </Tooltip>
-      </div>
-      <Editor
-        value={infoImage.textAlternative}
-        setValue={(v) => {
-          activityEditorStore.setItemInfoImageDraftTextAlternative({
-            itemId: item.id,
-            textAlternative: v,
-          });
-        }}
-        flexGrow={1}
-        className="mb-4"
-      />
       <ImageUploader
         label="Replace image"
         onFileSelect={({ imageDataUrl }) => {

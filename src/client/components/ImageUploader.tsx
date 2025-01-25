@@ -1,7 +1,7 @@
 import { FileImageOutlined } from "@ant-design/icons";
 import { identity } from "@trpc/server/unstable-core-do-not-import";
 import type { UploadProps } from "antd";
-import { Button, Upload } from "antd";
+import { Upload } from "antd";
 import { useMemo } from "react";
 import { useNotify } from "../hooks/useNotify";
 import { isImageDataUrl } from "~/common/utils/pngUtils";
