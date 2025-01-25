@@ -17,6 +17,7 @@ import {
 } from "../db/schema";
 import { objectKeys } from "~/common/utils/objectUtils";
 
+// does not check that user has access to the activity
 export async function getActivity_UNSAFE(activityId: string) {
   const activity = await db.query.activities.findFirst({
     where: eq(db.x.activities.id, activityId),
