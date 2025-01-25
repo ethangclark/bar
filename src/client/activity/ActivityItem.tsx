@@ -8,16 +8,21 @@ import { ImageUploadLink } from "../components/ImageUploader";
 
 export const ActivityItem = storeObserver<{
   item: ActivityItemWithChildren;
+  deleted: boolean;
   teacherModeAvailable: boolean;
   showControls: boolean;
 }>(function ActivityItem({
   item,
+  deleted,
   teacherModeAvailable,
   showControls,
   activityEditorStore,
 }) {
   return (
-    <div className="flex flex-col items-center p-4" style={{ width: 500 }}>
+    <div
+      className={`flex flex-col items-center px-4 pb-8 ${deleted ? "opacity-30" : ""}`}
+      style={{ width: 500 }}
+    >
       {item.infoImages.map((infoImage) => (
         <div key={infoImage.id} className="w-full">
           <ImageFromDataUrl

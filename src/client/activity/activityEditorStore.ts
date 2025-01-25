@@ -14,7 +14,7 @@ export class ActivityEditorStore {
   public savedActivity: RichActivity | Status = neverLoaded;
 
   // not sorted
-  private itemDraftsUnsorted: ActivityItemWithChildren[] | Status = neverLoaded;
+  private allItemDrafts: ActivityItemWithChildren[] | Status = neverLoaded;
 
   // store info about the deltas we need to apply to the saved items
   private modifiedIdTracker = createModifiedIdTracker();
@@ -37,13 +37,13 @@ export class ActivityEditorStore {
     if (
       !this.canSave ||
       this.savedActivity instanceof Status ||
-      this.itemDraftsUnsorted instanceof Status
+      this.allItemDrafts instanceof Status
     )
       return;
     this.saving = true;
     const modificationOps = getModificationOps(
       this.modifiedIdTracker,
-      this.itemDraftsUnsorted,
+      this.allItemDrafts,
     );
     await trpc.activity.modifyActivity.mutate({
       activityId: this.savedActivity.id,
@@ -56,31 +56,37 @@ export class ActivityEditorStore {
 
   async loadActivity(activityId: string) {
     this.savedActivity = loading;
-    this.itemDraftsUnsorted = loading;
+    this.allItemDrafts = loading;
     const activity = await trpc.activity.details.query({ activityId });
     runInAction(() => {
       this.savedActivity = activity;
-      this.itemDraftsUnsorted = clone(activity.activityItems);
+      this.allItemDrafts = clone(activity.activityItems);
     });
   }
   clearActivity() {
     this.savedActivity = neverLoaded;
-    this.itemDraftsUnsorted = neverLoaded;
+    this.allItemDrafts = neverLoaded;
   }
 
   get itemDrafts() {
-    if (this.itemDraftsUnsorted instanceof Status) {
-      return this.itemDraftsUnsorted;
+    if (this.allItemDrafts instanceof Status) {
+      return this.allItemDrafts;
     }
-    return this.itemDraftsUnsorted
+    return this.allItemDrafts
       .slice()
-      .sort((a, b) => (a.orderFracIdx < b.orderFracIdx ? -1 : 1));
+      .sort((a, b) => (a.orderFracIdx < b.orderFracIdx ? -1 : 1))
+      .map((item) => {
+        return {
+          ...item,
+          deleted: this.modifiedIdTracker.deletedItemIds.has(item.id),
+        };
+      });
   }
 
   addDraftItem(itemType: "question" | "text" | "image") {
     if (
       this.savedActivity instanceof Status ||
-      this.itemDraftsUnsorted instanceof Status ||
+      this.allItemDrafts instanceof Status ||
       this.itemDrafts instanceof Status
     ) {
       return;
@@ -93,7 +99,7 @@ export class ActivityEditorStore {
       itemType,
     });
     this.modifiedIdTracker.newItemFakeIds.add(draftItem.id);
-    this.itemDraftsUnsorted.push(draftItem);
+    this.allItemDrafts.push(draftItem);
   }
 
   setItemQuestionDraftContent({
@@ -103,10 +109,10 @@ export class ActivityEditorStore {
     itemId: string;
     content: string;
   }) {
-    if (this.itemDraftsUnsorted instanceof Status) {
+    if (this.allItemDrafts instanceof Status) {
       return;
     }
-    this.itemDraftsUnsorted
+    this.allItemDrafts
       .filter((d) => d.id === itemId)
       .forEach((itemDraft) => {
         this.modifiedIdTracker.changedItemIds.add(itemId);
@@ -122,10 +128,10 @@ export class ActivityEditorStore {
     itemId: string;
     content: string;
   }) {
-    if (this.itemDraftsUnsorted instanceof Status) {
+    if (this.allItemDrafts instanceof Status) {
       return;
     }
-    this.itemDraftsUnsorted
+    this.allItemDrafts
       .filter((d) => d.id === itemId)
       .forEach((itemDraft) => {
         this.modifiedIdTracker.changedItemIds.add(itemId);
@@ -135,10 +141,10 @@ export class ActivityEditorStore {
       });
   }
   setItemInfoImageDraftUrl({ itemId, url }: { itemId: string; url: string }) {
-    if (this.itemDraftsUnsorted instanceof Status) {
+    if (this.allItemDrafts instanceof Status) {
       return;
     }
-    this.itemDraftsUnsorted
+    this.allItemDrafts
       .filter((d) => d.id === itemId)
       .forEach((itemDraft) => {
         this.modifiedIdTracker.changedItemIds.add(itemId);
@@ -154,10 +160,10 @@ export class ActivityEditorStore {
     itemId: string;
     textAlternative: string;
   }) {
-    if (this.itemDraftsUnsorted instanceof Status) {
+    if (this.allItemDrafts instanceof Status) {
       return;
     }
-    this.itemDraftsUnsorted
+    this.allItemDrafts
       .filter((d) => d.id === itemId)
       .forEach((itemDraft) => {
         this.modifiedIdTracker.changedItemIds.add(itemId);
@@ -173,7 +179,7 @@ export class ActivityEditorStore {
     itemId: string;
     deleted: boolean;
   }) {
-    if (this.itemDraftsUnsorted instanceof Status) {
+    if (this.allItemDrafts instanceof Status) {
       return;
     }
     if (deleted) {

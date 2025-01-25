@@ -1,20 +1,8 @@
 import { Button, Switch } from "antd";
 import { Fragment } from "react";
 import { storeObserver } from "../utils/storeObserver";
-
-type ActivityFrameProps = {
-  teacherModeAvailable: boolean;
-  showControls: boolean;
-  setShowControls: (show: boolean) => void;
-  header: React.ReactNode;
-  rows: Array<{
-    leftControl?: React.ReactNode;
-    main: React.ReactNode;
-    rightControl?: React.ReactNode;
-  }>;
-  footer: React.ReactNode;
-  footerControls?: React.ReactNode;
-};
+import { invoke } from "~/common/utils/fnUtils";
+import { type ActivityStatus } from "~/server/db/schema";
 
 const Spacer = () => <div />;
 
@@ -34,8 +22,24 @@ export const ControlsSection = ({
   </div>
 );
 
+type ActivityFrameProps = {
+  activityStatus: ActivityStatus;
+  teacherModeAvailable: boolean;
+  showControls: boolean;
+  setShowControls: (show: boolean) => void;
+  header: React.ReactNode;
+  rows: Array<{
+    leftControl?: React.ReactNode;
+    main: React.ReactNode;
+    rightControl?: React.ReactNode;
+  }>;
+  footer?: React.ReactNode;
+  footerControls?: React.ReactNode;
+};
+
 export const ActivityFrame = storeObserver<ActivityFrameProps>(
   function ActivityFrame({
+    activityStatus,
     teacherModeAvailable,
     showControls: showControlsRaw,
     setShowControls,
@@ -69,7 +73,14 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
               disabled={activityEditorStore.canSave === false}
               onClick={() => activityEditorStore.saveActivity()}
             >
-              Publish
+              {invoke((): string => {
+                switch (activityStatus) {
+                  case "draft":
+                    return "Save";
+                  case "published":
+                    return "Publish";
+                }
+              })}
             </Button>
           </ControlsSection>
         ) : (
@@ -85,9 +96,7 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
           <Fragment key={idx}>
             {left ? (
               <ControlsSection
-                className={wrapControlCn(
-                  "mr-4 flex flex-col items-end justify-center",
-                )}
+                className={wrapControlCn("mr-4 flex flex-col items-end")}
               >
                 {left}
               </ControlsSection>
@@ -97,9 +106,7 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
             <div>{main}</div>
             {right ? (
               <ControlsSection
-                className={wrapControlCn(
-                  "ml-4 flex flex-col items-start justify-center",
-                )}
+                className={wrapControlCn("ml-4 flex flex-col items-start")}
               >
                 {right}
               </ControlsSection>

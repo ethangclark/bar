@@ -8,7 +8,7 @@ const newItemOptions = [
   },
   {
     type: "image",
-    label: "+ Add an image",
+    label: "+ Add image",
   },
   {
     type: "question",

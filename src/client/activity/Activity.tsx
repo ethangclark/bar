@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "antd";
+import { Button, Typography } from "antd";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { ActivityFrame } from "~/client/components/ActivityFrame";
 import { LoadingCentered } from "~/client/components/Loading";
@@ -29,6 +29,7 @@ export const Activity = storeObserver(function Activity({
 
   return (
     <ActivityFrame
+      activityStatus={savedActivity.status}
       teacherModeAvailable={teacherModeAvailable}
       showControls={showControlsRaw}
       setShowControls={setShowControls}
@@ -39,21 +40,35 @@ export const Activity = storeObserver(function Activity({
         main: (
           <ActivityItem
             item={item}
+            deleted={item.deleted}
             teacherModeAvailable={teacherModeAvailable}
             showControls={showControls}
           />
         ),
         leftControl: (
-          <div className={`flex flex-col items-center`}>
+          <div
+            className={`flex flex-col items-center`}
+            style={{ minWidth: 60 }}
+          >
             <span>Item {idx + 1}</span>
+            <Typography.Link
+              onClick={() =>
+                activityEditorStore.setItemDraftDeletion({
+                  itemId: item.id,
+                  deleted: !item.deleted,
+                })
+              }
+              className="text-xs"
+            >
+              {item.deleted ? (
+                "Restore"
+              ) : (
+                <span className="text-red-500 hover:text-red-700">Delete</span>
+              )}
+            </Typography.Link>
           </div>
         ),
       }))}
-      footer={
-        <div className="my-4">
-          <Button>Submit</Button>
-        </div>
-      }
       footerControls={<FooterControls />}
     />
   );

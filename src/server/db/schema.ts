@@ -295,13 +295,30 @@ export const questions = pgTable("question", {
   content: text("content").notNull(),
 });
 export type Question = InferSelectModel<typeof questions>;
-export const questionsRelations = relations(questions, ({ one }) => ({
+export const questionsRelations = relations(questions, ({ one, many }) => ({
   activityItem: one(activityItems, {
     fields: [questions.activityItemId],
     references: [activityItems.id],
   }),
+  evalKeys: many(evalKeys),
 }));
 export const questionSchema = createSelectSchema(questions);
+
+export const evalKeys = pgTable("eval_key", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  questionId: uuid("question_id")
+    .notNull()
+    .references(() => questions.id, { onDelete: "cascade" }),
+  key: text("key").notNull(),
+});
+export type EvalKey = InferSelectModel<typeof evalKeys>;
+export const evalKeysRelations = relations(evalKeys, ({ one }) => ({
+  question: one(questions, {
+    fields: [evalKeys.questionId],
+    references: [questions.id],
+  }),
+}));
+export const evalKeySchema = createSelectSchema(evalKeys);
 
 export const infoTexts = pgTable("info_text", {
   id: uuid("id").primaryKey().defaultRandom(),
