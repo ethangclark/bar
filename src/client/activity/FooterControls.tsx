@@ -30,14 +30,6 @@ export const FooterControls = storeObserver(function FooterControls({
           {option.label}
         </Button>
       ))}
-      <Button
-        className="m-1"
-        type="primary"
-        disabled={activityEditorStore.canSave === false}
-        onClick={() => activityEditorStore.saveActivity()}
-      >
-        Save
-      </Button>
     </div>
   );
 });

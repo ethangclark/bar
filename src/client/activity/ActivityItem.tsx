@@ -11,7 +11,7 @@ export const ActivityItem = storeObserver<{
   showControls: boolean;
 }>(function ActivityItem({ item, showControls, activityEditorStore }) {
   return (
-    <div className="flex flex-col items-center p-4" style={{ width: 400 }}>
+    <div className="flex flex-col items-center p-4" style={{ width: 500 }}>
       {item.infoImages.map((infoImage) => (
         <div key={infoImage.id}>
           <ImageFromDataUrl
