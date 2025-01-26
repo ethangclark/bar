@@ -29,7 +29,6 @@ export function createDraftActivityItemWithChildren({
             id: draftUuid,
             activityItemId: base.id,
             content: "",
-            evalKeys: [],
           },
         ],
       };

@@ -321,10 +321,6 @@ export const questionsRelations = relations(questions, ({ one, many }) => ({
   evalKeys: many(evalKeys),
 }));
 export const questionSchema = createSelectSchema(questions);
-export const questionsWithEvalKeys = questionSchema.extend({
-  evalKeys: z.array(evalKeySchema),
-});
-export type QuestionWithEvalKeys = z.infer<typeof questionsWithEvalKeys>;
 
 export const infoTexts = pgTable("info_text", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -362,7 +358,7 @@ export const infoImageSchema = createSelectSchema(infoImages);
 // todo: infoVideo (will require video streaming solution)
 
 export const activityItemWithChildrenSchema = activityItemSchema.extend({
-  questions: z.array(questionsWithEvalKeys),
+  questions: z.array(questionSchema),
   infoTexts: z.array(infoTextSchema),
   infoImages: z.array(infoImageSchema),
 });

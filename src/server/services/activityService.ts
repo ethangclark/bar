@@ -8,7 +8,7 @@ import {
   type LmsAssignment,
   type IntegrationApi,
 } from "~/server/integrations/utils/integrationApi";
-import { getIntegrationApis } from "~/server/services/integrationService";
+import { getIntegrationApi } from "~/server/services/integrationService";
 import {
   type Question,
   type ActivityItemWithChildren,
@@ -16,6 +16,7 @@ import {
   type InfoImage,
 } from "../db/schema";
 import { objectKeys } from "~/common/utils/objectUtils";
+import { canViewDevelopmentData } from "~/common/schemas/enrollmentTypeUtils";
 
 // does not check that user has access to the activity
 export async function unsafe_getActivity(activityId: string) {
@@ -24,11 +25,7 @@ export async function unsafe_getActivity(activityId: string) {
     with: {
       activityItems: {
         with: {
-          questions: {
-            with: {
-              evalKeys: true,
-            },
-          },
+          questions: true,
           infoTexts: true,
           infoImages: true,
         },
@@ -46,22 +43,13 @@ type Unsafe_RichActivityPartial = Awaited<
 
 async function ensureAccess({
   userId,
-  integrationApis,
+  integrationApi,
   unsafe_activity,
 }: {
   userId: string;
-  integrationApis: IntegrationApi[];
+  integrationApi: IntegrationApi;
   unsafe_activity: Unsafe_RichActivityPartial;
 }) {
-  const integrationApi = integrationApis.find(
-    (i) => i.integration.id === unsafe_activity.integrationId,
-  );
-
-  // ensure that the activity belongs to an integration that's associated with the user
-  if (!integrationApi) {
-    throw new Error("Activity not found");
-  }
-
   const course = await integrationApi.getCourse({
     userId,
     exCourseIdJson: unsafe_activity.exCourseIdJson,
@@ -74,11 +62,7 @@ async function ensureAccess({
     if (a.activity?.id !== unsafe_activity.id) {
       continue;
     }
-    if (
-      course.enrolledAs.includes("teacher") ||
-      course.enrolledAs.includes("ta") ||
-      course.enrolledAs.includes("designer")
-    ) {
+    if (canViewDevelopmentData(course.enrolledAs)) {
       assignment = a;
     }
     switch (a.activity.status) {
@@ -113,14 +97,16 @@ export async function getActivity({
   // Requiring the assertAccess param just to make this clear.
   noop(assertAccess);
 
-  const [integrationApis, unsafe_activity] = await Promise.all([
-    getIntegrationApis(userId),
-    unsafe_getActivity(activityId),
-  ]);
+  const unsafe_activity = await unsafe_getActivity(activityId);
+
+  const integrationApi = await getIntegrationApi({
+    userId,
+    integrationId: unsafe_activity.integrationId,
+  });
 
   const { course, assignment, activity } = await ensureAccess({
     userId,
-    integrationApis,
+    integrationApi,
     unsafe_activity,
   });
 

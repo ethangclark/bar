@@ -4,7 +4,7 @@ import { type Json } from "~/common/utils/types";
 import { db } from "~/server/db";
 import { getCachedAccessToken, updateTokenCache } from "./canvasTokenCache";
 import { assertError } from "~/common/utils/errorUtils";
-import { enrollmentTypeSchema } from "~/common/schemas/generalLmsSchemas";
+import { enrollmentTypeSchema } from "~/common/schemas/enrollmentTypeUtils";
 
 export async function getCanvasIntegration(canvasIntegrationId: string) {
   const canvasIntegration = await db.query.canvasIntegrations.findFirst({
