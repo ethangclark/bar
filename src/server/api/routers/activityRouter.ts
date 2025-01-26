@@ -17,10 +17,10 @@ export const activityRouter = createTRPCRouter({
         userId: ctx.userId,
         activityId: input.activityId,
       });
-      const evalKeys = await getEvalKeys(activity, db);
+      const { questionIdToEvalKey } = await getEvalKeys(activity, db);
       return {
         ...activity,
-        evalKeys,
+        questionIdToEvalKey,
       };
     }),
 

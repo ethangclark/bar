@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { type RichActivity } from "~/common/schemas/richActivity";
+import { type RichActivityAndEvalKeys } from "~/common/schemas/richActivity";
 import { Status, loading, neverLoaded } from "~/common/utils/status";
 import { type ActivityItemWithChildren } from "~/server/db/schema";
 import { trpc } from "~/trpc/proxy";
@@ -11,7 +11,7 @@ import {
 } from "~/common/utils/activityUtils";
 
 export class ActivityEditorStore {
-  public savedActivity: RichActivity | Status = neverLoaded;
+  public savedActivity: RichActivityAndEvalKeys | Status = neverLoaded;
 
   // not sorted
   private allItemDrafts: ActivityItemWithChildren[] | Status = neverLoaded;

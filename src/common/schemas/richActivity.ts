@@ -1,4 +1,5 @@
 import {
+  type EvalKey,
   type Activity,
   type ActivityItemWithChildren,
 } from "~/server/db/schema";
@@ -11,4 +12,8 @@ export type RichActivity = Activity & {
   course: LmsCourse;
   assignment: LmsAssignment;
   activityItems: ActivityItemWithChildren[];
+};
+
+export type RichActivityAndEvalKeys = RichActivity & {
+  questionIdToEvalKey: Map<string, EvalKey[]>;
 };
