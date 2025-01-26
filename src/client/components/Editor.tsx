@@ -70,10 +70,12 @@ export function WysiwygEditor({
   value,
   setValue,
   disabled = false,
+  outlineCn = "focus:outline focus:outline-gray-200",
 }: {
   value: string;
   setValue: (value: string) => void;
   disabled?: boolean;
+  outlineCn?: string;
 }) {
   return (
     <Editor
@@ -81,7 +83,8 @@ export function WysiwygEditor({
       setValue={setValue}
       paddingCn="p-1"
       className="mx-[-4px] grow disabled:cursor-auto disabled:bg-white"
-      outlineCn="focus:outline focus:outline-gray-200 rounded-none"
+      roundingCn="rounded-none"
+      outlineCn={outlineCn}
       disabled={disabled}
     />
   );
