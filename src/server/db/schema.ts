@@ -237,7 +237,8 @@ export const activities = pgTable(
   "activity",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    exIdJson: text("ex_id_json").notNull(),
+    exCourseIdJson: text("ex_course_id_json").notNull(),
+    exAssignmentIdJson: text("ex_id_json").notNull(),
     integrationId: uuid("integration_id")
       .notNull()
       .references(
@@ -247,7 +248,8 @@ export const activities = pgTable(
     status: activityStatusEnum("status").notNull().default("draft"),
   },
   (a) => [
-    index("activity_ex_id_json_idx").on(a.exIdJson),
+    index("activity_ex_course_id_json_idx").on(a.exCourseIdJson),
+    index("activity_ex_assignment_id_json_idx").on(a.exAssignmentIdJson),
     index("activity_integration_id_idx").on(a.integrationId),
   ],
 );
@@ -287,6 +289,22 @@ export const activityItemRelations = relations(
 );
 export const activityItemSchema = createSelectSchema(activityItems);
 
+export const evalKeys = pgTable("eval_key", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  questionId: uuid("question_id")
+    .notNull()
+    .references(() => questions.id, { onDelete: "cascade" }),
+  key: text("key").notNull(),
+});
+export type EvalKey = InferSelectModel<typeof evalKeys>;
+export const evalKeysRelations = relations(evalKeys, ({ one }) => ({
+  question: one(questions, {
+    fields: [evalKeys.questionId],
+    references: [questions.id],
+  }),
+}));
+export const evalKeySchema = createSelectSchema(evalKeys);
+
 export const questions = pgTable("question", {
   id: uuid("id").primaryKey().defaultRandom(),
   activityItemId: uuid("activity_item_id")
@@ -303,22 +321,10 @@ export const questionsRelations = relations(questions, ({ one, many }) => ({
   evalKeys: many(evalKeys),
 }));
 export const questionSchema = createSelectSchema(questions);
-
-export const evalKeys = pgTable("eval_key", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  questionId: uuid("question_id")
-    .notNull()
-    .references(() => questions.id, { onDelete: "cascade" }),
-  key: text("key").notNull(),
+export const questionsWithEvalKeys = questionSchema.extend({
+  evalKeys: z.array(evalKeySchema),
 });
-export type EvalKey = InferSelectModel<typeof evalKeys>;
-export const evalKeysRelations = relations(evalKeys, ({ one }) => ({
-  question: one(questions, {
-    fields: [evalKeys.questionId],
-    references: [questions.id],
-  }),
-}));
-export const evalKeySchema = createSelectSchema(evalKeys);
+export type QuestionWithEvalKeys = z.infer<typeof questionsWithEvalKeys>;
 
 export const infoTexts = pgTable("info_text", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -356,7 +362,7 @@ export const infoImageSchema = createSelectSchema(infoImages);
 // todo: infoVideo (will require video streaming solution)
 
 export const activityItemWithChildrenSchema = activityItemSchema.extend({
-  questions: z.array(questionSchema),
+  questions: z.array(questionsWithEvalKeys),
   infoTexts: z.array(infoTextSchema),
   infoImages: z.array(infoImageSchema),
 });

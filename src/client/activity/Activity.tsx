@@ -1,14 +1,13 @@
 "use client";
 
-import { Button, Typography } from "antd";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { Typography } from "antd";
+import { useState } from "react";
 import { ActivityFrame } from "~/client/components/ActivityFrame";
 import { LoadingCentered } from "~/client/components/Loading";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { Status } from "~/common/utils/status";
-import { FooterControls } from "./FooterControls";
 import { ActivityItem } from "./ActivityItem";
-import { useState } from "react";
+import { FooterControls } from "./FooterControls";
 
 export const Activity = storeObserver(function Activity({
   activityEditorStore,
@@ -63,7 +62,7 @@ export const Activity = storeObserver(function Activity({
               {item.deleted ? (
                 "Restore"
               ) : (
-                <span className="text-red-500 hover:text-red-700">Delete</span>
+                <span className="text-gray-500 hover:text-red-500">Delete</span>
               )}
             </Typography.Link>
           </div>

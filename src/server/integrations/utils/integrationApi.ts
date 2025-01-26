@@ -6,7 +6,7 @@ import {
 import { type NarrowedCanvasEnrollmentType } from "../canvas/utils";
 
 export type LmsAssignment = {
-  exIdJson: string;
+  exAssignmentIdJson: string;
   title: string;
   dueAt: Date | null;
   lockedAt: Date | null;
@@ -23,6 +23,10 @@ type Score = { type: "points"; points: number };
 export type IntegrationApi = {
   type: IntegrationType;
   integration: Integration;
+  getCourse: (params: {
+    userId: string;
+    exCourseIdJson: string;
+  }) => Promise<LmsCourse>;
   getCourses: (params: { userId: string }) => Promise<LmsCourse[]>;
   setGrading: (params: {
     userId: string;

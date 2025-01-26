@@ -5,8 +5,8 @@ import { assertNever } from "~/common/utils/errorUtils";
 import { asserted, invoke, noop } from "~/common/utils/fnUtils";
 import { db } from "~/server/db";
 import {
-  type LmsCourse,
   type LmsAssignment,
+  type IntegrationApi,
 } from "~/server/integrations/utils/integrationApi";
 import { getIntegrationApis } from "~/server/services/integrationService";
 import {
@@ -18,13 +18,17 @@ import {
 import { objectKeys } from "~/common/utils/objectUtils";
 
 // does not check that user has access to the activity
-export async function getActivity_UNSAFE(activityId: string) {
+export async function unsafe_getActivity(activityId: string) {
   const activity = await db.query.activities.findFirst({
     where: eq(db.x.activities.id, activityId),
     with: {
       activityItems: {
         with: {
-          questions: true,
+          questions: {
+            with: {
+              evalKeys: true,
+            },
+          },
           infoTexts: true,
           infoImages: true,
         },
@@ -35,6 +39,65 @@ export async function getActivity_UNSAFE(activityId: string) {
     throw new Error("Activity not found");
   }
   return activity;
+}
+type Unsafe_RichActivityPartial = Awaited<
+  ReturnType<typeof unsafe_getActivity>
+>;
+
+async function ensureAccess({
+  userId,
+  integrationApis,
+  unsafe_activity,
+}: {
+  userId: string;
+  integrationApis: IntegrationApi[];
+  unsafe_activity: Unsafe_RichActivityPartial;
+}) {
+  const integrationApi = integrationApis.find(
+    (i) => i.integration.id === unsafe_activity.integrationId,
+  );
+
+  // ensure that the activity belongs to an integration that's associated with the user
+  if (!integrationApi) {
+    throw new Error("Activity not found");
+  }
+
+  const course = await integrationApi.getCourse({
+    userId,
+    exCourseIdJson: unsafe_activity.exCourseIdJson,
+  });
+
+  // ensure that the activity is associated with an assignment that's visible to the user
+  // (hiding unpublished assignments from students)
+  let assignment: LmsAssignment | null = null;
+  for (const a of course.assignments) {
+    if (a.activity?.id !== unsafe_activity.id) {
+      continue;
+    }
+    if (
+      course.enrolledAs.includes("teacher") ||
+      course.enrolledAs.includes("ta") ||
+      course.enrolledAs.includes("designer")
+    ) {
+      assignment = a;
+    }
+    switch (a.activity.status) {
+      case "published":
+        assignment = a;
+      case "draft":
+        // do nothing;
+        continue;
+    }
+    assertNever(a.activity.status);
+  }
+  if (!course || !assignment) {
+    throw new Error("Activity not found");
+  }
+
+  // we've proved the user has access to this activity
+  const activity = unsafe_activity;
+
+  return { course, assignment, activity };
 }
 
 export async function getActivity({
@@ -50,51 +113,16 @@ export async function getActivity({
   // Requiring the assertAccess param just to make this clear.
   noop(assertAccess);
 
-  const [integrationApis, activity] = await Promise.all([
+  const [integrationApis, unsafe_activity] = await Promise.all([
     getIntegrationApis(userId),
-    getActivity_UNSAFE(activityId),
+    unsafe_getActivity(activityId),
   ]);
 
-  const integrationApi = integrationApis.find(
-    (i) => i.integration.id === activity.integrationId,
-  );
-
-  // ensure that the activity belongs to an integration that's associated with the user
-  if (!integrationApi) {
-    throw new Error("Activity not found");
-  }
-
-  // ensure that the activity is associated with an assignment that's visible to the user
-  // (hiding unpublished assignments from students)
-  const courses = await integrationApi.getCourses({ userId });
-  let course: LmsCourse | null = null;
-  let assignment: LmsAssignment | null = null;
-  for (const c of courses) {
-    for (const a of c.assignments) {
-      if (a.activity?.id !== activity.id) {
-        continue;
-      }
-      if (
-        c.enrolledAs.includes("teacher") ||
-        c.enrolledAs.includes("ta") ||
-        c.enrolledAs.includes("designer")
-      ) {
-        course = c;
-        assignment = a;
-      }
-      switch (a.activity.status) {
-        case "published":
-          assignment = a;
-        case "draft":
-          // do nothing;
-          continue;
-      }
-      assertNever(a.activity.status);
-    }
-  }
-  if (!course || !assignment) {
-    throw new Error("Activity not found");
-  }
+  const { course, assignment, activity } = await ensureAccess({
+    userId,
+    integrationApis,
+    unsafe_activity,
+  });
 
   return { course, assignment, ...activity };
 }

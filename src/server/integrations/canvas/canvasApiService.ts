@@ -11,6 +11,13 @@ import {
 } from "./utils";
 import { parseDateOrNull } from "~/common/utils/timeUtils";
 
+/*
+This file is a mess.
+We should be returning `null` or empty arrays if objects aren't found,
+and only throwing errors if there's an error in connecting with the system
+or someone's trying to access something they shouldn't.
+*/
+
 async function getLoginResponse({
   canvasIntegrationId,
   oauthCode,
@@ -152,6 +159,81 @@ export async function executeUserInitiation({
   });
 }
 
+const canvasCourseResponseSchema = z.object({
+  id: z.number(),
+  // uuid: z.string(),
+  name: z.string(),
+  course_code: z.string(),
+  workflow_state: z.enum(["unpublished", "available", "completed", "deleted"]),
+  start_at: z.string().nullable(),
+  end_at: z.string().nullable(),
+  enrollments: z.array(
+    z.object({
+      type: ambiguousEnrollmentTypeSchema,
+      enrollment_state: z.enum([
+        "active",
+        "invited",
+        "creation_pending",
+        "deleted",
+        "inactive",
+      ]),
+    }),
+  ),
+  total_students: z.number().nullable().optional(),
+});
+
+const formatCourse = (rc: z.infer<typeof canvasCourseResponseSchema>) => ({
+  id: rc.id,
+  name: rc.name,
+  courseCode: rc.course_code,
+  workflowState: rc.workflow_state,
+  startAt: rc.start_at,
+  endAt: rc.end_at,
+  enrollments: rc.enrollments.map((e) => ({
+    type: narrowCanvasEnrollmentType(e.type),
+    enrollmentState: e.enrollment_state,
+    enrolledAs: narrowCanvasEnrollmentType(e.type),
+  })),
+  totalStudents: rc.total_students,
+});
+
+export type CanvasCourse = ReturnType<typeof formatCourse>;
+
+export async function getCanvasCourse({
+  userId,
+  canvasIntegrationId,
+  canvasCourseId,
+  tx,
+}: {
+  userId: string;
+  canvasIntegrationId: string;
+  canvasCourseId: number;
+  tx: DbOrTx;
+}) {
+  const canvasUsers = await tx.query.canvasUsers.findMany({
+    where: eq(db.x.canvasUsers.userId, userId),
+  });
+  const rawCourses = Array<z.infer<typeof canvasCourseResponseSchema>>();
+  for (const canvasUser of canvasUsers) {
+    const courseResult = await makeCanvasRequest({
+      canvasIntegrationId,
+      relPath: `/api/v1/courses/${canvasCourseId}`,
+      method: "GET",
+      responseSchema: canvasCourseResponseSchema,
+      refreshToken: canvasUser.oauthRefreshToken,
+    });
+    rawCourses.push(courseResult);
+  }
+  const [rawCourse, ...rest] = rawCourses;
+  if (!rawCourse) {
+    throw new Error("Course not found in Canvas");
+  }
+  if (rest.length > 0) {
+    throw new Error("More than one course found in Canvas");
+  }
+  return formatCourse(rawCourse);
+}
+
 export async function getCanvasCourses({
   userId,
   canvasIntegrationId,
@@ -164,36 +246,9 @@ export async function getCanvasCourses({
   const canvasUsers = await tx.query.canvasUsers.findMany({
     where: eq(db.x.canvasUsers.userId, userId),
   });
-  const courseSchema = z.object({
-    id: z.number(),
-    // uuid: z.string(),
-    name: z.string(),
-    course_code: z.string(),
-    workflow_state: z.enum([
-      "unpublished",
-      "available",
-      "completed",
-      "deleted",
-    ]),
-    start_at: z.string().nullable(),
-    end_at: z.string().nullable(),
-    enrollments: z.array(
-      z.object({
-        type: ambiguousEnrollmentTypeSchema,
-        enrollment_state: z.enum([
-          "active",
-          "invited",
-          "creation_pending",
-          "deleted",
-          "inactive",
-        ]),
-      }),
-    ),
-    total_students: z.number().nullable().optional(),
-  });
-  const rawCourses = Array<z.infer<typeof courseSchema>>();
+  const rawCourses = Array<z.infer<typeof canvasCourseResponseSchema>>();
   for (const canvasUser of canvasUsers) {
-    const responseSchema = z.array(courseSchema);
+    const responseSchema = z.array(canvasCourseResponseSchema);
     const coursesResult = await makeCanvasRequest({
       canvasIntegrationId,
       relPath: `/api/v1/courses`,
@@ -203,21 +258,34 @@ export async function getCanvasCourses({
     });
     rawCourses.push(...coursesResult);
   }
-  return rawCourses.map((rc) => ({
-    id: rc.id,
-    name: rc.name,
-    courseCode: rc.course_code,
-    workflowState: rc.workflow_state,
-    startAt: rc.start_at,
-    endAt: rc.end_at,
-    enrollments: rc.enrollments.map((e) => ({
-      type: narrowCanvasEnrollmentType(e.type),
-      enrollmentState: e.enrollment_state,
-      enrolledAs: narrowCanvasEnrollmentType(e.type),
-    })),
-    totalStudents: rc.total_students,
-  }));
+  return rawCourses.map(formatCourse);
 }
+
+const canvasAssignmentResponseSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  due_at: z.string().nullable(),
+  lock_at: z.string().nullable(),
+  points_possible: z.number().nullable(),
+  grading_type: z.enum([
+    "gpa_scale",
+    "letter_grade",
+    "pass_fail",
+    "percent",
+    "points",
+  ]),
+});
+
+const formatAssignment = (
+  ra: z.infer<typeof canvasAssignmentResponseSchema>,
+) => ({
+  id: ra.id,
+  name: ra.name,
+  dueAt: parseDateOrNull(ra.due_at),
+  lockedAt: parseDateOrNull(ra.lock_at),
+  pointsPossible: ra.points_possible,
+  gradingType: ra.grading_type,
+});
 
 export async function getCanvasAssignments({
   userId,
@@ -233,23 +301,10 @@ export async function getCanvasAssignments({
   const canvasUsers = await tx.query.canvasUsers.findMany({
     where: eq(db.x.canvasUsers.userId, userId),
   });
-  const assignmentSchema = z.object({
-    id: z.number(),
-    name: z.string(),
-    due_at: z.string().nullable(),
-    lock_at: z.string().nullable(),
-    points_possible: z.number().nullable(),
-    grading_type: z.enum([
-      "gpa_scale",
-      "letter_grade",
-      "pass_fail",
-      "percent",
-      "points",
-    ]),
-  });
-  const rawAssignments = Array<z.infer<typeof assignmentSchema>>();
+  const rawAssignments =
+    Array<z.infer<typeof canvasAssignmentResponseSchema>>();
   for (const canvasUser of canvasUsers) {
-    const responseSchema = z.array(assignmentSchema);
+    const responseSchema = z.array(canvasAssignmentResponseSchema);
     const assignmentsResult = await makeCanvasRequest({
       canvasIntegrationId,
       relPath: `/api/v1/users/${canvasUser.canvasGlobalId}/courses/${canvasCourseId}/assignments`,
@@ -259,12 +314,5 @@ export async function getCanvasAssignments({
     });
     rawAssignments.push(...assignmentsResult);
   }
-  return rawAssignments.map((ra) => ({
-    id: ra.id,
-    name: ra.name,
-    dueAt: parseDateOrNull(ra.due_at),
-    lockedAt: parseDateOrNull(ra.lock_at),
-    pointsPossible: ra.points_possible,
-    gradingType: ra.grading_type,
-  }));
+  return rawAssignments.map(formatAssignment);
 }
