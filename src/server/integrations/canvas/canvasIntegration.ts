@@ -27,7 +27,13 @@ async function getOneCanvasCourse({
       getCanvasCourse({ userId, canvasIntegrationId, canvasCourseId, tx: db }),
     ),
   );
-  const [course, ...excess] = courses;
+  const dedupedCourses = Array.from(
+    new Map(
+      courses.filter(Boolean).map((course) => [course.id, course]),
+    ).values(),
+  );
+
+  const [course, ...excess] = dedupedCourses;
   if (!course) {
     throw new Error("Course not found");
   }

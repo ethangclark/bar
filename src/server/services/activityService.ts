@@ -1,68 +1,97 @@
-import { eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { isDesigner } from "~/common/schemas/enrollmentTypeUtils";
 import { type RichActivity } from "~/common/schemas/richActivity";
-import { type ModificationOps } from "~/common/utils/activityUtils";
 import { assertNever } from "~/common/utils/errorUtils";
-import { asserted, invoke, noop } from "~/common/utils/fnUtils";
-import { db } from "~/server/db";
+import { noop } from "~/common/utils/fnUtils";
+import { createEmptyTables, rowsToTable } from "~/common/utils/tableUtils";
+import { db, DbOrTx } from "~/server/db";
 import {
-  type LmsAssignment,
   type IntegrationApi,
+  type LmsAssignment,
 } from "~/server/integrations/utils/integrationApi";
 import { getIntegrationApi } from "~/server/services/integrationService";
+import { Activity } from "../db/schema";
 import {
-  type Question,
-  type ActivityItemWithChildren,
-  type InfoText,
-  type InfoImage,
-} from "../db/schema";
-import { objectKeys } from "~/common/utils/objectUtils";
-import { canViewDevelopmentData } from "~/common/schemas/enrollmentTypeUtils";
+  deleteTables,
+  insertTables,
+  updateTables,
+} from "./tables/tableService";
+import { ModificationOps, TableSet } from "./tables/tableSetSchema";
+import { objectEntries } from "~/common/utils/objectUtils";
 
 // does not check that user has access to the activity
-export async function unsafe_getActivity(activityId: string) {
-  const activity = await db.query.activities.findFirst({
+export async function unsafe_getActivityTables(
+  activityId: string,
+): Promise<{ activity: Activity; tables: TableSet }> {
+  const withTables = await db.query.activities.findFirst({
     where: eq(db.x.activities.id, activityId),
     with: {
-      activityItems: {
-        with: {
-          questions: true,
-          infoTexts: true,
-          infoImages: true,
-        },
-      },
+      activityItems: true,
+      questions: true,
+      infoTexts: true,
+      infoImages: true,
+      evalKeys: true,
+      threads: true,
+      messages: true,
     },
   });
-  if (!activity) {
+  if (!withTables) {
     throw new Error("Activity not found");
   }
-  return activity;
+  const {
+    activityItems,
+    questions,
+    infoTexts,
+    infoImages,
+    evalKeys,
+    threads,
+    messages,
+    ...rest
+  } = withTables;
+  const activity = {
+    ...rest,
+    activityId: rest.id,
+  };
+  const tables: TableSet = {
+    activities: { [activity.id]: activity },
+    activityItems: rowsToTable(activityItems),
+    questions: rowsToTable(questions),
+    infoTexts: rowsToTable(infoTexts),
+    infoImages: rowsToTable(infoImages),
+    evalKeys: rowsToTable(evalKeys),
+    threads: rowsToTable(threads),
+    messages: rowsToTable(messages),
+  };
+  return { activity, tables };
 }
-type Unsafe_RichActivityPartial = Awaited<
-  ReturnType<typeof unsafe_getActivity>
+type Unsafe_ActivityTables = Awaited<
+  ReturnType<typeof unsafe_getActivityTables>
 >;
 
 async function ensureAccess({
   userId,
   integrationApi,
-  unsafe_activity,
+  unsafe_tables,
 }: {
   userId: string;
   integrationApi: IntegrationApi;
-  unsafe_activity: Unsafe_RichActivityPartial;
+  unsafe_tables: Unsafe_ActivityTables;
 }) {
+  const { activity, tables } = unsafe_tables;
+
   const course = await integrationApi.getCourse({
     userId,
-    exCourseIdJson: unsafe_activity.exCourseIdJson,
+    exCourseIdJson: activity.exCourseIdJson,
   });
 
   // ensure that the activity is associated with an assignment that's visible to the user
   // (hiding unpublished assignments from students)
   let assignment: LmsAssignment | null = null;
   for (const a of course.assignments) {
-    if (a.activity?.id !== unsafe_activity.id) {
+    if (a.activity?.id !== activity.id) {
       continue;
     }
-    if (canViewDevelopmentData(course.enrolledAs)) {
+    if (isDesigner(course.enrolledAs)) {
       assignment = a;
     }
     switch (a.activity.status) {
@@ -78,10 +107,7 @@ async function ensureAccess({
     throw new Error("Activity not found");
   }
 
-  // we've proved the user has access to this activity
-  const activity = unsafe_activity;
-
-  return { course, assignment, activity };
+  return { course, assignment, activity, tables };
 }
 
 export async function getActivity({
@@ -97,213 +123,20 @@ export async function getActivity({
   // Requiring the assertAccess param just to make this clear.
   noop(assertAccess);
 
-  const unsafe_activity = await unsafe_getActivity(activityId);
+  const unsafe_tables = await unsafe_getActivityTables(activityId);
 
   const integrationApi = await getIntegrationApi({
     userId,
-    integrationId: unsafe_activity.integrationId,
+    integrationId: unsafe_tables.activity.integrationId,
   });
 
-  const { course, assignment, activity } = await ensureAccess({
+  const { course, assignment, activity, tables } = await ensureAccess({
     userId,
     integrationApi,
-    unsafe_activity,
+    unsafe_tables,
   });
 
-  return { course, assignment, ...activity };
-}
-
-export async function assertActivityAccess({
-  userId,
-  activityId,
-}: {
-  userId: string;
-  activityId: string;
-}) {
-  await getActivity({ userId, activityId, assertAccess: true });
-}
-
-// could add tests to ensure IDs are omitted
-
-async function createQuestions(questions: Question[]) {
-  if (!questions.length) return;
-  await db
-    .insert(db.x.questions)
-    .values(questions.map(({ id: _, ...q }) => q))
-    .returning();
-}
-async function createInfoTexts(infoTexts: InfoText[]) {
-  if (!infoTexts.length) return;
-  await db
-    .insert(db.x.infoTexts)
-    .values(infoTexts.map(({ id: _, ...i }) => i))
-    .returning();
-}
-async function createInfoImages(infoImages: InfoImage[]) {
-  if (!infoImages.length) return;
-  await db
-    .insert(db.x.infoImages)
-    .values(infoImages.map(({ id: _, ...i }) => i))
-    .returning();
-}
-
-// could add tests to ensure IDs are omitted
-
-async function createItems({ drafts }: { drafts: ActivityItemWithChildren[] }) {
-  const [draft1] = drafts;
-  if (!draft1) return;
-  const created = await db
-    .insert(db.x.activityItems)
-    .values(drafts.map(({ id: _, ...i }) => i))
-    .returning();
-  const promises = Array<Promise<void>>();
-  objectKeys(draft1).forEach((key) => {
-    invoke((): true => {
-      switch (key) {
-        // fields we don't need to do anything with
-        case "id":
-        case "activityId":
-        case "orderFracIdx":
-          return true;
-        case "questions": {
-          promises.push(
-            createQuestions(
-              drafts
-                .map((i, idx) =>
-                  i.questions.map((q) => ({
-                    ...q,
-                    activityItemId: asserted(created[idx]).id,
-                  })),
-                )
-                .flat(),
-            ),
-          );
-          return true;
-        }
-        case "infoTexts": {
-          promises.push(
-            createInfoTexts(
-              drafts
-                .map((i, idx) =>
-                  i.infoTexts.map((i) => ({
-                    ...i,
-                    activityItemId: asserted(created[idx]).id,
-                  })),
-                )
-                .flat(),
-            ),
-          );
-          return true;
-        }
-        case "infoImages": {
-          promises.push(
-            createInfoImages(
-              drafts
-                .map((i, idx) =>
-                  i.infoImages.map((i) => ({
-                    ...i,
-                    activityItemId: asserted(created[idx]).id,
-                  })),
-                )
-                .flat(),
-            ),
-          );
-          return true;
-        }
-      }
-    });
-  });
-  await Promise.all(promises);
-}
-
-async function updateQuestions(questions: Question[]) {
-  if (!questions.length) return;
-  await Promise.all(
-    questions.map((q) =>
-      db.update(db.x.questions).set(q).where(eq(db.x.questions.id, q.id)),
-    ),
-  );
-}
-async function updateInfoTexts(infoTexts: InfoText[]) {
-  if (!infoTexts.length) return;
-  await Promise.all(
-    infoTexts.map((i) =>
-      db.update(db.x.infoTexts).set(i).where(eq(db.x.infoTexts.id, i.id)),
-    ),
-  );
-}
-async function updateInfoImages(infoImages: InfoImage[]) {
-  if (!infoImages.length) return;
-  await Promise.all(
-    infoImages.map((i) =>
-      db.update(db.x.infoImages).set(i).where(eq(db.x.infoImages.id, i.id)),
-    ),
-  );
-}
-
-async function updateItems({ items }: { items: ActivityItemWithChildren[] }) {
-  const promises = Array<Promise<unknown>>();
-  for (const item of items) {
-    promises.push(
-      db
-        .update(db.x.activityItems)
-        .set(item)
-        .where(eq(db.x.activityItems.id, item.id)),
-    );
-    objectKeys(item).forEach((key) => {
-      invoke((): true => {
-        switch (key) {
-          // fields we don't need to do anything with
-          case "id":
-          case "activityId":
-          case "orderFracIdx":
-            return true;
-          case "questions": {
-            promises.push(updateQuestions(item.questions));
-            return true;
-          }
-          case "infoTexts": {
-            promises.push(updateInfoTexts(item.infoTexts));
-            return true;
-          }
-          case "infoImages": {
-            promises.push(updateInfoImages(item.infoImages));
-            return true;
-          }
-        }
-      });
-    });
-  }
-  await Promise.all(promises);
-}
-
-async function deleteItems(ids: string[]) {
-  if (!ids.length) return;
-  await db
-    .delete(db.x.activityItems)
-    .where(inArray(db.x.activityItems.id, ids));
-}
-
-// returns false if child IDs don't point to parent
-function childrenFit(item: ActivityItemWithChildren): boolean {
-  for (const key of objectKeys(item)) {
-    const isOk = invoke((): boolean => {
-      switch (key) {
-        case "id":
-        case "activityId":
-        case "orderFracIdx":
-          return true;
-        case "questions":
-          return item.questions.every((q) => q.activityItemId === item.id);
-        case "infoTexts":
-          return item.infoTexts.every((i) => i.activityItemId === item.id);
-        case "infoImages":
-          return item.infoImages.every((i) => i.activityItemId === item.id);
-      }
-    });
-    if (!isOk) return false;
-  }
-  return true;
+  return { course, assignment, activity, tables };
 }
 
 // returns ops such that their IDs can't have been manipulated
@@ -315,38 +148,47 @@ function getSecureOps({
   activity: RichActivity;
   modificationOps: ModificationOps;
 }) {
-  const { toCreate, toUpdate, toDelete } = modificationOps;
-  const secureOps: ModificationOps = {
-    toCreate: toCreate.filter(
-      (item) => item.activityId === activity.id && childrenFit(item),
-    ),
-    toUpdate: toUpdate.filter(
-      (item) => item.activityId === activity.id && childrenFit(item),
-    ),
-    toDelete: toDelete.filter((id) =>
-      activity.activityItems.some((i) => i.id === id),
-    ),
-  };
-  return secureOps;
+  if (1) {
+    throw new Error("Not implemented");
+  }
+  return modificationOps;
+}
+
+async function assignTableSet(toTableSet: TableSet, fromTableSet: TableSet) {
+  objectEntries(fromTableSet).forEach(([tableKey, table]) => {
+    objectEntries(table).forEach(([id, row]) => {
+      toTableSet[tableKey][id] = row;
+    });
+  });
 }
 
 export async function applyModificationOps({
   ensureOpsFitActivity,
   activity,
   modificationOps: rawOps,
+  tx,
 }: {
   ensureOpsFitActivity: true;
   activity: RichActivity;
   modificationOps: ModificationOps;
+  tx: DbOrTx;
 }) {
   // this is just to call out what exactly the function is responsible for
   noop(ensureOpsFitActivity);
+
+  // TODO: check that the ops fit the activity
   const modificationOps = getSecureOps({ activity, modificationOps: rawOps });
 
   const { toCreate, toUpdate, toDelete } = modificationOps;
+  const result = createEmptyTables();
   await Promise.all([
-    createItems({ drafts: toCreate }),
-    updateItems({ items: toUpdate }),
-    deleteItems(toDelete),
+    insertTables(activity.id, toCreate, tx).then((tableSet) =>
+      assignTableSet(result, tableSet),
+    ),
+    updateTables(activity.id, toUpdate, tx).then((tableSet) =>
+      assignTableSet(result, tableSet),
+    ),
+    deleteTables(activity.id, toDelete, tx),
   ]);
+  return result;
 }

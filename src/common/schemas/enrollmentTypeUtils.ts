@@ -9,11 +9,12 @@ export const enrollmentTypeSchema = z.enum([
 ]);
 export type EnrollmentType = z.infer<typeof enrollmentTypeSchema>;
 
-const developmentViewers = new Set<EnrollmentType>([
-  "teacher",
-  "ta",
-  "designer",
-]);
-export function canViewDevelopmentData(enrollmentTypes: EnrollmentType[]) {
-  return enrollmentTypes.some((et) => developmentViewers.has(et));
+const designers = new Set<EnrollmentType>(["teacher", "designer"]);
+export function isDesigner(enrollmentTypes: EnrollmentType[]) {
+  return enrollmentTypes.some((et) => designers.has(et));
+}
+
+const graders = new Set<EnrollmentType>(["teacher", "ta"]);
+export function isGrader(enrollmentTypes: EnrollmentType[]) {
+  return enrollmentTypes.some((et) => graders.has(et));
 }

@@ -1,18 +1,18 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { type RichActivityAndEvalKeys } from "~/common/schemas/richActivity";
 import { Status, loading, neverLoaded } from "~/common/utils/status";
-import { type ActivityItemWithChildren } from "~/server/db/schema";
 import { trpc } from "~/trpc/proxy";
 import { createDraftActivityItemWithChildren } from "./utils";
 import { clone } from "~/common/utils/cloneUtils";
-import {
-  createModifiedIdTracker,
-  getModificationOps,
-} from "~/common/utils/activityUtils";
+import { ModificationOps } from "~/server/db/schema";
+import { createEmptyTables } from "~/common/utils/tableUtils";
+
+const createModifiedIdTracker = (): ModificationOps => ({
+  toCreate: createEmptyTables(),
+  toUpdate: createEmptyTables(),
+  toDelete: createEmptyTables(),
+});
 
 export class ActivityEditorStore {
-  public savedActivity: RichActivityAndEvalKeys | Status = neverLoaded;
-
   // not sorted
   private allItemDrafts: ActivityItemWithChildren[] | Status = neverLoaded;
 

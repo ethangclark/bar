@@ -251,7 +251,7 @@ export async function getCanvasCourses({
     const responseSchema = z.array(canvasCourseResponseSchema);
     const coursesResult = await makeCanvasRequest({
       canvasIntegrationId,
-      relPath: `/api/v1/courses`,
+      relPath: `/api/v1/users/${canvasUser.canvasGlobalId}/courses`,
       method: "GET",
       responseSchema,
       refreshToken: canvasUser.oauthRefreshToken,

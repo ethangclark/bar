@@ -159,10 +159,13 @@ export const integrations = pgTable("integration", {
   type: integrationTypeEnum("type").notNull(),
 });
 export type Integration = InferSelectModel<typeof integrations>;
-export const integrationsRelations = relations(integrations, ({ many }) => ({
-  userIntegraitons: many(userIntegrations),
-  canvasIntegrations: many(canvasIntegrations),
-}));
+export const integrationsRelations = relations(
+  integrations,
+  ({ one, many }) => ({
+    userIntegraitons: many(userIntegrations),
+    canvasIntegration: one(canvasIntegrations),
+  }),
+);
 
 export const userIntegrations = pgTable(
   "user_integrations",
@@ -211,221 +214,22 @@ export const canvasIntegrations = pgTable(
     validated: boolean("validated").default(false).notNull(),
   },
   (ci) => [
-    index("canvas_integration_id_idx").on(ci.integrationId),
-    uniqueIndex("canvas_int_base_url_idx").on(ci.canvasBaseUrl),
+    index("canvas_integration_integration_id_idx").on(ci.integrationId),
+    uniqueIndex("canvas_integration_base_url_idx").on(ci.canvasBaseUrl),
   ],
 );
 export type CanvasIntegration = InferSelectModel<typeof canvasIntegrations>;
 export const canvasIntegrationsRelations = relations(
   canvasIntegrations,
-  ({ one }) => ({
+  ({ one, many }) => ({
     integration: one(integrations, {
       fields: [canvasIntegrations.integrationId],
       references: [integrations.id],
     }),
+    canvasUsers: many(canvasUsers),
   }),
 );
-
-export const activityStatusEnum = pgEnum("activity_status", [
-  "draft",
-  "published",
-]);
-export const activityStatusSchema = z.enum(activityStatusEnum.enumValues);
-export type ActivityStatus = z.infer<typeof activityStatusSchema>;
-
-export const activities = pgTable(
-  "activity",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    exCourseIdJson: text("ex_course_id_json").notNull(),
-    exAssignmentIdJson: text("ex_id_json").notNull(),
-    integrationId: uuid("integration_id")
-      .notNull()
-      .references(
-        () =>
-          integrations.id /*, { onDelete: "cascade" } preserve in case of deletion */,
-      ),
-    status: activityStatusEnum("status").notNull().default("draft"),
-  },
-  (a) => [
-    index("activity_ex_course_id_json_idx").on(a.exCourseIdJson),
-    index("activity_ex_assignment_id_json_idx").on(a.exAssignmentIdJson),
-    index("activity_integration_id_idx").on(a.integrationId),
-  ],
-);
-export type Activity = InferSelectModel<typeof activities>;
-export const activitiesRelations = relations(activities, ({ one, many }) => ({
-  integration: one(integrations, {
-    fields: [activities.integrationId],
-    references: [integrations.id],
-  }),
-  activityItems: many(activityItems),
-}));
-
-// should have a questionId XOR infoTextId
-export const activityItems = pgTable(
-  "activity_item",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    activityId: uuid("activity_id")
-      .notNull()
-      .references(() => activities.id, { onDelete: "cascade" }),
-    orderFracIdx: text("order_frac_idx").notNull(),
-  },
-  (ai) => [index("activity_item_activity_id_idx").on(ai.activityId)],
-);
-export type ActivityItem = InferSelectModel<typeof activityItems>;
-export const activityItemRelations = relations(
-  activityItems,
-  ({ one, many }) => ({
-    activity: one(activities, {
-      fields: [activityItems.activityId],
-      references: [activities.id],
-    }),
-    questions: many(questions),
-    infoTexts: many(infoTexts),
-    infoImages: many(infoImages),
-  }),
-);
-export const activityItemSchema = createSelectSchema(activityItems);
-
-export const evalKeys = pgTable("eval_key", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  questionId: uuid("question_id")
-    .notNull()
-    .references(() => questions.id, { onDelete: "cascade" }),
-  key: text("key").notNull(),
-});
-export type EvalKey = InferSelectModel<typeof evalKeys>;
-export const evalKeysRelations = relations(evalKeys, ({ one }) => ({
-  question: one(questions, {
-    fields: [evalKeys.questionId],
-    references: [questions.id],
-  }),
-}));
-export const evalKeySchema = createSelectSchema(evalKeys);
-
-export const questions = pgTable("question", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  activityItemId: uuid("activity_item_id")
-    .notNull()
-    .references(() => activityItems.id, { onDelete: "cascade" }),
-  content: text("content").notNull(),
-});
-export type Question = InferSelectModel<typeof questions>;
-export const questionsRelations = relations(questions, ({ one, many }) => ({
-  activityItem: one(activityItems, {
-    fields: [questions.activityItemId],
-    references: [activityItems.id],
-  }),
-  evalKeys: many(evalKeys),
-}));
-export const questionSchema = createSelectSchema(questions);
-
-export const infoTexts = pgTable("info_text", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  activityItemId: uuid("activity_item_id")
-    .notNull()
-    .references(() => activityItems.id, { onDelete: "cascade" }),
-  content: text("content").notNull(),
-});
-export type InfoText = InferSelectModel<typeof infoTexts>;
-export const infoTextsRelations = relations(infoTexts, ({ one }) => ({
-  activityItem: one(activityItems, {
-    fields: [infoTexts.activityItemId],
-    references: [activityItems.id],
-  }),
-}));
-export const infoTextSchema = createSelectSchema(infoTexts);
-
-export const infoImages = pgTable("info_image", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  activityItemId: uuid("activity_item_id")
-    .notNull()
-    .references(() => activityItems.id, { onDelete: "cascade" }),
-  url: text("url").notNull(),
-  textAlternative: text("text_alternative").notNull(),
-});
-export type InfoImage = InferSelectModel<typeof infoImages>;
-export const infoImagesRelations = relations(infoImages, ({ one }) => ({
-  activityItem: one(activityItems, {
-    fields: [infoImages.activityItemId],
-    references: [activityItems.id],
-  }),
-}));
-export const infoImageSchema = createSelectSchema(infoImages);
-
-// todo: infoVideo (will require video streaming solution)
-
-export const activityItemWithChildrenSchema = activityItemSchema.extend({
-  questions: z.array(questionSchema),
-  infoTexts: z.array(infoTextSchema),
-  infoImages: z.array(infoImageSchema),
-});
-export type ActivityItemWithChildren = z.infer<
-  typeof activityItemWithChildrenSchema
->;
-
-export const threads = pgTable("thread", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  activityItemId: uuid("activity_item_id")
-    .notNull()
-    .references(() => activityItems.id, { onDelete: "cascade" }),
-});
-export type Thread = InferSelectModel<typeof threads>;
-export const threadsRelations = relations(threads, ({ one, many }) => ({
-  activityItem: one(activityItems, {
-    fields: [threads.activityItemId],
-    references: [activityItems.id],
-  }),
-  messages: many(messages),
-}));
-
-export const senderRoleEnum = pgEnum("sender_role", [
-  "user",
-  "assistant",
-  "system",
-]);
-export const senderRoleSchema = z.enum(senderRoleEnum.enumValues);
-export type SenderRole = z.infer<typeof senderRoleSchema>;
-
-export const messages = pgTable(
-  "message",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    threadId: uuid("thread_id")
-      .notNull()
-      .references(() => threads.id, { onDelete: "cascade" }),
-    senderRole: senderRoleEnum("sender_role").notNull(),
-    content: text("content").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    order: serial("insert_order").notNull(),
-  },
-  (cm) => [
-    index("message_user_id_idx").on(cm.userId),
-    index("message_thread_id_idx").on(cm.threadId),
-  ],
-);
-export type Message = InferSelectModel<typeof messages>;
-export const messagesRelations = relations(messages, ({ one }) => ({
-  user: one(users, {
-    fields: [messages.userId],
-    references: [users.id],
-  }),
-  thread: one(threads, {
-    fields: [messages.threadId],
-    references: [threads.id],
-  }),
-}));
-export const messageSchema = createSelectSchema(messages);
+export const canvasIntegrationSchema = createSelectSchema(canvasIntegrations);
 
 export const canvasUsers = pgTable(
   "canvas_user",
@@ -459,3 +263,275 @@ export const canvasUsersRelations = relations(canvasUsers, ({ one }) => ({
   }),
 }));
 export const canvasUserSchema = createSelectSchema(canvasUsers);
+
+export const activityStatusEnum = pgEnum("activity_status", [
+  "draft",
+  "published",
+]);
+export const activityStatusSchema = z.enum(activityStatusEnum.enumValues);
+export type ActivityStatus = z.infer<typeof activityStatusSchema>;
+
+export const activities = pgTable(
+  "activity",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    exCourseIdJson: text("ex_course_id_json").notNull(),
+    exAssignmentIdJson: text("ex_assignment_id_json").notNull(),
+    integrationId: uuid("integration_id")
+      .notNull()
+      .references(
+        () =>
+          integrations.id /*, { onDelete: "cascade" } preserve in case of deletion */,
+      ),
+    status: activityStatusEnum("status").notNull().default("draft"),
+  },
+  (a) => [
+    index("activity_ex_course_id_json_idx").on(a.exCourseIdJson),
+    index("activity_ex_assignment_id_json_idx").on(a.exAssignmentIdJson),
+    index("activity_integration_id_idx").on(a.integrationId),
+  ],
+);
+export type Activity = InferSelectModel<typeof activities>;
+export const activitiesRelations = relations(activities, ({ one, many }) => ({
+  integration: one(integrations, {
+    fields: [activities.integrationId],
+    references: [integrations.id],
+  }),
+  activityItems: many(activityItems),
+  evalKeys: many(evalKeys),
+  questions: many(questions),
+  infoTexts: many(infoTexts),
+  infoImages: many(infoImages),
+  threads: many(threads),
+  messages: many(messages),
+}));
+export const activitySchema = createSelectSchema(activities);
+
+// should have a questionId XOR infoTextId
+export const activityItems = pgTable(
+  "activity_item",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    orderFracIdx: text("order_frac_idx").notNull(),
+  },
+  (ai) => [index("activity_item_activity_id_idx").on(ai.activityId)],
+);
+export type ActivityItem = InferSelectModel<typeof activityItems>;
+export const activityItemRelations = relations(activityItems, ({ one }) => ({
+  activity: one(activities, {
+    fields: [activityItems.activityId],
+    references: [activities.id],
+  }),
+  question: one(questions),
+  infoText: one(infoTexts),
+  infoImage: one(infoImages),
+}));
+export const activityItemSchema = createSelectSchema(activityItems);
+
+export const evalKeys = pgTable(
+  "eval_key",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    questionId: uuid("question_id")
+      .notNull()
+      .references(() => questions.id, { onDelete: "cascade" }),
+    key: text("key").notNull(),
+  },
+  (ek) => [
+    index("eval_key_activity_id_idx").on(ek.activityId),
+    index("eval_key_question_id_idx").on(ek.questionId),
+  ],
+);
+export type EvalKey = InferSelectModel<typeof evalKeys>;
+export const evalKeysRelations = relations(evalKeys, ({ one }) => ({
+  activity: one(activities, {
+    fields: [evalKeys.activityId],
+    references: [activities.id],
+  }),
+  question: one(questions, {
+    fields: [evalKeys.questionId],
+    references: [questions.id],
+  }),
+}));
+export const evalKeySchema = createSelectSchema(evalKeys);
+
+export const questions = pgTable(
+  "question",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    activityItemId: uuid("activity_item_id")
+      .notNull()
+      .references(() => activityItems.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+  },
+  (q) => [
+    index("question_activity_id_idx").on(q.activityId),
+    index("question_activity_item_id_idx").on(q.activityItemId),
+  ],
+);
+export type Question = InferSelectModel<typeof questions>;
+export const questionsRelations = relations(questions, ({ one }) => ({
+  activity: one(activities, {
+    fields: [questions.activityId],
+    references: [activities.id],
+  }),
+  activityItem: one(activityItems, {
+    fields: [questions.activityItemId],
+    references: [activityItems.id],
+  }),
+  evalKey: one(evalKeys),
+}));
+export const questionSchema = createSelectSchema(questions);
+
+export const infoTexts = pgTable(
+  "info_text",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    activityItemId: uuid("activity_item_id")
+      .notNull()
+      .references(() => activityItems.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+  },
+  (it) => [
+    index("info_text_activity_id_idx").on(it.activityId),
+    index("info_text_activity_item_id_idx").on(it.activityItemId),
+  ],
+);
+export type InfoText = InferSelectModel<typeof infoTexts>;
+export const infoTextsRelations = relations(infoTexts, ({ one }) => ({
+  activity: one(activities, {
+    fields: [infoTexts.activityId],
+    references: [activities.id],
+  }),
+  activityItem: one(activityItems, {
+    fields: [infoTexts.activityItemId],
+    references: [activityItems.id],
+  }),
+}));
+export const infoTextSchema = createSelectSchema(infoTexts);
+
+export const infoImages = pgTable(
+  "info_image",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    activityItemId: uuid("activity_item_id")
+      .notNull()
+      .references(() => activityItems.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    textAlternative: text("text_alternative").notNull(),
+  },
+  (ii) => [
+    index("info_image_activity_id_idx").on(ii.activityId),
+    index("info_image_activity_item_id_idx").on(ii.activityItemId),
+  ],
+);
+export type InfoImage = InferSelectModel<typeof infoImages>;
+export const infoImagesRelations = relations(infoImages, ({ one }) => ({
+  activity: one(activities, {
+    fields: [infoImages.activityId],
+    references: [activities.id],
+  }),
+  activityItem: one(activityItems, {
+    fields: [infoImages.activityItemId],
+    references: [activityItems.id],
+  }),
+}));
+export const infoImageSchema = createSelectSchema(infoImages);
+
+// todo: infoVideo (will require video streaming solution)
+
+export const threads = pgTable(
+  "thread",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    activityItemId: uuid("activity_item_id")
+      .notNull()
+      .references(() => activityItems.id, { onDelete: "cascade" }),
+  },
+  (x) => [
+    index("thread_activity_id_idx").on(x.activityId),
+    index("thread_activity_item_id_idx").on(x.activityItemId),
+  ],
+);
+export type Thread = InferSelectModel<typeof threads>;
+export const threadsRelations = relations(threads, ({ one, many }) => ({
+  activity: one(activities, {
+    fields: [threads.activityId],
+    references: [activities.id],
+  }),
+  activityItem: one(activityItems, {
+    fields: [threads.activityItemId],
+    references: [activityItems.id],
+  }),
+  messages: many(messages),
+}));
+export const threadSchema = createSelectSchema(threads);
+
+export const senderRoleEnum = pgEnum("sender_role", [
+  "user",
+  "assistant",
+  "system",
+]);
+export const senderRoleSchema = z.enum(senderRoleEnum.enumValues);
+export type SenderRole = z.infer<typeof senderRoleSchema>;
+
+export const messages = pgTable(
+  "message",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    threadId: uuid("thread_id")
+      .notNull()
+      .references(() => threads.id, { onDelete: "cascade" }),
+    senderRole: senderRoleEnum("sender_role").notNull(),
+    content: text("content").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    order: serial("insert_order").notNull(),
+  },
+  (x) => [
+    index("message_user_id_idx").on(x.userId),
+    index("message_thread_id_idx").on(x.threadId),
+    index("message_sender_role_idx").on(x.senderRole),
+    index("message_activity_id_idx").on(x.activityId),
+  ],
+);
+export type Message = InferSelectModel<typeof messages>;
+export const messagesRelations = relations(messages, ({ one }) => ({
+  user: one(users, {
+    fields: [messages.userId],
+    references: [users.id],
+  }),
+  thread: one(threads, {
+    fields: [messages.threadId],
+    references: [threads.id],
+  }),
+}));
+export const messageSchema = createSelectSchema(messages);
