@@ -127,24 +127,15 @@ export async function assertActivityAccess({
 
 async function createQuestions(questions: Question[]) {
   if (!questions.length) return;
-  await db
-    .insert(db.x.questions)
-    .values(questions.map(({ id: _, ...q }) => q))
-    .returning();
+  await db.insert(db.x.questions).values(questions).returning();
 }
 async function createInfoTexts(infoTexts: InfoText[]) {
   if (!infoTexts.length) return;
-  await db
-    .insert(db.x.infoTexts)
-    .values(infoTexts.map(({ id: _, ...i }) => i))
-    .returning();
+  await db.insert(db.x.infoTexts).values(infoTexts).returning();
 }
 async function createInfoImages(infoImages: InfoImage[]) {
   if (!infoImages.length) return;
-  await db
-    .insert(db.x.infoImages)
-    .values(infoImages.map(({ id: _, ...i }) => i))
-    .returning();
+  await db.insert(db.x.infoImages).values(infoImages).returning();
 }
 
 // could add tests to ensure IDs are omitted
@@ -154,7 +145,7 @@ async function createItems({ drafts }: { drafts: ActivityItemWithChildren[] }) {
   if (!draft1) return;
   const created = await db
     .insert(db.x.activityItems)
-    .values(drafts.map(({ id: _, ...i }) => i))
+    .values(drafts)
     .returning();
   const promises = Array<Promise<void>>();
   objectKeys(draft1).forEach((key) => {
