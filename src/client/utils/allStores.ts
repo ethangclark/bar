@@ -1,12 +1,18 @@
-import { ActivityEditorStore } from "../activity/activityEditorStore";
+import { ActivityStore } from "../activity/activityStore";
 import { EvalKeyStore } from "../activity/evalKeyStore";
+import { ActivityEditorStore } from "../activity/activityEditorStore";
 
-const activityEditorStore = new ActivityEditorStore();
-const evalKeyStore = new EvalKeyStore(activityEditorStore);
+const activityStore = new ActivityStore();
+const evalKeyStore = new EvalKeyStore();
+const activityEditorStore = new ActivityEditorStore(
+  activityStore,
+  evalKeyStore,
+);
 
 export const stores = {
-  activityEditorStore,
+  activityStore,
   evalKeyStore,
+  activityEditorStore,
 };
 
 export type Stores = typeof stores;

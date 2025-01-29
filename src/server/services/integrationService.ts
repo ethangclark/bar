@@ -20,7 +20,7 @@ export async function getIntegration({
     with: {
       integration: {
         with: {
-          canvasIntegrations: true,
+          canvasIntegration: true,
         },
       },
     },
@@ -37,7 +37,7 @@ export async function getIntegrations(userId: string) {
     with: {
       integration: {
         with: {
-          canvasIntegrations: true,
+          canvasIntegration: true,
         },
       },
     },

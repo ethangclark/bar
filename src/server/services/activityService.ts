@@ -2,7 +2,7 @@ import { eq, inArray } from "drizzle-orm";
 import { type RichActivity } from "~/common/schemas/richActivity";
 import { type ModificationOps } from "~/common/utils/activityUtils";
 import { assertNever } from "~/common/utils/errorUtils";
-import { asserted, invoke, noop } from "~/common/utils/fnUtils";
+import { asserted, invoke, isNonNullish, noop } from "~/common/utils/fnUtils";
 import { db } from "~/server/db";
 import {
   type LmsAssignment,
@@ -25,9 +25,9 @@ export async function unsafe_getActivity(activityId: string) {
     with: {
       activityItems: {
         with: {
-          questions: true,
-          infoTexts: true,
-          infoImages: true,
+          question: true,
+          infoText: true,
+          infoImage: true,
         },
       },
     },
@@ -165,45 +165,57 @@ async function createItems({ drafts }: { drafts: ActivityItemWithChildren[] }) {
         case "activityId":
         case "orderFracIdx":
           return true;
-        case "questions": {
+        case "question": {
           promises.push(
             createQuestions(
               drafts
                 .map((i, idx) =>
-                  i.questions.map((q) => ({
-                    ...q,
-                    activityItemId: asserted(created[idx]).id,
-                  })),
+                  i.question
+                    ? [
+                        {
+                          ...i.question,
+                          activityItemId: asserted(created[idx]).id,
+                        },
+                      ]
+                    : [],
                 )
                 .flat(),
             ),
           );
           return true;
         }
-        case "infoTexts": {
+        case "infoText": {
           promises.push(
             createInfoTexts(
               drafts
                 .map((i, idx) =>
-                  i.infoTexts.map((i) => ({
-                    ...i,
-                    activityItemId: asserted(created[idx]).id,
-                  })),
+                  i.infoText
+                    ? [
+                        {
+                          ...i.infoText,
+                          activityItemId: asserted(created[idx]).id,
+                        },
+                      ]
+                    : [],
                 )
                 .flat(),
             ),
           );
           return true;
         }
-        case "infoImages": {
+        case "infoImage": {
           promises.push(
             createInfoImages(
               drafts
                 .map((i, idx) =>
-                  i.infoImages.map((i) => ({
-                    ...i,
-                    activityItemId: asserted(created[idx]).id,
-                  })),
+                  i.infoImage
+                    ? [
+                        {
+                          ...i.infoImage,
+                          activityItemId: asserted(created[idx]).id,
+                        },
+                      ]
+                    : [],
                 )
                 .flat(),
             ),
@@ -258,16 +270,22 @@ async function updateItems({ items }: { items: ActivityItemWithChildren[] }) {
           case "activityId":
           case "orderFracIdx":
             return true;
-          case "questions": {
-            promises.push(updateQuestions(item.questions));
+          case "question": {
+            promises.push(
+              updateQuestions([item.question].filter(isNonNullish)),
+            );
             return true;
           }
-          case "infoTexts": {
-            promises.push(updateInfoTexts(item.infoTexts));
+          case "infoText": {
+            promises.push(
+              updateInfoTexts([item.infoText].filter(isNonNullish)),
+            );
             return true;
           }
-          case "infoImages": {
-            promises.push(updateInfoImages(item.infoImages));
+          case "infoImage": {
+            promises.push(
+              updateInfoImages([item.infoImage].filter(isNonNullish)),
+            );
             return true;
           }
         }
@@ -293,12 +311,18 @@ function childrenFit(item: ActivityItemWithChildren): boolean {
         case "activityId":
         case "orderFracIdx":
           return true;
-        case "questions":
-          return item.questions.every((q) => q.activityItemId === item.id);
-        case "infoTexts":
-          return item.infoTexts.every((i) => i.activityItemId === item.id);
-        case "infoImages":
-          return item.infoImages.every((i) => i.activityItemId === item.id);
+        case "question":
+          return item.question
+            ? item.question.activityItemId === item.id
+            : true;
+        case "infoText":
+          return item.infoText
+            ? item.infoText.activityItemId === item.id
+            : true;
+        case "infoImage":
+          return item.infoImage
+            ? item.infoImage.activityItemId === item.id
+            : true;
       }
     });
     if (!isOk) return false;

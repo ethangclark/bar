@@ -16,18 +16,22 @@ export const ActivityItem = storeObserver<{
   deleted,
   teacherModeAvailable,
   showControls,
-  activityEditorStore,
+  activityStore: activityEditorStore,
 }) {
   return (
     <div
       className={`flex flex-col items-center px-4 pb-8 ${deleted ? "opacity-30" : ""}`}
       style={{ width: 500 }}
     >
-      {item.infoImages.map((infoImage) => (
-        <div key={infoImage.id} className="w-full">
+      {item.infoImage ? (
+        <div key={item.infoImage.id} className="w-full">
           <ImageFromDataUrl
-            alt={infoImage.url ? infoImage.textAlternative : "Missing image"}
-            src={infoImage.url}
+            alt={
+              item.infoImage.url
+                ? item.infoImage.textAlternative
+                : "Missing image"
+            }
+            src={item.infoImage.url}
             style={{
               maxWidth: "100%",
               marginBottom: 4,
@@ -57,7 +61,7 @@ export const ActivityItem = storeObserver<{
             </div>
           </div>
           <WysiwygEditor
-            value={infoImage.textAlternative}
+            value={item.infoImage.textAlternative}
             disabled={!teacherModeAvailable}
             setValue={(v) => {
               activityEditorStore.setItemInfoImageDraftTextAlternative({
@@ -67,11 +71,11 @@ export const ActivityItem = storeObserver<{
             }}
           />
         </div>
-      ))}
-      {item.infoTexts.map((infoText) => (
-        <div key={infoText.id} className="w-full">
+      ) : null}
+      {item.infoText ? (
+        <div key={item.infoText.id} className="w-full">
           <WysiwygEditor
-            value={infoText.content}
+            value={item.infoText.content}
             disabled={!teacherModeAvailable}
             setValue={(v) => {
               activityEditorStore.setItemInfoTextDraftContent({
@@ -81,11 +85,11 @@ export const ActivityItem = storeObserver<{
             }}
           />
         </div>
-      ))}
-      {item.questions.map((question) => (
-        <div key={question.id} className="w-full">
+      ) : null}
+      {item.question ? (
+        <div key={item.question.id} className="w-full">
           <WysiwygEditor
-            value={question.content}
+            value={item.question.content}
             disabled={!teacherModeAvailable}
             setValue={(v) => {
               activityEditorStore.setItemQuestionDraftContent({
@@ -95,7 +99,7 @@ export const ActivityItem = storeObserver<{
             }}
           />
         </div>
-      ))}
+      ) : null}
     </div>
   );
 });

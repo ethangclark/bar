@@ -57,6 +57,13 @@
       "when": 1737861267537,
       "tag": "0007_spooky_morlocks",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1738124710013,
+      "tag": "0008_good_rhino",
+      "breakpoints": true
     }
   ]
 }

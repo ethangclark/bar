@@ -10,7 +10,7 @@ import { ActivityItem } from "./ActivityItem";
 import { FooterControls } from "./FooterControls";
 
 export const Activity = storeObserver(function Activity({
-  activityEditorStore,
+  activityStore: activityEditorStore,
 }) {
   const { savedActivity, itemDrafts } = activityEditorStore;
 

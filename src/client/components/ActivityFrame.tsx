@@ -1,8 +1,8 @@
 import { Button, Switch } from "antd";
 import { Fragment } from "react";
-import { storeObserver } from "../utils/storeObserver";
 import { invoke } from "~/common/utils/fnUtils";
 import { type ActivityStatus } from "~/server/db/schema";
+import { storeObserver } from "../utils/storeObserver";
 
 const Spacer = () => <div />;
 
@@ -71,7 +71,7 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
               className="m-1"
               type="primary"
               disabled={activityEditorStore.canSave === false}
-              onClick={() => activityEditorStore.saveActivity()}
+              onClick={() => activityEditorStore.save()}
             >
               {invoke((): string => {
                 switch (activityStatus) {

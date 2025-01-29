@@ -16,46 +16,43 @@ export function createDraftActivityItemWithChildren({
     id: draftUuid,
     activityId,
     orderFracIdx: generateKeyBetween(afterOrderFracIdx, null),
-    questions: [],
-    infoTexts: [],
-    infoImages: [],
+    question: null,
+    infoText: null,
+    infoImage: null,
   };
   switch (itemType) {
     case "question": {
       return {
         ...base,
-        questions: [
-          {
-            id: draftUuid,
-            activityItemId: base.id,
-            content: "",
-          },
-        ],
+        question: {
+          id: draftUuid,
+          activityItemId: base.id,
+          activityId,
+          content: "",
+        },
       };
     }
     case "text": {
       return {
         ...base,
-        infoTexts: [
-          {
-            id: draftUuid,
-            activityItemId: base.id,
-            content: "",
-          },
-        ],
+        infoText: {
+          id: draftUuid,
+          activityItemId: base.id,
+          activityId,
+          content: "",
+        },
       };
     }
     case "image": {
       return {
         ...base,
-        infoImages: [
-          {
-            id: draftUuid,
-            activityItemId: base.id,
-            url: "",
-            textAlternative: "",
-          },
-        ],
+        infoImage: {
+          id: draftUuid,
+          activityItemId: base.id,
+          activityId,
+          url: "",
+          textAlternative: "",
+        },
       };
     }
   }

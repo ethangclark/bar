@@ -130,7 +130,12 @@ export async function createCanvasIntegrationApi(
     throw new Error("Canvas integration not found");
   }
 
-  // TODO: update the `valid` field of the integraiton after first successful API call
+  const markValidated = () =>
+    db
+      .update(db.x.canvasIntegrations)
+      .set({ validated: true })
+      .where(eq(db.x.canvasIntegrations.id, canvasIntegration.id));
+
   return {
     type: "canvas",
     integration,
@@ -145,11 +150,12 @@ export async function createCanvasIntegrationApi(
         canvasIntegrationId: canvasIntegration.id,
         integrationId: integration.id,
       });
+      await markValidated();
       return course;
     },
     getCourses: async ({ userId }) => {
       const canvasCourses = await getAllCanvasCourses(userId);
-      return Promise.all(
+      const result = await Promise.all(
         canvasCourses.map((canvasCourse) =>
           courseToLmsCourse({
             userId,
@@ -159,6 +165,8 @@ export async function createCanvasIntegrationApi(
           }),
         ),
       );
+      await markValidated();
+      return result;
     },
     setGrading: () => Promise.resolve(),
     submitScore: () => Promise.resolve(),

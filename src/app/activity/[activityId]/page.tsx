@@ -15,7 +15,7 @@ const ActivityPage = storeObserver(function ActivityPage({
 
   useEffect(() => {
     void activityEditorStore.loadActivity(activityId);
-    return () => activityEditorStore.clearActivity();
+    return () => activityEditorStore.reset();
   }, [activityEditorStore, activityId]);
 
   return (

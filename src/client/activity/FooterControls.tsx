@@ -17,7 +17,7 @@ const newItemOptions = [
 ] as const;
 
 export const FooterControls = storeObserver(function FooterControls({
-  activityEditorStore,
+  activityStore: activityEditorStore,
 }) {
   return (
     <div className="flex">

@@ -9,7 +9,7 @@ import {
 import { getEvalKeys } from "~/server/services/evalKeyService";
 
 export const activityRouter = createTRPCRouter({
-  details: publicProcedure
+  editorData: publicProcedure
     .input(z.object({ activityId: z.string() }))
     .query(async ({ input, ctx }) => {
       const activity = await getActivity({
@@ -17,10 +17,10 @@ export const activityRouter = createTRPCRouter({
         userId: ctx.userId,
         activityId: input.activityId,
       });
-      const { questionIdToEvalKey } = await getEvalKeys(activity, db);
+      const evalKeys = await getEvalKeys(activity, db);
       return {
-        ...activity,
-        questionIdToEvalKey,
+        activity,
+        evalKeys,
       };
     }),
 
