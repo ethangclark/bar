@@ -1,6 +1,6 @@
 import { Button, Switch } from "antd";
 import { Fragment } from "react";
-import { invoke } from "~/common/utils/fnUtils";
+import { invoke } from "~/common/fnUtils";
 import { type ActivityStatus } from "~/server/db/schema";
 import { storeObserver } from "../utils/storeObserver";
 

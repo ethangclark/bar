@@ -6,7 +6,7 @@ import {
   // httpLink,
 } from "@trpc/client";
 import SuperJSON from "superjson";
-import { getTrpcUrl } from "~/common/utils/urlUtils";
+import { getTrpcUrl } from "~/common/urlUtils";
 
 const linkOpts = {
   transformer: SuperJSON,

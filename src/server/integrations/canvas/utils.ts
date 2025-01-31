@@ -1,10 +1,10 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { type Json } from "~/common/utils/types";
+import { type Json } from "~/common/types";
 import { db } from "~/server/db";
 import { getCachedAccessToken, updateTokenCache } from "./canvasTokenCache";
-import { assertError } from "~/common/utils/errorUtils";
-import { enrollmentTypeSchema } from "~/common/schemas/enrollmentTypeUtils";
+import { assertError } from "~/common/errorUtils";
+import { enrollmentTypeSchema } from "~/common/enrollmentTypeUtils";
 
 export async function getCanvasIntegration(canvasIntegrationId: string) {
   const canvasIntegration = await db.query.canvasIntegrations.findFirst({

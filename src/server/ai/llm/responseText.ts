@@ -1,7 +1,7 @@
 import {
   type StreamingOpenRouterResponse,
   type OpenRouterResponse,
-} from "./llmSchemas";
+} from "./types";
 
 export function parseResponseText(
   response: OpenRouterResponse,

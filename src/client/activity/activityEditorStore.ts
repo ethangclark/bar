@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { Status } from "~/common/utils/status";
+import { Status } from "~/common/status";
 import { trpc } from "~/trpc/proxy";
 import { type ActivityStore } from "./activityStore";
 import { type EvalKeyStore } from "./evalKeyStore";

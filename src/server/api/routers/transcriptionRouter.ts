@@ -1,4 +1,4 @@
-import { audioDataSchema } from "~/common/utils/types";
+import { audioDataSchema } from "~/common/types";
 import { transcribeAudio } from "~/server/ai/stt";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 

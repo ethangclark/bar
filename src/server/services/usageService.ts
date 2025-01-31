@@ -1,7 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 import { type DbOrTx } from "~/server/db";
 import { users } from "~/server/db/schema";
-import { getUser } from "./user";
+import { getUser } from "./userService";
 
 export async function determineIfUsageOk(userId: string, tx: DbOrTx) {
   const user = await getUser(userId, tx);

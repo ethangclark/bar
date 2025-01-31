@@ -1,68 +1,48 @@
-import { eq, inArray } from "drizzle-orm";
-import { type RichActivity } from "~/common/schemas/richActivity";
-import { type ModificationOps } from "~/common/utils/activityUtils";
-import { assertNever } from "~/common/utils/errorUtils";
-import { asserted, invoke, isNonNullish, noop } from "~/common/utils/fnUtils";
+import { eq } from "drizzle-orm";
+import { isDeveloper } from "~/common/enrollmentTypeUtils";
+import { assertNever } from "~/common/errorUtils";
+import { noop } from "~/common/fnUtils";
 import { db } from "~/server/db";
-import {
-  type LmsAssignment,
-  type IntegrationApi,
-} from "~/server/integrations/utils/integrationApi";
+import { type LmsAssignment } from "~/server/integrations/utils/integrationApi";
 import { getIntegrationApi } from "~/server/services/integrationService";
-import {
-  type Question,
-  type ActivityItemWithChildren,
-  type InfoText,
-  type InfoImage,
-} from "../db/schema";
-import { objectKeys } from "~/common/utils/objectUtils";
-import { canViewDevelopmentData } from "~/common/schemas/enrollmentTypeUtils";
 
-// does not check that user has access to the activity
-export async function unsafe_getActivity(activityId: string) {
+export async function getActivity({
+  userId,
+  activityId,
+  assertAccess,
+}: {
+  userId: string;
+  activityId: string;
+  assertAccess: true;
+}) {
+  // this is just to call out what exactly the function is responsible for
+  noop(assertAccess);
+
   const activity = await db.query.activities.findFirst({
     where: eq(db.x.activities.id, activityId),
-    with: {
-      activityItems: {
-        with: {
-          question: true,
-          infoText: true,
-          infoImage: true,
-        },
-      },
-    },
   });
   if (!activity) {
     throw new Error("Activity not found");
   }
-  return activity;
-}
-type Unsafe_RichActivityPartial = Awaited<
-  ReturnType<typeof unsafe_getActivity>
->;
 
-async function ensureAccess({
-  userId,
-  integrationApi,
-  unsafe_activity,
-}: {
-  userId: string;
-  integrationApi: IntegrationApi;
-  unsafe_activity: Unsafe_RichActivityPartial;
-}) {
+  const integrationApi = await getIntegrationApi({
+    userId,
+    integrationId: activity.integrationId,
+  });
+
   const course = await integrationApi.getCourse({
     userId,
-    exCourseIdJson: unsafe_activity.exCourseIdJson,
+    exCourseIdJson: activity.exCourseIdJson,
   });
 
   // ensure that the activity is associated with an assignment that's visible to the user
   // (hiding unpublished assignments from students)
   let assignment: LmsAssignment | null = null;
   for (const a of course.assignments) {
-    if (a.activity?.id !== unsafe_activity.id) {
+    if (a.activity?.id !== activity.id) {
       continue;
     }
-    if (canViewDevelopmentData(course.enrolledAs)) {
+    if (isDeveloper(course.enrolledAs)) {
       assignment = a;
     }
     switch (a.activity.status) {
@@ -78,39 +58,7 @@ async function ensureAccess({
     throw new Error("Activity not found");
   }
 
-  // we've proved the user has access to this activity
-  const activity = unsafe_activity;
-
-  return { course, assignment, activity };
-}
-
-export async function getActivity({
-  assertAccess,
-  userId,
-  activityId,
-}: {
-  assertAccess: true;
-  userId: string;
-  activityId: string;
-}) {
-  // This function asserts that access is allowed.
-  // Requiring the assertAccess param just to make this clear.
-  noop(assertAccess);
-
-  const unsafe_activity = await unsafe_getActivity(activityId);
-
-  const integrationApi = await getIntegrationApi({
-    userId,
-    integrationId: unsafe_activity.integrationId,
-  });
-
-  const { course, assignment, activity } = await ensureAccess({
-    userId,
-    integrationApi,
-    unsafe_activity,
-  });
-
-  return { course, assignment, ...activity };
+  return { activity, course, assignment };
 }
 
 export async function assertActivityAccess({
@@ -121,247 +69,4 @@ export async function assertActivityAccess({
   activityId: string;
 }) {
   await getActivity({ userId, activityId, assertAccess: true });
-}
-
-// could add tests to ensure IDs are omitted
-
-async function createQuestions(questions: Question[]) {
-  if (!questions.length) return;
-  await db.insert(db.x.questions).values(questions).returning();
-}
-async function createInfoTexts(infoTexts: InfoText[]) {
-  if (!infoTexts.length) return;
-  await db.insert(db.x.infoTexts).values(infoTexts).returning();
-}
-async function createInfoImages(infoImages: InfoImage[]) {
-  if (!infoImages.length) return;
-  await db.insert(db.x.infoImages).values(infoImages).returning();
-}
-
-// could add tests to ensure IDs are omitted
-
-async function createItems({ drafts }: { drafts: ActivityItemWithChildren[] }) {
-  const [draft1] = drafts;
-  if (!draft1) return;
-  const created = await db
-    .insert(db.x.activityItems)
-    .values(drafts)
-    .returning();
-  const promises = Array<Promise<void>>();
-  objectKeys(draft1).forEach((key) => {
-    invoke((): true => {
-      switch (key) {
-        // fields we don't need to do anything with
-        case "id":
-        case "activityId":
-        case "orderFracIdx":
-          return true;
-        case "question": {
-          promises.push(
-            createQuestions(
-              drafts
-                .map((i, idx) =>
-                  i.question
-                    ? [
-                        {
-                          ...i.question,
-                          activityItemId: asserted(created[idx]).id,
-                        },
-                      ]
-                    : [],
-                )
-                .flat(),
-            ),
-          );
-          return true;
-        }
-        case "infoText": {
-          promises.push(
-            createInfoTexts(
-              drafts
-                .map((i, idx) =>
-                  i.infoText
-                    ? [
-                        {
-                          ...i.infoText,
-                          activityItemId: asserted(created[idx]).id,
-                        },
-                      ]
-                    : [],
-                )
-                .flat(),
-            ),
-          );
-          return true;
-        }
-        case "infoImage": {
-          promises.push(
-            createInfoImages(
-              drafts
-                .map((i, idx) =>
-                  i.infoImage
-                    ? [
-                        {
-                          ...i.infoImage,
-                          activityItemId: asserted(created[idx]).id,
-                        },
-                      ]
-                    : [],
-                )
-                .flat(),
-            ),
-          );
-          return true;
-        }
-      }
-    });
-  });
-  await Promise.all(promises);
-}
-
-async function updateQuestions(questions: Question[]) {
-  if (!questions.length) return;
-  await Promise.all(
-    questions.map((q) =>
-      db.update(db.x.questions).set(q).where(eq(db.x.questions.id, q.id)),
-    ),
-  );
-}
-async function updateInfoTexts(infoTexts: InfoText[]) {
-  if (!infoTexts.length) return;
-  await Promise.all(
-    infoTexts.map((i) =>
-      db.update(db.x.infoTexts).set(i).where(eq(db.x.infoTexts.id, i.id)),
-    ),
-  );
-}
-async function updateInfoImages(infoImages: InfoImage[]) {
-  if (!infoImages.length) return;
-  await Promise.all(
-    infoImages.map((i) =>
-      db.update(db.x.infoImages).set(i).where(eq(db.x.infoImages.id, i.id)),
-    ),
-  );
-}
-
-async function updateItems({ items }: { items: ActivityItemWithChildren[] }) {
-  const promises = Array<Promise<unknown>>();
-  for (const item of items) {
-    promises.push(
-      db
-        .update(db.x.activityItems)
-        .set(item)
-        .where(eq(db.x.activityItems.id, item.id)),
-    );
-    objectKeys(item).forEach((key) => {
-      invoke((): true => {
-        switch (key) {
-          // fields we don't need to do anything with
-          case "id":
-          case "activityId":
-          case "orderFracIdx":
-            return true;
-          case "question": {
-            promises.push(
-              updateQuestions([item.question].filter(isNonNullish)),
-            );
-            return true;
-          }
-          case "infoText": {
-            promises.push(
-              updateInfoTexts([item.infoText].filter(isNonNullish)),
-            );
-            return true;
-          }
-          case "infoImage": {
-            promises.push(
-              updateInfoImages([item.infoImage].filter(isNonNullish)),
-            );
-            return true;
-          }
-        }
-      });
-    });
-  }
-  await Promise.all(promises);
-}
-
-async function deleteItems(ids: string[]) {
-  if (!ids.length) return;
-  await db
-    .delete(db.x.activityItems)
-    .where(inArray(db.x.activityItems.id, ids));
-}
-
-// returns false if child IDs don't point to parent
-function childrenFit(item: ActivityItemWithChildren): boolean {
-  for (const key of objectKeys(item)) {
-    const isOk = invoke((): boolean => {
-      switch (key) {
-        case "id":
-        case "activityId":
-        case "orderFracIdx":
-          return true;
-        case "question":
-          return item.question
-            ? item.question.activityItemId === item.id
-            : true;
-        case "infoText":
-          return item.infoText
-            ? item.infoText.activityItemId === item.id
-            : true;
-        case "infoImage":
-          return item.infoImage
-            ? item.infoImage.activityItemId === item.id
-            : true;
-      }
-    });
-    if (!isOk) return false;
-  }
-  return true;
-}
-
-// returns ops such that their IDs can't have been manipulated
-// to access/modify resources they should not have access to
-function getSecureOps({
-  activity,
-  modificationOps,
-}: {
-  activity: RichActivity;
-  modificationOps: ModificationOps;
-}) {
-  const { toCreate, toUpdate, toDelete } = modificationOps;
-  const secureOps: ModificationOps = {
-    toCreate: toCreate.filter(
-      (item) => item.activityId === activity.id && childrenFit(item),
-    ),
-    toUpdate: toUpdate.filter(
-      (item) => item.activityId === activity.id && childrenFit(item),
-    ),
-    toDelete: toDelete.filter((id) =>
-      activity.activityItems.some((i) => i.id === id),
-    ),
-  };
-  return secureOps;
-}
-
-export async function applyModificationOps({
-  ensureOpsFitActivity,
-  activity,
-  modificationOps: rawOps,
-}: {
-  ensureOpsFitActivity: true;
-  activity: RichActivity;
-  modificationOps: ModificationOps;
-}) {
-  // this is just to call out what exactly the function is responsible for
-  noop(ensureOpsFitActivity);
-  const modificationOps = getSecureOps({ activity, modificationOps: rawOps });
-
-  const { toCreate, toUpdate, toDelete } = modificationOps;
-  await Promise.all([
-    createItems({ drafts: toCreate }),
-    updateItems({ items: toUpdate }),
-    deleteItems(toDelete),
-  ]);
 }

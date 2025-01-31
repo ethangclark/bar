@@ -4,7 +4,7 @@ import type { UploadProps } from "antd";
 import { Typography, Upload } from "antd";
 import { useMemo } from "react";
 import { type Notify, useNotify } from "../hooks/useNotify";
-import { isImageDataUrl } from "~/common/utils/pngUtils";
+import { isImageDataUrl } from "~/common/pngUtils";
 
 type OnFileSelect = (params: { imageDataUrl: string }) => void;
 

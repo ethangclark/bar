@@ -1,7 +1,4 @@
-import {
-  type Activity,
-  type ActivityItemWithChildren,
-} from "~/server/db/schema";
+import { type Activity } from "~/server/db/schema";
 import {
   type LmsAssignment,
   type LmsCourse,
@@ -10,5 +7,4 @@ import {
 export type RichActivity = Activity & {
   course: LmsCourse;
   assignment: LmsAssignment;
-  activityItems: ActivityItemWithChildren[];
 };

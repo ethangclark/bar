@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { getCanvasBaseUrl } from "~/common/utils/canvasUtils";
+import { getCanvasBaseUrl } from "~/common/canvasUtils";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 

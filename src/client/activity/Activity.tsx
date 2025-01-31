@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ActivityFrame } from "~/client/components/ActivityFrame";
 import { LoadingCentered } from "~/client/components/Loading";
 import { storeObserver } from "~/client/utils/storeObserver";
-import { Status } from "~/common/utils/status";
+import { Status } from "~/common/status";
 import { ActivityItem } from "./ActivityItem";
 import { FooterControls } from "./FooterControls";
 

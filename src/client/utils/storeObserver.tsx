@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { type BaseObject } from "~/common/utils/baseObject";
+import { type BaseObject } from "~/common/baseObject";
 import { type ComponentType } from "react";
 import { type Stores, stores } from "./allStores";
 

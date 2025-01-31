@@ -3,7 +3,7 @@
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { z } from "zod";
-import { getCanvasBaseUrl, getRedirectUrl } from "~/common/utils/canvasUtils";
+import { getCanvasBaseUrl, getRedirectUrl } from "~/common/canvasUtils";
 import { api } from "~/trpc/react";
 import { CreateIntegration } from "./createIntegration";
 import { LoadingPage } from "~/client/components/Loading";

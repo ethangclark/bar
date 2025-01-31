@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { getRedirectUrl } from "~/common/utils/canvasUtils";
+import { getRedirectUrl } from "~/common/canvasUtils";
 import { db, type DbOrTx } from "~/server/db";
 import { updateTokenCache } from "./canvasTokenCache";
 import {
@@ -9,7 +9,7 @@ import {
   makeCanvasRequest,
   narrowCanvasEnrollmentType,
 } from "./utils";
-import { parseDateOrNull } from "~/common/utils/timeUtils";
+import { parseDateOrNull } from "~/common/timeUtils";
 
 /*
 This file is a mess.

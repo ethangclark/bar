@@ -4,7 +4,7 @@ import { env } from "~/env";
 import { appRouter } from "~/server/api/root";
 import { createTRPCContext } from "~/server/api/trpc";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { noop } from "~/common/utils/fnUtils";
+import { noop } from "~/common/fnUtils";
 
 vi.mock("@trpc/server/adapters/fetch", () => ({
   fetchRequestHandler: vi.fn(),

@@ -3,7 +3,7 @@ import { db } from "~/server/db";
 import { createCanvasIntegrationApi } from "~/server/integrations/canvas/canvasIntegration";
 import { type IntegrationApi } from "~/server/integrations/utils/integrationApi";
 import { type Integration } from "../db/schema";
-import { assertNever } from "~/common/utils/errorUtils";
+import { assertNever } from "~/common/errorUtils";
 
 export async function getIntegration({
   userId,

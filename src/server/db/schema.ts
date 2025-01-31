@@ -15,6 +15,7 @@ import {
 import { createSelectSchema } from "drizzle-zod";
 import { type AdapterAccount } from "next-auth/adapters";
 import { z } from "zod";
+import { type ActivityDescendentName } from "~/common/activityDescendentUtils";
 
 export const pgTable = pgTableCreator((name) => name);
 
@@ -473,6 +474,9 @@ export const threads = pgTable(
     activityId: uuid("activity_id")
       .notNull()
       .references(() => activities.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -483,10 +487,15 @@ export const threads = pgTable(
   (x) => [
     index("thread_activity_id_idx").on(x.activityId),
     index("thread_activity_item_id_idx").on(x.activityItemId),
+    index("thread_user_id_idx").on(x.userId),
   ],
 );
 export type Thread = InferSelectModel<typeof threads>;
 export const threadsRelations = relations(threads, ({ one, many }) => ({
+  user: one(users, {
+    fields: [threads.userId],
+    references: [users.id],
+  }),
   activity: one(activities, {
     fields: [threads.activityId],
     references: [activities.id],
@@ -525,12 +534,10 @@ export const messages = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    order: serial("insert_order").notNull(),
   },
   (x) => [
     index("message_user_id_idx").on(x.userId),
     index("message_thread_id_idx").on(x.threadId),
-    index("message_sender_role_idx").on(x.senderRole),
     index("message_activity_id_idx").on(x.activityId),
   ],
 );

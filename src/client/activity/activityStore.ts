@@ -1,11 +1,11 @@
 import { makeAutoObservable } from "mobx";
-import { type RichActivity } from "~/common/schemas/richActivity";
+import { type RichActivity } from "~/server/utlis/richActivity";
 import {
   createModifiedIdTracker,
   getModificationOps,
 } from "~/common/utils/activityUtils";
-import { clone } from "~/common/utils/cloneUtils";
-import { Status, neverLoaded } from "~/common/utils/status";
+import { clone } from "~/common/cloneUtils";
+import { Status, neverLoaded } from "~/common/status";
 import { type ActivityItemWithChildren } from "~/server/db/schema";
 import { trpc } from "~/trpc/proxy";
 import { createDraftActivityItemWithChildren } from "./utils";

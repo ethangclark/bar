@@ -1,7 +1,7 @@
 import { identity } from "@trpc/server/unstable-core-do-not-import";
 import { makeAutoObservable } from "mobx";
-import { clone } from "~/common/utils/cloneUtils";
-import { indexById } from "~/common/utils/indexUtils";
+import { clone } from "~/common/cloneUtils";
+import { indexById } from "~/common/indexUtils";
 import { type EvalKey } from "~/server/db/schema";
 import { trpc } from "~/trpc/proxy";
 

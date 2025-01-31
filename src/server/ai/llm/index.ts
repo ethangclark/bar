@@ -1,5 +1,5 @@
 import { type DbOrTx } from "~/server/db";
-import { type OpenRouterRequest } from "./llmSchemas";
+import { type OpenRouterRequest } from "./types";
 import { getOpenRouterResponse, streamOpenRouterResponse } from "./openRouter";
 import { parseResponseText, parseStreamingResponseText } from "./responseText";
 

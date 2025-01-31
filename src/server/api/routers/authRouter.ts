@@ -3,7 +3,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { executeUserInitiation } from "~/server/integrations/canvas/canvasApiService";
-import { getSeatsRemaining } from "~/server/services/seats";
+import { getSeatsRemaining } from "~/server/services/seatsService";
 
 const isLoggedIn = (session: Session | null) => session !== null;
 

@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { type AudioData } from "~/common/utils/types";
+import { type AudioData } from "~/common/types";
 import { env } from "~/env";
 
 interface TranscriptionResult {

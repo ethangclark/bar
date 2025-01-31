@@ -2,7 +2,7 @@
 
 import { Typography } from "antd";
 import React from "react";
-import { formatDateTime } from "~/common/utils/timeUtils";
+import { formatDateTime } from "~/common/timeUtils";
 import { type ActivityStatus } from "~/server/db/schema";
 import { type NarrowedCanvasEnrollmentType } from "~/server/integrations/canvas/utils";
 import {
