@@ -2,7 +2,6 @@ import { type DbOrTx } from "~/server/db";
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
 import {
   type ActivityDescendentModification,
-  type ActivityDescendentIds,
   type ActivityDescendents,
 } from "./types";
 import { activityItemService } from "./activityItemController";
@@ -12,10 +11,11 @@ import { infoTextService } from "./infoTextController";
 import { messageService } from "./messageController";
 import { questionService } from "./questionController";
 import { threadService } from "./threadController";
-import { activityDescendentNames } from "~/common/activityDescendentUtils";
+import { activityDescendentNames } from "~/common/activityDescendentNames";
 import { assertNever } from "~/common/errorUtils";
 import { objectEntries } from "~/common/objectUtils";
 import { clone } from "~/common/cloneUtils";
+import { overwriteDescendents } from "~/common/activityDescendentUtils";
 
 export async function createActivityDescendents({
   activityId,
@@ -48,31 +48,31 @@ export async function createActivityDescendents({
   ] = await Promise.all([
     activityItemService.create({
       ...baseParams,
-      rows: activityDescendents.activityItems,
+      rows: Object.values(activityDescendents.activityItems),
     }),
     evalKeyService.create({
       ...baseParams,
-      rows: activityDescendents.evalKeys,
+      rows: Object.values(activityDescendents.evalKeys),
     }),
     questionService.create({
       ...baseParams,
-      rows: activityDescendents.questions,
+      rows: Object.values(activityDescendents.questions),
     }),
     infoTextService.create({
       ...baseParams,
-      rows: activityDescendents.infoTexts,
+      rows: Object.values(activityDescendents.infoTexts),
     }),
     infoImageService.create({
       ...baseParams,
-      rows: activityDescendents.infoImages,
+      rows: Object.values(activityDescendents.infoImages),
     }),
     threadService.create({
       ...baseParams,
-      rows: activityDescendents.threads,
+      rows: Object.values(activityDescendents.threads),
     }),
     messageService.create({
       ...baseParams,
-      rows: activityDescendents.messages,
+      rows: Object.values(activityDescendents.messages),
     }),
   ]);
 
@@ -217,20 +217,20 @@ export async function deleteActivityDescendents({
   activityId,
   userId,
   enrolledAs,
-  activityDescendentIds,
+  activityDescendents,
   tx,
 }: {
   activityId: string;
   userId: string;
   enrolledAs: EnrollmentType[];
-  activityDescendentIds: ActivityDescendentIds;
+  activityDescendents: ActivityDescendents;
   tx: DbOrTx;
 }) {
   const baseParams = {
     userId,
     activityId,
     enrolledAs,
-    activityDescendentIds,
+    activityDescendents,
     tx,
   };
 
@@ -242,7 +242,7 @@ export async function deleteActivityDescendents({
         toAwait.push(
           activityItemService.delete({
             ...baseParams,
-            ids: activityDescendentIds.activityItems,
+            ids: activityDescendents.activityItems.map((d) => d.id),
           }),
         );
         return true;
@@ -250,7 +250,7 @@ export async function deleteActivityDescendents({
         toAwait.push(
           evalKeyService.delete({
             ...baseParams,
-            ids: activityDescendentIds.evalKeys,
+            ids: activityDescendents.evalKeys.map((d) => d.id),
           }),
         );
         return true;
@@ -258,7 +258,7 @@ export async function deleteActivityDescendents({
         toAwait.push(
           questionService.delete({
             ...baseParams,
-            ids: activityDescendentIds.questions,
+            ids: activityDescendents.questions.map((d) => d.id),
           }),
         );
         return true;
@@ -266,7 +266,7 @@ export async function deleteActivityDescendents({
         toAwait.push(
           infoTextService.delete({
             ...baseParams,
-            ids: activityDescendentIds.infoTexts,
+            ids: activityDescendents.infoTexts.map((d) => d.id),
           }),
         );
         return true;
@@ -274,7 +274,7 @@ export async function deleteActivityDescendents({
         toAwait.push(
           infoImageService.delete({
             ...baseParams,
-            ids: activityDescendentIds.infoImages,
+            ids: activityDescendents.infoImages.map((d) => d.id),
           }),
         );
         return true;
@@ -282,7 +282,7 @@ export async function deleteActivityDescendents({
         toAwait.push(
           threadService.delete({
             ...baseParams,
-            ids: activityDescendentIds.threads,
+            ids: activityDescendents.threads.map((d) => d.id),
           }),
         );
         return true;
@@ -290,7 +290,7 @@ export async function deleteActivityDescendents({
         toAwait.push(
           messageService.delete({
             ...baseParams,
-            ids: activityDescendentIds.messages,
+            ids: activityDescendents.messages.map((d) => d.id),
           }),
         );
         return true;
@@ -320,8 +320,8 @@ export async function modifyActivityDescendents({
   );
 
   // ensure deleted objects are not included in the toCreate or toUpdate objects
-  objectEntries(toDelete).forEach(([descendentName, ids]) => {
-    const deleting = new Set(ids);
+  objectEntries(toDelete).forEach(([descendentName, rows]) => {
+    const deleting = new Set(rows.map((d) => d.id));
     [toCreate, toUpdate].forEach((descendents) => {
       descendents[descendentName] = descendents[descendentName].filter(
         (d) => !deleting.has(d.id),
@@ -357,12 +357,12 @@ export async function modifyActivityDescendents({
     }),
     deleteActivityDescendents({
       ...baseParams,
-      activityDescendentIds: toDelete,
+      activityDescendents: toDelete,
     }),
   ]);
 
-  return {
-    created,
-    updated,
-  };
+  const result = clone(created);
+  overwriteDescendents(result, updated);
+
+  return result;
 }

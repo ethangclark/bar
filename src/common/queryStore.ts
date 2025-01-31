@@ -1,12 +1,12 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { loading, type Status, neverLoaded, NeverLoaded } from "./status";
+import { loading, type Status, notLoaded, NotLoaded } from "./status";
 import { identity } from "./objectUtils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class QueryStore<T extends (...args: any[]) => Promise<any>> {
   private readonly initialState = {
-    data: identity<Status | Awaited<ReturnType<T>>>(neverLoaded),
-    swr: identity<Status | Awaited<ReturnType<T>>>(neverLoaded),
+    data: identity<Status | Awaited<ReturnType<T>>>(notLoaded),
+    swr: identity<Status | Awaited<ReturnType<T>>>(notLoaded),
     lastArgs: undefined as Parameters<T> | undefined,
     lastLoadIdInitiated: -Infinity,
     nextLoadId: 1,
@@ -33,7 +33,7 @@ export class QueryStore<T extends (...args: any[]) => Promise<any>> {
     const loadId = this.nextLoadId;
     runInAction(() => {
       this.data = loading;
-      if (this.swr instanceof NeverLoaded) {
+      if (this.swr instanceof NotLoaded) {
         this.swr = loading;
       }
       this.nextLoadId++;

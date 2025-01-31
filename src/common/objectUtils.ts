@@ -6,6 +6,10 @@ export function objectKeys<T extends object>(obj: T) {
   return Object.keys(obj) as Array<keyof T>;
 }
 
+export function objectValues<T extends object>(obj: T) {
+  return Object.values(obj) as Array<T[keyof T]>;
+}
+
 export function identity<T>(x: T) {
   return x;
 }

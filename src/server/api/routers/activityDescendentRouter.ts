@@ -7,7 +7,6 @@ import {
   updateActivityDescendents,
 } from "~/server/activityDescendents";
 import {
-  activityDescendentIdsSchema,
   activityDescendentModificationSchema,
   activityDescendentsSchema,
 } from "~/server/activityDescendents/types";
@@ -23,7 +22,7 @@ export const activityDescendentRouter = createTRPCRouter({
         activityDescendents: activityDescendentsSchema,
       }),
     )
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const { activityId, activityDescendents } = input;
       const { userId } = ctx;
 
@@ -77,7 +76,7 @@ export const activityDescendentRouter = createTRPCRouter({
         activityDescendents: activityDescendentsSchema,
       }),
     )
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const { activityId, activityDescendents } = input;
       const { userId } = ctx;
 
@@ -101,11 +100,11 @@ export const activityDescendentRouter = createTRPCRouter({
     .input(
       z.object({
         activityId: z.string(),
-        activityDescendentIds: activityDescendentIdsSchema,
+        activityDescendents: activityDescendentsSchema,
       }),
     )
-    .query(async ({ input, ctx }) => {
-      const { activityId, activityDescendentIds } = input;
+    .mutation(async ({ input, ctx }) => {
+      const { activityId, activityDescendents } = input;
       const { userId } = ctx;
 
       const activity = await getActivity({
@@ -117,7 +116,7 @@ export const activityDescendentRouter = createTRPCRouter({
       return db.transaction(async (tx) => {
         return deleteActivityDescendents({
           activityId,
-          activityDescendentIds,
+          activityDescendents,
           userId,
           enrolledAs: activity.course.enrolledAs,
           tx,
@@ -132,7 +131,7 @@ export const activityDescendentRouter = createTRPCRouter({
         activityDescendentModification: activityDescendentModificationSchema,
       }),
     )
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const { activityId, activityDescendentModification } = input;
       const { userId } = ctx;
 
