@@ -2,7 +2,7 @@ import {
   type InfoImage,
   type InfoText,
   type Question,
-  type ActivityItem as ActivityItemType,
+  type Item as ItemType,
 } from "~/server/db/schema";
 import { WysiwygEditor } from "../components/Editor";
 import { ImageFromDataUrl } from "../components/ImageFromDataUrl";
@@ -11,15 +11,15 @@ import { Tooltip } from "antd";
 import { CircleHelp } from "lucide-react";
 import { ImageUploadLink } from "../components/ImageUploader";
 
-export const ActivityItem = storeObserver<{
-  item: ActivityItemType;
+export const Item = storeObserver<{
+  item: ItemType;
   deleted: boolean;
   teacherModeAvailable: boolean;
   showControls: boolean;
   infoImage: InfoImage | null;
   infoText: InfoText | null;
   question: Question | null;
-}>(function ActivityItem({
+}>(function Item({
   deleted,
   teacherModeAvailable,
   showControls,

@@ -4,7 +4,7 @@ import { isGrader } from "~/common/enrollmentTypeUtils";
 import { messages, type Message } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
 
-export const messageService: DescendentController<Message> = {
+export const messageController: DescendentController<Message> = {
   // anyone can create a message for themselves
   async create({ activityId, tx, rows, userId }) {
     const message = await tx

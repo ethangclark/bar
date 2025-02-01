@@ -4,7 +4,7 @@ import { isDeveloper } from "~/common/enrollmentTypeUtils";
 import { infoImages, type InfoImage } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
 
-export const infoImageService: DescendentController<InfoImage> = {
+export const infoImageController: DescendentController<InfoImage> = {
   async create({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];

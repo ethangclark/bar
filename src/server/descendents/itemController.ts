@@ -1,57 +1,44 @@
 import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
-import { activityItems, type ActivityItem } from "~/server/db/schema";
+import { items, type Item } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
 
-export const activityItemService: DescendentController<ActivityItem> = {
+export const itemController: DescendentController<Item> = {
   async create({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];
     }
-    const activityItem = await tx
-      .insert(activityItems)
+    const item = await tx
+      .insert(items)
       .values(rows.map((row) => ({ ...row, activityId })))
       .returning();
-    return activityItem;
+    return item;
   },
   async read({ activityId, tx }) {
-    return tx
-      .select()
-      .from(activityItems)
-      .where(eq(activityItems.activityId, activityId));
+    return tx.select().from(items).where(eq(items.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];
     }
-    const activityItemsNested = await Promise.all(
+    const itemsNested = await Promise.all(
       rows.map((row) =>
         tx
-          .update(activityItems)
+          .update(items)
           .set({ ...row, activityId })
-          .where(
-            and(
-              eq(activityItems.id, row.id),
-              eq(activityItems.activityId, activityId),
-            ),
-          )
+          .where(and(eq(items.id, row.id), eq(items.activityId, activityId)))
           .returning(),
       ),
     );
-    return activityItemsNested.flat();
+    return itemsNested.flat();
   },
   async delete({ activityId, enrolledAs, tx, ids }) {
     if (!isDeveloper(enrolledAs)) {
       return;
     }
     await tx
-      .delete(activityItems)
-      .where(
-        and(
-          inArray(activityItems.id, ids),
-          eq(activityItems.activityId, activityId),
-        ),
-      );
+      .delete(items)
+      .where(and(inArray(items.id, ids), eq(items.activityId, activityId)));
   },
 };

@@ -4,7 +4,7 @@ THIS FILE SHOULD NOT HAVE ANY DEPENDENCIES ON THE SERVER OR CLIENT
 */
 
 export const descendentNames = [
-  "activityItems",
+  "items",
   "evalKeys",
   "questions",
   "infoTexts",

@@ -4,7 +4,7 @@ import { isDeveloper, isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 import { evalKeys, type EvalKey } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
 
-export const evalKeyService: DescendentController<EvalKey> = {
+export const evalKeyController: DescendentController<EvalKey> = {
   async create({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];

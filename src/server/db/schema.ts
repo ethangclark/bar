@@ -300,7 +300,7 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
     fields: [activities.integrationId],
     references: [integrations.id],
   }),
-  activityItems: many(activityItems),
+  items: many(items),
   evalKeys: many(evalKeys),
   questions: many(questions),
   infoTexts: many(infoTexts),
@@ -311,8 +311,8 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
 export const activitySchema = createSelectSchema(activities);
 
 // should have a questionId XOR infoTextId
-export const activityItems = pgTable(
-  "activity_item",
+export const items = pgTable(
+  "item",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     activityId: uuid("activity_id")
@@ -320,19 +320,19 @@ export const activityItems = pgTable(
       .references(() => activities.id, { onDelete: "cascade" }),
     orderFracIdx: text("order_frac_idx").notNull(),
   },
-  (ai) => [index("activity_item_activity_id_idx").on(ai.activityId)],
+  (ai) => [index("item_activity_id_idx").on(ai.activityId)],
 );
-export type ActivityItem = InferSelectModel<typeof activityItems>;
-export const activityItemRelations = relations(activityItems, ({ one }) => ({
+export type Item = InferSelectModel<typeof items>;
+export const itemRelations = relations(items, ({ one }) => ({
   activity: one(activities, {
-    fields: [activityItems.activityId],
+    fields: [items.activityId],
     references: [activities.id],
   }),
   question: one(questions),
   infoText: one(infoTexts),
   infoImage: one(infoImages),
 }));
-export const activityItemSchema = createSelectSchema(activityItems);
+export const itemSchema = createSelectSchema(items);
 
 export const evalKeys = pgTable(
   "eval_key",
@@ -371,14 +371,14 @@ export const questions = pgTable(
     activityId: uuid("activity_id")
       .notNull()
       .references(() => activities.id, { onDelete: "cascade" }),
-    activityItemId: uuid("activity_item_id")
+    itemId: uuid("item_id")
       .notNull()
-      .references(() => activityItems.id, { onDelete: "cascade" }),
+      .references(() => items.id, { onDelete: "cascade" }),
     content: text("content").notNull(),
   },
   (q) => [
     index("question_activity_id_idx").on(q.activityId),
-    index("question_activity_item_id_idx").on(q.activityItemId),
+    index("question_item_id_idx").on(q.itemId),
   ],
 );
 export type Question = InferSelectModel<typeof questions>;
@@ -387,9 +387,9 @@ export const questionsRelations = relations(questions, ({ one }) => ({
     fields: [questions.activityId],
     references: [activities.id],
   }),
-  activityItem: one(activityItems, {
-    fields: [questions.activityItemId],
-    references: [activityItems.id],
+  item: one(items, {
+    fields: [questions.itemId],
+    references: [items.id],
   }),
   evalKey: one(evalKeys),
 }));
@@ -402,14 +402,14 @@ export const infoTexts = pgTable(
     activityId: uuid("activity_id")
       .notNull()
       .references(() => activities.id, { onDelete: "cascade" }),
-    activityItemId: uuid("activity_item_id")
+    itemId: uuid("item_id")
       .notNull()
-      .references(() => activityItems.id, { onDelete: "cascade" }),
+      .references(() => items.id, { onDelete: "cascade" }),
     content: text("content").notNull(),
   },
   (it) => [
     index("info_text_activity_id_idx").on(it.activityId),
-    index("info_text_activity_item_id_idx").on(it.activityItemId),
+    index("info_text_item_id_idx").on(it.itemId),
   ],
 );
 export type InfoText = InferSelectModel<typeof infoTexts>;
@@ -418,9 +418,9 @@ export const infoTextsRelations = relations(infoTexts, ({ one }) => ({
     fields: [infoTexts.activityId],
     references: [activities.id],
   }),
-  activityItem: one(activityItems, {
-    fields: [infoTexts.activityItemId],
-    references: [activityItems.id],
+  item: one(items, {
+    fields: [infoTexts.itemId],
+    references: [items.id],
   }),
 }));
 export const infoTextSchema = createSelectSchema(infoTexts);
@@ -432,15 +432,15 @@ export const infoImages = pgTable(
     activityId: uuid("activity_id")
       .notNull()
       .references(() => activities.id, { onDelete: "cascade" }),
-    activityItemId: uuid("activity_item_id")
+    itemId: uuid("item_id")
       .notNull()
-      .references(() => activityItems.id, { onDelete: "cascade" }),
+      .references(() => items.id, { onDelete: "cascade" }),
     url: text("url").notNull(),
     textAlternative: text("text_alternative").notNull(),
   },
   (ii) => [
     index("info_image_activity_id_idx").on(ii.activityId),
-    index("info_image_activity_item_id_idx").on(ii.activityItemId),
+    index("info_image_item_id_idx").on(ii.itemId),
   ],
 );
 export type InfoImage = InferSelectModel<typeof infoImages>;
@@ -449,9 +449,9 @@ export const infoImagesRelations = relations(infoImages, ({ one }) => ({
     fields: [infoImages.activityId],
     references: [activities.id],
   }),
-  activityItem: one(activityItems, {
-    fields: [infoImages.activityItemId],
-    references: [activityItems.id],
+  item: one(items, {
+    fields: [infoImages.itemId],
+    references: [items.id],
   }),
 }));
 export const infoImageSchema = createSelectSchema(infoImages);
@@ -471,13 +471,13 @@ export const threads = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    activityItemId: uuid("activity_item_id")
+    itemId: uuid("item_id")
       .notNull()
-      .references(() => activityItems.id, { onDelete: "cascade" }),
+      .references(() => items.id, { onDelete: "cascade" }),
   },
   (x) => [
     index("thread_activity_id_idx").on(x.activityId),
-    index("thread_activity_item_id_idx").on(x.activityItemId),
+    index("thread_item_id_idx").on(x.itemId),
     index("thread_user_id_idx").on(x.userId),
   ],
 );
@@ -491,9 +491,9 @@ export const threadsRelations = relations(threads, ({ one, many }) => ({
     fields: [threads.activityId],
     references: [activities.id],
   }),
-  activityItem: one(activityItems, {
-    fields: [threads.activityItemId],
-    references: [activityItems.id],
+  item: one(items, {
+    fields: [threads.itemId],
+    references: [items.id],
   }),
   messages: many(messages),
 }));

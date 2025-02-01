@@ -4,7 +4,7 @@ import { isDeveloper } from "~/common/enrollmentTypeUtils";
 import { infoTexts, type InfoText } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
 
-export const infoTextService: DescendentController<InfoText> = {
+export const infoTextController: DescendentController<InfoText> = {
   async create({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];

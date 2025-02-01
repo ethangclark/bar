@@ -12,7 +12,7 @@ export const FooterControls = storeObserver(function FooterControls({
 }) {
   const createItem = useCallback(() => {
     const items = activityEditorStore.sortedItems;
-    const item = activityEditorStore.createDraft("activityItems", {
+    const item = activityEditorStore.createDraft("items", {
       orderFracIdx: generateKeyBetween(
         items.slice(-1)[0]?.orderFracIdx ?? null,
         null,
@@ -26,7 +26,7 @@ export const FooterControls = storeObserver(function FooterControls({
       <FooterButton
         onClick={() => {
           activityEditorStore.createDraft("infoTexts", {
-            activityItemId: createItem().id,
+            itemId: createItem().id,
             content: "",
           });
         }}
@@ -36,7 +36,7 @@ export const FooterControls = storeObserver(function FooterControls({
       <FooterButton
         onClick={() => {
           activityEditorStore.createDraft("infoImages", {
-            activityItemId: createItem().id,
+            itemId: createItem().id,
             url: "",
             textAlternative: "",
           });
@@ -47,7 +47,7 @@ export const FooterControls = storeObserver(function FooterControls({
       <FooterButton
         onClick={() => {
           activityEditorStore.createDraft("questions", {
-            activityItemId: createItem().id,
+            itemId: createItem().id,
             content: "",
           });
         }}

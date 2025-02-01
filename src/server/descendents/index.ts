@@ -9,13 +9,13 @@ import {
   type ReadParams,
   type DeleteParams,
 } from "./types";
-import { activityItemService } from "./activityItemController";
-import { evalKeyService } from "./evalKeyController";
-import { infoImageService } from "./infoImageController";
-import { infoTextService } from "./infoTextController";
-import { messageService } from "./messageController";
-import { questionService } from "./questionController";
-import { threadService } from "./threadController";
+import { itemController } from "./itemController";
+import { evalKeyController } from "./evalKeyController";
+import { infoImageController } from "./infoImageController";
+import { infoTextController } from "./infoTextController";
+import { messageController } from "./messageController";
+import { questionController } from "./questionController";
+import { threadController } from "./threadController";
 import { type DescendentName, descendentNames } from "~/common/descendentNames";
 import { objectEntries } from "~/common/objectUtils";
 import { clone } from "~/common/cloneUtils";
@@ -39,40 +39,40 @@ type Deletors = {
 };
 
 const creators: Creators = {
-  activityItems: (params) => activityItemService.create(params),
-  evalKeys: (params) => evalKeyService.create(params),
-  questions: (params) => questionService.create(params),
-  infoTexts: (params) => infoTextService.create(params),
-  infoImages: (params) => infoImageService.create(params),
-  threads: (params) => threadService.create(params),
-  messages: (params) => messageService.create(params),
+  items: (params) => itemController.create(params),
+  evalKeys: (params) => evalKeyController.create(params),
+  questions: (params) => questionController.create(params),
+  infoTexts: (params) => infoTextController.create(params),
+  infoImages: (params) => infoImageController.create(params),
+  threads: (params) => threadController.create(params),
+  messages: (params) => messageController.create(params),
 };
 const readers: Readers = {
-  activityItems: (params) => activityItemService.read(params),
-  evalKeys: (params) => evalKeyService.read(params),
-  questions: (params) => questionService.read(params),
-  infoTexts: (params) => infoTextService.read(params),
-  infoImages: (params) => infoImageService.read(params),
-  threads: (params) => threadService.read(params),
-  messages: (params) => messageService.read(params),
+  items: (params) => itemController.read(params),
+  evalKeys: (params) => evalKeyController.read(params),
+  questions: (params) => questionController.read(params),
+  infoTexts: (params) => infoTextController.read(params),
+  infoImages: (params) => infoImageController.read(params),
+  threads: (params) => threadController.read(params),
+  messages: (params) => messageController.read(params),
 };
 const updaters: Updaters = {
-  activityItems: (params) => activityItemService.update(params),
-  evalKeys: (params) => evalKeyService.update(params),
-  questions: (params) => questionService.update(params),
-  infoTexts: (params) => infoTextService.update(params),
-  infoImages: (params) => infoImageService.update(params),
-  threads: (params) => threadService.update(params),
-  messages: (params) => messageService.update(params),
+  items: (params) => itemController.update(params),
+  evalKeys: (params) => evalKeyController.update(params),
+  questions: (params) => questionController.update(params),
+  infoTexts: (params) => infoTextController.update(params),
+  infoImages: (params) => infoImageController.update(params),
+  threads: (params) => threadController.update(params),
+  messages: (params) => messageController.update(params),
 };
 const deletors: Deletors = {
-  activityItems: (params) => activityItemService.delete(params),
-  evalKeys: (params) => evalKeyService.delete(params),
-  questions: (params) => questionService.delete(params),
-  infoTexts: (params) => infoTextService.delete(params),
-  infoImages: (params) => infoImageService.delete(params),
-  threads: (params) => threadService.delete(params),
-  messages: (params) => messageService.delete(params),
+  items: (params) => itemController.delete(params),
+  evalKeys: (params) => evalKeyController.delete(params),
+  questions: (params) => questionController.delete(params),
+  infoTexts: (params) => infoTextController.delete(params),
+  infoImages: (params) => infoImageController.delete(params),
+  threads: (params) => threadController.delete(params),
+  messages: (params) => messageController.delete(params),
 };
 
 export async function createDescendents({

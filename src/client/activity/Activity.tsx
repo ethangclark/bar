@@ -6,7 +6,7 @@ import { ActivityFrame } from "~/client/components/ActivityFrame";
 import { LoadingCentered } from "~/client/components/Loading";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { Status } from "~/common/status";
-import { ActivityItem } from "./ActivityItem";
+import { Item } from "./Item";
 import { FooterControls } from "./FooterControls";
 
 export const Activity = storeObserver(function Activity({
@@ -43,7 +43,7 @@ export const Activity = storeObserver(function Activity({
         console.log(infoImage, infoText, question);
         return {
           main: (
-            <ActivityItem
+            <Item
               item={item}
               deleted={activityEditorStore.changes.deletedIds.has(item.id)}
               teacherModeAvailable={teacherModeAvailable}

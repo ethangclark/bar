@@ -18,7 +18,6 @@ export class ItemChildrenStore {
       const infoTexts = this.activityEditorStore.getDrafts("infoTexts");
       const questions = this.activityEditorStore.getDrafts("questions");
       const infoImages = this.activityEditorStore.getDrafts("infoImages");
-      console.log(infoTexts, questions, infoImages);
       if (
         infoTexts instanceof Status ||
         questions instanceof Status ||
@@ -30,13 +29,13 @@ export class ItemChildrenStore {
         return;
       }
       for (const draft of infoTexts) {
-        this.itemIdToTextInfo[draft.activityItemId] = draft;
+        this.itemIdToTextInfo[draft.itemId] = draft;
       }
       for (const draft of questions) {
-        this.itemIdToQuestion[draft.activityItemId] = draft;
+        this.itemIdToQuestion[draft.itemId] = draft;
       }
       for (const draft of infoImages) {
-        this.itemIdToInfoImage[draft.activityItemId] = draft;
+        this.itemIdToInfoImage[draft.itemId] = draft;
       }
     });
   }

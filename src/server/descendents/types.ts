@@ -7,12 +7,12 @@ import {
   threadSchema,
 } from "~/server/db/schema";
 import { z } from "zod";
-import { activityItemSchema } from "~/server/db/schema";
+import { itemSchema } from "~/server/db/schema";
 import { type DbOrTx } from "../db";
 import { type DescendentName } from "~/common/descendentNames";
 
 export const descendentsSchema = z.object({
-  activityItems: z.array(activityItemSchema),
+  items: z.array(itemSchema),
   evalKeys: z.array(evalKeySchema),
   questions: z.array(questionSchema),
   infoTexts: z.array(infoTextSchema),

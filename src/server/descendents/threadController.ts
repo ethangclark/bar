@@ -4,7 +4,7 @@ import { isGrader } from "~/common/enrollmentTypeUtils";
 import { threads, type Thread } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
 
-export const threadService: DescendentController<Thread> = {
+export const threadController: DescendentController<Thread> = {
   // anyone can create a thread for themselves
   async create({ activityId, tx, rows, userId }) {
     const thread = await tx

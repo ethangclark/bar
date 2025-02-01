@@ -4,7 +4,7 @@ import { isDeveloper } from "~/common/enrollmentTypeUtils";
 import { questions, type Question } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
 
-export const questionService: DescendentController<Question> = {
+export const questionController: DescendentController<Question> = {
   async create({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];

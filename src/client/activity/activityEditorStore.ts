@@ -158,7 +158,7 @@ export class ActivityEditorStore {
   }
 
   get sortedItems() {
-    const items = this.getDraftsSorted("activityItems", (a, b) =>
+    const items = this.getDraftsSorted("items", (a, b) =>
       a.orderFracIdx < b.orderFracIdx ? -1 : 1,
     );
     if (items instanceof Status) {
