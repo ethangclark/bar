@@ -1,6 +1,16 @@
 import { z } from "zod";
+import type { Activity } from "~/server/db/schema";
+import type {
+  LmsCourse,
+  LmsAssignment,
+} from "~/server/integrations/utils/integrationApi";
 
 export type MaybePromise<T = void> = T | Promise<T>;
+
+export type NonEmptyArray<T> = [T, ...T[]];
+export function isNonEmptyArray<T>(arr: T[]): arr is NonEmptyArray<T> {
+  return arr.length > 0;
+}
 
 const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 type Literal = z.infer<typeof literalSchema>;
@@ -35,3 +45,8 @@ export const MessageStreamItemSchema = z.union([
   }),
 ]);
 export type MessageStreamItem = z.infer<typeof MessageStreamItemSchema>;
+
+export type RichActivity = Activity & {
+  course: LmsCourse;
+  assignment: LmsAssignment;
+};

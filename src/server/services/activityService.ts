@@ -58,7 +58,7 @@ export async function getActivity({
     throw new Error("Activity not found");
   }
 
-  return { activity, course, assignment };
+  return { ...activity, course, assignment };
 }
 
 export async function assertActivityAccess({

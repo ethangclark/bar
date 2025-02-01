@@ -1,51 +1,54 @@
 import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
-import { infoTexts, type InfoText } from "~/server/db/schema";
-import { type ActivityDescendentController } from "~/server/activityDescendents/types";
+import { infoImages, type InfoImage } from "~/server/db/schema";
+import { type DescendentController } from "~/server/descendents/types";
 
-export const infoTextService: ActivityDescendentController<InfoText> = {
+export const infoImageService: DescendentController<InfoImage> = {
   async create({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];
     }
-    const infoText = await tx
-      .insert(infoTexts)
+    const infoImage = await tx
+      .insert(infoImages)
       .values(rows.map((row) => ({ ...row, activityId })))
       .returning();
-    return infoText;
+    return infoImage;
   },
   async read({ activityId, tx }) {
     return tx
       .select()
-      .from(infoTexts)
-      .where(eq(infoTexts.activityId, activityId));
+      .from(infoImages)
+      .where(eq(infoImages.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];
     }
-    const infoTextsNested = await Promise.all(
+    const infoImagesNested = await Promise.all(
       rows.map((row) =>
         tx
-          .update(infoTexts)
+          .update(infoImages)
           .set({ ...row, activityId })
           .where(
-            and(eq(infoTexts.id, row.id), eq(infoTexts.activityId, activityId)),
+            and(
+              eq(infoImages.id, row.id),
+              eq(infoImages.activityId, activityId),
+            ),
           )
           .returning(),
       ),
     );
-    return infoTextsNested.flat();
+    return infoImagesNested.flat();
   },
   async delete({ activityId, enrolledAs, tx, ids }) {
     if (!isDeveloper(enrolledAs)) {
       return;
     }
     await tx
-      .delete(infoTexts)
+      .delete(infoImages)
       .where(
-        and(inArray(infoTexts.id, ids), eq(infoTexts.activityId, activityId)),
+        and(inArray(infoImages.id, ids), eq(infoImages.activityId, activityId)),
       );
   },
 };

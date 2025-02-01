@@ -6,7 +6,7 @@ import { authRouter } from "./routers/authRouter";
 import { canvasRouter } from "./routers/canvasRouter";
 import { integrationRouter } from "./routers/integrationRouter";
 import { activityRouter } from "./routers/activityRouter";
-import { activityDescendentRouter } from "./routers/activityDescendentRouter";
+import { descendentRouter } from "./routers/descendentRouter";
 /**
  * This is the primary router for your server.
  *
@@ -14,7 +14,7 @@ import { activityDescendentRouter } from "./routers/activityDescendentRouter";
  */
 export const appRouter = createTRPCRouter({
   activity: activityRouter,
-  activityDescendent: activityDescendentRouter,
+  descendent: descendentRouter,
   auth: authRouter,
   canvas: canvasRouter,
   courses: coursesRouter,

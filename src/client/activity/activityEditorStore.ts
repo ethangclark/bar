@@ -1,38 +1,51 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
+import { type DescendentName } from "~/common/descendentNames";
 import { identity } from "~/common/objectUtils";
 import { loading, notLoaded, Status } from "~/common/status";
-import { type ActivityDescendents } from "~/server/activityDescendents/types";
+import {
+  type DescendentRows,
+  type DescendentTables,
+} from "~/server/descendents/types";
 import { trpc } from "~/trpc/proxy";
-import { selectDescendentsByIds } from "~/common/activityDescendentUtils";
-import { type ActivityDescendentName } from "~/common/activityDescendentNames";
+import { indexDescendents, selectDescendents } from "~/common/descendentUtils";
+import { type RichActivity } from "~/common/types";
 
 const baseState = () => ({
-  tables: identity<ActivityDescendents | Status>(notLoaded),
-  modifications: {
+  tables: identity<DescendentTables | Status>(notLoaded),
+  changes: {
     createdIds: new Set<string>(),
     updatedIds: new Set<string>(),
     deletedIds: new Set<string>(),
   },
   saving: false,
   activityId: identity<string | undefined>(undefined),
+  activity: identity<RichActivity | Status>(notLoaded),
 });
 
 export class ActivityEditorStore {
-  private descendents = baseState().tables;
-  private modifications = baseState().modifications;
+  private tables = baseState().tables;
+  public changes = baseState().changes;
   public saving = baseState().saving;
-  private activityId = baseState().activityId;
+  public activityId = baseState().activityId;
+  public activity = baseState().activity;
 
   constructor() {
     makeAutoObservable(this);
   }
 
   async loadActivity(activityId: string) {
-    this.descendents = loading;
-    const activityDescendents = await trpc.activityDescendent.read.query({
-      activityId,
+    this.activityId = activityId;
+    this.tables = loading;
+    const [descendents, activity] = await Promise.all([
+      trpc.descendent.read.query({
+        activityId,
+      }),
+      trpc.activity.get.query({ activityId }),
+    ]);
+    runInAction(() => {
+      this.tables = indexDescendents(descendents);
+      this.activity = activity;
     });
-    this.descendents = activityDescendents;
   }
 
   reset() {
@@ -40,34 +53,27 @@ export class ActivityEditorStore {
   }
 
   get canSave() {
-    return !(this.descendents instanceof Status || this.saving);
+    return !(this.tables instanceof Status || this.saving);
   }
 
   async save() {
-    if (!this.activityId || this.descendents instanceof Status) {
+    if (!this.activityId || this.tables instanceof Status) {
       throw new Error("Activity ID is required");
     }
     this.saving = true;
     try {
-      const newDescendents = await trpc.activityDescendent.modify.mutate({
+      const newDescendents = await trpc.descendent.modify.mutate({
         activityId: this.activityId,
-        activityDescendentModification: {
-          toCreate: selectDescendentsByIds(
-            this.descendents,
-            this.modifications.createdIds,
-          ),
-          toUpdate: selectDescendentsByIds(
-            this.descendents,
-            this.modifications.updatedIds,
-          ),
-          toDelete: selectDescendentsByIds(
-            this.descendents,
-            this.modifications.deletedIds,
-          ),
+        descendentModification: {
+          toCreate: selectDescendents(this.tables, this.changes.createdIds),
+          toUpdate: selectDescendents(this.tables, this.changes.updatedIds),
+          toDelete: selectDescendents(this.tables, this.changes.deletedIds),
         },
       });
-      this.descendents = newDescendents;
-      this.modifications = baseState().modifications;
+      runInAction(() => {
+        this.tables = indexDescendents(newDescendents);
+        this.changes = baseState().changes;
+      });
     } catch (e) {
       throw e;
     } finally {
@@ -75,15 +81,79 @@ export class ActivityEditorStore {
     }
   }
 
-  createDraft<T extends ActivityDescendentName>(
+  createDraft<T extends DescendentName>(
     descendentName: T,
-    descendent: Omit<ActivityDescendents[T][number], "id">,
+    descendent: Omit<DescendentRows[T], "id" | "activityId">,
   ) {
+    if (!this.activityId) {
+      throw new Error("Activity ID is not set");
+    }
+    if (this.tables instanceof Status) {
+      throw new Error("Descendents are not loaded");
+    }
     const id = crypto.randomUUID();
     const newDescendent = {
       ...descendent,
       id,
+      activityId: this.activityId,
     };
-    this.descendents[descendentName][id] = newDescendent;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    (this.tables[descendentName] as any)[id] = newDescendent;
+    this.changes.createdIds.add(id);
+    return newDescendent;
+  }
+  getDraft<T extends DescendentName>(descendentName: T, id: string) {
+    if (this.tables instanceof Status) {
+      return this.tables;
+    }
+    return this.tables[descendentName][id] ?? notLoaded;
+  }
+  getDrafts<T extends DescendentName>(descendentName: T) {
+    if (this.tables instanceof Status) {
+      return this.tables;
+    }
+    return Object.values(this.tables[descendentName]);
+  }
+  getDraftsSorted<T extends DescendentName>(
+    descendentName: T,
+    sortFn: (a: DescendentRows[T], b: DescendentRows[T]) => number,
+  ) {
+    const drafts = this.getDrafts(descendentName);
+    if (drafts instanceof Status) {
+      return drafts;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return drafts.slice().sort(sortFn as any);
+  }
+  updateDraft<T extends DescendentName>(
+    descendentName: T,
+    updates: { id: string } & Partial<DescendentRows[T]>,
+  ) {
+    const descendent = this.getDraft(descendentName, updates.id);
+    if (descendent instanceof Status || this.tables instanceof Status) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    (this.tables[descendentName] as any)[updates.id] = {
+      ...descendent,
+      ...updates,
+    };
+    this.changes.updatedIds.add(updates.id);
+  }
+  deleteDraft(id: string) {
+    if (this.tables instanceof Status) {
+      return;
+    }
+    this.changes.deletedIds.add(id);
+  }
+
+  get sortedItems() {
+    const items = this.getDraftsSorted("activityItems", (a, b) =>
+      a.orderFracIdx < b.orderFracIdx ? -1 : 1,
+    );
+    if (items instanceof Status) {
+      throw new Error("Items are not loaded");
+    }
+    return items;
   }
 }

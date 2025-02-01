@@ -3,7 +3,7 @@ import { z } from "zod";
 THIS FILE SHOULD NOT HAVE ANY DEPENDENCIES ON THE SERVER OR CLIENT
 */
 
-export const activityDescendentNames = [
+export const descendentNames = [
   "activityItems",
   "evalKeys",
   "questions",
@@ -12,7 +12,5 @@ export const activityDescendentNames = [
   "threads",
   "messages",
 ] as const;
-export const activityDescendentNamesSchema = z.enum(activityDescendentNames);
-export type ActivityDescendentName = z.infer<
-  typeof activityDescendentNamesSchema
->;
+export const descendentNamesSchema = z.enum(descendentNames);
+export type DescendentName = z.infer<typeof descendentNamesSchema>;

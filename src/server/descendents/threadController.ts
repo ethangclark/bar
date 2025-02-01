@@ -2,9 +2,9 @@ import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isGrader } from "~/common/enrollmentTypeUtils";
 import { threads, type Thread } from "~/server/db/schema";
-import { type ActivityDescendentController } from "~/server/activityDescendents/types";
+import { type DescendentController } from "~/server/descendents/types";
 
-export const threadService: ActivityDescendentController<Thread> = {
+export const threadService: DescendentController<Thread> = {
   // anyone can create a thread for themselves
   async create({ activityId, tx, rows, userId }) {
     const thread = await tx

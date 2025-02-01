@@ -1,57 +1,51 @@
 import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
-import { activityItems, type ActivityItem } from "~/server/db/schema";
-import { type ActivityDescendentController } from "~/server/activityDescendents/types";
+import { questions, type Question } from "~/server/db/schema";
+import { type DescendentController } from "~/server/descendents/types";
 
-export const activityItemService: ActivityDescendentController<ActivityItem> = {
+export const questionService: DescendentController<Question> = {
   async create({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];
     }
-    const activityItem = await tx
-      .insert(activityItems)
+    const question = await tx
+      .insert(questions)
       .values(rows.map((row) => ({ ...row, activityId })))
       .returning();
-    return activityItem;
+    return question;
   },
   async read({ activityId, tx }) {
     return tx
       .select()
-      .from(activityItems)
-      .where(eq(activityItems.activityId, activityId));
+      .from(questions)
+      .where(eq(questions.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];
     }
-    const activityItemsNested = await Promise.all(
+    const questionsNested = await Promise.all(
       rows.map((row) =>
         tx
-          .update(activityItems)
+          .update(questions)
           .set({ ...row, activityId })
           .where(
-            and(
-              eq(activityItems.id, row.id),
-              eq(activityItems.activityId, activityId),
-            ),
+            and(eq(questions.id, row.id), eq(questions.activityId, activityId)),
           )
           .returning(),
       ),
     );
-    return activityItemsNested.flat();
+    return questionsNested.flat();
   },
   async delete({ activityId, enrolledAs, tx, ids }) {
     if (!isDeveloper(enrolledAs)) {
       return;
     }
     await tx
-      .delete(activityItems)
+      .delete(questions)
       .where(
-        and(
-          inArray(activityItems.id, ids),
-          eq(activityItems.activityId, activityId),
-        ),
+        and(inArray(questions.id, ids), eq(questions.activityId, activityId)),
       );
   },
 };

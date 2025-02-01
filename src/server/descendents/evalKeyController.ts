@@ -2,9 +2,9 @@ import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isDeveloper, isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 import { evalKeys, type EvalKey } from "~/server/db/schema";
-import { type ActivityDescendentController } from "~/server/activityDescendents/types";
+import { type DescendentController } from "~/server/descendents/types";
 
-export const evalKeyService: ActivityDescendentController<EvalKey> = {
+export const evalKeyService: DescendentController<EvalKey> = {
   async create({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];

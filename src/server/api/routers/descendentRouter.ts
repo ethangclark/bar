@@ -1,29 +1,29 @@
 import { z } from "zod";
 import {
-  createActivityDescendents,
-  deleteActivityDescendents,
-  modifyActivityDescendents,
-  readActivityDescendents,
-  updateActivityDescendents,
-} from "~/server/activityDescendents";
+  createDescendents,
+  deleteDescendents,
+  modifyDescendents,
+  readDescendents,
+  updateDescendents,
+} from "~/server/descendents";
 import {
-  activityDescendentModificationSchema,
-  activityDescendentsSchema,
-} from "~/server/activityDescendents/types";
+  descendentModificationSchema,
+  descendentsSchema,
+} from "~/server/descendents/types";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { getActivity } from "~/server/services/activityService";
 
-export const activityDescendentRouter = createTRPCRouter({
+export const descendentRouter = createTRPCRouter({
   create: publicProcedure
     .input(
       z.object({
         activityId: z.string(),
-        activityDescendents: activityDescendentsSchema,
+        descendents: descendentsSchema,
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const { activityId, activityDescendents } = input;
+      const { activityId, descendents } = input;
       const { userId } = ctx;
 
       const activity = await getActivity({
@@ -33,9 +33,9 @@ export const activityDescendentRouter = createTRPCRouter({
       });
 
       return db.transaction(async (tx) => {
-        return createActivityDescendents({
+        return createDescendents({
           activityId,
-          activityDescendents,
+          descendents,
           userId,
           enrolledAs: activity.course.enrolledAs,
           tx,
@@ -60,7 +60,7 @@ export const activityDescendentRouter = createTRPCRouter({
       });
 
       return db.transaction(async (tx) => {
-        return readActivityDescendents({
+        return readDescendents({
           activityId,
           userId,
           enrolledAs: activity.course.enrolledAs,
@@ -73,11 +73,11 @@ export const activityDescendentRouter = createTRPCRouter({
     .input(
       z.object({
         activityId: z.string(),
-        activityDescendents: activityDescendentsSchema,
+        descendents: descendentsSchema,
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const { activityId, activityDescendents } = input;
+      const { activityId, descendents } = input;
       const { userId } = ctx;
 
       const activity = await getActivity({
@@ -87,9 +87,9 @@ export const activityDescendentRouter = createTRPCRouter({
       });
 
       return db.transaction(async (tx) => {
-        return updateActivityDescendents({
+        return updateDescendents({
           activityId,
-          activityDescendents,
+          descendents,
           userId,
           enrolledAs: activity.course.enrolledAs,
           tx,
@@ -100,11 +100,11 @@ export const activityDescendentRouter = createTRPCRouter({
     .input(
       z.object({
         activityId: z.string(),
-        activityDescendents: activityDescendentsSchema,
+        descendents: descendentsSchema,
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const { activityId, activityDescendents } = input;
+      const { activityId, descendents } = input;
       const { userId } = ctx;
 
       const activity = await getActivity({
@@ -114,9 +114,9 @@ export const activityDescendentRouter = createTRPCRouter({
       });
 
       return db.transaction(async (tx) => {
-        return deleteActivityDescendents({
+        return deleteDescendents({
           activityId,
-          activityDescendents,
+          descendents,
           userId,
           enrolledAs: activity.course.enrolledAs,
           tx,
@@ -128,11 +128,11 @@ export const activityDescendentRouter = createTRPCRouter({
     .input(
       z.object({
         activityId: z.string(),
-        activityDescendentModification: activityDescendentModificationSchema,
+        descendentModification: descendentModificationSchema,
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const { activityId, activityDescendentModification } = input;
+      const { activityId, descendentModification } = input;
       const { userId } = ctx;
 
       const activity = await getActivity({
@@ -142,9 +142,9 @@ export const activityDescendentRouter = createTRPCRouter({
       });
 
       return db.transaction(async (tx) => {
-        return modifyActivityDescendents({
+        return modifyDescendents({
           activityId,
-          activityDescendentModification,
+          descendentModification,
           userId,
           enrolledAs: activity.course.enrolledAs,
           tx,

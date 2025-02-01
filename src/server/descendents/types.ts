@@ -9,9 +9,9 @@ import {
 import { z } from "zod";
 import { activityItemSchema } from "~/server/db/schema";
 import { type DbOrTx } from "../db";
-import { type ActivityDescendentName } from "~/common/activityDescendentNames";
+import { type DescendentName } from "~/common/descendentNames";
 
-export const activityDescendentsSchema = z.object({
+export const descendentsSchema = z.object({
   activityItems: z.array(activityItemSchema),
   evalKeys: z.array(evalKeySchema),
   questions: z.array(questionSchema),
@@ -19,14 +19,17 @@ export const activityDescendentsSchema = z.object({
   infoImages: z.array(infoImageSchema),
   threads: z.array(threadSchema),
   messages: z.array(messageSchema),
-}) satisfies z.ZodType<{ [K in ActivityDescendentName]: unknown }>;
-export type ActivityDescendents = z.infer<typeof activityDescendentsSchema>;
+}) satisfies z.ZodType<{ [K in DescendentName]: unknown }>;
+export type Descendents = z.infer<typeof descendentsSchema>;
 
-export type ActivityDescendentTables = {
-  [K in ActivityDescendentName]: Record<string, ActivityDescendents[K][number]>;
+export type DescendentTables = {
+  [K in DescendentName]: Record<string, Descendents[K][number]>;
+};
+export type DescendentRows = {
+  [K in DescendentName]: Descendents[K][number];
 };
 
-type ActivityDescendentRow = {
+type DescendentRow = {
   id: string;
   activityId: string;
 };
@@ -42,7 +45,7 @@ type ReadParams = BaseParams & {
   includeUserIds: string[];
 };
 
-type EditParams<T extends ActivityDescendentRow> = BaseParams & {
+type EditParams<T extends DescendentRow> = BaseParams & {
   rows: T[];
 };
 
@@ -50,18 +53,18 @@ type DeleteParams = BaseParams & {
   ids: string[];
 };
 
-export type ActivityDescendentController<T extends ActivityDescendentRow> = {
+export type DescendentController<T extends DescendentRow> = {
   create(params: EditParams<T>): Promise<T[]>;
   read(params: ReadParams): Promise<T[]>;
   update(params: EditParams<T>): Promise<T[]>;
   delete(params: DeleteParams): Promise<void>;
 };
 
-export const activityDescendentModificationSchema = z.object({
-  toCreate: activityDescendentsSchema,
-  toUpdate: activityDescendentsSchema,
-  toDelete: activityDescendentsSchema,
+export const descendentModificationSchema = z.object({
+  toCreate: descendentsSchema,
+  toUpdate: descendentsSchema,
+  toDelete: descendentsSchema,
 });
-export type ActivityDescendentModification = z.infer<
-  typeof activityDescendentModificationSchema
+export type DescendentModification = z.infer<
+  typeof descendentModificationSchema
 >;

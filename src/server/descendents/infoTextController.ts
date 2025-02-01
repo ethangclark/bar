@@ -1,51 +1,51 @@
 import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
-import { questions, type Question } from "~/server/db/schema";
-import { type ActivityDescendentController } from "~/server/activityDescendents/types";
+import { infoTexts, type InfoText } from "~/server/db/schema";
+import { type DescendentController } from "~/server/descendents/types";
 
-export const questionService: ActivityDescendentController<Question> = {
+export const infoTextService: DescendentController<InfoText> = {
   async create({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];
     }
-    const question = await tx
-      .insert(questions)
+    const infoText = await tx
+      .insert(infoTexts)
       .values(rows.map((row) => ({ ...row, activityId })))
       .returning();
-    return question;
+    return infoText;
   },
   async read({ activityId, tx }) {
     return tx
       .select()
-      .from(questions)
-      .where(eq(questions.activityId, activityId));
+      .from(infoTexts)
+      .where(eq(infoTexts.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];
     }
-    const questionsNested = await Promise.all(
+    const infoTextsNested = await Promise.all(
       rows.map((row) =>
         tx
-          .update(questions)
+          .update(infoTexts)
           .set({ ...row, activityId })
           .where(
-            and(eq(questions.id, row.id), eq(questions.activityId, activityId)),
+            and(eq(infoTexts.id, row.id), eq(infoTexts.activityId, activityId)),
           )
           .returning(),
       ),
     );
-    return questionsNested.flat();
+    return infoTextsNested.flat();
   },
   async delete({ activityId, enrolledAs, tx, ids }) {
     if (!isDeveloper(enrolledAs)) {
       return;
     }
     await tx
-      .delete(questions)
+      .delete(infoTexts)
       .where(
-        and(inArray(questions.id, ids), eq(questions.activityId, activityId)),
+        and(inArray(infoTexts.id, ids), eq(infoTexts.activityId, activityId)),
       );
   },
 };

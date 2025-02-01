@@ -2,9 +2,9 @@ import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isGrader } from "~/common/enrollmentTypeUtils";
 import { messages, type Message } from "~/server/db/schema";
-import { type ActivityDescendentController } from "~/server/activityDescendents/types";
+import { type DescendentController } from "~/server/descendents/types";
 
-export const messageService: ActivityDescendentController<Message> = {
+export const messageService: DescendentController<Message> = {
   // anyone can create a message for themselves
   async create({ activityId, tx, rows, userId }) {
     const message = await tx

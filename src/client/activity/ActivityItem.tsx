@@ -1,4 +1,9 @@
-import { type ActivityItemWithChildren } from "~/server/db/schema";
+import {
+  type ActivityItemWithChildren,
+  type InfoImage,
+  type InfoText,
+  type Question,
+} from "~/server/db/schema";
 import { WysiwygEditor } from "../components/Editor";
 import { ImageFromDataUrl } from "../components/ImageFromDataUrl";
 import { storeObserver } from "../utils/storeObserver";
@@ -11,27 +16,28 @@ export const ActivityItem = storeObserver<{
   deleted: boolean;
   teacherModeAvailable: boolean;
   showControls: boolean;
+  infoImage: InfoImage | null;
+  infoText: InfoText | null;
+  question: Question | null;
 }>(function ActivityItem({
-  item,
   deleted,
   teacherModeAvailable,
   showControls,
-  activityStore: activityEditorStore,
+  activityEditorStore,
+  infoImage,
+  infoText,
+  question,
 }) {
   return (
     <div
       className={`flex flex-col items-center px-4 pb-8 ${deleted ? "opacity-30" : ""}`}
       style={{ width: 500 }}
     >
-      {item.infoImage ? (
-        <div key={item.infoImage.id} className="w-full">
+      {infoImage ? (
+        <div key={infoImage.id} className="w-full">
           <ImageFromDataUrl
-            alt={
-              item.infoImage.url
-                ? item.infoImage.textAlternative
-                : "Missing image"
-            }
-            src={item.infoImage.url}
+            alt={infoImage.url ? infoImage.textAlternative : "Missing image"}
+            src={infoImage.url}
             style={{
               maxWidth: "100%",
               marginBottom: 4,
@@ -52,8 +58,8 @@ export const ActivityItem = storeObserver<{
               <ImageUploadLink
                 label="Replace image"
                 onFileSelect={({ imageDataUrl }) => {
-                  activityEditorStore.setItemInfoImageDraftUrl({
-                    itemId: item.id,
+                  activityEditorStore.updateDraft("infoImages", {
+                    id: infoImage.id,
                     url: imageDataUrl,
                   });
                 }}
@@ -61,39 +67,39 @@ export const ActivityItem = storeObserver<{
             </div>
           </div>
           <WysiwygEditor
-            value={item.infoImage.textAlternative}
+            value={infoImage.textAlternative}
             disabled={!teacherModeAvailable}
             setValue={(v) => {
-              activityEditorStore.setItemInfoImageDraftTextAlternative({
-                itemId: item.id,
+              activityEditorStore.updateDraft("infoImages", {
+                id: infoImage.id,
                 textAlternative: v,
               });
             }}
           />
         </div>
       ) : null}
-      {item.infoText ? (
-        <div key={item.infoText.id} className="w-full">
+      {infoText ? (
+        <div key={infoText.id} className="w-full">
           <WysiwygEditor
-            value={item.infoText.content}
+            value={infoText.content}
             disabled={!teacherModeAvailable}
             setValue={(v) => {
-              activityEditorStore.setItemInfoTextDraftContent({
-                itemId: item.id,
+              activityEditorStore.updateDraft("infoTexts", {
+                id: infoText.id,
                 content: v,
               });
             }}
           />
         </div>
       ) : null}
-      {item.question ? (
-        <div key={item.question.id} className="w-full">
+      {question ? (
+        <div key={question.id} className="w-full">
           <WysiwygEditor
-            value={item.question.content}
+            value={question.content}
             disabled={!teacherModeAvailable}
             setValue={(v) => {
-              activityEditorStore.setItemQuestionDraftContent({
-                itemId: item.id,
+              activityEditorStore.updateDraft("questions", {
+                id: question.id,
                 content: v,
               });
             }}

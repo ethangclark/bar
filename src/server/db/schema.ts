@@ -15,7 +15,7 @@ import {
 import { createSelectSchema } from "drizzle-zod";
 import { type AdapterAccount } from "next-auth/adapters";
 import { z } from "zod";
-import { type ActivityDescendentName } from "~/common/activityDescendentNames";
+import { type DescendentName } from "~/common/descendentNames";
 
 export const pgTable = pgTableCreator((name) => name);
 
@@ -151,6 +151,18 @@ export const verificationTokensRelations = relations(
 );
 export const verificationTokensSchema = createSelectSchema(verificationTokens);
 
+export const locks = pgTable("lock", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  maxDurationMs: integer("max_duration_ms").notNull(),
+});
+export type Lock = InferSelectModel<typeof locks>;
+export const locksRelations = relations(locks, () => ({}));
+export const lockSchema = createSelectSchema(locks);
+
 export const integrationTypeEnum = pgEnum("integration_type", ["canvas"]);
 export const integrationTypeSchema = z.enum(integrationTypeEnum.enumValues);
 export type IntegrationType = z.infer<typeof integrationTypeSchema>;
@@ -202,23 +214,17 @@ export const userIntegrationsRelations = relations(
   }),
 );
 
-export const canvasIntegrations = pgTable(
-  "canvas_integration",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    integrationId: uuid("integration_id")
-      .notNull()
-      .references(() => integrations.id, { onDelete: "cascade" }),
-    canvasBaseUrl: text("canvas_base_url").notNull(),
-    clientId: text("client_id").notNull(),
-    clientSecret: text("client_secret").notNull(),
-    validated: boolean("validated").default(false).notNull(),
-  },
-  (ci) => [
-    index("canvas_integration_integration_id_idx").on(ci.integrationId),
-    uniqueIndex("canvas_integration_base_url_idx").on(ci.canvasBaseUrl),
-  ],
-);
+export const canvasIntegrations = pgTable("canvas_integration", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  integrationId: uuid("integration_id")
+    .notNull()
+    .unique()
+    .references(() => integrations.id, { onDelete: "cascade" }),
+  canvasBaseUrl: text("canvas_base_url").notNull().unique(),
+  clientId: text("client_id").notNull(),
+  clientSecret: text("client_secret").notNull(),
+  validated: boolean("validated").default(false).notNull(),
+});
 export type CanvasIntegration = InferSelectModel<typeof canvasIntegrations>;
 export const canvasIntegrationsRelations = relations(
   canvasIntegrations,
@@ -239,7 +245,7 @@ export const canvasUsers = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    canvasGlobalId: text("canvas_global_id").notNull(),
+    canvasGlobalId: text("canvas_global_id").notNull().unique(),
     nonGlobalIdsArrJson: text("non_global_ids_arr_json").notNull(),
     canvasUserName: text("canvas_user_name").notNull(),
     oauthRefreshToken: text("oauth_refresh_token").notNull(),
@@ -250,8 +256,6 @@ export const canvasUsers = pgTable(
   },
   (cu) => [
     index("canvas_user_user_id_idx").on(cu.userId),
-    // unique index to ensure only one canvas user per canvas global user id
-    uniqueIndex("canvas_user_canvas_global_id_idx").on(cu.canvasGlobalId),
     index("canvas_user_canvas_integration_id_idx").on(cu.canvasIntegrationId),
   ],
 );
@@ -455,17 +459,6 @@ export const infoImagesRelations = relations(infoImages, ({ one }) => ({
 export const infoImageSchema = createSelectSchema(infoImages);
 
 // todo: infoVideo (will require video streaming solution)
-
-export type ActivityItemWithChildren = ActivityItem & {
-  question: Question | null;
-  infoText: InfoText | null;
-  infoImage: InfoImage | null;
-};
-export const activityItemWithChildrenSchema = activityItemSchema.extend({
-  question: questionSchema.nullable(),
-  infoText: infoTextSchema.nullable(),
-  infoImage: infoImageSchema.nullable(),
-});
 
 export const threads = pgTable(
   "thread",

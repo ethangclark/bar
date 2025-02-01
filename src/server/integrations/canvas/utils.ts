@@ -84,31 +84,58 @@ export async function makeCanvasRequest<T extends Json>({
     url += `?${params.toString()}`;
   }
 
+  // TODO: clean this up
   let accessToken: string | null = null;
   if (refreshToken) {
     accessToken = getCachedAccessToken(refreshToken);
     if (!accessToken) {
-      const accessTokenResp = await makeCanvasRequest({
-        canvasIntegrationId,
-        relPath: "/login/oauth2/token",
-        method: "POST",
-        responseSchema: z.object({
-          access_token: z.string(),
-          expires_in: z.number(),
-        }),
-        urlParams: {
-          grant_type: "refresh_token",
-          client_id: canvasIntegration.clientId,
-          client_secret: canvasIntegration.clientSecret,
-          refresh_token: refreshToken,
-        },
-      });
-      updateTokenCache(refreshToken, {
-        accessToken: accessTokenResp.access_token,
-        lastRefreshedAt: Date.now(),
-        lifespanMs: accessTokenResp.expires_in * 1000,
-      });
-      accessToken = accessTokenResp.access_token;
+      const lockName = `canvas_access_token_${canvasIntegrationId}`;
+      const startTime = Date.now();
+      const maxDurationMs = 1000 * 30;
+      let [lock] = await db
+        .insert(db.x.locks)
+        .values({ name: lockName, maxDurationMs })
+        .onConflictDoNothing()
+        .returning();
+      try {
+        if (lock) {
+          const accessTokenResp = await makeCanvasRequest({
+            canvasIntegrationId,
+            relPath: "/login/oauth2/token",
+            method: "POST",
+            responseSchema: z.object({
+              access_token: z.string(),
+              expires_in: z.number(),
+            }),
+            urlParams: {
+              grant_type: "refresh_token",
+              client_id: canvasIntegration.clientId,
+              client_secret: canvasIntegration.clientSecret,
+              refresh_token: refreshToken,
+            },
+          });
+          updateTokenCache(refreshToken, {
+            accessToken: accessTokenResp.access_token,
+            lastRefreshedAt: Date.now(),
+            lifespanMs: accessTokenResp.expires_in * 1000,
+          });
+          accessToken = accessTokenResp.access_token;
+        } else {
+          // wait for the lock to be released
+          do {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            lock = await db.query.locks.findFirst({
+              where: eq(db.x.locks.name, lockName),
+            });
+          } while (lock && Date.now() < startTime + lock.maxDurationMs);
+          accessToken = getCachedAccessToken(refreshToken);
+          if (!accessToken) {
+            throw new Error("Failed to refresh canvas access token");
+          }
+        }
+      } finally {
+        await db.delete(db.x.locks).where(eq(db.x.locks.name, lockName));
+      }
     }
   }
 
@@ -118,8 +145,14 @@ export async function makeCanvasRequest<T extends Json>({
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
     });
     const asAnyJson = await result.json();
-    const asResponseType = responseSchema.parse(asAnyJson);
-    return asResponseType;
+    try {
+      const asResponseType = responseSchema.parse(asAnyJson);
+      return asResponseType;
+    } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+      (e as any).json = asAnyJson;
+      throw e;
+    }
   } catch (e) {
     assertError(e);
     throw new Error(`Canvas request failed: ${e.message}`);
