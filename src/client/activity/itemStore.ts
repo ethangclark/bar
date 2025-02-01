@@ -5,19 +5,20 @@ import {
   type InfoText,
   type Question,
 } from "~/server/db/schema";
-import { type ActivityEditorStore } from "./activityEditorStore";
+import { type ActivityStore } from "./activityStore";
+import { generateKeyBetween } from "fractional-indexing";
 
-export class ItemChildrenStore {
+export class ItemStore {
   private itemIdToTextInfo: Record<string, InfoText> = {};
   private itemIdToQuestion: Record<string, Question> = {};
   private itemIdToInfoImage: Record<string, InfoImage> = {};
 
-  constructor(private activityEditorStore: ActivityEditorStore) {
+  constructor(private activityStore: ActivityStore) {
     makeAutoObservable(this);
     autorun(() => {
-      const infoTexts = this.activityEditorStore.getDrafts("infoTexts");
-      const questions = this.activityEditorStore.getDrafts("questions");
-      const infoImages = this.activityEditorStore.getDrafts("infoImages");
+      const infoTexts = this.activityStore.getDrafts("infoTexts");
+      const questions = this.activityStore.getDrafts("questions");
+      const infoImages = this.activityStore.getDrafts("infoImages");
       if (
         infoTexts instanceof Status ||
         questions instanceof Status ||
@@ -38,6 +39,27 @@ export class ItemChildrenStore {
         this.itemIdToInfoImage[draft.itemId] = draft;
       }
     });
+  }
+
+  get sortedItems() {
+    const items = this.activityStore.getDrafts("items");
+    if (items instanceof Status) {
+      throw new Error("Items are not loaded");
+    }
+    return items
+      .slice()
+      .sort((a, b) => (a.orderFracIdx < b.orderFracIdx ? -1 : 1));
+  }
+
+  createItem() {
+    const items = this.sortedItems;
+    const item = this.activityStore.createDraft("items", {
+      orderFracIdx: generateKeyBetween(
+        items.slice(-1)[0]?.orderFracIdx ?? null,
+        null,
+      ),
+    });
+    return item;
   }
 
   getTextInfo(itemId: string) {

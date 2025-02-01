@@ -17,7 +17,7 @@ import { type RichActivity } from "~/common/types";
 
 const baseState = () => ({
   saved: () => createEmptyDescendents(),
-  tables: identity<DescendentTables | Status>(notLoaded),
+  drafts: identity<DescendentTables | Status>(notLoaded),
   changes: {
     createdIds: new Set<string>(),
     updatedIds: new Set<string>(),
@@ -28,10 +28,10 @@ const baseState = () => ({
   activity: identity<RichActivity | Status>(notLoaded),
 });
 
-export class ActivityEditorStore {
+export class ActivityStore {
   private saved = baseState().saved;
-  private tables = baseState().tables;
-  public changes = baseState().changes;
+  private drafts = baseState().drafts;
+  private changes = baseState().changes;
   public saving = baseState().saving;
   public activityId = baseState().activityId;
   public activity = baseState().activity;
@@ -42,7 +42,7 @@ export class ActivityEditorStore {
 
   async loadActivity(activityId: string) {
     this.activityId = activityId;
-    this.tables = loading;
+    this.drafts = loading;
     const [descendents, activity] = await Promise.all([
       trpc.descendent.read.query({
         activityId,
@@ -51,7 +51,7 @@ export class ActivityEditorStore {
     ]);
     runInAction(() => {
       this.saved = () => descendents;
-      this.tables = indexDescendents(descendents);
+      this.drafts = indexDescendents(descendents);
       this.activity = activity;
     });
   }
@@ -61,11 +61,11 @@ export class ActivityEditorStore {
   }
 
   get canSave() {
-    return !(this.tables instanceof Status || this.saving);
+    return !(this.drafts instanceof Status || this.saving);
   }
 
   async save() {
-    if (!this.activityId || this.tables instanceof Status) {
+    if (!this.activityId || this.drafts instanceof Status) {
       throw new Error("Activity ID is required");
     }
     this.saving = true;
@@ -73,15 +73,15 @@ export class ActivityEditorStore {
       const newDescendents = await trpc.descendent.modify.mutate({
         activityId: this.activityId,
         descendentModification: {
-          toCreate: selectDescendents(this.tables, this.changes.createdIds),
-          toUpdate: selectDescendents(this.tables, this.changes.updatedIds),
-          toDelete: selectDescendents(this.tables, this.changes.deletedIds),
+          toCreate: selectDescendents(this.drafts, this.changes.createdIds),
+          toUpdate: selectDescendents(this.drafts, this.changes.updatedIds),
+          toDelete: selectDescendents(this.drafts, this.changes.deletedIds),
         },
       });
       runInAction(() => {
         const saved = mergeDescendents(this.saved(), newDescendents);
         this.saved = () => saved;
-        this.tables = indexDescendents(saved);
+        this.drafts = indexDescendents(saved);
         this.changes = baseState().changes;
       });
     } catch (e) {
@@ -98,7 +98,7 @@ export class ActivityEditorStore {
     if (!this.activityId) {
       throw new Error("Activity ID is not set");
     }
-    if (this.tables instanceof Status) {
+    if (this.drafts instanceof Status) {
       throw new Error("Descendents are not loaded");
     }
     const id = crypto.randomUUID();
@@ -108,62 +108,45 @@ export class ActivityEditorStore {
       activityId: this.activityId,
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-    (this.tables[descendentName] as any)[id] = newDescendent;
+    (this.drafts[descendentName] as any)[id] = newDescendent;
     this.changes.createdIds.add(id);
     return newDescendent;
   }
   getDraft<T extends DescendentName>(descendentName: T, id: string) {
-    if (this.tables instanceof Status) {
-      return this.tables;
+    if (this.drafts instanceof Status) {
+      return this.drafts;
     }
-    return this.tables[descendentName][id] ?? notLoaded;
+    return this.drafts[descendentName][id] ?? notLoaded;
   }
   getDrafts<T extends DescendentName>(descendentName: T) {
-    if (this.tables instanceof Status) {
-      return this.tables;
+    if (this.drafts instanceof Status) {
+      return this.drafts;
     }
-    return Object.values(this.tables[descendentName]);
-  }
-  getDraftsSorted<T extends DescendentName>(
-    descendentName: T,
-    sortFn: (a: DescendentRows[T], b: DescendentRows[T]) => number,
-  ) {
-    const drafts = this.getDrafts(descendentName);
-    if (drafts instanceof Status) {
-      return drafts;
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return drafts.slice().sort(sortFn as any);
+    return Object.values(this.drafts[descendentName]);
   }
   updateDraft<T extends DescendentName>(
     descendentName: T,
     updates: { id: string } & Partial<DescendentRows[T]>,
   ) {
     const descendent = this.getDraft(descendentName, updates.id);
-    if (descendent instanceof Status || this.tables instanceof Status) {
+    if (descendent instanceof Status || this.drafts instanceof Status) {
       return;
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-    (this.tables[descendentName] as any)[updates.id] = {
+    (this.drafts[descendentName] as any)[updates.id] = {
       ...descendent,
       ...updates,
     };
     this.changes.updatedIds.add(updates.id);
   }
   deleteDraft(id: string) {
-    if (this.tables instanceof Status) {
+    if (this.drafts instanceof Status) {
       return;
     }
     this.changes.deletedIds.add(id);
   }
 
-  get sortedItems() {
-    const items = this.getDraftsSorted("items", (a, b) =>
-      a.orderFracIdx < b.orderFracIdx ? -1 : 1,
-    );
-    if (items instanceof Status) {
-      throw new Error("Items are not loaded");
-    }
-    return items;
+  isDeleted(id: string) {
+    return this.changes.deletedIds.has(id);
   }
 }

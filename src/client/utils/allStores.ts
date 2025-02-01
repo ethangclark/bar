@@ -1,12 +1,12 @@
-import { ActivityEditorStore } from "../activity/activityEditorStore";
-import { ItemChildrenStore } from "../activity/itemChildrenStore";
+import { ActivityStore } from "../activity/activityStore";
+import { ItemStore } from "../activity/itemStore";
 
-const activityEditorStore = new ActivityEditorStore();
-const itemChildrenStore = new ItemChildrenStore(activityEditorStore);
+const activityStore = new ActivityStore();
+const itemStore = new ItemStore(activityStore);
 
 export const stores = {
-  activityEditorStore,
-  itemChildrenStore,
+  activityStore,
+  itemStore,
 };
 
 export type Stores = typeof stores;

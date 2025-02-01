@@ -1,6 +1,4 @@
 import { Button, type ButtonProps } from "antd";
-import { generateKeyBetween } from "fractional-indexing";
-import { useCallback } from "react";
 import { storeObserver } from "~/client/utils/storeObserver";
 
 function FooterButton(props: ButtonProps) {
@@ -8,25 +6,15 @@ function FooterButton(props: ButtonProps) {
 }
 
 export const FooterControls = storeObserver(function FooterControls({
-  activityEditorStore,
+  activityStore,
+  itemStore,
 }) {
-  const createItem = useCallback(() => {
-    const items = activityEditorStore.sortedItems;
-    const item = activityEditorStore.createDraft("items", {
-      orderFracIdx: generateKeyBetween(
-        items.slice(-1)[0]?.orderFracIdx ?? null,
-        null,
-      ),
-    });
-    return item;
-  }, [activityEditorStore]);
-
   return (
     <div className="flex">
       <FooterButton
         onClick={() => {
-          activityEditorStore.createDraft("infoTexts", {
-            itemId: createItem().id,
+          activityStore.createDraft("infoTexts", {
+            itemId: itemStore.createItem().id,
             content: "",
           });
         }}
@@ -35,8 +23,8 @@ export const FooterControls = storeObserver(function FooterControls({
       </FooterButton>
       <FooterButton
         onClick={() => {
-          activityEditorStore.createDraft("infoImages", {
-            itemId: createItem().id,
+          activityStore.createDraft("infoImages", {
+            itemId: itemStore.createItem().id,
             url: "",
             textAlternative: "",
           });
@@ -46,8 +34,8 @@ export const FooterControls = storeObserver(function FooterControls({
       </FooterButton>
       <FooterButton
         onClick={() => {
-          activityEditorStore.createDraft("questions", {
-            itemId: createItem().id,
+          activityStore.createDraft("questions", {
+            itemId: itemStore.createItem().id,
             content: "",
           });
         }}

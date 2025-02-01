@@ -7,16 +7,14 @@ import { Activity } from "~/client/activity/Activity";
 import { Page } from "~/client/components/Page";
 import { storeObserver } from "~/client/utils/storeObserver";
 
-const ActivityPage = storeObserver(function ActivityPage({
-  activityEditorStore,
-}) {
+const ActivityPage = storeObserver(function ActivityPage({ activityStore }) {
   const params = useParams();
   const { activityId } = z.object({ activityId: z.string() }).parse(params);
 
   useEffect(() => {
-    void activityEditorStore.loadActivity(activityId);
-    return () => activityEditorStore.reset();
-  }, [activityEditorStore, activityId]);
+    void activityStore.loadActivity(activityId);
+    return () => activityStore.reset();
+  }, [activityStore, activityId]);
 
   return (
     <Page>

@@ -23,7 +23,7 @@ export const Item = storeObserver<{
   deleted,
   teacherModeAvailable,
   showControls,
-  activityEditorStore,
+  activityStore,
   infoImage,
   infoText,
   question,
@@ -58,7 +58,7 @@ export const Item = storeObserver<{
               <ImageUploadLink
                 label="Replace image"
                 onFileSelect={({ imageDataUrl }) => {
-                  activityEditorStore.updateDraft("infoImages", {
+                  activityStore.updateDraft("infoImages", {
                     id: infoImage.id,
                     url: imageDataUrl,
                   });
@@ -70,7 +70,7 @@ export const Item = storeObserver<{
             value={infoImage.textAlternative}
             disabled={!teacherModeAvailable}
             setValue={(v) => {
-              activityEditorStore.updateDraft("infoImages", {
+              activityStore.updateDraft("infoImages", {
                 id: infoImage.id,
                 textAlternative: v,
               });
@@ -84,7 +84,7 @@ export const Item = storeObserver<{
             value={infoText.content}
             disabled={!teacherModeAvailable}
             setValue={(v) => {
-              activityEditorStore.updateDraft("infoTexts", {
+              activityStore.updateDraft("infoTexts", {
                 id: infoText.id,
                 content: v,
               });
@@ -98,7 +98,7 @@ export const Item = storeObserver<{
             value={question.content}
             disabled={!teacherModeAvailable}
             setValue={(v) => {
-              activityEditorStore.updateDraft("questions", {
+              activityStore.updateDraft("questions", {
                 id: question.id,
                 content: v,
               });

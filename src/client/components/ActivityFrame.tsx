@@ -47,7 +47,7 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
     rows,
     footer,
     footerControls,
-    activityEditorStore,
+    activityStore,
   }) {
     const showControls = teacherModeAvailable && showControlsRaw;
     const wrapControlCn = (cn: string) =>
@@ -70,8 +70,8 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
             <Button
               className="m-1"
               type="primary"
-              disabled={activityEditorStore.canSave === false}
-              onClick={() => activityEditorStore.save()}
+              disabled={activityStore.canSave === false}
+              onClick={() => activityStore.save()}
             >
               {invoke((): string => {
                 switch (activityStatus) {

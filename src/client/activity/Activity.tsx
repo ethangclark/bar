@@ -10,12 +10,12 @@ import { Item } from "./Item";
 import { FooterControls } from "./FooterControls";
 
 export const Activity = storeObserver(function Activity({
-  activityEditorStore,
-  itemChildrenStore,
+  activityStore,
+  itemStore,
 }) {
   const [showControlsRaw, setShowControls] = useState(true);
 
-  const { activity } = activityEditorStore;
+  const { activity } = activityStore;
 
   if (activity instanceof Status) {
     return <LoadingCentered />;
@@ -27,8 +27,6 @@ export const Activity = storeObserver(function Activity({
 
   const showControls = teacherModeAvailable && showControlsRaw;
 
-  console.log(activityEditorStore.sortedItems);
-
   return (
     <ActivityFrame
       activityStatus={activity.status}
@@ -36,16 +34,16 @@ export const Activity = storeObserver(function Activity({
       showControls={showControlsRaw}
       setShowControls={setShowControls}
       header={<div className="mb-4 text-4xl">{activity.assignment.title}</div>}
-      rows={activityEditorStore.sortedItems.map((item, idx) => {
-        const infoImage = itemChildrenStore.getInfoImage(item.id);
-        const infoText = itemChildrenStore.getTextInfo(item.id);
-        const question = itemChildrenStore.getQuestion(item.id);
+      rows={itemStore.sortedItems.map((item, idx) => {
+        const infoImage = itemStore.getInfoImage(item.id);
+        const infoText = itemStore.getTextInfo(item.id);
+        const question = itemStore.getQuestion(item.id);
         console.log(infoImage, infoText, question);
         return {
           main: (
             <Item
               item={item}
-              deleted={activityEditorStore.changes.deletedIds.has(item.id)}
+              deleted={activityStore.isDeleted(item.id)}
               teacherModeAvailable={teacherModeAvailable}
               showControls={showControls}
               infoImage={infoImage}
@@ -60,10 +58,10 @@ export const Activity = storeObserver(function Activity({
             >
               <span>Item {idx + 1}</span>
               <Typography.Link
-                onClick={() => activityEditorStore.deleteDraft(item.id)}
+                onClick={() => activityStore.deleteDraft(item.id)}
                 className="text-xs"
               >
-                {activityEditorStore.changes.deletedIds.has(item.id) ? (
+                {activityStore.isDeleted(item.id) ? (
                   "Restore"
                 ) : (
                   <span className="text-gray-500 hover:text-red-500">
