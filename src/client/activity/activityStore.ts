@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { type DescendentName } from "~/common/descendentNames";
+import { descendentNames, type DescendentName } from "~/common/descendentNames";
 import { identity } from "~/common/objectUtils";
 import { loading, notLoaded, Status } from "~/common/status";
 import {
@@ -79,7 +79,13 @@ export class ActivityStore {
           deindexDescendents(drafts),
           descendents,
         );
-        this.drafts = indexDescendents(withUpdates);
+        const newDrafts = indexDescendents(withUpdates);
+        this.changes.deletedIds.forEach((id) => {
+          descendentNames.forEach((name) => {
+            delete newDrafts[name][id];
+          });
+        });
+        this.drafts = newDrafts;
         this.changes = baseState().changes;
       });
     } catch (e) {
