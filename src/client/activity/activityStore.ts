@@ -8,7 +8,7 @@ import {
 } from "~/server/descendents/types";
 import { trpc } from "~/trpc/proxy";
 import {
-  createEmptyDescendents,
+  deindexDescendents,
   indexDescendents,
   mergeDescendents,
   selectDescendents,
@@ -16,7 +16,6 @@ import {
 import { type RichActivity } from "~/common/types";
 
 const baseState = () => ({
-  saved: () => createEmptyDescendents(),
   drafts: identity<DescendentTables | Status>(notLoaded),
   changes: {
     createdIds: new Set<string>(),
@@ -28,7 +27,6 @@ const baseState = () => ({
 });
 
 export class ActivityStore {
-  private saved = baseState().saved;
   private drafts = baseState().drafts;
   private changes = baseState().changes;
   public activityId = baseState().activityId;
@@ -48,7 +46,6 @@ export class ActivityStore {
       trpc.activity.get.query({ activityId }),
     ]);
     runInAction(() => {
-      this.saved = () => descendents;
       this.drafts = indexDescendents(descendents);
       this.activity = activity;
     });
@@ -69,7 +66,7 @@ export class ActivityStore {
     const { drafts } = this;
     this.drafts = loading;
     try {
-      const newDescendents = await trpc.descendent.modify.mutate({
+      const descendents = await trpc.descendent.modify.mutate({
         activityId: this.activityId,
         descendentModification: {
           toCreate: selectDescendents(drafts, this.changes.createdIds),
@@ -78,13 +75,11 @@ export class ActivityStore {
         },
       });
       runInAction(() => {
-        // could do some sort of fancy table merging here and not track the saved table,
-        // but it would, in fact, have to be fancy to leverage mobx's rerender-avoidance
-        // (simply composing index/deindex/mergeDescendents would cause rerenders, I believe,
-        // and it has not yet been shown that a solution to this would be better than the problem)
-        const saved = mergeDescendents(this.saved(), newDescendents);
-        this.saved = () => saved;
-        this.drafts = indexDescendents(saved);
+        const withUpdates = mergeDescendents(
+          deindexDescendents(drafts),
+          descendents,
+        );
+        this.drafts = indexDescendents(withUpdates);
         this.changes = baseState().changes;
       });
     } catch (e) {

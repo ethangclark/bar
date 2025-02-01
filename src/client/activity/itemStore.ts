@@ -44,7 +44,7 @@ export class ItemStore {
   get sortedItems() {
     const items = this.activityStore.getDrafts("items");
     if (items instanceof Status) {
-      throw new Error("Items are not loaded");
+      return items;
     }
     return items
       .slice()
@@ -53,6 +53,9 @@ export class ItemStore {
 
   createItem() {
     const items = this.sortedItems;
+    if (items instanceof Status) {
+      throw new Error("Items are not loaded");
+    }
     const item = this.activityStore.createDraft("items", {
       orderFracIdx: generateKeyBetween(
         items.slice(-1)[0]?.orderFracIdx ?? null,

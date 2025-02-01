@@ -16,8 +16,9 @@ export const Activity = storeObserver(function Activity({
   const [showControlsRaw, setShowControls] = useState(true);
 
   const { activity } = activityStore;
+  const { sortedItems } = itemStore;
 
-  if (activity instanceof Status) {
+  if (activity instanceof Status || sortedItems instanceof Status) {
     return <LoadingCentered />;
   }
 
@@ -34,7 +35,7 @@ export const Activity = storeObserver(function Activity({
       showControls={showControlsRaw}
       setShowControls={setShowControls}
       header={<div className="mb-4 text-4xl">{activity.assignment.title}</div>}
-      rows={itemStore.sortedItems.map((item, idx) => {
+      rows={sortedItems.map((item, idx) => {
         const infoImage = itemStore.getInfoImage(item.id);
         const infoText = itemStore.getTextInfo(item.id);
         const question = itemStore.getQuestion(item.id);
