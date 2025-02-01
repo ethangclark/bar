@@ -63,7 +63,7 @@ export const Activity = storeObserver(function Activity({
                 onClick={() => activityEditorStore.deleteDraft(item.id)}
                 className="text-xs"
               >
-                {item.deleted ? (
+                {activityEditorStore.changes.deletedIds.has(item.id) ? (
                   "Restore"
                 ) : (
                   <span className="text-gray-500 hover:text-red-500">

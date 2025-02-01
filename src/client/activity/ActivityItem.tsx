@@ -1,8 +1,8 @@
 import {
-  type ActivityItemWithChildren,
   type InfoImage,
   type InfoText,
   type Question,
+  type ActivityItem as ActivityItemType,
 } from "~/server/db/schema";
 import { WysiwygEditor } from "../components/Editor";
 import { ImageFromDataUrl } from "../components/ImageFromDataUrl";
@@ -12,7 +12,7 @@ import { CircleHelp } from "lucide-react";
 import { ImageUploadLink } from "../components/ImageUploader";
 
 export const ActivityItem = storeObserver<{
-  item: ActivityItemWithChildren;
+  item: ActivityItemType;
   deleted: boolean;
   teacherModeAvailable: boolean;
   showControls: boolean;

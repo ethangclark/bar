@@ -45,31 +45,31 @@ export async function createDescendents({
   ] = await Promise.all([
     activityItemService.create({
       ...baseParams,
-      rows: Object.values(descendents.activityItems),
+      rows: descendents.activityItems,
     }),
     evalKeyService.create({
       ...baseParams,
-      rows: Object.values(descendents.evalKeys),
+      rows: descendents.evalKeys,
     }),
     questionService.create({
       ...baseParams,
-      rows: Object.values(descendents.questions),
+      rows: descendents.questions,
     }),
     infoTextService.create({
       ...baseParams,
-      rows: Object.values(descendents.infoTexts),
+      rows: descendents.infoTexts,
     }),
     infoImageService.create({
       ...baseParams,
-      rows: Object.values(descendents.infoImages),
+      rows: descendents.infoImages,
     }),
     threadService.create({
       ...baseParams,
-      rows: Object.values(descendents.threads),
+      rows: descendents.threads,
     }),
     messageService.create({
       ...baseParams,
-      rows: Object.values(descendents.messages),
+      rows: descendents.messages,
     }),
   ]);
 
@@ -231,72 +231,49 @@ export async function deleteDescendents({
     tx,
   };
 
-  const toAwait = Array<Promise<void>>();
-
-  for (const descendentName of descendentNames) {
-    switch (descendentName) {
-      case "activityItems":
-        toAwait.push(
-          activityItemService.delete({
+  await Promise.all(
+    descendentNames.map((descendentName) => {
+      switch (descendentName) {
+        case "activityItems":
+          return activityItemService.delete({
             ...baseParams,
             ids: descendents.activityItems.map((d) => d.id),
-          }),
-        );
-        return true;
-      case "evalKeys":
-        toAwait.push(
-          evalKeyService.delete({
+          });
+        case "evalKeys":
+          return evalKeyService.delete({
             ...baseParams,
             ids: descendents.evalKeys.map((d) => d.id),
-          }),
-        );
-        return true;
-      case "questions":
-        toAwait.push(
-          questionService.delete({
+          });
+        case "questions":
+          return questionService.delete({
             ...baseParams,
             ids: descendents.questions.map((d) => d.id),
-          }),
-        );
-        return true;
-      case "infoTexts":
-        toAwait.push(
-          infoTextService.delete({
+          });
+        case "infoTexts":
+          return infoTextService.delete({
             ...baseParams,
             ids: descendents.infoTexts.map((d) => d.id),
-          }),
-        );
-        return true;
-      case "infoImages":
-        toAwait.push(
-          infoImageService.delete({
+          });
+        case "infoImages":
+          return infoImageService.delete({
             ...baseParams,
             ids: descendents.infoImages.map((d) => d.id),
-          }),
-        );
-        return true;
-      case "threads":
-        toAwait.push(
-          threadService.delete({
+          });
+        case "threads":
+          return threadService.delete({
             ...baseParams,
             ids: descendents.threads.map((d) => d.id),
-          }),
-        );
-        return true;
-      case "messages":
-        toAwait.push(
-          messageService.delete({
+          });
+        case "messages":
+          return messageService.delete({
             ...baseParams,
             ids: descendents.messages.map((d) => d.id),
-          }),
-        );
-        return true;
-      default:
-        assertNever(descendentName);
-    }
-  }
-
-  await Promise.all(toAwait);
+          });
+        default:
+          assertNever(descendentName);
+      }
+    }),
+  );
 }
 
 export async function modifyDescendents({

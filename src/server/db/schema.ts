@@ -6,7 +6,6 @@ import {
   pgEnum,
   pgTableCreator,
   primaryKey,
-  serial,
   text,
   timestamp,
   uniqueIndex,
@@ -15,7 +14,6 @@ import {
 import { createSelectSchema } from "drizzle-zod";
 import { type AdapterAccount } from "next-auth/adapters";
 import { z } from "zod";
-import { type DescendentName } from "~/common/descendentNames";
 
 export const pgTable = pgTableCreator((name) => name);
 

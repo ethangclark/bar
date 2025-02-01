@@ -7,11 +7,6 @@ import type {
 
 export type MaybePromise<T = void> = T | Promise<T>;
 
-export type NonEmptyArray<T> = [T, ...T[]];
-export function isNonEmptyArray<T>(arr: T[]): arr is NonEmptyArray<T> {
-  return arr.length > 0;
-}
-
 const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 type Literal = z.infer<typeof literalSchema>;
 export type Json = Literal | { [key: string]: Json } | Json[];
