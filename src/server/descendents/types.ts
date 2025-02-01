@@ -41,22 +41,23 @@ type BaseParams = {
   tx: DbOrTx;
 };
 
-type ReadParams = BaseParams & {
-  includeUserIds: string[];
-};
-
 type EditParams<T extends DescendentRow> = BaseParams & {
   rows: T[];
 };
 
-type DeleteParams = BaseParams & {
+export type CreateParams<T extends DescendentRow> = EditParams<T>;
+export type ReadParams = BaseParams & {
+  includeUserIds: string[];
+};
+export type UpdateParams<T extends DescendentRow> = EditParams<T>;
+export type DeleteParams = BaseParams & {
   ids: string[];
 };
 
 export type DescendentController<T extends DescendentRow> = {
-  create(params: EditParams<T>): Promise<T[]>;
+  create(params: CreateParams<T>): Promise<T[]>;
   read(params: ReadParams): Promise<T[]>;
-  update(params: EditParams<T>): Promise<T[]>;
+  update(params: UpdateParams<T>): Promise<T[]>;
   delete(params: DeleteParams): Promise<void>;
 };
 

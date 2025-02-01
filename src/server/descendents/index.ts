@@ -1,6 +1,14 @@
 import { type DbOrTx } from "~/server/db";
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
-import { type DescendentModification, type Descendents } from "./types";
+import {
+  type CreateParams,
+  type DescendentModification,
+  type Descendents,
+  type DescendentRows,
+  type UpdateParams,
+  type ReadParams,
+  type DeleteParams,
+} from "./types";
 import { activityItemService } from "./activityItemController";
 import { evalKeyService } from "./evalKeyController";
 import { infoImageService } from "./infoImageController";
@@ -8,11 +16,64 @@ import { infoTextService } from "./infoTextController";
 import { messageService } from "./messageController";
 import { questionService } from "./questionController";
 import { threadService } from "./threadController";
-import { descendentNames } from "~/common/descendentNames";
-import { assertNever } from "~/common/errorUtils";
+import { type DescendentName, descendentNames } from "~/common/descendentNames";
 import { objectEntries } from "~/common/objectUtils";
 import { clone } from "~/common/cloneUtils";
 import { mergeDescendents } from "~/common/descendentUtils";
+
+type Creators = {
+  [K in DescendentName]: (
+    params: CreateParams<DescendentRows[K]>,
+  ) => Promise<Descendents[K]>;
+};
+type Readers = {
+  [K in DescendentName]: (params: ReadParams) => Promise<Descendents[K]>;
+};
+type Updaters = {
+  [K in DescendentName]: (
+    params: UpdateParams<DescendentRows[K]>,
+  ) => Promise<Descendents[K]>;
+};
+type Deletors = {
+  [K in DescendentName]: (params: DeleteParams) => Promise<void>;
+};
+
+const creators: Creators = {
+  activityItems: (params) => activityItemService.create(params),
+  evalKeys: (params) => evalKeyService.create(params),
+  questions: (params) => questionService.create(params),
+  infoTexts: (params) => infoTextService.create(params),
+  infoImages: (params) => infoImageService.create(params),
+  threads: (params) => threadService.create(params),
+  messages: (params) => messageService.create(params),
+};
+const readers: Readers = {
+  activityItems: (params) => activityItemService.read(params),
+  evalKeys: (params) => evalKeyService.read(params),
+  questions: (params) => questionService.read(params),
+  infoTexts: (params) => infoTextService.read(params),
+  infoImages: (params) => infoImageService.read(params),
+  threads: (params) => threadService.read(params),
+  messages: (params) => messageService.read(params),
+};
+const updaters: Updaters = {
+  activityItems: (params) => activityItemService.update(params),
+  evalKeys: (params) => evalKeyService.update(params),
+  questions: (params) => questionService.update(params),
+  infoTexts: (params) => infoTextService.update(params),
+  infoImages: (params) => infoImageService.update(params),
+  threads: (params) => threadService.update(params),
+  messages: (params) => messageService.update(params),
+};
+const deletors: Deletors = {
+  activityItems: (params) => activityItemService.delete(params),
+  evalKeys: (params) => evalKeyService.delete(params),
+  questions: (params) => questionService.delete(params),
+  infoTexts: (params) => infoTextService.delete(params),
+  infoImages: (params) => infoImageService.delete(params),
+  threads: (params) => threadService.delete(params),
+  messages: (params) => messageService.delete(params),
+};
 
 export async function createDescendents({
   activityId,
@@ -34,56 +95,26 @@ export async function createDescendents({
     tx,
   };
 
-  const [
-    activityItems,
-    evalKeys,
-    questions,
-    infoTexts,
-    infoImages,
-    threads,
-    messages,
-  ] = await Promise.all([
-    activityItemService.create({
-      ...baseParams,
-      rows: descendents.activityItems,
-    }),
-    evalKeyService.create({
-      ...baseParams,
-      rows: descendents.evalKeys,
-    }),
-    questionService.create({
-      ...baseParams,
-      rows: descendents.questions,
-    }),
-    infoTextService.create({
-      ...baseParams,
-      rows: descendents.infoTexts,
-    }),
-    infoImageService.create({
-      ...baseParams,
-      rows: descendents.infoImages,
-    }),
-    threadService.create({
-      ...baseParams,
-      rows: descendents.threads,
-    }),
-    messageService.create({
-      ...baseParams,
-      rows: descendents.messages,
-    }),
-  ]);
+  const result: Partial<Descendents> = {};
 
-  const result: Descendents = {
-    activityItems,
-    evalKeys,
-    questions,
-    infoTexts,
-    infoImages,
-    threads,
-    messages,
-  };
+  for (const name of descendentNames) {
+    const rows = descendents[name];
 
-  return result;
+    // important so Drizzle doesn't throw its "hurr durr no rows" error
+    if (rows.length === 0) {
+      result[name] = [];
+      continue;
+    }
+
+    const creator = creators[name];
+    result[name] = (await creator({
+      ...baseParams,
+      rows,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)) as any;
+  }
+
+  return result as Descendents;
 }
 
 export async function readDescendents({
@@ -107,35 +138,15 @@ export async function readDescendents({
     tx,
   };
 
-  const [
-    activityItems,
-    evalKeys,
-    questions,
-    infoTexts,
-    infoImages,
-    threads,
-    messages,
-  ] = await Promise.all([
-    activityItemService.read(params),
-    evalKeyService.read(params),
-    questionService.read(params),
-    infoTextService.read(params),
-    infoImageService.read(params),
-    threadService.read(params),
-    messageService.read(params),
-  ]);
+  const result: Partial<Descendents> = {};
 
-  const result: Descendents = {
-    activityItems,
-    evalKeys,
-    questions,
-    infoTexts,
-    infoImages,
-    threads,
-    messages,
-  };
+  for (const name of descendentNames) {
+    const reader = readers[name];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    result[name] = (await reader(params)) as any;
+  }
 
-  return result;
+  return result as Descendents;
 }
 
 export async function updateDescendents({
@@ -158,56 +169,26 @@ export async function updateDescendents({
     tx,
   };
 
-  const [
-    activityItems,
-    evalKeys,
-    questions,
-    infoTexts,
-    infoImages,
-    threads,
-    messages,
-  ] = await Promise.all([
-    activityItemService.update({
-      ...baseParams,
-      rows: descendents.activityItems,
-    }),
-    evalKeyService.update({
-      ...baseParams,
-      rows: descendents.evalKeys,
-    }),
-    questionService.update({
-      ...baseParams,
-      rows: descendents.questions,
-    }),
-    infoTextService.update({
-      ...baseParams,
-      rows: descendents.infoTexts,
-    }),
-    infoImageService.update({
-      ...baseParams,
-      rows: descendents.infoImages,
-    }),
-    threadService.update({
-      ...baseParams,
-      rows: descendents.threads,
-    }),
-    messageService.update({
-      ...baseParams,
-      rows: descendents.messages,
-    }),
-  ]);
+  const result: Partial<Descendents> = {};
 
-  const result: Descendents = {
-    activityItems,
-    evalKeys,
-    questions,
-    infoTexts,
-    infoImages,
-    threads,
-    messages,
-  };
+  for (const name of descendentNames) {
+    const rows = descendents[name];
 
-  return result;
+    // important so Drizzle doesn't throw its "hurr durr no rows" error
+    if (rows.length === 0) {
+      result[name] = [];
+      continue;
+    }
+
+    const updater = updaters[name];
+    result[name] = (await updater({
+      ...baseParams,
+      rows,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)) as any;
+  }
+
+  return result as Descendents;
 }
 
 export async function deleteDescendents({
@@ -233,45 +214,18 @@ export async function deleteDescendents({
 
   await Promise.all(
     descendentNames.map((descendentName) => {
-      switch (descendentName) {
-        case "activityItems":
-          return activityItemService.delete({
-            ...baseParams,
-            ids: descendents.activityItems.map((d) => d.id),
-          });
-        case "evalKeys":
-          return evalKeyService.delete({
-            ...baseParams,
-            ids: descendents.evalKeys.map((d) => d.id),
-          });
-        case "questions":
-          return questionService.delete({
-            ...baseParams,
-            ids: descendents.questions.map((d) => d.id),
-          });
-        case "infoTexts":
-          return infoTextService.delete({
-            ...baseParams,
-            ids: descendents.infoTexts.map((d) => d.id),
-          });
-        case "infoImages":
-          return infoImageService.delete({
-            ...baseParams,
-            ids: descendents.infoImages.map((d) => d.id),
-          });
-        case "threads":
-          return threadService.delete({
-            ...baseParams,
-            ids: descendents.threads.map((d) => d.id),
-          });
-        case "messages":
-          return messageService.delete({
-            ...baseParams,
-            ids: descendents.messages.map((d) => d.id),
-          });
-        default:
-          assertNever(descendentName);
+      const ids = descendents[descendentName].map((d) => d.id);
+
+      // important so Drizzle doesn't throw its "hurr durr no rows" error
+      if (ids.length === 0) {
+        return;
       }
+
+      const deletor = deletors[descendentName];
+      return deletor({
+        ...baseParams,
+        ids,
+      });
     }),
   );
 }

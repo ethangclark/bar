@@ -7,10 +7,16 @@ import {
   type DescendentTables,
 } from "~/server/descendents/types";
 import { trpc } from "~/trpc/proxy";
-import { indexDescendents, selectDescendents } from "~/common/descendentUtils";
+import {
+  createEmptyDescendents,
+  indexDescendents,
+  mergeDescendents,
+  selectDescendents,
+} from "~/common/descendentUtils";
 import { type RichActivity } from "~/common/types";
 
 const baseState = () => ({
+  saved: () => createEmptyDescendents(),
   tables: identity<DescendentTables | Status>(notLoaded),
   changes: {
     createdIds: new Set<string>(),
@@ -23,6 +29,7 @@ const baseState = () => ({
 });
 
 export class ActivityEditorStore {
+  private saved = baseState().saved;
   private tables = baseState().tables;
   public changes = baseState().changes;
   public saving = baseState().saving;
@@ -43,6 +50,7 @@ export class ActivityEditorStore {
       trpc.activity.get.query({ activityId }),
     ]);
     runInAction(() => {
+      this.saved = () => descendents;
       this.tables = indexDescendents(descendents);
       this.activity = activity;
     });
@@ -71,7 +79,9 @@ export class ActivityEditorStore {
         },
       });
       runInAction(() => {
-        this.tables = indexDescendents(newDescendents);
+        const saved = mergeDescendents(this.saved(), newDescendents);
+        this.saved = () => saved;
+        this.tables = indexDescendents(saved);
         this.changes = baseState().changes;
       });
     } catch (e) {

@@ -47,6 +47,14 @@ export function indexDescendents(descendents: Descendents): DescendentTables {
   }, {} as DescendentTables);
 }
 
+export function deindexDescendents(tables: DescendentTables): Descendents {
+  return descendentNames.reduce((acc, name) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    acc[name] = objectValues(tables[name]) as any;
+    return acc;
+  }, {} as Descendents);
+}
+
 export function selectDescendents(
   tables: DescendentTables,
   ids: Set<string>,
