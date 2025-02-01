@@ -39,7 +39,6 @@ export const Activity = storeObserver(function Activity({
         const infoImage = itemStore.getInfoImage(item.id);
         const infoText = itemStore.getTextInfo(item.id);
         const question = itemStore.getQuestion(item.id);
-        console.log(infoImage, infoText, question);
         return {
           main: (
             <Item

@@ -1,4 +1,4 @@
-import { autorun, makeAutoObservable } from "mobx";
+import { autorun, makeAutoObservable, runInAction } from "mobx";
 import { Status } from "~/common/status";
 import {
   type InfoImage,
@@ -19,25 +19,27 @@ export class ItemStore {
       const infoTexts = this.activityStore.getDrafts("infoTexts");
       const questions = this.activityStore.getDrafts("questions");
       const infoImages = this.activityStore.getDrafts("infoImages");
-      if (
-        infoTexts instanceof Status ||
-        questions instanceof Status ||
-        infoImages instanceof Status
-      ) {
-        this.itemIdToTextInfo = {};
-        this.itemIdToQuestion = {};
-        this.itemIdToInfoImage = {};
-        return;
-      }
-      for (const draft of infoTexts) {
-        this.itemIdToTextInfo[draft.itemId] = draft;
-      }
-      for (const draft of questions) {
-        this.itemIdToQuestion[draft.itemId] = draft;
-      }
-      for (const draft of infoImages) {
-        this.itemIdToInfoImage[draft.itemId] = draft;
-      }
+      runInAction(() => {
+        if (
+          infoTexts instanceof Status ||
+          questions instanceof Status ||
+          infoImages instanceof Status
+        ) {
+          this.itemIdToTextInfo = {};
+          this.itemIdToQuestion = {};
+          this.itemIdToInfoImage = {};
+          return;
+        }
+        for (const draft of infoTexts) {
+          this.itemIdToTextInfo[draft.itemId] = draft;
+        }
+        for (const draft of questions) {
+          this.itemIdToQuestion[draft.itemId] = draft;
+        }
+        for (const draft of infoImages) {
+          this.itemIdToInfoImage[draft.itemId] = draft;
+        }
+      });
     });
   }
 
