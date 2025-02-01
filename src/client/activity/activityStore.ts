@@ -23,7 +23,6 @@ const baseState = () => ({
     updatedIds: new Set<string>(),
     deletedIds: new Set<string>(),
   },
-  saving: false,
   activityId: identity<string | undefined>(undefined),
   activity: identity<RichActivity | Status>(notLoaded),
 });
@@ -32,7 +31,6 @@ export class ActivityStore {
   private saved = baseState().saved;
   private drafts = baseState().drafts;
   private changes = baseState().changes;
-  public saving = baseState().saving;
   public activityId = baseState().activityId;
   public activity = baseState().activity;
 
@@ -61,33 +59,39 @@ export class ActivityStore {
   }
 
   get canSave() {
-    return !(this.drafts instanceof Status || this.saving);
+    return !(this.drafts instanceof Status);
   }
 
   async save() {
     if (!this.activityId || this.drafts instanceof Status) {
-      throw new Error("Activity ID is required");
+      throw new Error("Descendents are not loaded");
     }
-    this.saving = true;
+    const { drafts } = this;
+    this.drafts = loading;
     try {
       const newDescendents = await trpc.descendent.modify.mutate({
         activityId: this.activityId,
         descendentModification: {
-          toCreate: selectDescendents(this.drafts, this.changes.createdIds),
-          toUpdate: selectDescendents(this.drafts, this.changes.updatedIds),
-          toDelete: selectDescendents(this.drafts, this.changes.deletedIds),
+          toCreate: selectDescendents(drafts, this.changes.createdIds),
+          toUpdate: selectDescendents(drafts, this.changes.updatedIds),
+          toDelete: selectDescendents(drafts, this.changes.deletedIds),
         },
       });
       runInAction(() => {
+        // could do some sort of fancy table merging here and not track the saved table,
+        // but it would, in fact, have to be fancy to leverage mobx's rerender-avoidance
+        // (simply composing index/deindex/mergeDescendents would cause rerenders, I believe,
+        // and it has not yet been shown that a solution to this would be better than the problem)
         const saved = mergeDescendents(this.saved(), newDescendents);
         this.saved = () => saved;
         this.drafts = indexDescendents(saved);
         this.changes = baseState().changes;
       });
     } catch (e) {
+      runInAction(() => {
+        this.drafts = drafts;
+      });
       throw e;
-    } finally {
-      this.saving = false;
     }
   }
 
