@@ -2,7 +2,7 @@ import { type DbOrTx } from "~/server/db";
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
 import {
   type CreateParams,
-  type DescendentModifications,
+  type Modifications,
   type Descendents,
   type DescendentRows,
   type UpdateParams,
@@ -236,15 +236,14 @@ export async function deleteDescendents({
 
 export async function modifyDescendents(params: {
   activityId: string;
-  descendentModifications: DescendentModifications;
+  modifications: Modifications;
   userId: string;
   enrolledAs: EnrollmentType[];
   tx: DbOrTx;
 }): Promise<Descendents> {
-  const { activityId, descendentModifications, userId, enrolledAs, tx } =
-    params;
+  const { activityId, modifications, userId, enrolledAs, tx } = params;
 
-  const rectified = rectifyModifications(descendentModifications);
+  const rectified = rectifyModifications(modifications);
   const { toCreate, toUpdate, toDelete } = rectified;
 
   const notYetCreatedIds = new Set(
@@ -253,7 +252,7 @@ export async function modifyDescendents(params: {
     ),
   );
 
-  const deferred: DescendentModifications = {
+  const deferred: Modifications = {
     toCreate: createEmptyDescendents(),
     toUpdate: createEmptyDescendents(),
     toDelete: createEmptyDescendents(),
@@ -315,7 +314,7 @@ export async function modifyDescendents(params: {
   if (anotherPassNeeded) {
     const nextResult = await modifyDescendents({
       ...params,
-      descendentModifications: deferred,
+      modifications: deferred,
     });
     return mergeDescendents(thisPassResult, nextResult);
   }

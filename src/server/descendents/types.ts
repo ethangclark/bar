@@ -61,11 +61,9 @@ export type DescendentController<T extends DescendentRow> = {
   delete(params: DeleteParams): Promise<void>;
 };
 
-export const descendentModificationsSchema = z.object({
+export const modificationsSchema = z.object({
   toCreate: descendentsSchema,
   toUpdate: descendentsSchema,
   toDelete: descendentsSchema,
 });
-export type DescendentModifications = z.infer<
-  typeof descendentModificationsSchema
->;
+export type Modifications = z.infer<typeof modificationsSchema>;

@@ -1,5 +1,5 @@
 import {
-  type DescendentModifications,
+  type Modifications,
   type DescendentTables,
   type Descendents,
 } from "~/server/descendents/types";
@@ -68,9 +68,7 @@ export function selectDescendents(
   }, {} as Descendents);
 }
 
-export function rectifyModifications(
-  mods: DescendentModifications,
-): DescendentModifications {
+export function rectifyModifications(mods: Modifications): Modifications {
   const safeMods = clone(mods);
   const toCreate = indexDescendents(safeMods.toCreate);
   const toUpdate = indexDescendents(safeMods.toUpdate);

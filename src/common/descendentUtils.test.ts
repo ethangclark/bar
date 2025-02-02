@@ -8,7 +8,7 @@ import {
 import { type Descendents } from "~/server/descendents/types";
 
 describe(selectDescendents.name, () => {
-  const descendentTables = indexDescendents({
+  const tables = indexDescendents({
     ...createEmptyDescendents(),
     threads: [
       { id: "1", name: "Task 1" },
@@ -22,7 +22,7 @@ describe(selectDescendents.name, () => {
   } as any as Descendents);
 
   it("should return an empty object if no ids are provided", () => {
-    const selected = selectDescendents(descendentTables, new Set());
+    const selected = selectDescendents(tables, new Set());
     expect(selected).toEqual({
       ...createEmptyDescendents(),
       threads: [],
@@ -31,7 +31,7 @@ describe(selectDescendents.name, () => {
   });
 
   it("should return only the descendents with the given ids", () => {
-    const selected = selectDescendents(descendentTables, new Set(["1", "4"]));
+    const selected = selectDescendents(tables, new Set(["1", "4"]));
     expect(selected).toEqual({
       ...createEmptyDescendents(),
       threads: [{ id: "1", name: "Task 1" }],
@@ -40,10 +40,7 @@ describe(selectDescendents.name, () => {
   });
 
   it("should return an empty array for a descendent type if none of the ids match", () => {
-    const selected = selectDescendents(
-      descendentTables,
-      new Set(["99", "100"]),
-    );
+    const selected = selectDescendents(tables, new Set(["99", "100"]));
     expect(selected).toEqual({
       ...createEmptyDescendents(),
       threads: [],
