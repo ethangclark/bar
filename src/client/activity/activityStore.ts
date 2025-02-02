@@ -11,6 +11,7 @@ import {
   deindexDescendents,
   indexDescendents,
   mergeDescendents,
+  rectifyModifications,
   selectDescendents,
 } from "~/common/descendentUtils";
 import { type RichActivity } from "~/common/types";
@@ -68,11 +69,11 @@ export class ActivityStore {
     try {
       const descendents = await trpc.descendent.modify.mutate({
         activityId: this.activityId,
-        modifications: {
+        modifications: rectifyModifications({
           toCreate: selectDescendents(drafts, this.changes.createdIds),
           toUpdate: selectDescendents(drafts, this.changes.updatedIds),
           toDelete: selectDescendents(drafts, this.changes.deletedIds),
-        },
+        }),
       });
       runInAction(() => {
         const withUpdates = mergeDescendents(

@@ -3,7 +3,7 @@ import {
   type DescendentTables,
   type Descendents,
 } from "~/server/descendents/types";
-import { objectEntries, objectKeys, objectValues } from "./objectUtils";
+import { objectKeys, objectValues } from "./objectUtils";
 import { descendentNames } from "./descendentNames";
 import { indexById } from "./indexUtils";
 import { clone } from "./cloneUtils";

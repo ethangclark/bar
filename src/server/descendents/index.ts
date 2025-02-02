@@ -18,7 +18,6 @@ import { questionController } from "./questionController";
 import { threadController } from "./threadController";
 import { type DescendentName, descendentNames } from "~/common/descendentNames";
 import { objectEntries, objectValues } from "~/common/objectUtils";
-import { clone } from "~/common/cloneUtils";
 import {
   createEmptyDescendents,
   mergeDescendents,
