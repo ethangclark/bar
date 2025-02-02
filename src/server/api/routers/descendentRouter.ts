@@ -7,7 +7,7 @@ import {
   updateDescendents,
 } from "~/server/descendents";
 import {
-  descendentModificationSchema,
+  descendentModificationsSchema,
   descendentsSchema,
 } from "~/server/descendents/types";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
@@ -128,11 +128,11 @@ export const descendentRouter = createTRPCRouter({
     .input(
       z.object({
         activityId: z.string(),
-        descendentModification: descendentModificationSchema,
+        descendentModifications: descendentModificationsSchema,
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const { activityId, descendentModification } = input;
+      const { activityId, descendentModifications } = input;
       const { userId } = ctx;
 
       const activity = await getActivity({
@@ -144,7 +144,7 @@ export const descendentRouter = createTRPCRouter({
       return db.transaction(async (tx) => {
         return modifyDescendents({
           activityId,
-          descendentModification,
+          descendentModifications,
           userId,
           enrolledAs: activity.course.enrolledAs,
           tx,

@@ -68,7 +68,7 @@ export class ActivityStore {
     try {
       const descendents = await trpc.descendent.modify.mutate({
         activityId: this.activityId,
-        descendentModification: {
+        descendentModifications: {
           toCreate: selectDescendents(drafts, this.changes.createdIds),
           toUpdate: selectDescendents(drafts, this.changes.updatedIds),
           toDelete: selectDescendents(drafts, this.changes.deletedIds),

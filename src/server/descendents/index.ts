@@ -2,7 +2,7 @@ import { type DbOrTx } from "~/server/db";
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
 import {
   type CreateParams,
-  type DescendentModification,
+  type DescendentModifications,
   type Descendents,
   type DescendentRows,
   type UpdateParams,
@@ -17,9 +17,13 @@ import { messageController } from "./messageController";
 import { questionController } from "./questionController";
 import { threadController } from "./threadController";
 import { type DescendentName, descendentNames } from "~/common/descendentNames";
-import { objectEntries } from "~/common/objectUtils";
+import { objectEntries, objectValues } from "~/common/objectUtils";
 import { clone } from "~/common/cloneUtils";
-import { mergeDescendents } from "~/common/descendentUtils";
+import {
+  createEmptyDescendents,
+  mergeDescendents,
+  rectifyModifications,
+} from "~/common/descendentUtils";
 
 type Creators = {
   [K in DescendentName]: (
@@ -230,39 +234,58 @@ export async function deleteDescendents({
   );
 }
 
-export async function modifyDescendents({
-  activityId,
-  descendentModification,
-  userId,
-  enrolledAs,
-  tx,
-}: {
+export async function modifyDescendents(params: {
   activityId: string;
-  descendentModification: DescendentModification;
+  descendentModifications: DescendentModifications;
   userId: string;
   enrolledAs: EnrollmentType[];
   tx: DbOrTx;
-}) {
-  const { toCreate, toUpdate, toDelete } = clone(descendentModification);
+}): Promise<Descendents> {
+  const { activityId, descendentModifications, userId, enrolledAs, tx } =
+    params;
 
-  // ensure deleted objects are not included in the toCreate or toUpdate objects
-  objectEntries(toDelete).forEach(([descendentName, rows]) => {
-    const deleting = new Set(rows.map((d) => d.id));
-    [toCreate, toUpdate].forEach((descendents) => {
-      descendents[descendentName] = descendents[descendentName].filter(
-        (d) => !deleting.has(d.id),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ) as any;
-    });
-  });
+  const rectified = rectifyModifications(descendentModifications);
+  const { toCreate, toUpdate, toDelete } = rectified;
 
-  // ensure created objects are not included in the toUpdate object
-  objectEntries(toCreate).forEach(([descendentName, descendents]) => {
-    const creating = new Set(descendents.map((d) => d.id));
-    toUpdate[descendentName] = toUpdate[descendentName].filter(
-      (d) => !creating.has(d.id),
+  const notYetCreatedIds = new Set(
+    objectValues(toCreate).flatMap((descendents) =>
+      descendents.map((d) => d.id),
+    ),
+  );
+
+  const deferred: DescendentModifications = {
+    toCreate: createEmptyDescendents(),
+    toUpdate: createEmptyDescendents(),
+    toDelete: createEmptyDescendents(),
+  };
+
+  let anotherPassNeeded = false;
+  objectEntries({ toCreate, toUpdate }).forEach(([modType, descendents]) => {
+    descendentNames.forEach((descendentName) => {
+      const rows = descendents[descendentName];
+      const newRows = Array<(typeof rows)[number]>();
+      rows.forEach((row) => {
+        let deferThisRow = false;
+        for (const fieldVal of objectValues(row)) {
+          if (typeof fieldVal !== "string" || fieldVal === row.id) {
+            continue;
+          }
+          if (notYetCreatedIds.has(fieldVal)) {
+            anotherPassNeeded = true;
+            deferThisRow = true;
+            break;
+          }
+        }
+        if (deferThisRow) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          deferred[modType][descendentName].push(row as any);
+        } else {
+          newRows.push(row);
+        }
+      });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ) as any;
+      descendents[descendentName] = newRows as any;
+    });
   });
 
   const baseParams = {
@@ -287,7 +310,15 @@ export async function modifyDescendents({
     }),
   ]);
 
-  const result = mergeDescendents(clone(created), updated);
+  const thisPassResult = mergeDescendents(created, updated);
 
-  return result;
+  if (anotherPassNeeded) {
+    const nextResult = await modifyDescendents({
+      ...params,
+      descendentModifications: deferred,
+    });
+    return mergeDescendents(thisPassResult, nextResult);
+  }
+
+  return thisPassResult;
 }

@@ -45,7 +45,6 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
     },
     ref,
   ) {
-    console.log({ outlineCn });
     const Component = height ? FixedTextArea : ExpandingTextarea;
     return (
       <Component
