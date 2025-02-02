@@ -34,9 +34,15 @@ export const FooterControls = storeObserver(function FooterControls({
       </FooterButton>
       <FooterButton
         onClick={() => {
-          activityStore.createDraft("questions", {
+          const q = activityStore.createDraft("questions", {
             itemId: itemStore.createItem().id,
             content: "",
+          });
+
+          // TODO: could generate suggestions for this
+          activityStore.createDraft("evalKeys", {
+            questionId: q.id,
+            key: "",
           });
         }}
       >

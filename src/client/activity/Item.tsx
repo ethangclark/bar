@@ -10,24 +10,33 @@ import { storeObserver } from "../utils/storeObserver";
 import { Tooltip } from "antd";
 import { CircleHelp } from "lucide-react";
 import { ImageUploadLink } from "../components/ImageUploader";
+import { ControlsSection } from "../components/ActivityFrame";
+import {
+  type EnrollmentType,
+  isGraderOrDeveloper,
+} from "~/common/enrollmentTypeUtils";
 
 export const Item = storeObserver<{
   item: ItemType;
   deleted: boolean;
-  teacherModeAvailable: boolean;
+  enrolledAs: EnrollmentType[];
   showControls: boolean;
   infoImage: InfoImage | null;
   infoText: InfoText | null;
   question: Question | null;
 }>(function Item({
   deleted,
-  teacherModeAvailable,
+  enrolledAs,
   showControls,
   activityStore,
   infoImage,
   infoText,
   question,
+  questionStore,
 }) {
+  const igod = isGraderOrDeveloper(enrolledAs);
+  const evalKey = question && questionStore.getEvalKey(question.id);
+
   return (
     <div
       className={`flex flex-col items-center px-4 pb-8 ${deleted ? "opacity-30" : ""}`}
@@ -68,7 +77,7 @@ export const Item = storeObserver<{
           </div>
           <WysiwygEditor
             value={infoImage.textAlternative}
-            disabled={!teacherModeAvailable}
+            disabled={!igod}
             setValue={(v) => {
               activityStore.updateDraft("infoImages", {
                 id: infoImage.id,
@@ -82,28 +91,59 @@ export const Item = storeObserver<{
         <div key={infoText.id} className="w-full">
           <WysiwygEditor
             value={infoText.content}
-            disabled={!teacherModeAvailable}
+            disabled={!igod}
             setValue={(v) => {
               activityStore.updateDraft("infoTexts", {
                 id: infoText.id,
                 content: v,
               });
             }}
+            className={infoText.content ? "" : "placeholder-red-500"}
+            placeholder="Insert text here..."
           />
         </div>
       ) : null}
       {question ? (
-        <div key={question.id} className="w-full">
-          <WysiwygEditor
-            value={question.content}
-            disabled={!teacherModeAvailable}
-            setValue={(v) => {
-              activityStore.updateDraft("questions", {
-                id: question.id,
-                content: v,
-              });
-            }}
-          />
+        <div key={question.id} className="flex w-full flex-col">
+          <div className="mb-1">
+            <WysiwygEditor
+              placeholder="Insert question here..."
+              value={question.content}
+              disabled={!igod}
+              setValue={(v) => {
+                activityStore.updateDraft("questions", {
+                  id: question.id,
+                  content: v,
+                });
+              }}
+              className={question.content ? "" : "placeholder-red-500"}
+            />
+          </div>
+          {evalKey && showControls ? (
+            <div className="ml-[-8px]">
+              <ControlsSection>
+                <div className="mb-[-4px] mr-[-4px] pl-1">
+                  <WysiwygEditor
+                    placeholder="Insert answer here..."
+                    value={evalKey.key}
+                    disabled={!igod}
+                    setValue={(v) => {
+                      activityStore.updateDraft("evalKeys", {
+                        id: evalKey.id,
+                        key: v,
+                      });
+                    }}
+                    outlineCn={"outline-none"}
+                    className={
+                      question.content && !evalKey.key
+                        ? "placeholder-red-500"
+                        : ""
+                    }
+                  />
+                </div>
+              </ControlsSection>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>

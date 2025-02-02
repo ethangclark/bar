@@ -45,6 +45,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
     },
     ref,
   ) {
+    console.log({ outlineCn });
     const Component = height ? FixedTextArea : ExpandingTextarea;
     return (
       <Component
@@ -69,23 +70,33 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
 export function WysiwygEditor({
   value,
   setValue,
+  placeholder,
   disabled = false,
   outlineCn = "focus:outline focus:outline-gray-200",
+  roundingCn = "rounded-none",
+  className = "",
+  width,
 }: {
   value: string;
   setValue: (value: string) => void;
+  placeholder?: string;
   disabled?: boolean;
   outlineCn?: string;
+  roundingCn?: string;
+  className?: string;
+  width?: number;
 }) {
   return (
     <Editor
+      placeholder={placeholder}
       value={value}
       setValue={setValue}
       paddingCn="p-1"
-      className="mx-[-4px] grow disabled:cursor-auto disabled:bg-white"
-      roundingCn="rounded-none"
+      className={`mx-[-4px] grow disabled:cursor-auto disabled:bg-white ${className}`}
+      roundingCn={roundingCn}
       outlineCn={outlineCn}
       disabled={disabled}
+      width={width}
     />
   );
 }

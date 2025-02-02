@@ -8,6 +8,7 @@ import { storeObserver } from "~/client/utils/storeObserver";
 import { Status } from "~/common/status";
 import { Item } from "./Item";
 import { FooterControls } from "./FooterControls";
+import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 
 export const Activity = storeObserver(function Activity({
   activityStore,
@@ -22,16 +23,13 @@ export const Activity = storeObserver(function Activity({
     return <LoadingCentered />;
   }
 
-  const teacherModeAvailable = (["teacher", "designer"] as const).some((v) =>
-    activity.course.enrolledAs.includes(v),
-  );
-
-  const showControls = teacherModeAvailable && showControlsRaw;
+  const igod = isGraderOrDeveloper(activity.course.enrolledAs);
+  const showControls = igod && showControlsRaw;
 
   return (
     <ActivityFrame
       activityStatus={activity.status}
-      teacherModeAvailable={teacherModeAvailable}
+      enrolledAs={activity.course.enrolledAs}
       showControls={showControlsRaw}
       setShowControls={setShowControls}
       header={<div className="mb-4 text-4xl">{activity.assignment.title}</div>}
@@ -44,7 +42,7 @@ export const Activity = storeObserver(function Activity({
             <Item
               item={item}
               deleted={activityStore.isDeleted(item.id)}
-              teacherModeAvailable={teacherModeAvailable}
+              enrolledAs={activity.course.enrolledAs}
               showControls={showControls}
               infoImage={infoImage}
               infoText={infoText}

@@ -3,6 +3,10 @@ import { Fragment } from "react";
 import { invoke } from "~/common/fnUtils";
 import { type ActivityStatus } from "~/server/db/schema";
 import { storeObserver } from "../utils/storeObserver";
+import {
+  type EnrollmentType,
+  isGraderOrDeveloper,
+} from "~/common/enrollmentTypeUtils";
 
 const Spacer = () => <div />;
 
@@ -24,7 +28,7 @@ export const ControlsSection = ({
 
 type ActivityFrameProps = {
   activityStatus: ActivityStatus;
-  teacherModeAvailable: boolean;
+  enrolledAs: EnrollmentType[];
   showControls: boolean;
   setShowControls: (show: boolean) => void;
   header: React.ReactNode;
@@ -40,7 +44,7 @@ type ActivityFrameProps = {
 export const ActivityFrame = storeObserver<ActivityFrameProps>(
   function ActivityFrame({
     activityStatus,
-    teacherModeAvailable,
+    enrolledAs,
     showControls: showControlsRaw,
     setShowControls,
     header,
@@ -49,13 +53,14 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
     footerControls,
     activityStore,
   }) {
-    const showControls = teacherModeAvailable && showControlsRaw;
+    const igod = isGraderOrDeveloper(enrolledAs);
+    const showControls = igod && showControlsRaw;
     const wrapControlCn = (cn: string) =>
       `${cn} ${showControls ? "" : "invisible"}`;
     return (
       <div className="grid grid-cols-[repeat(3,_auto)]">
         <Spacer />
-        {teacherModeAvailable ? (
+        {igod ? (
           <ControlsSection className="mb-2 flex items-center justify-center px-3 py-2">
             <div className="my-[-4px] flex items-center">
               <Switch
