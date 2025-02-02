@@ -1,5 +1,3 @@
-"use client";
-
 export const scrollbarWidth = (() => {
   if (typeof document === "undefined") {
     return 15;

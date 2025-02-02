@@ -1,5 +1,3 @@
-"use client";
-
 import { forwardRef, type KeyboardEventHandler } from "react";
 import ExpandingTextarea, {
   type TextareaProps,

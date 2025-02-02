@@ -1,5 +1,3 @@
-"use client";
-
 import { scrollbarWidth } from "~/client/utils/scrollbarWidth";
 import { useIsClientSide } from "~/client/utils/isClientSide";
 
