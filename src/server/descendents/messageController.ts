@@ -14,6 +14,7 @@ export const messageController: DescendentController<Message> = {
           ...row,
           activityId,
           userId,
+          senderRole: "user" as const,
         })),
       )
       .returning();
