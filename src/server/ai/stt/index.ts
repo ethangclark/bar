@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { type AudioData } from "~/common/types";
+import { type AudioDataX } from "~/common/types";
 import { env } from "~/env";
 
 interface TranscriptionResult {
@@ -45,7 +45,7 @@ class WhisperTranscriptionService {
     return new File([blob], filename, { type: mimeType });
   }
 
-  async transcribe(audioData: AudioData): Promise<TranscriptionResult> {
+  async transcribe(audioData: AudioDataX): Promise<TranscriptionResult> {
     const startTime = Date.now();
 
     try {
@@ -103,10 +103,10 @@ class WhisperTranscriptionService {
 
 // Usage example:
 export async function transcribeAudio(
-  audioData: AudioData,
+  audioDataX: AudioDataX,
 ): Promise<TranscriptionResult> {
   const transcriptionService = new WhisperTranscriptionService(
     env.OPENAI_API_KEY,
   );
-  return await transcriptionService.transcribe(audioData);
+  return await transcriptionService.transcribe(audioDataX);
 }

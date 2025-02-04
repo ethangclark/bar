@@ -3,7 +3,7 @@ import {
   type Activity,
   type IntegrationType,
 } from "~/server/db/schema";
-import { type NarrowedCanvasEnrollmentType } from "../canvas/utils";
+import { type NarrowedCanvasEnrollmentType } from "./canvas/utils";
 
 export type LmsAssignment = {
   exAssignmentIdJson: string;

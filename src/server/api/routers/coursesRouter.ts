@@ -1,5 +1,5 @@
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { type LmsCourse } from "~/server/integrations/utils/integrationApi";
+import { type LmsCourse } from "~/server/integrations/types";
 import { getIntegrationApis } from "~/server/services/integrationService";
 
 export const coursesRouter = createTRPCRouter({

@@ -140,17 +140,28 @@ export async function makeCanvasRequest<T extends Json>({
   }
 
   try {
+    const authToken = accessToken ? `Bearer ${accessToken}` : null;
     const result = await fetch(url, {
       method,
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      headers: authToken ? { Authorization: authToken } : {},
     });
     const asAnyJson = await result.json();
     try {
       const asResponseType = responseSchema.parse(asAnyJson);
       return asResponseType;
     } catch (e) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-      (e as any).json = asAnyJson;
+      console.error("canvas response error", {
+        request: {
+          url,
+          method,
+          authToken,
+        },
+        response: {
+          status: result.status,
+          statusText: result.statusText,
+          json: asAnyJson,
+        },
+      });
       throw e;
     }
   } catch (e) {

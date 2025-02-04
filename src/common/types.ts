@@ -1,9 +1,6 @@
 import { z } from "zod";
 import type { Activity } from "~/server/db/schema";
-import type {
-  LmsCourse,
-  LmsAssignment,
-} from "~/server/integrations/utils/integrationApi";
+import type { LmsCourse, LmsAssignment } from "~/server/integrations/types";
 
 export type MaybePromise<T = void> = T | Promise<T>;
 
@@ -20,13 +17,13 @@ export type JsonOrUndefined =
   | JsonOrUndefined[]
   | { [key: string]: JsonOrUndefined };
 
-export const audioDataSchema = z.object({
+export const audioDataXSchema = z.object({
   data: z.string(), // base64 encoded audio
   timestamp: z.string(), // ISO string timestamp
   mimeType: z.string(), // audio MIME type
 });
 // Types for the audio data structure
-export type AudioData = z.infer<typeof audioDataSchema>;
+export type AudioDataX = z.infer<typeof audioDataXSchema>;
 
 export const MessageStreamItemSchema = z.union([
   z.object({

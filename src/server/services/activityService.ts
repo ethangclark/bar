@@ -3,7 +3,7 @@ import { isDeveloper } from "~/common/enrollmentTypeUtils";
 import { assertNever } from "~/common/errorUtils";
 import { noop } from "~/common/fnUtils";
 import { db } from "~/server/db";
-import { type LmsAssignment } from "~/server/integrations/utils/integrationApi";
+import { type LmsAssignment } from "~/server/integrations/types";
 import { getIntegrationApi } from "~/server/services/integrationService";
 
 export async function getActivity({

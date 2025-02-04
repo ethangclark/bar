@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "~/server/db";
 import { createCanvasIntegrationApi } from "~/server/integrations/canvas/canvasIntegration";
-import { type IntegrationApi } from "~/server/integrations/utils/integrationApi";
+import { type IntegrationApi } from "~/server/integrations/types";
 import { type Integration } from "../db/schema";
 import { assertNever } from "~/common/errorUtils";
 

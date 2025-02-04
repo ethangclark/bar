@@ -3,6 +3,7 @@ import { storeObserver } from "~/client/utils/storeObserver";
 import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 import { Status } from "~/common/status";
 import { ActivityEditor } from "./ActivityEditor";
+import { ActivityDoer } from "./ActivityDoer";
 
 export const Activity = storeObserver(function Activity({ activityStore }) {
   const { activity } = activityStore;
@@ -13,9 +14,9 @@ export const Activity = storeObserver(function Activity({ activityStore }) {
 
   const igod = isGraderOrDeveloper(activity.course.enrolledAs);
 
-  if (igod) {
+  if (igod && false) {
     return <ActivityEditor />;
   }
 
-  return <div>TODO :D</div>;
+  return <ActivityDoer assignmentTitle={activity.assignment.title} />;
 });

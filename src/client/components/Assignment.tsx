@@ -6,7 +6,7 @@ import { type NarrowedCanvasEnrollmentType } from "~/server/integrations/canvas/
 import {
   type LmsAssignment,
   type LmsCourse,
-} from "~/server/integrations/utils/integrationApi";
+} from "~/server/integrations/types";
 
 const StatusWrapper = ({ children }: { children: React.ReactNode }) => (
   <span className={`rounded border-2 p-1 font-bold`}>{children}</span>

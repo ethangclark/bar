@@ -1,7 +1,7 @@
 import { eq, inArray } from "drizzle-orm";
 import { db } from "~/server/db";
 import { type Integration } from "~/server/db/schema";
-import { type LmsCourse, type IntegrationApi } from "../utils/integrationApi";
+import { type LmsCourse, type IntegrationApi } from "../types";
 import {
   type CanvasCourse,
   getCanvasAssignments,
