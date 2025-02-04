@@ -24,13 +24,8 @@ export default function RootLayout({
             <ConfigProvider
               theme={/*{ token: { colorPrimary: "#2a9d8f" } }*/ undefined}
             >
-              <main className="fixed bottom-0 left-0 right-0 top-0 flex min-h-screen flex-col items-center overflow-auto">
-                <div
-                  style={{ maxWidth: 1280 }}
-                  className="flex min-h-screen flex-col items-center"
-                >
-                  {children}
-                </div>
+              <main className="flex min-h-screen flex-col items-center overflow-auto">
+                {children}
               </main>
             </ConfigProvider>
           </TRPCReactProvider>

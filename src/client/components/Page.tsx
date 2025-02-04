@@ -3,14 +3,23 @@ import { useIsClientSide } from "~/client/utils/isClientSide";
 
 export function Page({ children }: { children: React.ReactNode }) {
   const isClientSide = useIsClientSide();
+  const marginX = isClientSide ? scrollbarWidth : 0;
   return (
+    // handles scrollbar width
     <div
-      className="flex flex-grow flex-col items-center px-2 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8"
-      style={{
-        minWidth: `calc(100vw - ${isClientSide ? scrollbarWidth : 0}px)`,
-      }}
+      className="absolute bottom-0 top-0 flex flex-col items-center"
+      style={{ left: marginX, right: marginX }}
     >
-      {children}
+      {/* handles aesthetic margin */}
+      <div
+        className="flex flex-grow flex-col items-center"
+        style={{
+          margin: "16px 8px",
+          // maxWidth: 1280,
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }

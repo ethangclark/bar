@@ -6,13 +6,20 @@ import { api } from "~/trpc/react";
 import { Editor } from "../components/Editor";
 import { VoiceRecorder } from "../components/VoiceRecorder";
 import { storeObserver } from "../utils/storeObserver";
+import { assertNever } from "~/common/errorUtils";
 
 export function PreformattedText({ children }: { children: React.ReactNode }) {
   return <pre className="text-wrap font-serif">{children}</pre>;
 }
 
-function MessageView({ children }: { children: React.ReactNode }) {
-  return <div className="mb-4">{children}</div>;
+function MessageView({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={`mb-4 flex ${className}`}>{children}</div>;
 }
 
 export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
@@ -65,106 +72,91 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
     }, []);
 
     return (
-      <div className="flex h-full w-[350px] flex-col items-center px-2 md:w-[672px] md:px-8">
-        <div className="md:text-md w-full self-start text-sm">
+      <div className="flex h-full w-[350px] flex-col items-center justify-between md:w-[672px]">
+        <div className="md:text-md mb-2 w-full self-start text-sm">
           <div className="mb-2 text-lg md:text-2xl">{assignmentTitle}</div>
         </div>
-        <div className="flex w-full flex-col items-center">
+        <div className="outline-3 flex h-full w-full grow items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200">
           <div
-            className="outline-3 flex h-full w-full items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200"
-            style={{ height: `calc(100vh - 300px)` }}
+            className="flex h-full w-full flex-col overflow-y-auto p-4"
+            ref={messageWrapperRef}
           >
-            <div
-              className="flex h-full w-full flex-col overflow-y-auto p-4"
-              ref={messageWrapperRef}
-            >
-              {messages?.map((m, idx) => {
-                if (m.senderRole === "system") {
+            {messages.map((m) => {
+              switch (m.senderRole) {
+                case "system":
                   return null;
-                }
-
-                // if subsequent message is system message, and no user messages before it,
-                // then this is a "lesson prep" message and shoud be hidden
-                if (
-                  m.senderRole === "assistant" &&
-                  messages[idx + 1]?.senderRole === "system" &&
-                  messages.slice(0, idx).every((m) => m.senderRole !== "user")
-                ) {
-                  return null;
-                }
-
-                if (m.senderRole === "user") {
+                case "user":
                   return (
-                    <MessageView key={m.id}>
-                      <div className="self-end rounded-xl bg-blue-100 p-3">
+                    <MessageView key={m.id} className="justify-end">
+                      <div className="rounded-xl bg-blue-100 p-3">
                         <PreformattedText>{m.content}</PreformattedText>
                       </div>
                     </MessageView>
                   );
-                }
-                return (
-                  <MessageView key={m.id}>
-                    <div className="text-sm">
-                      <PreformattedText key={m.id}>
-                        {m.content}
-                      </PreformattedText>
-                    </div>
-                  </MessageView>
-                );
-              })}
-              <div className="flex w-full justify-center">
-                {isLoading ? (
-                  <div className="text-gray-500">
-                    Even AIs need a moment... One minute... <Spin />
-                  </div>
-                ) : null}
-              </div>
+                case "assistant":
+                  return (
+                    <MessageView key={m.id}>
+                      <div className="text-sm">
+                        <PreformattedText key={m.id}>
+                          {m.content}
+                        </PreformattedText>
+                      </div>
+                    </MessageView>
+                  );
+                default:
+                  assertNever(m.senderRole);
+              }
+            })}
+            <div className="flex w-full justify-center">
+              {isLoading ? (
+                <div className="text-gray-500">
+                  Even AIs need a moment... One minute... <Spin />
+                </div>
+              ) : null}
             </div>
           </div>
-          <div
-            className="w-[350px] md:w-[562px]"
-            style={{
-              height: 100,
-              position: "relative",
-              bottom: 0,
-              marginTop: 20,
-              marginBottom: -100,
-            }}
-          >
-            <div className="mb-2 flex">
-              <Editor
-                value={v}
-                setValue={setV}
-                placeholder="Compose your message..."
-                height={70}
-                onKeyDown={async (e) => {
-                  if (e.key !== "Enter" || e.shiftKey) {
-                    return;
-                  }
-                  e.preventDefault();
-                  console.log("TODO: send message", v);
-                  setV("");
-                  setTimeout(() => {
-                    // scroll to the bottom
-                    messageWrapperRef.current?.scrollTo({
-                      top: messageWrapperRef.current.scrollHeight,
-                      behavior: "smooth",
-                    });
+        </div>
+        <div
+          className="w-[350px] md:w-[562px]"
+          style={{
+            position: "relative",
+            bottom: 0,
+            marginTop: 20,
+          }}
+        >
+          <div className="mb-2 flex">
+            <Editor
+              value={v}
+              setValue={setV}
+              placeholder="Compose your message..."
+              height={70}
+              onKeyDown={async (e) => {
+                if (e.key !== "Enter" || e.shiftKey) {
+                  return;
+                }
+                e.preventDefault();
+                console.log("TODO: send message", v);
+                setV("");
+                setTimeout(() => {
+                  // scroll to the bottom
+                  messageWrapperRef.current?.scrollTo({
+                    top: messageWrapperRef.current.scrollHeight,
+                    behavior: "smooth",
                   });
-                }}
-                disabled={isLoading}
-                className="mr-4"
-              />
-              <VoiceRecorder
-                onRecordingComplete={handleAudioDataX}
-                isProcessing={isTranscribing}
-              />
-            </div>
-            <div className="w-full text-center text-xs text-gray-400">
-              Press enter to send. Response may take a few seconds. Let the
-              tutor know if you want to move on to another part of the activity,
-              or need help. Email questions and issues to hello@summited.ai
-            </div>
+                });
+              }}
+              disabled={isLoading}
+              className="mr-4"
+            />
+            <VoiceRecorder
+              onRecordingComplete={handleAudioDataX}
+              isProcessing={isTranscribing}
+            />
+          </div>
+          <div className="w-full text-center text-xs text-gray-400">
+            Press enter to send. Response may take a few seconds. Let Summit
+            know if you want to move on to another part of the activity, or need
+            help. Email questions and issues to hello@summited.ai
           </div>
         </div>
       </div>
