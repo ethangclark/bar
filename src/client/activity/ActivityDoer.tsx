@@ -1,4 +1,4 @@
-import { Spin } from "antd";
+import { Button, Spin } from "antd";
 import { useCallback, useRef, useState } from "react";
 import { assertNever } from "~/common/errorUtils";
 import { Status } from "~/common/status";
@@ -8,6 +8,7 @@ import { Editor } from "../components/Editor";
 import { LoadingPage } from "../components/Loading";
 import { VoiceRecorder } from "../components/VoiceRecorder";
 import { storeObserver } from "../utils/storeObserver";
+import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 
 export function PreformattedText({ children }: { children: React.ReactNode }) {
   return <pre className="text-wrap font-serif">{children}</pre>;
@@ -24,7 +25,13 @@ function MessageView({
 }
 
 export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
-  function ActivityDoer({ assignmentTitle, threadStore }) {
+  function ActivityDoer({
+    assignmentTitle,
+    threadStore,
+    activityStore,
+    studentModeStore,
+    activityEditorStore,
+  }) {
     const { mutateAsync: transcribe, isPending: isTranscribing } =
       api.trascription.transcribe.useMutation();
 
@@ -49,14 +56,29 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
 
     const messageProcessing = false;
 
+    const igod =
+      activityStore.enrolledAs instanceof Status
+        ? false
+        : isGraderOrDeveloper(activityStore.enrolledAs);
+
     if (messages instanceof Status) {
       return <LoadingPage />;
     }
 
     return (
       <div className="flex h-full w-[350px] flex-col items-center justify-between md:w-[672px]">
-        <div className="md:text-md mb-2 w-full self-start text-sm">
+        <div className="md:text-md mb-2 flex w-full items-center justify-between">
           <div className="mb-2 text-lg md:text-2xl">{assignmentTitle}</div>
+          <div className="text-xs text-gray-500">
+            {igod && (
+              <Button
+                type="primary"
+                onClick={() => studentModeStore.setIsStudentMode(false)}
+              >
+                Return to design mode
+              </Button>
+            )}
+          </div>
         </div>
         <div className="outline-3 flex h-full w-full grow items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200">
           <div
