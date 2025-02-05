@@ -20,6 +20,8 @@ const baseState = () => ({
   descendents: identity<DescendentTables | Status>(notLoaded),
 });
 
+// omitted params are supplied on the back-end --
+// values provided by the rows are / should be ignored
 export type DescendentCreateParams<T extends DescendentName> = Omit<
   DescendentRows[T],
   "id" | "activityId" | "userId" | "createdAt"
