@@ -73,7 +73,7 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
               onClick={() => studentModeStore.setIsStudentMode(true)}
               disabled={activityEditorStore.canSave}
             >
-              Try it
+              See demo
             </Button>
             <Separator />
             <div className="my-[-4px] flex items-center">
