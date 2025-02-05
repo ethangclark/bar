@@ -1,9 +1,9 @@
 import { audioDataXSchema } from "~/common/types";
 import { transcribeAudio } from "~/server/ai/stt";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const transcriptionRouter = createTRPCRouter({
-  transcribe: publicProcedure
+  transcribe: protectedProcedure
     .input(audioDataXSchema)
     .mutation(async ({ input }) => {
       const perMinute = 160 * 1000; // same logic is in topic.tsx
