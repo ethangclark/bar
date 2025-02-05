@@ -15,6 +15,7 @@ import {
   selectDescendents,
 } from "~/common/descendentUtils";
 import { type RichActivity } from "~/common/types";
+import { draftDate, draftId } from "~/common/draftData";
 
 const baseState = () => ({
   drafts: identity<DescendentTables | Status>(notLoaded),
@@ -99,7 +100,10 @@ export class ActivityStore {
 
   createDraft<T extends DescendentName>(
     descendentName: T,
-    descendent: Omit<DescendentRows[T], "id" | "activityId">,
+    descendent: Omit<
+      DescendentRows[T],
+      "id" | "activityId" | "userId" | "createdAt"
+    >,
   ) {
     if (!this.activityId) {
       throw new Error("Activity ID is not set");
@@ -112,6 +116,8 @@ export class ActivityStore {
       ...descendent,
       id,
       activityId: this.activityId,
+      userId: draftId,
+      createdAt: draftDate,
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     (this.drafts[descendentName] as any)[id] = newDescendent;
@@ -152,7 +158,7 @@ export class ActivityStore {
     this.changes.deletedIds.add(id);
   }
 
-  isDeleted(id: string) {
+  isDeletedDraft(id: string) {
     return this.changes.deletedIds.has(id);
   }
 }

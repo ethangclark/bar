@@ -35,7 +35,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
           main: (
             <Item
               item={item}
-              deleted={activityStore.isDeleted(item.id)}
+              deleted={activityStore.isDeletedDraft(item.id)}
               enrolledAs={activity.course.enrolledAs}
               showControls={showControls}
               infoImage={infoImage}
@@ -53,7 +53,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
                 onClick={() => activityStore.deleteDraft(item.id)}
                 className="text-xs"
               >
-                {activityStore.isDeleted(item.id) ? (
+                {activityStore.isDeletedDraft(item.id) ? (
                   "Restore"
                 ) : (
                   <span className="text-gray-500 hover:text-red-500">

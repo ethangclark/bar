@@ -471,13 +471,9 @@ export const threads = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    itemId: uuid("item_id")
-      .notNull()
-      .references(() => items.id, { onDelete: "cascade" }),
   },
   (x) => [
     index("thread_activity_id_idx").on(x.activityId),
-    index("thread_item_id_idx").on(x.itemId),
     index("thread_user_id_idx").on(x.userId),
   ],
 );
@@ -490,10 +486,6 @@ export const threadsRelations = relations(threads, ({ one, many }) => ({
   activity: one(activities, {
     fields: [threads.activityId],
     references: [activities.id],
-  }),
-  item: one(items, {
-    fields: [threads.itemId],
-    references: [items.id],
   }),
   messages: many(messages),
 }));
