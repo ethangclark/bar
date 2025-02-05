@@ -6,7 +6,7 @@ import {
   indexDescendents,
   mergeDescendents,
 } from "~/common/descendentUtils";
-import { draftDate, draftId } from "~/common/draftData";
+import { draftDate, getDraftId } from "~/common/draftData";
 import { identity, objectValues } from "~/common/objectUtils";
 import { loading, notLoaded, Status } from "~/common/status";
 import {
@@ -61,12 +61,11 @@ export class DescendentStore {
     if (!this.activityStore.activityId) {
       throw new Error("Activity ID is not set");
     }
-    const id = crypto.randomUUID();
     const newDescendent = {
       ...descendent,
-      id,
+      id: getDraftId(),
       activityId: this.activityStore.activityId,
-      userId: draftId,
+      userId: getDraftId(),
       createdAt: draftDate,
     };
     const toCreate = createEmptyDescendents();

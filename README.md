@@ -1,22 +1,12 @@
-# SummitEd.ai
+# Summit
 
-SummitEd.ai: Learn dynamically.
+Summit is a lesson administrator that drills students until they prove that they understand the material.
 
-SummitEd.ai is bar exam prep that's tailored specifically to you, delving deep and shining new light into weak areas, and blazing through areas where you're already strong.
+# A note on the DB schema
 
-Which do you learn faster from -- a lively conversation with someone who knows their stuff, or by rereading the same dry piece of study material for the eighth time?
+We assume that foreign keys imply a dependence on the referenced record. This is important for our descendent management pattern (see the `rectifyModifications` function), where we skip creation and editing of instances that reference an entity that is scheduled to be deleted in the same operation.
 
-Reverse the burn-out. Learn dynamically. Try SummitEd.ai for free.
-
-Unlimited FREE access as part of our beta program
-
-Visit SummitEd.ai to get started
-
-### Instructions for data population
-
-0. Create an account using `ethangclark@gmail.com` (this is the admin account)
-1. Run `npx tsx dataPopulation/generalBarPrep/populate.tsx`
-2. Update `acceptingEnrollments` to `true` for the `flavor: null` course that was created
+As an implication of the above: All columns should be limited to null | boolean | number | string values. This lets us make nice assumptions. (Can revisit this, but if we do, want to make sure we think through it thoroughly.)
 
 # Create T3 App
 

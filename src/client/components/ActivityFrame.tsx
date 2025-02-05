@@ -41,6 +41,10 @@ type ActivityFrameProps = {
   footerControls?: React.ReactNode;
 };
 
+const Separator = () => (
+  <span className="mx-3 mt-[-3px] text-2xl text-gray-200">|</span>
+);
+
 export const ActivityFrame = storeObserver<ActivityFrameProps>(
   function ActivityFrame({
     activityStatus,
@@ -52,6 +56,7 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
     footer,
     footerControls,
     activityEditorStore,
+    studentModeStore,
   }) {
     const igod = isGraderOrDeveloper(enrolledAs);
     const showControls = igod && showControlsRaw;
@@ -62,6 +67,15 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
         <Spacer />
         {igod ? (
           <ControlsSection className="mb-2 flex items-center justify-center px-3 py-2">
+            <Button
+              className="m-1"
+              type="primary"
+              onClick={() => studentModeStore.setIsStudentMode(true)}
+              disabled={activityEditorStore.canSave}
+            >
+              Try it
+            </Button>
+            <Separator />
             <div className="my-[-4px] flex items-center">
               <Switch
                 className="mr-2"
@@ -71,7 +85,7 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
               />{" "}
               Show student content only
             </div>
-            <span className="mx-3 mt-[-3px] text-2xl text-gray-200">|</span>
+            <Separator />
             <Button
               className="m-1"
               type="primary"

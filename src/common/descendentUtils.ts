@@ -3,7 +3,7 @@ import {
   type DescendentTables,
   type Descendents,
 } from "~/server/descendents/types";
-import { objectKeys, objectValues } from "./objectUtils";
+import { objectEntries, objectKeys, objectValues } from "./objectUtils";
 import { descendentNames } from "./descendentNames";
 import { indexById } from "./indexUtils";
 import { clone } from "./cloneUtils";
@@ -77,12 +77,33 @@ export function rectifyModifications(mods: Modifications): Modifications {
   const toUpdate = indexDescendents(safeMods.toUpdate);
   const toDelete = safeMods.toDelete;
 
+  const deletedIds = new Set<string>();
+  descendentNames.forEach((name) => {
+    const rowsToDelete = toDelete[name];
+    rowsToDelete.forEach((row) => {
+      deletedIds.add(row.id);
+    });
+  });
+
   descendentNames.forEach((name) => {
     // ensure deleted objects are not included in the toCreate or toUpdate objects
     const rowsToDelete = toDelete[name];
     rowsToDelete.forEach((row) => {
       delete toCreate[name][row.id];
       delete toUpdate[name][row.id];
+    });
+
+    // Do not create or update rows that reference deleted rows --
+    // we assume that rows always have an "on delete cascade" condition for rows they reference.
+    // (We could add a test that uses an LLM to check for this.)
+    objectValues({ toCreate, toUpdate }).forEach((descendents) => {
+      objectEntries(descendents[name]).forEach(([id, row]) => {
+        objectValues(row).forEach((value) => {
+          if (typeof value === "string" && deletedIds.has(value)) {
+            delete descendents[name][id];
+          }
+        });
+      });
     });
 
     // if objects have been both created and updated, update the update op

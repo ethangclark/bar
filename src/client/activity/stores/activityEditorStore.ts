@@ -7,8 +7,8 @@ import {
   rectifyModifications,
   selectDescendents,
 } from "~/common/descendentUtils";
-import { draftDate, draftId } from "~/common/draftData";
-import { identity } from "~/common/objectUtils";
+import { draftDate, getDraftId } from "~/common/draftData";
+import { identity, objectValues } from "~/common/objectUtils";
 import { loading, notLoaded, Status } from "~/common/status";
 import {
   type DescendentRows,
@@ -69,7 +69,13 @@ export class ActivityEditorStore {
   }
 
   get canSave() {
-    return !(this.drafts instanceof Status);
+    if (this.drafts instanceof Status) {
+      return false;
+    }
+    const totalChanges = objectValues(this.changes)
+      .map((s) => s.size)
+      .reduce((a, b) => a + b, 0);
+    return totalChanges > 0;
   }
 
   async save() {
@@ -119,12 +125,12 @@ export class ActivityEditorStore {
     if (this.drafts instanceof Status) {
       throw new Error("Descendents are not loaded");
     }
-    const id = crypto.randomUUID();
+    const id = getDraftId();
     const newDescendent = {
       ...descendent,
       id,
       activityId: this.activityStore.activityId,
-      userId: draftId,
+      userId: getDraftId(),
       createdAt: draftDate,
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access

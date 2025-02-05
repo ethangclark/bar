@@ -257,6 +257,7 @@ export async function modifyDescendents(params: {
     toDelete: createEmptyDescendents(),
   };
 
+  // defer creation of dependent rows until dependencies are created
   let anotherPassNeeded = false;
   objectEntries({ toCreate, toUpdate }).forEach(([modType, descendents]) => {
     descendentNames.forEach((descendentName) => {
