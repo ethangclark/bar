@@ -30,7 +30,6 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
     threadStore,
     activityStore,
     studentModeStore,
-    activityEditorStore,
   }) {
     const { mutateAsync: transcribe, isPending: isTranscribing } =
       api.trascription.transcribe.useMutation();

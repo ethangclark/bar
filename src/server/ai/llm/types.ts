@@ -8,7 +8,6 @@ const modelSchema = z.enum([
   "anthropic/claude-3.5-sonnet:beta",
   "google/gemini-flash-1.5",
   "google/gemini-flash-1.5-8b",
-  "openai/o1-preview-2024-09-12",
   "deepseek/deepseek-chat",
 ]);
 export type Model = z.infer<typeof modelSchema>;
