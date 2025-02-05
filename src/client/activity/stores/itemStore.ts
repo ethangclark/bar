@@ -5,7 +5,7 @@ import {
   type InfoText,
   type Question,
 } from "~/server/db/schema";
-import { type ActivityStore } from "./activityStore";
+import { type ActivityEditorStore } from "./activityEditorStore";
 import { generateKeyBetween } from "fractional-indexing";
 
 export class ItemStore {
@@ -13,12 +13,12 @@ export class ItemStore {
   private itemIdToQuestion: Record<string, Question> = {};
   private itemIdToInfoImage: Record<string, InfoImage> = {};
 
-  constructor(private activityStore: ActivityStore) {
+  constructor(private activityEditorStore: ActivityEditorStore) {
     makeAutoObservable(this);
     autorun(() => {
-      const infoTexts = this.activityStore.getDrafts("infoTexts");
-      const questions = this.activityStore.getDrafts("questions");
-      const infoImages = this.activityStore.getDrafts("infoImages");
+      const infoTexts = this.activityEditorStore.getDrafts("infoTexts");
+      const questions = this.activityEditorStore.getDrafts("questions");
+      const infoImages = this.activityEditorStore.getDrafts("infoImages");
       runInAction(() => {
         if (
           infoTexts instanceof Status ||
@@ -44,7 +44,7 @@ export class ItemStore {
   }
 
   get sortedItems() {
-    const items = this.activityStore.getDrafts("items");
+    const items = this.activityEditorStore.getDrafts("items");
     if (items instanceof Status) {
       return items;
     }
@@ -58,7 +58,7 @@ export class ItemStore {
     if (items instanceof Status) {
       throw new Error("Items are not loaded");
     }
-    const item = this.activityStore.createDraft("items", {
+    const item = this.activityEditorStore.createDraft("items", {
       orderFracIdx: generateKeyBetween(
         items.slice(-1)[0]?.orderFracIdx ?? null,
         null,

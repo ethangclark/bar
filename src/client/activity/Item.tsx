@@ -28,7 +28,7 @@ export const Item = storeObserver<{
   deleted,
   enrolledAs,
   showControls,
-  activityStore,
+  activityEditorStore,
   infoImage,
   infoText,
   question,
@@ -67,7 +67,7 @@ export const Item = storeObserver<{
               <ImageUploadLink
                 label="Replace image"
                 onFileSelect={({ imageDataUrl }) => {
-                  activityStore.updateDraft("infoImages", {
+                  activityEditorStore.updateDraft("infoImages", {
                     id: infoImage.id,
                     url: imageDataUrl,
                   });
@@ -79,7 +79,7 @@ export const Item = storeObserver<{
             value={infoImage.textAlternative}
             disabled={!igod}
             setValue={(v) => {
-              activityStore.updateDraft("infoImages", {
+              activityEditorStore.updateDraft("infoImages", {
                 id: infoImage.id,
                 textAlternative: v,
               });
@@ -93,7 +93,7 @@ export const Item = storeObserver<{
             value={infoText.content}
             disabled={!igod}
             setValue={(v) => {
-              activityStore.updateDraft("infoTexts", {
+              activityEditorStore.updateDraft("infoTexts", {
                 id: infoText.id,
                 content: v,
               });
@@ -111,7 +111,7 @@ export const Item = storeObserver<{
               value={question.content}
               disabled={!igod}
               setValue={(v) => {
-                activityStore.updateDraft("questions", {
+                activityEditorStore.updateDraft("questions", {
                   id: question.id,
                   content: v,
                 });
@@ -128,7 +128,7 @@ export const Item = storeObserver<{
                     value={evalKey.key}
                     disabled={!igod}
                     setValue={(v) => {
-                      activityStore.updateDraft("evalKeys", {
+                      activityEditorStore.updateDraft("evalKeys", {
                         id: evalKey.id,
                         key: v,
                       });

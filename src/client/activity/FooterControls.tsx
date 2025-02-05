@@ -6,14 +6,14 @@ function FooterButton(props: ButtonProps) {
 }
 
 export const FooterControls = storeObserver(function FooterControls({
-  activityStore,
+  activityEditorStore,
   itemStore,
 }) {
   return (
     <div className="flex">
       <FooterButton
         onClick={() => {
-          activityStore.createDraft("infoTexts", {
+          activityEditorStore.createDraft("infoTexts", {
             itemId: itemStore.createItem().id,
             content: "",
           });
@@ -23,7 +23,7 @@ export const FooterControls = storeObserver(function FooterControls({
       </FooterButton>
       <FooterButton
         onClick={() => {
-          activityStore.createDraft("infoImages", {
+          activityEditorStore.createDraft("infoImages", {
             itemId: itemStore.createItem().id,
             url: "",
             textAlternative: "",
@@ -34,13 +34,13 @@ export const FooterControls = storeObserver(function FooterControls({
       </FooterButton>
       <FooterButton
         onClick={() => {
-          const q = activityStore.createDraft("questions", {
+          const q = activityEditorStore.createDraft("questions", {
             itemId: itemStore.createItem().id,
             content: "",
           });
 
           // TODO: could generate suggestions for this
-          activityStore.createDraft("evalKeys", {
+          activityEditorStore.createDraft("evalKeys", {
             questionId: q.id,
             key: "",
           });

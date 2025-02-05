@@ -1,15 +1,15 @@
 import { autorun, makeAutoObservable, runInAction } from "mobx";
 import { Status } from "~/common/status";
 import { type EvalKey } from "~/server/db/schema";
-import { type ActivityStore } from "./activityStore";
+import { type ActivityEditorStore } from "./activityEditorStore";
 
 export class QuestionStore {
   private questionIdToEvalKey: Record<string, EvalKey> = {};
 
-  constructor(private activityStore: ActivityStore) {
+  constructor(private activityEditorStore: ActivityEditorStore) {
     makeAutoObservable(this);
     autorun(() => {
-      const evalKeys = this.activityStore.getDrafts("evalKeys");
+      const evalKeys = this.activityEditorStore.getDrafts("evalKeys");
       runInAction(() => {
         if (evalKeys instanceof Status) {
           this.questionIdToEvalKey = {};

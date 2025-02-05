@@ -1,12 +1,13 @@
 import { Spin } from "antd";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { assertNever } from "~/common/errorUtils";
+import { Status } from "~/common/status";
 import { type AudioDataX } from "~/common/types";
-import { type Message } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 import { Editor } from "../components/Editor";
+import { LoadingPage } from "../components/Loading";
 import { VoiceRecorder } from "../components/VoiceRecorder";
 import { storeObserver } from "../utils/storeObserver";
-import { assertNever } from "~/common/errorUtils";
 
 export function PreformattedText({ children }: { children: React.ReactNode }) {
   return <pre className="text-wrap font-serif">{children}</pre>;
@@ -23,7 +24,7 @@ function MessageView({
 }
 
 export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
-  function ActivityDoer({ assignmentTitle }) {
+  function ActivityDoer({ assignmentTitle, threadStore }) {
     const { mutateAsync: transcribe, isPending: isTranscribing } =
       api.trascription.transcribe.useMutation();
 
@@ -44,32 +45,13 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
 
     const messageWrapperRef = useRef<HTMLDivElement>(null);
 
-    const messages: Message[] = [
-      {
-        id: "1",
-        content: "Hello, how are you?",
-        senderRole: "user",
-        createdAt: new Date(),
-        userId: "1",
-        activityId: "1",
-        threadId: "1",
-      },
-      {
-        id: "2",
-        content: "I'm good, thank you!",
-        senderRole: "assistant",
-        createdAt: new Date(),
-        userId: "1",
-        activityId: "1",
-        threadId: "1",
-      },
-    ];
-    const [isLoading, setIsLoading] = useState(false);
-    useEffect(() => {
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 1000);
-    }, []);
+    const messages = threadStore.messages;
+
+    const messageProcessing = false;
+
+    if (messages instanceof Status) {
+      return <LoadingPage />;
+    }
 
     return (
       <div className="flex h-full w-[350px] flex-col items-center justify-between md:w-[672px]">
@@ -108,7 +90,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
               }
             })}
             <div className="flex w-full justify-center">
-              {isLoading ? (
+              {messageProcessing ? (
                 <div className="text-gray-500">
                   Even AIs need a moment... One minute... <Spin />
                 </div>
@@ -145,7 +127,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
                   });
                 });
               }}
-              disabled={isLoading}
+              disabled={messageProcessing}
               className="mr-4"
             />
             <VoiceRecorder

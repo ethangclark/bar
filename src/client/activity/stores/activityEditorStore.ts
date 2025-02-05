@@ -1,12 +1,5 @@
-import { makeAutoObservable, runInAction } from "mobx";
+import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
 import { descendentNames, type DescendentName } from "~/common/descendentNames";
-import { identity } from "~/common/objectUtils";
-import { loading, notLoaded, Status } from "~/common/status";
-import {
-  type DescendentRows,
-  type DescendentTables,
-} from "~/server/descendents/types";
-import { trpc } from "~/trpc/proxy";
 import {
   deindexDescendents,
   indexDescendents,
@@ -14,9 +7,20 @@ import {
   rectifyModifications,
   selectDescendents,
 } from "~/common/descendentUtils";
-import { type RichActivity } from "~/common/types";
 import { draftDate, draftId } from "~/common/draftData";
-
+import { identity } from "~/common/objectUtils";
+import { loading, notLoaded, Status } from "~/common/status";
+import {
+  type DescendentRows,
+  type DescendentTables,
+} from "~/server/descendents/types";
+import { trpc } from "~/trpc/proxy";
+import { type ActivityStore } from "./activityStore";
+import {
+  type DescendentCreateParams,
+  type DescendentStore,
+} from "./descendentStore";
+import { clone } from "~/common/cloneUtils";
 const baseState = () => ({
   drafts: identity<DescendentTables | Status>(notLoaded),
   changes: {
@@ -24,33 +28,40 @@ const baseState = () => ({
     updatedIds: new Set<string>(),
     deletedIds: new Set<string>(),
   },
-  activityId: identity<string | undefined>(undefined),
-  activity: identity<RichActivity | Status>(notLoaded),
 });
 
-export class ActivityStore {
+export class ActivityEditorStore {
   private drafts = baseState().drafts;
   private changes = baseState().changes;
-  public activityId = baseState().activityId;
-  public activity = baseState().activity;
 
-  constructor() {
+  constructor(
+    private activityStore: ActivityStore,
+    private descendentStore: DescendentStore,
+  ) {
     makeAutoObservable(this);
-  }
 
-  async loadActivity(activityId: string) {
-    this.activityId = activityId;
-    this.drafts = loading;
-    const [descendents, activity] = await Promise.all([
-      trpc.descendent.read.query({
-        activityId,
-      }),
-      trpc.activity.get.query({ activityId }),
-    ]);
-    runInAction(() => {
-      this.drafts = indexDescendents(descendents);
-      this.activity = activity;
-    });
+    // when the activity ID changes,
+    // create drafts based on the new descendents
+    // (once they load)
+    reaction(
+      () => this.activityStore.activityId,
+      () => {
+        runInAction(() => {
+          this.reset();
+          this.drafts = loading;
+        });
+        const stop = autorun(() => {
+          const { descendents } = this.descendentStore;
+          if (descendents instanceof Status) {
+            return;
+          }
+          runInAction(() => {
+            this.drafts = clone(descendents);
+            stop();
+          });
+        });
+      },
+    );
   }
 
   reset() {
@@ -62,14 +73,14 @@ export class ActivityStore {
   }
 
   async save() {
-    if (!this.activityId || this.drafts instanceof Status) {
+    if (!this.activityStore.activityId || this.drafts instanceof Status) {
       throw new Error("Descendents are not loaded");
     }
     const { drafts } = this;
     this.drafts = loading;
     try {
       const descendents = await trpc.descendent.modify.mutate({
-        activityId: this.activityId,
+        activityId: this.activityStore.activityId,
         modifications: rectifyModifications({
           toCreate: selectDescendents(drafts, this.changes.createdIds),
           toUpdate: selectDescendents(drafts, this.changes.updatedIds),
@@ -100,12 +111,9 @@ export class ActivityStore {
 
   createDraft<T extends DescendentName>(
     descendentName: T,
-    descendent: Omit<
-      DescendentRows[T],
-      "id" | "activityId" | "userId" | "createdAt"
-    >,
+    descendent: DescendentCreateParams<T>,
   ) {
-    if (!this.activityId) {
+    if (!this.activityStore.activityId) {
       throw new Error("Activity ID is not set");
     }
     if (this.drafts instanceof Status) {
@@ -115,7 +123,7 @@ export class ActivityStore {
     const newDescendent = {
       ...descendent,
       id,
-      activityId: this.activityId,
+      activityId: this.activityStore.activityId,
       userId: draftId,
       createdAt: draftDate,
     };

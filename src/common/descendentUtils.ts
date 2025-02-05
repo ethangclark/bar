@@ -15,6 +15,9 @@ export function createEmptyDescendents(): Descendents {
   }, {} as Descendents);
 }
 
+// this could be rewritten to be more surgical in terms of triggering mobx re-renders
+// (would want to audit uses as well -- there are a few cases of indexing+deindex
+// composition going on)
 export function mergeDescendents(
   descendents: Descendents,
   newDescendents: Descendents,

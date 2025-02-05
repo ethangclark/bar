@@ -51,7 +51,7 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
     rows,
     footer,
     footerControls,
-    activityStore,
+    activityEditorStore,
   }) {
     const igod = isGraderOrDeveloper(enrolledAs);
     const showControls = igod && showControlsRaw;
@@ -75,8 +75,8 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
             <Button
               className="m-1"
               type="primary"
-              disabled={activityStore.canSave === false}
-              onClick={() => activityStore.save()}
+              disabled={activityEditorStore.canSave === false}
+              onClick={() => activityEditorStore.save()}
             >
               {invoke((): string => {
                 switch (activityStatus) {

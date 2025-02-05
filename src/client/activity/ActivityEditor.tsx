@@ -9,6 +9,7 @@ import { FooterControls } from "./FooterControls";
 
 export const ActivityEditor = storeObserver(function ActivityEditor({
   activityStore,
+  activityEditorStore,
   itemStore,
 }) {
   const [showControls, setShowControls] = useState(true);
@@ -35,7 +36,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
           main: (
             <Item
               item={item}
-              deleted={activityStore.isDeletedDraft(item.id)}
+              deleted={activityEditorStore.isDeletedDraft(item.id)}
               enrolledAs={activity.course.enrolledAs}
               showControls={showControls}
               infoImage={infoImage}
@@ -50,10 +51,10 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
             >
               <span>Item {idx + 1}</span>
               <Typography.Link
-                onClick={() => activityStore.deleteDraft(item.id)}
+                onClick={() => activityEditorStore.deleteDraft(item.id)}
                 className="text-xs"
               >
-                {activityStore.isDeletedDraft(item.id) ? (
+                {activityEditorStore.isDeletedDraft(item.id) ? (
                   "Restore"
                 ) : (
                   <span className="text-gray-500 hover:text-red-500">
