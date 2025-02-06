@@ -1,14 +1,12 @@
 import { Button, Spin } from "antd";
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 import { assertNever } from "~/common/errorUtils";
 import { Status } from "~/common/status";
-import { type AudioDataX } from "~/common/types";
-import { api } from "~/trpc/react";
 import { Editor } from "../components/Editor";
 import { LoadingPage } from "../components/Loading";
-import { VoiceRecorder } from "../components/VoiceRecorder";
+import { VoiceTranscriber } from "../components/VoiceTranscriber";
 import { storeObserver } from "../utils/storeObserver";
-import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 
 export function PreformattedText({ children }: { children: React.ReactNode }) {
   return <pre className="text-wrap font-serif">{children}</pre>;
@@ -31,23 +29,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
     activityStore,
     studentModeStore,
   }) {
-    const { mutateAsync: transcribe, isPending: isTranscribing } =
-      api.trascription.transcribe.useMutation();
-
     const [v, setV] = useState("");
-
-    const handleAudioDataX = useCallback(
-      async (audioDataX: AudioDataX) => {
-        const perMinute = 160 * 1000; // same logic is in transcriptionRouter.ts
-        if (audioDataX.data.length > perMinute * 10) {
-          throw new Error("Audio data exceeds max supported length");
-        }
-
-        const { text } = await transcribe(audioDataX);
-        setV((v) => (v ? v + " " + text : text));
-      },
-      [transcribe],
-    );
 
     const messageWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -151,9 +133,10 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
               disabled={messageProcessing}
               className="mr-4"
             />
-            <VoiceRecorder
-              onRecordingComplete={handleAudioDataX}
-              isProcessing={isTranscribing}
+            <VoiceTranscriber
+              onTranscription={(text) => {
+                setV((v) => (v ? v + " " + text : text));
+              }}
             />
           </div>
           <div className="w-full text-center text-xs text-gray-400">
