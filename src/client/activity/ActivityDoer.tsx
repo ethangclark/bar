@@ -51,7 +51,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
 
     const messageWrapperRef = useRef<HTMLDivElement>(null);
 
-    const messages = threadStore.messages;
+    const { messages } = threadStore;
 
     const messageProcessing = false;
 
