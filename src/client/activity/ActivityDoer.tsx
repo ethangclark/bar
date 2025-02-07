@@ -48,8 +48,8 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
 
     return (
       <div className="flex h-full w-[350px] flex-col items-center justify-between md:w-[672px]">
-        <div className="md:text-md mb-2 flex w-full items-center justify-between">
-          <div className="mb-2 text-lg md:text-2xl">{assignmentTitle}</div>
+        <div className="md:text-md mb-4 flex w-full items-center justify-between">
+          <div className="text-lg md:text-2xl">{assignmentTitle}</div>
           <div className="text-xs text-gray-500">
             {igod && (
               <Button
