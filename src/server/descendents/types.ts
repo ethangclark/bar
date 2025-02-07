@@ -45,12 +45,12 @@ type EditParams<T extends DescendentRow> = BaseParams & {
   rows: T[];
 };
 
-export type CreateParams<T extends DescendentRow> = EditParams<T>;
-export type ReadParams = BaseParams & {
+type CreateParams<T extends DescendentRow> = EditParams<T>;
+type ReadParams = BaseParams & {
   includeUserIds: string[];
 };
-export type UpdateParams<T extends DescendentRow> = EditParams<T>;
-export type DeleteParams = BaseParams & {
+type UpdateParams<T extends DescendentRow> = EditParams<T>;
+type DeleteParams = BaseParams & {
   ids: string[];
 };
 

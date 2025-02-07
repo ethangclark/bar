@@ -1,81 +1,38 @@
-import { type DbOrTx } from "~/server/db";
-import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
-import {
-  type CreateParams,
-  type Modifications,
-  type Descendents,
-  type DescendentRows,
-  type UpdateParams,
-  type ReadParams,
-  type DeleteParams,
-} from "./types";
-import { itemController } from "./itemController";
-import { evalKeyController } from "./evalKeyController";
-import { infoImageController } from "./infoImageController";
-import { infoTextController } from "./infoTextController";
-import { messageController } from "./messageController";
-import { questionController } from "./questionController";
-import { threadController } from "./threadController";
 import { type DescendentName, descendentNames } from "~/common/descendentNames";
-import { objectEntries, objectValues } from "~/common/objectUtils";
 import {
   createEmptyDescendents,
   mergeDescendents,
   rectifyModifications,
 } from "~/common/descendentUtils";
+import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
+import { objectEntries, objectValues } from "~/common/objectUtils";
+import { type DbOrTx } from "~/server/db";
+import { evalKeyController } from "./evalKeyController";
+import { infoImageController } from "./infoImageController";
+import { infoTextController } from "./infoTextController";
+import { itemController } from "./itemController";
+import { messageController } from "./messageController";
+import { questionController } from "./questionController";
+import { threadController } from "./threadController";
+import {
+  type DescendentController,
+  type DescendentRows,
+  type Descendents,
+  type Modifications,
+} from "./types";
 
-type Creators = {
-  [K in DescendentName]: (
-    params: CreateParams<DescendentRows[K]>,
-  ) => Promise<Descendents[K]>;
-};
-type Readers = {
-  [K in DescendentName]: (params: ReadParams) => Promise<Descendents[K]>;
-};
-type Updaters = {
-  [K in DescendentName]: (
-    params: UpdateParams<DescendentRows[K]>,
-  ) => Promise<Descendents[K]>;
-};
-type Deletors = {
-  [K in DescendentName]: (params: DeleteParams) => Promise<void>;
+type Controllers = {
+  [K in DescendentName]: DescendentController<DescendentRows[K]>;
 };
 
-const creators: Creators = {
-  items: (params) => itemController.create(params),
-  evalKeys: (params) => evalKeyController.create(params),
-  questions: (params) => questionController.create(params),
-  infoTexts: (params) => infoTextController.create(params),
-  infoImages: (params) => infoImageController.create(params),
-  threads: (params) => threadController.create(params),
-  messages: (params) => messageController.create(params),
-};
-const readers: Readers = {
-  items: (params) => itemController.read(params),
-  evalKeys: (params) => evalKeyController.read(params),
-  questions: (params) => questionController.read(params),
-  infoTexts: (params) => infoTextController.read(params),
-  infoImages: (params) => infoImageController.read(params),
-  threads: (params) => threadController.read(params),
-  messages: (params) => messageController.read(params),
-};
-const updaters: Updaters = {
-  items: (params) => itemController.update(params),
-  evalKeys: (params) => evalKeyController.update(params),
-  questions: (params) => questionController.update(params),
-  infoTexts: (params) => infoTextController.update(params),
-  infoImages: (params) => infoImageController.update(params),
-  threads: (params) => threadController.update(params),
-  messages: (params) => messageController.update(params),
-};
-const deletors: Deletors = {
-  items: (params) => itemController.delete(params),
-  evalKeys: (params) => evalKeyController.delete(params),
-  questions: (params) => questionController.delete(params),
-  infoTexts: (params) => infoTextController.delete(params),
-  infoImages: (params) => infoImageController.delete(params),
-  threads: (params) => threadController.delete(params),
-  messages: (params) => messageController.delete(params),
+const controllers: Controllers = {
+  items: itemController,
+  evalKeys: evalKeyController,
+  questions: questionController,
+  infoTexts: infoTextController,
+  infoImages: infoImageController,
+  threads: threadController,
+  messages: messageController,
 };
 
 export async function createDescendents({
@@ -109,8 +66,7 @@ export async function createDescendents({
       continue;
     }
 
-    const creator = creators[name];
-    result[name] = (await creator({
+    result[name] = (await controllers[name].create({
       ...baseParams,
       rows,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -144,9 +100,8 @@ export async function readDescendents({
   const result: Partial<Descendents> = {};
 
   for (const name of descendentNames) {
-    const reader = readers[name];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    result[name] = (await reader(params)) as any;
+    result[name] = (await controllers[name].read(params)) as any;
   }
 
   return result as Descendents;
@@ -183,8 +138,7 @@ export async function updateDescendents({
       continue;
     }
 
-    const updater = updaters[name];
-    result[name] = (await updater({
+    result[name] = (await controllers[name].update({
       ...baseParams,
       rows,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -224,8 +178,7 @@ export async function deleteDescendents({
         return;
       }
 
-      const deletor = deletors[descendentName];
-      return deletor({
+      return controllers[descendentName].delete({
         ...baseParams,
         ids,
       });
