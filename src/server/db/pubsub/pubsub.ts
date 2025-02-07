@@ -79,7 +79,7 @@ export class PubSub<T extends SuperJSONValue> {
     }
   }
 
-  subscribe(): AsyncIterator<T> {
+  subscribe(): AsyncGenerator<T, void, undefined> {
     // Create an async queue for this subscription.
     const queue = new AsyncQueue<T>();
 
@@ -122,8 +122,15 @@ export class PubSub<T extends SuperJSONValue> {
         }
         return { done: true, value: undefined };
       },
-      [Symbol.asyncIterator as any]() {
+      [Symbol.asyncIterator]() {
         return this;
+      },
+      throw: async (e: unknown) => {
+        mySub.close();
+        if (iterator.throw) {
+          return await iterator.throw(e);
+        }
+        return { done: true, value: undefined };
       },
     };
   }
