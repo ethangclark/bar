@@ -10,7 +10,7 @@ import { storeObserver } from "../utils/storeObserver";
 import { Tooltip } from "antd";
 import { CircleHelp } from "lucide-react";
 import { ImageUploadLink } from "../components/ImageUploader";
-import { ControlsSection } from "../components/ActivityFrame";
+import { FullFramedTeacherSection } from "../components/TeacherSection";
 import {
   type EnrollmentType,
   isGraderOrDeveloper,
@@ -121,7 +121,7 @@ export const Item = storeObserver<{
           </div>
           {evalKey && showControls ? (
             <div className="ml-[-8px]">
-              <ControlsSection>
+              <FullFramedTeacherSection>
                 <div className="mb-[-4px] mr-[-4px] pl-1">
                   <WysiwygEditor
                     placeholder="Insert answer here..."
@@ -141,7 +141,7 @@ export const Item = storeObserver<{
                     }
                   />
                 </div>
-              </ControlsSection>
+              </FullFramedTeacherSection>
             </div>
           ) : null}
         </div>

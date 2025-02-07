@@ -1,30 +1,15 @@
 import { Button, Switch } from "antd";
 import { Fragment } from "react";
-import { invoke } from "~/common/fnUtils";
-import { type ActivityStatus } from "~/server/db/schema";
-import { storeObserver } from "../utils/storeObserver";
 import {
   type EnrollmentType,
   isGraderOrDeveloper,
 } from "~/common/enrollmentTypeUtils";
+import { invoke } from "~/common/fnUtils";
+import { type ActivityStatus } from "~/server/db/schema";
+import { storeObserver } from "../utils/storeObserver";
+import { FullFramedTeacherSection } from "./TeacherSection";
 
 const Spacer = () => <div />;
-
-export const ControlsSection = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => (
-  <div className={`h-full w-full ${className ?? ""}`}>
-    <div
-      className={`rounded-lg border-2 border-dotted border-blue-500 p-1 ${className ?? ""}`}
-    >
-      {children}
-    </div>
-  </div>
-);
 
 type ActivityFrameProps = {
   activityStatus: ActivityStatus;
@@ -66,7 +51,7 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
       <div className="grid grid-cols-[repeat(3,_auto)]">
         <Spacer />
         {igod ? (
-          <ControlsSection className="mb-2 flex items-center justify-center px-3 py-2">
+          <FullFramedTeacherSection innerClassName="mb-4 flex items-center justify-center py-2">
             <Button
               className="m-1"
               type="primary"
@@ -101,7 +86,7 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
                 }
               })}
             </Button>
-          </ControlsSection>
+          </FullFramedTeacherSection>
         ) : (
           <Spacer />
         )}
@@ -114,21 +99,21 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
         {rows.map(({ leftControl: left, main, rightControl: right }, idx) => (
           <Fragment key={idx}>
             {left ? (
-              <ControlsSection
+              <FullFramedTeacherSection
                 className={wrapControlCn("mr-4 flex flex-col items-end")}
               >
                 {left}
-              </ControlsSection>
+              </FullFramedTeacherSection>
             ) : (
               <Spacer />
             )}
             <div>{main}</div>
             {right ? (
-              <ControlsSection
+              <FullFramedTeacherSection
                 className={wrapControlCn("ml-4 flex flex-col items-start")}
               >
                 {right}
-              </ControlsSection>
+              </FullFramedTeacherSection>
             ) : (
               <Spacer />
             )}
@@ -141,11 +126,11 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
 
         <Spacer />
         {footerControls ? (
-          <ControlsSection
+          <FullFramedTeacherSection
             className={wrapControlCn("mt-2 flex flex-col items-center")}
           >
             {footerControls}
-          </ControlsSection>
+          </FullFramedTeacherSection>
         ) : (
           <Spacer />
         )}

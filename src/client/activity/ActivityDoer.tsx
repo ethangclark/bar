@@ -1,5 +1,5 @@
-import { Button, Spin } from "antd";
-import { useRef, useState } from "react";
+import { Button, Select, Spin } from "antd";
+import { useEffect, useRef, useState } from "react";
 import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 import { assertNever } from "~/common/errorUtils";
 import { Status } from "~/common/status";
@@ -7,6 +7,9 @@ import { Editor } from "../components/Editor";
 import { LoadingPage } from "../components/Loading";
 import { VoiceTranscriber } from "../components/VoiceTranscriber";
 import { storeObserver } from "../utils/storeObserver";
+import { TeacherSection } from "../components/TeacherSection";
+import { z } from "zod";
+import { formatDateTime } from "~/common/timeUtils";
 
 export function PreformattedText({ children }: { children: React.ReactNode }) {
   return <pre className="text-wrap font-serif">{children}</pre>;
@@ -42,7 +45,17 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
         ? false
         : isGraderOrDeveloper(activityStore.enrolledAs);
 
-    if (messages instanceof Status) {
+    const { sortedThreads, selectedThreadId } = threadStore;
+
+    useEffect(() => {
+      threadStore.selectOrCreateThread();
+    }, [threadStore]);
+
+    if (
+      messages instanceof Status ||
+      sortedThreads instanceof Status ||
+      selectedThreadId instanceof Status
+    ) {
       return <LoadingPage />;
     }
 
@@ -50,17 +63,33 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
       <div className="flex h-full w-[350px] flex-col items-center justify-between md:w-[672px]">
         <div className="md:text-md mb-4 flex w-full items-center justify-between">
           <div className="text-lg md:text-2xl">{assignmentTitle}</div>
-          <div className="text-xs text-gray-500">
-            {igod && (
+        </div>
+        {igod && (
+          <TeacherSection className="mb-4 flex w-full flex-wrap justify-center gap-2 p-4">
+            <Select
+              className="grow"
+              value={selectedThreadId}
+              options={sortedThreads.map((t) => ({
+                label: `Chat created on ${formatDateTime(t.createdAt)}`,
+                value: t.id,
+              }))}
+              onChange={(value) =>
+                threadStore.selectThread(z.string().parse(value))
+              }
+            />
+            <div className="flex gap-2">
+              <Button onClick={() => threadStore.createThread()}>
+                New chat
+              </Button>
               <Button
                 type="primary"
                 onClick={() => studentModeStore.setIsStudentMode(false)}
               >
-                Return to design mode
+                Back to design
               </Button>
-            )}
-          </div>
-        </div>
+            </div>
+          </TeacherSection>
+        )}
         <div className="outline-3 flex h-full w-full grow items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200">
           <div
             className="flex h-full w-full flex-col overflow-y-auto p-4"

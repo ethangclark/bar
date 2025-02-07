@@ -5,7 +5,6 @@ import { type Thread } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
 import { db } from "../db";
 import { messagePubSub } from "../db/pubsub/messagePubSub";
-import { invoke } from "~/common/fnUtils";
 
 export const threadController: DescendentController<Thread> = {
   // anyone can create a thread for themselves
