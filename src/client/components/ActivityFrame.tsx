@@ -8,6 +8,7 @@ import { invoke } from "~/common/fnUtils";
 import { type ActivityStatus } from "~/server/db/schema";
 import { storeObserver } from "../utils/storeObserver";
 import { FullFramedTeacherSection } from "./TeacherSection";
+import { Status } from "~/common/status";
 
 const Spacer = () => <div />;
 
@@ -47,11 +48,17 @@ export const ActivityFrame = storeObserver<ActivityFrameProps>(
     const showControls = igod && showControlsRaw;
     const wrapControlCn = (cn: string) =>
       `${cn} ${showControls ? "" : "invisible"}`;
+
+    const items = activityEditorStore.getDrafts("items");
+    const hasItems = !(items instanceof Status) && items.length > 0;
+
     return (
       <div className="grid grid-cols-[repeat(3,_auto)]">
         <Spacer />
         {igod ? (
-          <FullFramedTeacherSection innerClassName="mb-4 flex items-center justify-center py-2">
+          <FullFramedTeacherSection
+            innerClassName={`mb-4 flex items-center justify-center py-2 ${hasItems ? "" : "invisible"}`}
+          >
             <Button
               className="m-1"
               type="primary"
