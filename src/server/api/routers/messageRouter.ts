@@ -1,13 +1,12 @@
-import { message } from "antd";
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { messagePubSub } from "~/server/db/pubsub/messagePubSub";
-import { Message } from "~/server/db/schema";
+import { type Message } from "~/server/db/schema";
 import { getActivity } from "~/server/services/activityService";
 
 export const messageRouter = createTRPCRouter({
-  messages: publicProcedure
+  newMessages: publicProcedure
     .input(z.object({ activityId: z.string() }))
     .subscription(async function* ({ input, ctx }): AsyncGenerator<Message[]> {
       const { activityId } = input;

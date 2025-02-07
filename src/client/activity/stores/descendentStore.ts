@@ -1,4 +1,4 @@
-import { autorun, makeAutoObservable, runInAction } from "mobx";
+import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
 import { type DescendentName } from "~/common/descendentNames";
 import {
   createEmptyDescendents,
@@ -15,6 +15,7 @@ import {
 } from "~/server/descendents/types";
 import { trpc } from "~/trpc/proxy";
 import { type ActivityStore } from "./activityStore";
+import { type Message } from "~/server/db/schema";
 
 const baseState = () => ({
   descendents: identity<DescendentTables | Status>(notLoaded),
@@ -33,11 +34,12 @@ export class DescendentStore {
   constructor(private activityStore: ActivityStore) {
     makeAutoObservable(this);
     autorun(() => {
-      const activityId = this.activityStore.activityId;
+      const { activityId } = this.activityStore;
       if (!activityId) {
         return;
       }
       void this.loadDescendents(activityId);
+      this.subscribeToNewMessages(activityId);
     });
   }
 
@@ -50,6 +52,33 @@ export class DescendentStore {
     runInAction(() => {
       this.descendents = indexDescendents(descendents);
     });
+  }
+  private subscribeToNewMessages(activityId: string) {
+    const subscription = trpc.message.newMessages.subscribe(
+      { activityId },
+      {
+        onData: (messages: Message[]) => {
+          const { descendents } = this;
+          if (descendents instanceof Status) {
+            return;
+          }
+          runInAction(() => {
+            messages.forEach((message) => {
+              descendents.messages[message.id] = message;
+            });
+          });
+        },
+      },
+    );
+    reaction(
+      () => this.activityStore.activityId,
+      () => {
+        subscription.unsubscribe();
+      },
+      {
+        fireImmediately: false,
+      },
+    );
   }
 
   reset() {

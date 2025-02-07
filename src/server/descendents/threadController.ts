@@ -1,10 +1,11 @@
 import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isGrader } from "~/common/enrollmentTypeUtils";
-import { threads, type Thread } from "~/server/db/schema";
+import { type Thread } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
 import { db } from "../db";
 import { messagePubSub } from "../db/pubsub/messagePubSub";
+import { invoke } from "~/common/fnUtils";
 
 export const threadController: DescendentController<Thread> = {
   // anyone can create a thread for themselves
@@ -20,35 +21,33 @@ export const threadController: DescendentController<Thread> = {
       )
       .returning();
 
-    try {
-      return threads;
-    } finally {
-      // TODO: abstract this out.
-      // Should generate a system message including the whole activity and what they've completed.
-      const messages = await tx
-        .insert(db.x.messages)
-        .values(
-          threads.flatMap((thread) => [
-            {
-              threadId: thread.id,
-              userId,
-              content:
-                "Yarg, this be the system prompt. Be speaking like a pirate in this interaction, matey.",
-              senderRole: "system" as const,
-              activityId,
-            },
-            {
-              threadId: thread.id,
-              userId,
-              content: "Ahoy, matey! Let's be doing this lesson pirate-style.",
-              senderRole: "assistant" as const,
-              activityId,
-            },
-          ]),
-        )
-        .returning();
-      await messagePubSub.publish(messages);
-    }
+    // TODO: abstract this out.
+    // Should generate a system message including the whole activity and what they've completed.
+    const messages = await tx
+      .insert(db.x.messages)
+      .values(
+        threads.flatMap((thread) => [
+          {
+            threadId: thread.id,
+            userId,
+            content:
+              "Yarg, this be the system prompt. Be speaking like a pirate in this interaction, matey.",
+            senderRole: "system" as const,
+            activityId,
+          },
+          {
+            threadId: thread.id,
+            userId,
+            content: "Ahoy, matey! Let's be doing this lesson pirate-style.",
+            senderRole: "assistant" as const,
+            activityId,
+          },
+        ]),
+      )
+      .returning();
+    await messagePubSub.publish(messages);
+
+    return threads;
   },
   // anyone can read a thread for themselves
   async read({ activityId, tx, userId, enrolledAs, includeUserIds }) {
