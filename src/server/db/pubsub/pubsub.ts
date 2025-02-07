@@ -1,5 +1,7 @@
 import createSubscriber from "pg-listen";
 import { env } from "~/env";
+import type { SuperJSONValue } from "~/common/types";
+import superjson from "superjson";
 
 type Subscriber<T> = {
   push: (data: T) => void;
@@ -9,7 +11,7 @@ type Subscriber<T> = {
 /**
  * A simple async queue that lets you push items and later await them.
  */
-class AsyncQueue<T> {
+class AsyncQueue<T extends SuperJSONValue> {
   private items: T[] = [];
   private resolvers: ((value: T) => void)[] = [];
   private closed = false;
@@ -46,7 +48,7 @@ class AsyncQueue<T> {
   }
 }
 
-export class PubSub<T> {
+export class PubSub<T extends SuperJSONValue> {
   private channel: string;
   private subscriber: ReturnType<typeof createSubscriber>;
   private subscribers = new Set<Subscriber<T>>();
@@ -58,8 +60,8 @@ export class PubSub<T> {
       connectionString: env.DATABASE_URL,
     });
     // When a notification comes in on our channel, broadcast it.
-    this.subscriber.notifications.on(this.channel, (payload: T) => {
-      this.broadcast(payload);
+    this.subscriber.notifications.on(this.channel, (payload: string) => {
+      this.broadcast(superjson.parse<T>(payload));
     });
     // Connect and start listening.
     this.subscriber.connect().then(() => {
@@ -68,7 +70,7 @@ export class PubSub<T> {
   }
 
   async publish(payload: T): Promise<void> {
-    await this.subscriber.notify(this.channel, payload);
+    await this.subscriber.notify(this.channel, superjson.stringify(payload));
   }
 
   private broadcast(payload: T) {

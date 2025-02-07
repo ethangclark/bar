@@ -1,6 +1,9 @@
 import { z } from "zod";
 import type { Activity } from "~/server/db/schema";
 import type { LmsCourse, LmsAssignment } from "~/server/integrations/types";
+import superjson from "superjson";
+
+export type SuperJSONValue = Parameters<typeof superjson.serialize>[0];
 
 export type MaybePromise<T = void> = T | Promise<T>;
 

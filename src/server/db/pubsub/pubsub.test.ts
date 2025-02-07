@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { PubSub } from "./pubsub";
 import createSubscriber from "pg-listen";
-
+import superjson from "superjson";
 vi.mock("~/env");
 
 type FakeSubscriber = {
@@ -55,7 +55,7 @@ describe("PubSub", () => {
     await pubsub.publish(42);
     expect(fakeSubscriberInstance.notify).toHaveBeenCalledWith(
       "test-channel",
-      42,
+      superjson.stringify(42),
     );
   });
 
@@ -66,10 +66,10 @@ describe("PubSub", () => {
     const onCalls = fakeSubscriberInstance.notifications.on.mock.calls;
     const callbackCall = onCalls.find((call) => call[0] === "test-channel");
     if (!callbackCall) throw new Error("No subscription callback found");
-    const callback = callbackCall[1] as (payload: number) => void;
+    const callback = callbackCall[1] as (payload: string) => void;
 
     // Simulate an incoming notification.
-    callback(100);
+    callback(superjson.stringify(100));
     const result = await gen.next();
     expect(result.value).toBe(100);
     expect(result.done).toBe(false);
@@ -82,11 +82,11 @@ describe("PubSub", () => {
     const onCalls = fakeSubscriberInstance.notifications.on.mock.calls;
     const callbackCall = onCalls.find((call) => call[0] === "test-channel");
     if (!callbackCall) throw new Error("No subscription callback found");
-    const callback = callbackCall[1] as (payload: number) => void;
+    const callback = callbackCall[1] as (payload: string) => void;
 
     // Send two notifications.
-    callback(1);
-    callback(2);
+    callback(superjson.stringify(1));
+    callback(superjson.stringify(2));
 
     const res1a = await gen1.next();
     const res2a = await gen2.next();
@@ -105,9 +105,9 @@ describe("PubSub", () => {
     const onCalls = fakeSubscriberInstance.notifications.on.mock.calls;
     const callbackCall = onCalls.find((call) => call[0] === "test-channel");
     if (!callbackCall) throw new Error("No subscription callback found");
-    const callback = callbackCall[1] as (payload: number) => void;
+    const callback = callbackCall[1] as (payload: string) => void;
 
-    callback(200);
+    callback(superjson.stringify(200));
     const res1 = await gen.next();
     expect(res1.value).toBe(200);
 
@@ -127,8 +127,8 @@ describe("PubSub", () => {
     const onCalls = fakeSubscriberInstance.notifications.on.mock.calls;
     const callbackCall = onCalls.find((call) => call[0] === "test-channel");
     if (!callbackCall) throw new Error("No subscription callback found");
-    const callback = callbackCall[1] as (payload: number) => void;
-    callback(999);
+    const callback = callbackCall[1] as (payload: string) => void;
+    callback(superjson.stringify(999));
 
     const res1 = await gen1.next();
     expect(res1.value).toBe(999);
