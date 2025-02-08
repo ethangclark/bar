@@ -7,7 +7,7 @@ import {
   rectifyModifications,
   selectDescendents,
 } from "~/common/descendentUtils";
-import { draftDate, getDraftId } from "~/common/draftData";
+import { getDraftDate, getDraftId } from "~/common/draftData";
 import { identity, objectValues } from "~/common/objectUtils";
 import { loading, notLoaded, Status } from "~/common/status";
 import {
@@ -131,7 +131,7 @@ export class ActivityEditorStore {
       id,
       activityId: this.activityStore.activityId,
       userId: getDraftId(),
-      createdAt: draftDate,
+      createdAt: getDraftDate(),
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     (this.drafts[descendentName] as any)[id] = newDescendent;

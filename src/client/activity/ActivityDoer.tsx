@@ -160,18 +160,22 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
                 }
                 e.preventDefault();
                 setV("");
+                const scrollToBottom = () => {
+                  setTimeout(() => {
+                    // scroll to the bottom
+                    messageWrapperRef.current?.scrollTo({
+                      top: messageWrapperRef.current.scrollHeight,
+                      behavior: "smooth",
+                    });
+                  });
+                };
+                scrollToBottom();
                 await descendentStore.create("messages", {
                   content: v,
                   senderRole: "user",
                   threadId: selectedThreadId,
                 });
-                setTimeout(() => {
-                  // scroll to the bottom
-                  messageWrapperRef.current?.scrollTo({
-                    top: messageWrapperRef.current.scrollHeight,
-                    behavior: "smooth",
-                  });
-                });
+                scrollToBottom();
               }}
               disabled={messageProcessing}
               className="mr-4"

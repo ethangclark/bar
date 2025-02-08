@@ -6,7 +6,7 @@ import {
   indexDescendents,
   mergeDescendents,
 } from "~/common/descendentUtils";
-import { draftDate, getDraftId } from "~/common/draftData";
+import { getDraftDate, getDraftId } from "~/common/draftData";
 import { identity, objectValues } from "~/common/objectUtils";
 import { loading, notLoaded, Status } from "~/common/status";
 import {
@@ -98,7 +98,7 @@ export class DescendentStore {
       id: getDraftId(),
       activityId: this.activityStore.activityId,
       userId: getDraftId(),
-      createdAt: draftDate,
+      createdAt: getDraftDate(),
     };
     const toCreate = createEmptyDescendents();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
