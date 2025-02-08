@@ -1,5 +1,5 @@
 import { Button, Select, Spin } from "antd";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 import { assertNever } from "~/common/errorUtils";
 import { Status } from "~/common/status";
@@ -19,10 +19,28 @@ export function PreformattedText({ children }: { children: React.ReactNode }) {
 function MessageView({
   children,
   className,
+  isLastMessage,
+  messageContentNotGonnaShowTho,
+  scrollToBottom,
 }: {
   children: React.ReactNode;
   className?: string;
+  isLastMessage: boolean;
+  messageContentNotGonnaShowTho: string;
+  scrollToBottom: () => void;
 }) {
+  useEffect(() => {
+    if (isLastMessage) {
+      scrollToBottom();
+    }
+  }, [
+    isLastMessage,
+    scrollToBottom,
+    // important to include messageContentNotGonnaShowTho in the dependency array
+    // so we re-scroll to the bottom when the message content changes
+    messageContentNotGonnaShowTho,
+  ]);
+
   return <div className={`mb-4 flex ${className}`}>{children}</div>;
 }
 
@@ -52,6 +70,13 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
     useEffect(() => {
       threadStore.selectOrCreateThread();
     }, [threadStore]);
+
+    const scrollToBottom = useCallback(() => {
+      messageWrapperRef.current?.scrollTo({
+        top: messageWrapperRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }, []);
 
     if (
       messages instanceof Status ||
@@ -105,21 +130,32 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
             className="flex h-full w-full flex-col overflow-y-auto p-4"
             ref={messageWrapperRef}
           >
-            {messages.map((m) => {
+            {messages.map((m, i) => {
               switch (m.senderRole) {
                 case "system":
                   return null;
                 case "user":
                   return (
-                    <MessageView key={m.id} className="justify-end">
-                      <div className="rounded-xl bg-blue-100 p-3">
+                    <MessageView
+                      key={m.id}
+                      className="ml-[30%] justify-end"
+                      isLastMessage={i === messages.length - 1}
+                      messageContentNotGonnaShowTho={m.content}
+                      scrollToBottom={scrollToBottom}
+                    >
+                      <div className="rounded-2xl bg-gray-100 px-4 py-2">
                         <PreformattedText>{m.content}</PreformattedText>
                       </div>
                     </MessageView>
                   );
                 case "assistant":
                   return (
-                    <MessageView key={m.id}>
+                    <MessageView
+                      key={m.id}
+                      isLastMessage={i === messages.length - 1}
+                      messageContentNotGonnaShowTho={m.content}
+                      scrollToBottom={scrollToBottom}
+                    >
                       <div className="text-sm">
                         <PreformattedText key={m.id}>
                           {m.content}
@@ -160,22 +196,11 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
                 }
                 e.preventDefault();
                 setV("");
-                const scrollToBottom = () => {
-                  setTimeout(() => {
-                    // scroll to the bottom
-                    messageWrapperRef.current?.scrollTo({
-                      top: messageWrapperRef.current.scrollHeight,
-                      behavior: "auto",
-                    });
-                  });
-                };
-                scrollToBottom();
                 await descendentStore.create("messages", {
                   content: v,
                   senderRole: "user",
                   threadId: selectedThreadId,
                 });
-                scrollToBottom();
               }}
               disabled={messageProcessing}
               className="mr-4"
