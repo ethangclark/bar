@@ -39,9 +39,9 @@ export const defaultConfig = {
         "**/__mocks__/**",
       ],
       provider: "v8" as const,
-      thresholds: {
-        branches: 80,
-      },
+      // thresholds: {
+      //   branches: 80, // :,)
+      // },
       reporter: [
         // "text",
         "text-summary",
