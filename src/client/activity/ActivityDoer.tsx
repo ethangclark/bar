@@ -165,7 +165,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
                     // scroll to the bottom
                     messageWrapperRef.current?.scrollTo({
                       top: messageWrapperRef.current.scrollHeight,
-                      behavior: "smooth",
+                      behavior: "auto",
                     });
                   });
                 };
