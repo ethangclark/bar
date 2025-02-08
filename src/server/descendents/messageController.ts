@@ -8,7 +8,7 @@ import { respondToUserMessages } from "../services/summit/summitResponse";
 
 export const messageController: DescendentController<Message> = {
   // anyone can create a message for themselves
-  async create({ activityId, tx, rows, userId }) {
+  async create({ activityId, tx, rows, userId, afterTx }) {
     const messages = await tx
       .insert(db.x.messages)
       .values(
@@ -21,9 +21,7 @@ export const messageController: DescendentController<Message> = {
       )
       .returning();
 
-    setTimeout(() => {
-      void respondToUserMessages(messages);
-    });
+    afterTx(() => respondToUserMessages(messages));
 
     return messages;
   },

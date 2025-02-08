@@ -1,47 +1,13 @@
 import { z } from "zod";
-import {
-  createDescendents,
-  deleteDescendents,
-  modifyDescendents,
-  readDescendents,
-  updateDescendents,
-} from "~/server/descendents";
-import {
-  modificationsSchema,
-  descendentsSchema,
-} from "~/server/descendents/types";
+import { invoke } from "~/common/fnUtils";
+import { type MaybePromise } from "~/common/types";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
+import { modifyDescendents, readDescendents } from "~/server/descendents";
+import { modificationsSchema } from "~/server/descendents/types";
 import { getActivity } from "~/server/services/activityService";
 
 export const descendentRouter = createTRPCRouter({
-  create: publicProcedure
-    .input(
-      z.object({
-        activityId: z.string(),
-        descendents: descendentsSchema,
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { activityId, descendents } = input;
-      const { userId } = ctx;
-
-      const activity = await getActivity({
-        assertAccess: true,
-        userId,
-        activityId,
-      });
-
-      return db.transaction(async (tx) => {
-        return createDescendents({
-          activityId,
-          descendents,
-          userId,
-          enrolledAs: activity.course.enrolledAs,
-          tx,
-        });
-      });
-    }),
   read: publicProcedure
     .input(
       z.object({
@@ -69,60 +35,6 @@ export const descendentRouter = createTRPCRouter({
         });
       });
     }),
-  update: publicProcedure
-    .input(
-      z.object({
-        activityId: z.string(),
-        descendents: descendentsSchema,
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { activityId, descendents } = input;
-      const { userId } = ctx;
-
-      const activity = await getActivity({
-        assertAccess: true,
-        userId,
-        activityId,
-      });
-
-      return db.transaction(async (tx) => {
-        return updateDescendents({
-          activityId,
-          descendents,
-          userId,
-          enrolledAs: activity.course.enrolledAs,
-          tx,
-        });
-      });
-    }),
-  delete: publicProcedure
-    .input(
-      z.object({
-        activityId: z.string(),
-        descendents: descendentsSchema,
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { activityId, descendents } = input;
-      const { userId } = ctx;
-
-      const activity = await getActivity({
-        assertAccess: true,
-        userId,
-        activityId,
-      });
-
-      return db.transaction(async (tx) => {
-        return deleteDescendents({
-          activityId,
-          descendents,
-          userId,
-          enrolledAs: activity.course.enrolledAs,
-          tx,
-        });
-      });
-    }),
 
   modify: publicProcedure
     .input(
@@ -141,14 +53,24 @@ export const descendentRouter = createTRPCRouter({
         activityId,
       });
 
-      return db.transaction(async (tx) => {
+      const postTxQueue = Array<() => MaybePromise<void>>();
+      const afterTx = (cb: () => MaybePromise<void>) => {
+        postTxQueue.push(cb);
+      };
+
+      const result = await db.transaction(async (tx) => {
         return modifyDescendents({
           activityId,
           modifications,
           userId,
           enrolledAs: activity.course.enrolledAs,
           tx,
+          afterTx,
         });
       });
+
+      setTimeout(() => postTxQueue.forEach(invoke));
+
+      return result;
     }),
 });

@@ -10,6 +10,7 @@ import { z } from "zod";
 import { itemSchema } from "~/server/db/schema";
 import { type DbOrTx } from "../db";
 import { type DescendentName } from "~/common/descendentNames";
+import { type MaybePromise } from "~/common/types";
 
 export const descendentsSchema = z.object({
   items: z.array(itemSchema),
@@ -43,6 +44,7 @@ type BaseParams = {
 
 type EditParams<T extends DescendentRow> = BaseParams & {
   rows: T[];
+  afterTx: (cb: () => MaybePromise<void>) => void;
 };
 
 type CreateParams<T extends DescendentRow> = EditParams<T>;
@@ -67,3 +69,5 @@ export const modificationsSchema = z.object({
   toDelete: descendentsSchema,
 });
 export type Modifications = z.infer<typeof modificationsSchema>;
+
+export type AfterTx = (cb: () => MaybePromise<void>) => void;

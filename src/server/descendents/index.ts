@@ -15,6 +15,7 @@ import { messageController } from "./messageController";
 import { questionController } from "./questionController";
 import { threadController } from "./threadController";
 import {
+  type AfterTx,
   type DescendentController,
   type DescendentRows,
   type Descendents,
@@ -41,18 +42,21 @@ export async function createDescendents({
   descendents,
   userId,
   tx,
+  afterTx,
 }: {
   activityId: string;
   enrolledAs: EnrollmentType[];
   descendents: Descendents;
   userId: string;
   tx: DbOrTx;
+  afterTx: AfterTx;
 }) {
   const baseParams = {
     userId,
     activityId,
     enrolledAs,
     tx,
+    afterTx,
   };
 
   const result: Partial<Descendents> = {};
@@ -113,18 +117,21 @@ export async function updateDescendents({
   userId,
   enrolledAs,
   tx,
+  afterTx,
 }: {
   activityId: string;
   descendents: Descendents;
   userId: string;
   enrolledAs: EnrollmentType[];
   tx: DbOrTx;
+  afterTx: AfterTx;
 }) {
   const baseParams = {
     userId,
     activityId,
     enrolledAs,
     tx,
+    afterTx,
   };
 
   const result: Partial<Descendents> = {};
@@ -154,12 +161,14 @@ export async function deleteDescendents({
   enrolledAs,
   descendents,
   tx,
+  afterTx,
 }: {
   activityId: string;
   userId: string;
   enrolledAs: EnrollmentType[];
   descendents: Descendents;
   tx: DbOrTx;
+  afterTx: AfterTx;
 }) {
   const baseParams = {
     userId,
@@ -167,6 +176,7 @@ export async function deleteDescendents({
     enrolledAs,
     descendents,
     tx,
+    afterTx,
   };
 
   await Promise.all(
@@ -192,8 +202,9 @@ export async function modifyDescendents(params: {
   userId: string;
   enrolledAs: EnrollmentType[];
   tx: DbOrTx;
+  afterTx: AfterTx;
 }): Promise<Descendents> {
-  const { activityId, modifications, userId, enrolledAs, tx } = params;
+  const { activityId, modifications, userId, enrolledAs, tx, afterTx } = params;
 
   const rectified = rectifyModifications(modifications);
   const { toCreate, toUpdate, toDelete } = rectified;
@@ -245,6 +256,7 @@ export async function modifyDescendents(params: {
     activityId,
     enrolledAs,
     tx,
+    afterTx,
   };
 
   const [created, updated] = await Promise.all([

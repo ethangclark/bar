@@ -142,9 +142,13 @@ export class DescendentStore {
         newDescendent;
     });
 
-    const result = await trpc.descendent.create.mutate({
+    const result = await trpc.descendent.modify.mutate({
       activityId: this.activityStore.activityId,
-      descendents: toCreate,
+      modifications: {
+        toCreate,
+        toUpdate: createEmptyDescendents(),
+        toDelete: createEmptyDescendents(),
+      },
     });
     runInAction(() => {
       if (this.descendents instanceof Status) {
@@ -206,9 +210,13 @@ export class DescendentStore {
       (this.descendents[descendentName] as any)[update.id] = update;
     });
 
-    const result = await trpc.descendent.update.mutate({
+    const result = await trpc.descendent.modify.mutate({
       activityId: this.activityStore.activityId,
-      descendents: toUpdate,
+      modifications: {
+        toCreate: createEmptyDescendents(),
+        toUpdate,
+        toDelete: createEmptyDescendents(),
+      },
     });
     runInAction(() => {
       if (this.descendents instanceof Status) {
@@ -252,9 +260,13 @@ export class DescendentStore {
     const toDelete = createEmptyDescendents();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     toDelete[descendentName].push(descendent as any);
-    await trpc.descendent.delete.mutate({
+    await trpc.descendent.modify.mutate({
       activityId: this.activityStore.activityId,
-      descendents: toDelete,
+      modifications: {
+        toCreate: createEmptyDescendents(),
+        toUpdate: createEmptyDescendents(),
+        toDelete,
+      },
     });
   }
 }
