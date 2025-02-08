@@ -4,7 +4,6 @@ import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { z } from "zod";
 import { Activity } from "~/client/activity/Activity";
-import { Page } from "~/client/components/Page";
 import { storeObserver } from "~/client/utils/storeObserver";
 
 const ActivityPage = storeObserver(function ActivityPage({ activityStore }) {
@@ -16,11 +15,7 @@ const ActivityPage = storeObserver(function ActivityPage({ activityStore }) {
     return () => activityStore.reset();
   }, [activityStore, activityId]);
 
-  return (
-    <Page>
-      <Activity />
-    </Page>
-  );
+  return <Activity />;
 });
 
 // I hate Next.js

@@ -4,6 +4,7 @@ import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 import { Status } from "~/common/status";
 import { ActivityEditor } from "./ActivityEditor";
 import { ActivityDoer } from "./ActivityDoer";
+import { NoScrollPage, Page } from "../components/Page";
 
 export const Activity = storeObserver(function Activity({
   activityStore,
@@ -18,8 +19,16 @@ export const Activity = storeObserver(function Activity({
   const igod = isGraderOrDeveloper(activity.course.enrolledAs);
 
   if (igod && !studentModeStore.isStudentMode) {
-    return <ActivityEditor />;
+    return (
+      <Page>
+        <ActivityEditor />
+      </Page>
+    );
   }
 
-  return <ActivityDoer assignmentTitle={activity.assignment.title} />;
+  return (
+    <NoScrollPage>
+      <ActivityDoer assignmentTitle={activity.assignment.title} />
+    </NoScrollPage>
+  );
 });
