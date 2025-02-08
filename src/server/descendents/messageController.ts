@@ -4,7 +4,7 @@ import { isGrader } from "~/common/enrollmentTypeUtils";
 import { type Message } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
 import { db } from "../db";
-import { respondToUserMessages } from "../services/summit/summitService";
+import { respondToUserMessages } from "../services/summit/summitResponse";
 
 export const messageController: DescendentController<Message> = {
   // anyone can create a message for themselves
