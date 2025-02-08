@@ -4,9 +4,7 @@ import { isGrader } from "~/common/enrollmentTypeUtils";
 import { type Message } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
 import { db } from "../db";
-import { invoke } from "~/common/fnUtils";
-import { messagePubSub } from "../db/pubsub/messagePubSub";
-import { streamResponse } from "../services/summitService";
+import { respondToUserMessages } from "../services/summitService";
 
 export const messageController: DescendentController<Message> = {
   // anyone can create a message for themselves
@@ -23,30 +21,8 @@ export const messageController: DescendentController<Message> = {
       )
       .returning();
 
-    // TODO: abstract this out (and send deltas, too. and do periodic updates to the row.)
     setTimeout(() => {
-      void Promise.all(
-        messages.map(async (message) => {
-          const responseInArr = await db
-            .insert(db.x.messages)
-            .values({
-              activityId,
-              userId,
-              threadId: message.threadId,
-              senderRole: "assistant" as const,
-              content:
-                "Yargg, this be the initial response that we're gonna be wantin' to augment me matey" +
-                Date.now(),
-            })
-            .returning();
-          await messagePubSub.publish(responseInArr);
-          await Promise.all(
-            responseInArr.map(async (response) => {
-              await streamResponse(response);
-            }),
-          );
-        }),
-      );
+      respondToUserMessages(messages);
     });
 
     return messages;
