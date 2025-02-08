@@ -103,6 +103,19 @@ export class DescendentStore {
     const toCreate = createEmptyDescendents();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     toCreate[descendentName].push(newDescendent as any);
+
+    // optimistic update
+    runInAction(() => {
+      if (this.descendents instanceof Status) {
+        throw new Error(
+          "Descendents are not loaded; cannot integrate result of descendent creation",
+        );
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+      (this.descendents[descendentName] as any)[newDescendent.id] =
+        newDescendent;
+    });
+
     const result = await trpc.descendent.create.mutate({
       activityId: this.activityStore.activityId,
       descendents: toCreate,
@@ -117,17 +130,11 @@ export class DescendentStore {
         mergeDescendents(deindexDescendents(this.descendents), result),
       );
     });
-    const [created, ...excess] = objectValues(result[descendentName]);
-    if (created === undefined) {
+    const allCreated = objectValues(result[descendentName]);
+    const [created, ...excess] = allCreated;
+    if (created === undefined || excess.length > 0) {
       throw new Error(
-        `Created 0 descendents; expected 1; result: ${JSON.stringify(result)}`,
-      );
-    }
-    if (excess.length > 0) {
-      throw new Error(
-        `Created ${excess.length} descendents; expected 1; result: ${JSON.stringify(
-          result,
-        )}`,
+        `Created ${allCreated.length} descendents; expected 1; result: ${JSON.stringify(result)}`,
       );
     }
     return created as DescendentRows[T];
@@ -146,18 +153,35 @@ export class DescendentStore {
   }
   async update<T extends DescendentName>(
     descendentName: T,
-    updates: { id: string } & Partial<DescendentRows[T]>,
+    updatePartial: { id: string } & Partial<DescendentRows[T]>,
   ): Promise<DescendentRows[T]> {
     if (!this.activityStore.activityId) {
       throw new Error("Activity ID is not set");
     }
-    const descendent = this.getById(descendentName, updates.id);
+    const descendent = this.getById(descendentName, updatePartial.id);
     if (descendent instanceof Status) {
       throw new Error("Descendent to update is not loaded");
     }
+
+    const update = {
+      ...descendent,
+      ...updatePartial,
+    };
     const toUpdate = createEmptyDescendents();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toUpdate[descendentName].push(updates as any);
+    toUpdate[descendentName].push(update as any);
+
+    // optimistic update
+    runInAction(() => {
+      if (this.descendents instanceof Status) {
+        throw new Error(
+          "Descendents are not loaded; cannot integrate result of descendent update",
+        );
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+      (this.descendents[descendentName] as any)[update.id] = update;
+    });
+
     const result = await trpc.descendent.update.mutate({
       activityId: this.activityStore.activityId,
       descendents: toUpdate,
@@ -172,15 +196,11 @@ export class DescendentStore {
         mergeDescendents(deindexDescendents(this.descendents), result),
       );
     });
-    const [updated, ...excess] = objectValues(result[descendentName]);
-    if (updated === undefined) {
+    const allUpdated = objectValues(result[descendentName]);
+    const [updated, ...excess] = allUpdated;
+    if (updated === undefined || excess.length > 0) {
       throw new Error(
-        `Updated 0 descendents; expected 1; result: ${JSON.stringify(result)}`,
-      );
-    }
-    if (excess.length > 0) {
-      throw new Error(
-        `Updated ${excess.length} descendents; expected 1; result: ${JSON.stringify(
+        `Updated ${allUpdated.length} descendents; expected 1; result: ${JSON.stringify(
           result,
         )}`,
       );
@@ -195,13 +215,8 @@ export class DescendentStore {
     if (descendent instanceof Status) {
       return;
     }
-    const toDelete = createEmptyDescendents();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toDelete[descendentName].push(descendent as any);
-    await trpc.descendent.delete.mutate({
-      activityId: this.activityStore.activityId,
-      descendents: toDelete,
-    });
+
+    // optimistic update
     runInAction(() => {
       if (this.descendents instanceof Status) {
         throw new Error(
@@ -209,6 +224,14 @@ export class DescendentStore {
         );
       }
       delete this.descendents[descendentName][id];
+    });
+
+    const toDelete = createEmptyDescendents();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    toDelete[descendentName].push(descendent as any);
+    await trpc.descendent.delete.mutate({
+      activityId: this.activityStore.activityId,
+      descendents: toDelete,
     });
   }
 }
