@@ -1,9 +1,10 @@
 import { eq } from "drizzle-orm";
-import { db } from "../db";
-import { messageDeltaPubSub } from "../db/pubsub/messageDeltaPubSub";
-import { type Message } from "../db/schema";
-import { streamLlmResponse } from "../ai/llm";
-import { messagePubSub } from "../db/pubsub/messagePubSub";
+import { db } from "../../db";
+import { messageDeltaPubSub } from "../../db/pubsub/messageDeltaPubSub";
+import { type Message } from "../../db/schema";
+import { streamLlmResponse } from "../../ai/llm";
+import { messagePubSub } from "../../db/pubsub/messagePubSub";
+import { debouncePublish } from "./utils";
 
 const model = "google/gemini-2.0-flash-thinking-exp:free";
 
@@ -57,39 +58,23 @@ async function respondToThread({
     db,
   );
 
-  // could break this out into a function
-  let complete = "";
-  let partial = "";
-  let lastPublish = new Date(0);
-  for await (const resp of gen) {
-    if (typeof resp !== "string") {
-      return;
+  function publish(delta: string) {
+    if (!newMessage) {
+      throw new Error("No new message created.");
     }
-    complete += resp;
-    partial += resp;
-    const now = new Date();
-    if (now.getTime() - lastPublish.getTime() > 200) {
-      void messageDeltaPubSub.publish({
-        activityId,
-        messageId: newMessage.id,
-        contentDelta: partial,
-      });
-      lastPublish = now;
-      partial = "";
-    }
-  }
-  if (partial.length > 0) {
     void messageDeltaPubSub.publish({
       activityId,
       messageId: newMessage.id,
-      contentDelta: partial,
+      contentDelta: delta,
     });
   }
+
+  const { generated } = await debouncePublish(gen, 200, publish);
 
   await db
     .update(db.x.messages)
     .set({
-      content: complete,
+      content: generated,
     })
     .where(eq(db.x.messages.id, newMessage.id));
 }
