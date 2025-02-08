@@ -40,7 +40,7 @@ export class DescendentStore {
         return;
       }
       void this.loadDescendents(activityId);
-      this.subscribeToNewMessages(activityId);
+      this.subscribeToActivityMessages(activityId);
     });
   }
 
@@ -54,7 +54,7 @@ export class DescendentStore {
       this.descendents = indexDescendents(descendents);
     });
   }
-  private subscribeToNewMessages(activityId: string) {
+  private subscribeToActivityMessages(activityId: string) {
     const subscription = trpc.message.newMessages.subscribe(
       { activityId },
       {
@@ -107,9 +107,8 @@ export class DescendentStore {
     // optimistic update
     runInAction(() => {
       if (this.descendents instanceof Status) {
-        throw new Error(
-          "Descendents are not loaded; cannot integrate result of descendent creation",
-        );
+        // another activity is loading
+        return;
       }
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
       (this.descendents[descendentName] as any)[newDescendent.id] =
@@ -122,9 +121,8 @@ export class DescendentStore {
     });
     runInAction(() => {
       if (this.descendents instanceof Status) {
-        throw new Error(
-          "Descendents are not loaded; cannot integrate result of descendent creation",
-        );
+        // another activity is loading
+        return;
       }
       this.descendents = indexDescendents(
         mergeDescendents(deindexDescendents(this.descendents), result),
@@ -174,9 +172,8 @@ export class DescendentStore {
     // optimistic update
     runInAction(() => {
       if (this.descendents instanceof Status) {
-        throw new Error(
-          "Descendents are not loaded; cannot integrate result of descendent update",
-        );
+        // another activity is loading
+        return;
       }
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
       (this.descendents[descendentName] as any)[update.id] = update;
@@ -188,9 +185,8 @@ export class DescendentStore {
     });
     runInAction(() => {
       if (this.descendents instanceof Status) {
-        throw new Error(
-          "Descendents are not loaded; cannot integrate result of descendent update",
-        );
+        // another activity is loading
+        return;
       }
       this.descendents = indexDescendents(
         mergeDescendents(deindexDescendents(this.descendents), result),

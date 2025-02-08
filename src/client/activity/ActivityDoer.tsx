@@ -10,6 +10,7 @@ import { storeObserver } from "../utils/storeObserver";
 import { TeacherSection } from "../components/TeacherSection";
 import { z } from "zod";
 import { formatDateTime } from "~/common/timeUtils";
+import { scrollbarHeight } from "../utils/scrollbarWidth";
 
 export function PreformattedText({ children }: { children: React.ReactNode }) {
   return <pre className="text-wrap font-serif">{children}</pre>;
@@ -61,7 +62,12 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
     }
 
     return (
-      <div className="flex h-full w-[350px] flex-col items-center justify-between md:w-[672px]">
+      <div
+        className="flex h-full w-[350px] flex-col items-center justify-between overflow-y-auto md:w-[672px]"
+        style={{
+          maxHeight: `calc(100vh - ${scrollbarHeight}px)`,
+        }}
+      >
         <div className="md:text-md mb-4 flex w-full items-center justify-between">
           <div className="text-lg md:text-2xl">{assignmentTitle}</div>
         </div>
@@ -91,7 +97,10 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
             </div>
           </TeacherSection>
         )}
-        <div className="outline-3 flex h-full w-full grow items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200">
+        <div
+          className="outline-3 flex h-full grow items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200"
+          style={{ width: `calc(100% - 2px)` }} // to account for the outline
+        >
           <div
             className="flex h-full w-full flex-col overflow-y-auto p-4"
             ref={messageWrapperRef}
