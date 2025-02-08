@@ -1,25 +1,26 @@
 import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
-import { infoTexts, type InfoText } from "~/server/db/schema";
+import { type InfoText } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
+import { db } from "../db";
 
 export const infoTextController: DescendentController<InfoText> = {
   async create({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];
     }
-    const infoText = await tx
-      .insert(infoTexts)
+    const infoTexts = await tx
+      .insert(db.x.infoTexts)
       .values(rows.map((row) => ({ ...row, activityId })))
       .returning();
-    return infoText;
+    return infoTexts;
   },
   async read({ activityId, tx }) {
     return tx
       .select()
-      .from(infoTexts)
-      .where(eq(infoTexts.activityId, activityId));
+      .from(db.x.infoTexts)
+      .where(eq(db.x.infoTexts.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
@@ -28,10 +29,13 @@ export const infoTextController: DescendentController<InfoText> = {
     const infoTextsNested = await Promise.all(
       rows.map((row) =>
         tx
-          .update(infoTexts)
+          .update(db.x.infoTexts)
           .set({ ...row, activityId })
           .where(
-            and(eq(infoTexts.id, row.id), eq(infoTexts.activityId, activityId)),
+            and(
+              eq(db.x.infoTexts.id, row.id),
+              eq(db.x.infoTexts.activityId, activityId),
+            ),
           )
           .returning(),
       ),
@@ -43,9 +47,12 @@ export const infoTextController: DescendentController<InfoText> = {
       return;
     }
     await tx
-      .delete(infoTexts)
+      .delete(db.x.infoTexts)
       .where(
-        and(inArray(infoTexts.id, ids), eq(infoTexts.activityId, activityId)),
+        and(
+          inArray(db.x.infoTexts.id, ids),
+          eq(db.x.infoTexts.activityId, activityId),
+        ),
       );
   },
 };

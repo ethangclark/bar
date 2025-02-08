@@ -1,25 +1,26 @@
 import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
-import { questions, type Question } from "~/server/db/schema";
+import { type Question } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
+import { db } from "../db";
 
 export const questionController: DescendentController<Question> = {
   async create({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];
     }
-    const question = await tx
-      .insert(questions)
+    const questions = await tx
+      .insert(db.x.questions)
       .values(rows.map((row) => ({ ...row, activityId })))
       .returning();
-    return question;
+    return questions;
   },
   async read({ activityId, tx }) {
     return tx
       .select()
-      .from(questions)
-      .where(eq(questions.activityId, activityId));
+      .from(db.x.questions)
+      .where(eq(db.x.questions.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
@@ -28,10 +29,13 @@ export const questionController: DescendentController<Question> = {
     const questionsNested = await Promise.all(
       rows.map((row) =>
         tx
-          .update(questions)
+          .update(db.x.questions)
           .set({ ...row, activityId })
           .where(
-            and(eq(questions.id, row.id), eq(questions.activityId, activityId)),
+            and(
+              eq(db.x.questions.id, row.id),
+              eq(db.x.questions.activityId, activityId),
+            ),
           )
           .returning(),
       ),
@@ -43,9 +47,12 @@ export const questionController: DescendentController<Question> = {
       return;
     }
     await tx
-      .delete(questions)
+      .delete(db.x.questions)
       .where(
-        and(inArray(questions.id, ids), eq(questions.activityId, activityId)),
+        and(
+          inArray(db.x.questions.id, ids),
+          eq(db.x.questions.activityId, activityId),
+        ),
       );
   },
 };

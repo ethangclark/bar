@@ -1,14 +1,15 @@
 import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isGrader } from "~/common/enrollmentTypeUtils";
-import { messages, type Message } from "~/server/db/schema";
+import { type Message } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
+import { db } from "../db";
 
 export const messageController: DescendentController<Message> = {
   // anyone can create a message for themselves
   async create({ activityId, tx, rows, userId }) {
-    const message = await tx
-      .insert(messages)
+    const messages = await tx
+      .insert(db.x.messages)
       .values(
         rows.map(({ createdAt: _, ...row }) => ({
           ...row,
@@ -18,7 +19,7 @@ export const messageController: DescendentController<Message> = {
         })),
       )
       .returning();
-    return message;
+    return messages;
   },
   // anyone can read a message for themselves
   async read({ activityId, tx, userId, enrolledAs, includeUserIds }) {
@@ -29,11 +30,11 @@ export const messageController: DescendentController<Message> = {
     }
     return tx
       .select()
-      .from(messages)
+      .from(db.x.messages)
       .where(
         and(
-          eq(messages.activityId, activityId),
-          inArray(messages.userId, userIds),
+          eq(db.x.messages.activityId, activityId),
+          inArray(db.x.messages.userId, userIds),
         ),
       );
   },
@@ -47,12 +48,12 @@ export const messageController: DescendentController<Message> = {
   // anyone can delete a message for themselves
   async delete({ activityId, tx, ids, userId }) {
     await tx
-      .delete(messages)
+      .delete(db.x.messages)
       .where(
         and(
-          inArray(messages.id, ids),
-          eq(messages.activityId, activityId),
-          eq(messages.userId, userId),
+          inArray(db.x.messages.id, ids),
+          eq(db.x.messages.activityId, activityId),
+          eq(db.x.messages.userId, userId),
         ),
       );
   },

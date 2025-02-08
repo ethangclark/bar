@@ -28,6 +28,7 @@ export type DescendentCreateParams<T extends DescendentName> = Omit<
   "id" | "activityId" | "userId" | "createdAt"
 >;
 
+// could add optimistic updates here
 export class DescendentStore {
   public descendents = baseState().descendents;
 

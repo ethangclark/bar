@@ -1,25 +1,26 @@
 import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
-import { infoImages, type InfoImage } from "~/server/db/schema";
+import { type InfoImage } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
+import { db } from "../db";
 
 export const infoImageController: DescendentController<InfoImage> = {
   async create({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];
     }
-    const infoImage = await tx
-      .insert(infoImages)
+    const infoImages = await tx
+      .insert(db.x.infoImages)
       .values(rows.map((row) => ({ ...row, activityId })))
       .returning();
-    return infoImage;
+    return infoImages;
   },
   async read({ activityId, tx }) {
     return tx
       .select()
-      .from(infoImages)
-      .where(eq(infoImages.activityId, activityId));
+      .from(db.x.infoImages)
+      .where(eq(db.x.infoImages.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
@@ -28,12 +29,12 @@ export const infoImageController: DescendentController<InfoImage> = {
     const infoImagesNested = await Promise.all(
       rows.map((row) =>
         tx
-          .update(infoImages)
+          .update(db.x.infoImages)
           .set({ ...row, activityId })
           .where(
             and(
-              eq(infoImages.id, row.id),
-              eq(infoImages.activityId, activityId),
+              eq(db.x.infoImages.id, row.id),
+              eq(db.x.infoImages.activityId, activityId),
             ),
           )
           .returning(),
@@ -46,9 +47,12 @@ export const infoImageController: DescendentController<InfoImage> = {
       return;
     }
     await tx
-      .delete(infoImages)
+      .delete(db.x.infoImages)
       .where(
-        and(inArray(infoImages.id, ids), eq(infoImages.activityId, activityId)),
+        and(
+          inArray(db.x.infoImages.id, ids),
+          eq(db.x.infoImages.activityId, activityId),
+        ),
       );
   },
 };

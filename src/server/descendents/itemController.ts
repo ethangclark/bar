@@ -1,22 +1,26 @@
 import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
-import { items, type Item } from "~/server/db/schema";
+import { type Item } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/types";
+import { db } from "../db";
 
 export const itemController: DescendentController<Item> = {
   async create({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
       return [];
     }
-    const item = await tx
-      .insert(items)
+    const items = await tx
+      .insert(db.x.items)
       .values(rows.map((row) => ({ ...row, activityId })))
       .returning();
-    return item;
+    return items;
   },
   async read({ activityId, tx }) {
-    return tx.select().from(items).where(eq(items.activityId, activityId));
+    return tx
+      .select()
+      .from(db.x.items)
+      .where(eq(db.x.items.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
@@ -25,9 +29,14 @@ export const itemController: DescendentController<Item> = {
     const itemsNested = await Promise.all(
       rows.map((row) =>
         tx
-          .update(items)
+          .update(db.x.items)
           .set({ ...row, activityId })
-          .where(and(eq(items.id, row.id), eq(items.activityId, activityId)))
+          .where(
+            and(
+              eq(db.x.items.id, row.id),
+              eq(db.x.items.activityId, activityId),
+            ),
+          )
           .returning(),
       ),
     );
@@ -38,7 +47,9 @@ export const itemController: DescendentController<Item> = {
       return;
     }
     await tx
-      .delete(items)
-      .where(and(inArray(items.id, ids), eq(items.activityId, activityId)));
+      .delete(db.x.items)
+      .where(
+        and(inArray(db.x.items.id, ids), eq(db.x.items.activityId, activityId)),
+      );
   },
 };

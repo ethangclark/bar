@@ -31,6 +31,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
     threadStore,
     activityStore,
     studentModeStore,
+    descendentStore,
   }) {
     const [v, setV] = useState("");
 
@@ -149,8 +150,12 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
                   return;
                 }
                 e.preventDefault();
-                console.log("TODO: send message", v);
                 setV("");
+                await descendentStore.create("messages", {
+                  content: v,
+                  senderRole: "user",
+                  threadId: selectedThreadId,
+                });
                 setTimeout(() => {
                   // scroll to the bottom
                   messageWrapperRef.current?.scrollTo({
