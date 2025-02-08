@@ -30,8 +30,10 @@ describe("PubSub", () => {
   let fakeSubscriberInstance: FakeSubscriber;
 
   beforeEach(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     (createSubscriber as any).mockClear();
     pubsub = new PubSub<number>("test-channel");
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     fakeSubscriberInstance = (
       createSubscriber as unknown as {
         mock: { results: Array<{ value: FakeSubscriber }> };

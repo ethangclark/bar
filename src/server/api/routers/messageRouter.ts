@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MessageDeltaSchema } from "~/common/types";
+import { type MessageDeltaSchema } from "~/common/types";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { messageDeltaPubSub } from "~/server/db/pubsub/messageDeltaPubSub";

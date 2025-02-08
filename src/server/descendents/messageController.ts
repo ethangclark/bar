@@ -22,7 +22,7 @@ export const messageController: DescendentController<Message> = {
       .returning();
 
     setTimeout(() => {
-      respondToUserMessages(messages);
+      void respondToUserMessages(messages);
     });
 
     return messages;

@@ -5,10 +5,10 @@ import { type SenderRole, senderRoleSchema } from "~/server/db/schema";
 
 // see https://openrouter.ai/models
 const modelSchema = z.enum([
-  "anthropic/claude-3.5-sonnet:beta",
-  "google/gemini-flash-1.5",
-  "google/gemini-flash-1.5-8b",
-  "deepseek/deepseek-chat",
+  // "anthropic/claude-3.5-sonnet:beta",
+  "google/gemini-2.0-flash-thinking-exp:free",
+  // "google/gemini-2.0-pro-exp-02-05:free",
+  // "deepseek/deepseek-chat",
 ]);
 export type Model = z.infer<typeof modelSchema>;
 

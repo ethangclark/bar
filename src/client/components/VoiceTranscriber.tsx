@@ -21,7 +21,7 @@ export function VoiceTranscriber({
       const { text } = await transcribe(audioDataX);
       onTranscription(text);
     },
-    [transcribe],
+    [transcribe, onTranscription],
   );
 
   return (

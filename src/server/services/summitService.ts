@@ -1,11 +1,11 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { messageDeltaPubSub } from "../db/pubsub/messageDeltaPubSub";
-import { Message } from "../db/schema";
+import { type Message } from "../db/schema";
 import { streamLlmResponse } from "../ai/llm";
 import { messagePubSub } from "../db/pubsub/messagePubSub";
 
-const model = "deepseek/deepseek-chat";
+const model = "google/gemini-2.0-flash-thinking-exp:free";
 
 async function respondToThread({
   userId,
@@ -58,7 +58,7 @@ async function respondToThread({
   );
   for await (const resp of gen) {
     if (typeof resp === "string") {
-      messageDeltaPubSub.publish({
+      void messageDeltaPubSub.publish({
         activityId: newMessage.activityId,
         messageId: newMessage.id,
         contentDelta: resp,

@@ -16,7 +16,7 @@ import {
 import { trpc } from "~/trpc/proxy";
 import { type ActivityStore } from "./activityStore";
 import { type Message } from "~/server/db/schema";
-import { MessageDeltaSchema } from "~/common/types";
+import { type MessageDeltaSchema } from "~/common/types";
 
 const baseState = () => ({
   descendents: identity<DescendentTables | Status>(notLoaded),

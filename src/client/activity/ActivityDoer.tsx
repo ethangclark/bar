@@ -78,6 +78,10 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
       });
     }, []);
 
+    const onTranscription = useCallback((text: string) => {
+      setV((v) => (v ? v + " " + text : text));
+    }, []);
+
     if (
       messages instanceof Status ||
       sortedThreads instanceof Status ||
@@ -205,11 +209,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
               disabled={messageProcessing}
               className="mr-4"
             />
-            <VoiceTranscriber
-              onTranscription={(text) => {
-                setV((v) => (v ? v + " " + text : text));
-              }}
-            />
+            <VoiceTranscriber onTranscription={onTranscription} />
           </div>
           <div className="w-full text-center text-xs text-gray-400">
             Press enter to send. Response may take a few seconds. Let Summit

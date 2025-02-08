@@ -13,12 +13,13 @@ type Subscriber<T> = {
  */
 class AsyncQueue<T extends SuperJSONValue> {
   private items: T[] = [];
-  private resolvers: ((value: T) => void)[] = [];
+  private resolvers: Array<(value: T) => void> = [];
   private closed = false;
 
   push(item: T) {
     if (this.closed) return;
     if (this.resolvers.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const resolve = this.resolvers.shift()!;
       resolve(item);
     } else {
@@ -31,18 +32,20 @@ class AsyncQueue<T extends SuperJSONValue> {
     // Cancel any pending shifts by rejecting them.
     while (this.resolvers.length) {
       // Here we choose to reject the waiting promise.
-      this.resolvers.shift()!(<any>new Error("Queue closed"));
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-explicit-any
+      this.resolvers.shift()!(new Error("Queue closed") as any);
     }
   }
 
   async shift(): Promise<T> {
     if (this.items.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this.items.shift()!;
     }
     if (this.closed) {
       return Promise.reject(new Error("Queue closed"));
     }
-    return new Promise<T>((resolve, reject) => {
+    return new Promise<T>((resolve) => {
       this.resolvers.push(resolve);
     });
   }
@@ -64,8 +67,8 @@ export class PubSub<T extends SuperJSONValue> {
       this.broadcast(superjson.parse<T>(payload));
     });
     // Connect and start listening.
-    this.subscriber.connect().then(() => {
-      this.subscriber.listenTo(this.channel);
+    void this.subscriber.connect().then(() => {
+      return this.subscriber.listenTo(this.channel);
     });
   }
 
@@ -115,6 +118,7 @@ export class PubSub<T extends SuperJSONValue> {
     // we close our queue (which cancels any pending shifts).
     return {
       next: iterator.next.bind(iterator),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return: async (value?: any) => {
         mySub.close();
         if (iterator.return) {

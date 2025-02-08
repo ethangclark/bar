@@ -1,10 +1,9 @@
-import { type Session } from "next-auth";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { executeUserInitiation } from "~/server/integrations/canvas/canvasApiService";
-import { getSeatsRemaining } from "~/server/services/seatsService";
 import { isLoggedIn } from "~/server/services/authService";
+import { getSeatsRemaining } from "~/server/services/seatsService";
 export const authRouter = createTRPCRouter({
   isLoggedIn: publicProcedure.query(({ ctx }) => {
     return isLoggedIn(ctx.userId, ctx.session);
