@@ -56,15 +56,42 @@ async function respondToThread({
     },
     db,
   );
+
+  // could break this out into a function
+  let complete = "";
+  let partial = "";
+  let lastPublish = new Date(0);
   for await (const resp of gen) {
-    if (typeof resp === "string") {
+    if (typeof resp !== "string") {
+      return;
+    }
+    complete += resp;
+    partial += resp;
+    const now = new Date();
+    if (now.getTime() - lastPublish.getTime() > 200) {
       void messageDeltaPubSub.publish({
-        activityId: newMessage.activityId,
+        activityId,
         messageId: newMessage.id,
-        contentDelta: resp,
+        contentDelta: partial,
       });
+      lastPublish = now;
+      partial = "";
     }
   }
+  if (partial.length > 0) {
+    void messageDeltaPubSub.publish({
+      activityId,
+      messageId: newMessage.id,
+      contentDelta: partial,
+    });
+  }
+
+  await db
+    .update(db.x.messages)
+    .set({
+      content: complete,
+    })
+    .where(eq(db.x.messages.id, newMessage.id));
 }
 
 export async function respondToUserMessages(userMessages: Message[]) {
