@@ -28,16 +28,12 @@ export const audioDataXSchema = z.object({
 // Types for the audio data structure
 export type AudioDataX = z.infer<typeof audioDataXSchema>;
 
-export const MessageDeltaItemSchema = z.union([
-  z.object({
-    done: z.literal(false),
-    delta: z.string(),
-  }),
-  z.object({
-    done: z.literal(true),
-  }),
-]);
-export type MessageDeltaItem = z.infer<typeof MessageDeltaItemSchema>;
+export const MessageDeltaSchema = z.object({
+  activityId: z.string(),
+  messageId: z.string(),
+  contentDelta: z.string(),
+});
+export type MessageDeltaSchema = z.infer<typeof MessageDeltaSchema>;
 
 export type RichActivity = Activity & {
   course: LmsCourse;

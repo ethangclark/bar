@@ -6,6 +6,7 @@ import { type DescendentController } from "~/server/descendents/types";
 import { db } from "../db";
 import { invoke } from "~/common/fnUtils";
 import { messagePubSub } from "../db/pubsub/messagePubSub";
+import { streamResponse } from "../services/summitService";
 
 export const messageController: DescendentController<Message> = {
   // anyone can create a message for themselves
@@ -39,6 +40,11 @@ export const messageController: DescendentController<Message> = {
             })
             .returning();
           await messagePubSub.publish(responseInArr);
+          await Promise.all(
+            responseInArr.map(async (response) => {
+              await streamResponse(response);
+            }),
+          );
         }),
       );
     });

@@ -16,6 +16,7 @@ import {
 import { trpc } from "~/trpc/proxy";
 import { type ActivityStore } from "./activityStore";
 import { type Message } from "~/server/db/schema";
+import { MessageDeltaSchema } from "~/common/types";
 
 const baseState = () => ({
   descendents: identity<DescendentTables | Status>(notLoaded),
@@ -41,6 +42,7 @@ export class DescendentStore {
       }
       void this.loadDescendents(activityId);
       this.subscribeToActivityMessages(activityId);
+      this.subscribeToMessageDeltas(activityId);
     });
   }
 
@@ -78,6 +80,31 @@ export class DescendentStore {
       },
       {
         fireImmediately: false,
+      },
+    );
+  }
+  private subscribeToMessageDeltas(activityId: string) {
+    const subscription = trpc.message.messageDeltas.subscribe(
+      { activityId },
+      {
+        onData: (messageDelta: MessageDeltaSchema) => {
+          const { descendents } = this;
+          if (descendents instanceof Status) {
+            return;
+          }
+          runInAction(() => {
+            const descendent = descendents.messages[messageDelta.messageId];
+            if (descendent !== undefined) {
+              descendent.content += messageDelta.contentDelta;
+            }
+          });
+        },
+      },
+    );
+    reaction(
+      () => this.activityStore.activityId,
+      () => {
+        subscription.unsubscribe();
       },
     );
   }

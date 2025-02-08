@@ -1,6 +1,6 @@
-import { MessageDeltaItem } from "~/common/types";
+import { MessageDeltaSchema } from "~/common/types";
 import { PubSub } from "./pubsub";
 
-export const messageDeltaPubSub = new PubSub<MessageDeltaItem[]>(
+export const messageDeltaPubSub = new PubSub<MessageDeltaSchema>(
   "messageDelta",
 );
