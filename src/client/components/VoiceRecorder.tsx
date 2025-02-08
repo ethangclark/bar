@@ -94,7 +94,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     <Button
       onClick={toggleRecording}
       disabled={isProcessingInternally}
-      className="flex items-center px-5 py-8"
+      className="flex items-center px-5 py-8 outline-1 outline-gray-200"
     >
       {isProcessing ? (
         <Loader2 className="h-4 w-4 animate-spin" />
