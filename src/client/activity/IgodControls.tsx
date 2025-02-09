@@ -20,7 +20,7 @@ export const IgodControls = storeObserver<IgodControlsProps>(
     itemStore,
   }) {
     return (
-      <div className="mr-3 flex h-full flex-col items-center pt-14">
+      <div className="mr-3 flex h-full flex-col items-center">
         <TeacherSection className="flex flex-col items-center gap-2 p-3">
           <ControlButton
             type="primary"

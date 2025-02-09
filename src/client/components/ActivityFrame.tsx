@@ -17,6 +17,7 @@ export const ControlSection = ({
 );
 
 type ActivityFrameProps = {
+  className?: string;
   header?: React.ReactNode;
   rows: Array<{
     leftControl?: React.ReactNode;
@@ -27,9 +28,11 @@ type ActivityFrameProps = {
 };
 
 export const ActivityFrame = storeObserver<ActivityFrameProps>(
-  function ActivityFrame({ header, rows, footer }) {
+  function ActivityFrame({ className, header, rows, footer }) {
     return (
-      <div className="grid h-full auto-rows-min grid-cols-[repeat(3,_auto)] overflow-y-auto">
+      <div
+        className={`grid h-full auto-rows-min grid-cols-[repeat(3,_auto)] overflow-y-auto ${className ?? ""}`}
+      >
         <Spacer />
         <div className="flex flex-col items-center">{header}</div>
         <Spacer />

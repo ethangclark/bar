@@ -22,6 +22,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
     <div className="flex h-full w-full justify-center pt-12">
       <IgodControls activityStatus={activity.status} />
       <ActivityFrame
+        className="pr-4"
         header={
           <div className="mb-4 text-4xl">{activity.assignment.title}</div>
         }
@@ -45,7 +46,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
                 className={`flex flex-col items-center`}
                 style={{ minWidth: 60 }}
               >
-                <span>Item {idx + 1}</span>
+                <span className="font-bold">Item {idx + 1}</span>
                 <Typography.Link
                   onClick={() => activityEditorStore.deleteDraft(item.id)}
                   className="text-xs"
