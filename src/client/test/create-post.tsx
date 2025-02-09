@@ -1,3 +1,6 @@
+"use client";
+// the above is necessary because the parent page is not client-side rendered :(
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
