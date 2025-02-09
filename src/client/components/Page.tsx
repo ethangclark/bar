@@ -39,8 +39,8 @@ export function NoScrollPage({ children }: { children: React.ReactNode }) {
         className="flex flex-grow flex-col items-center"
         style={{
           margin: `${marginY}px 8px`,
-          // maxWidth: 1280,
           height: `calc(100vh - ${marginY * 2}px)`,
+          width: `calc(100vw - ${marginX * 2}px)`,
         }}
       >
         {children}

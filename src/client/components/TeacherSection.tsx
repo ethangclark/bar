@@ -11,17 +11,3 @@ export const TeacherSection = ({
     {children}
   </div>
 );
-
-export const FullFramedTeacherSection = ({
-  children,
-  className,
-  innerClassName,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  innerClassName?: string;
-}) => (
-  <div className={`h-full w-full ${className ?? ""}`}>
-    <TeacherSection className={innerClassName}>{children}</TeacherSection>
-  </div>
-);

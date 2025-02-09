@@ -4,42 +4,38 @@ import {
   type Question,
   type Item as ItemType,
 } from "~/server/db/schema";
-import { WysiwygEditor } from "../components/Editor";
+import { Editor } from "../components/Editor";
 import { ImageFromDataUrl } from "../components/ImageFromDataUrl";
 import { storeObserver } from "../utils/storeObserver";
 import { Tooltip } from "antd";
 import { CircleHelp } from "lucide-react";
 import { ImageUploadLink } from "../components/ImageUploader";
-import { FullFramedTeacherSection } from "../components/TeacherSection";
 import {
-  type EnrollmentType,
-  isGraderOrDeveloper,
-} from "~/common/enrollmentTypeUtils";
+  FullFramedTeacherSection,
+  TeacherSection,
+} from "../components/TeacherSection";
+import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
 
 export const Item = storeObserver<{
   item: ItemType;
   deleted: boolean;
   enrolledAs: EnrollmentType[];
-  showControls: boolean;
   infoImage: InfoImage | null;
   infoText: InfoText | null;
   question: Question | null;
 }>(function Item({
   deleted,
-  enrolledAs,
-  showControls,
   activityEditorStore,
   infoImage,
   infoText,
   question,
   questionStore,
 }) {
-  const igod = isGraderOrDeveloper(enrolledAs);
   const evalKey = question && questionStore.getEvalKey(question.id);
 
   return (
     <div
-      className={`flex flex-col items-center px-4 pb-8 ${deleted ? "opacity-30" : ""}`}
+      className={`flex flex-col items-center px-4 pb-4 ${deleted ? "opacity-30" : ""}`}
       style={{ width: 500 }}
     >
       {infoImage ? (
@@ -62,7 +58,7 @@ export const Item = storeObserver<{
                 <CircleHelp size={16} />
               </Tooltip>
             </div>
-            <div className={showControls ? "" : "invisible"}>
+            <div>
               <span className="mx-2 text-gray-300">|</span>
               <ImageUploadLink
                 label="Replace image"
@@ -75,9 +71,8 @@ export const Item = storeObserver<{
               />
             </div>
           </div>
-          <WysiwygEditor
+          <Editor
             value={infoImage.textAlternative}
-            disabled={!igod}
             setValue={(v) => {
               activityEditorStore.updateDraft("infoImages", {
                 id: infoImage.id,
@@ -89,9 +84,8 @@ export const Item = storeObserver<{
       ) : null}
       {infoText ? (
         <div key={infoText.id} className="w-full">
-          <WysiwygEditor
+          <Editor
             value={infoText.content}
-            disabled={!igod}
             setValue={(v) => {
               activityEditorStore.updateDraft("infoTexts", {
                 id: infoText.id,
@@ -106,10 +100,9 @@ export const Item = storeObserver<{
       {question ? (
         <div key={question.id} className="flex w-full flex-col">
           <div className="mb-1">
-            <WysiwygEditor
+            <Editor
               placeholder="Insert question here..."
               value={question.content}
-              disabled={!igod}
               setValue={(v) => {
                 activityEditorStore.updateDraft("questions", {
                   id: question.id,
@@ -119,14 +112,13 @@ export const Item = storeObserver<{
               className={question.content ? "" : "placeholder-red-500"}
             />
           </div>
-          {evalKey && showControls ? (
-            <div className="ml-[-8px]">
-              <FullFramedTeacherSection>
+          {evalKey ? (
+            <div className="h-full w-full">
+              <TeacherSection>
                 <div className="mb-[-4px] mr-[-4px] pl-1">
-                  <WysiwygEditor
+                  <Editor
                     placeholder="Insert answer here..."
                     value={evalKey.key}
-                    disabled={!igod}
                     setValue={(v) => {
                       activityEditorStore.updateDraft("evalKeys", {
                         id: evalKey.id,
@@ -141,7 +133,7 @@ export const Item = storeObserver<{
                     }
                   />
                 </div>
-              </FullFramedTeacherSection>
+              </TeacherSection>
             </div>
           ) : null}
         </div>
