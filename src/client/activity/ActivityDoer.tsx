@@ -92,7 +92,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
 
     return (
       <div
-        className="flex h-full w-[350px] flex-col items-center justify-between overflow-y-auto md:w-[672px]"
+        className="flex h-full w-[350px] flex-col items-center justify-between overflow-y-auto md:w-[672px] lg:w-[894px]"
         style={{
           maxHeight: `calc(100vh - ${scrollbarHeight}px)`,
         }}
@@ -160,11 +160,9 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
                       messageContentNotGonnaShowTho={m.content}
                       scrollToBottom={scrollToBottom}
                     >
-                      <div className="text-sm">
-                        <PreformattedText key={m.id}>
-                          {m.content}
-                        </PreformattedText>
-                      </div>
+                      <PreformattedText key={m.id}>
+                        {m.content}
+                      </PreformattedText>
                     </MessageView>
                   );
                 default:
