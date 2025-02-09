@@ -1,5 +1,3 @@
-import { Typography } from "antd";
-import { ActivityFrame } from "~/client/components/ActivityFrame";
 import { LoadingCentered } from "~/client/components/Loading";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { Status } from "~/common/status";
@@ -21,49 +19,30 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
   return (
     <div className="flex h-full w-full justify-center pt-12">
       <IgodControls activityStatus={activity.status} />
-      <ActivityFrame
-        className="pr-4"
-        header={
+      <div
+        className={`grid h-full auto-rows-min grid-cols-[repeat(1,_auto)] overflow-y-auto pr-4`}
+      >
+        <div className="flex flex-col items-center">
           <div className="mb-4 text-4xl">{activity.assignment.title}</div>
-        }
-        rows={sortedItems.map((item, idx) => {
+        </div>
+        {sortedItems.map((item, idx) => {
           const infoImage = itemStore.getInfoImage(item.id);
           const infoText = itemStore.getTextInfo(item.id);
           const question = itemStore.getQuestion(item.id);
-          return {
-            main: (
-              <Item
-                item={item}
-                deleted={activityEditorStore.isDeletedDraft(item.id)}
-                enrolledAs={activity.course.enrolledAs}
-                infoImage={infoImage}
-                infoText={infoText}
-                question={question}
-              />
-            ),
-            leftControl: (
-              <div
-                className={`flex flex-col items-center`}
-                style={{ minWidth: 60 }}
-              >
-                <span className="font-bold">Item {idx + 1}</span>
-                <Typography.Link
-                  onClick={() => activityEditorStore.deleteDraft(item.id)}
-                  className="text-xs"
-                >
-                  {activityEditorStore.isDeletedDraft(item.id) ? (
-                    "Restore"
-                  ) : (
-                    <span className="text-gray-500 hover:text-red-500">
-                      Delete
-                    </span>
-                  )}
-                </Typography.Link>
-              </div>
-            ),
-          };
+          return (
+            <Item
+              key={item.id}
+              item={item}
+              itemNumber={idx + 1}
+              deleted={activityEditorStore.isDeletedDraft(item.id)}
+              enrolledAs={activity.course.enrolledAs}
+              infoImage={infoImage}
+              infoText={infoText}
+              question={question}
+            />
+          );
         })}
-      />
+      </div>
     </div>
   );
 });

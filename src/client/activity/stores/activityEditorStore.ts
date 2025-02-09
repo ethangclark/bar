@@ -165,11 +165,15 @@ export class ActivityEditorStore {
     };
     this.changes.updatedIds.add(updates.id);
   }
-  deleteDraft(id: string) {
+  toggleDeletion(id: string) {
     if (this.drafts instanceof Status) {
       return;
     }
-    this.changes.deletedIds.add(id);
+    if (this.changes.deletedIds.has(id)) {
+      this.changes.deletedIds.delete(id);
+    } else {
+      this.changes.deletedIds.add(id);
+    }
   }
 
   isDeletedDraft(id: string) {
