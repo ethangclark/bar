@@ -1,5 +1,4 @@
 import { splitPromise } from "./promiseUtils";
-import { ShouldNeverHappenError } from "./errorUtils";
 import { noop } from "./fnUtils";
 
 describe("splitPromise", () => {
@@ -23,7 +22,7 @@ describe("splitPromise", () => {
     await expect(promise).rejects.toThrow("rejected value");
   });
 
-  it("should throw ShouldNeverHappen error if resolve or reject is not defined", () => {
+  it("should throw error if resolve or reject is not defined", () => {
     // To test this, we need to simulate the case where resolve or reject is not assigned.
     // This is tricky since the current implementation does not allow it.
     // For the sake of completeness, let's assume there's a way to simulate it.
@@ -32,7 +31,7 @@ describe("splitPromise", () => {
       executor(noop /* second arg not defined */);
     } as unknown as PromiseConstructor;
 
-    expect(() => splitPromise<string>()).toThrow(ShouldNeverHappenError);
+    expect(() => splitPromise<string>()).toThrow();
 
     global.Promise = originalPromise;
   });

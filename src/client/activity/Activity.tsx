@@ -1,7 +1,7 @@
 import { LoadingPage } from "~/client/components/Loading";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
-import { Status } from "~/common/status";
+import { Status } from "~/client/utils/status";
 import { ActivityEditor } from "./ActivityEditor";
 import { ActivityDoer } from "./ActivityDoer";
 import { NoScrollPage } from "../components/Page";

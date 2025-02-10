@@ -1,6 +1,6 @@
 import { LoadingCentered } from "~/client/components/Loading";
 import { storeObserver } from "~/client/utils/storeObserver";
-import { Status } from "~/common/status";
+import { Status } from "~/client/utils/status";
 import { Item } from "./Item";
 import { IgodControls } from "./IgodControls";
 

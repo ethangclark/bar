@@ -1,5 +1,10 @@
 import { autorun, makeAutoObservable, runInAction } from "mobx";
-import { type NotLoaded, Status, loading, notLoaded } from "~/common/status";
+import {
+  type NotLoaded,
+  Status,
+  loading,
+  notLoaded,
+} from "~/client/utils/status";
 import { type DescendentStore } from "./descendentStore";
 
 export class ThreadStore {

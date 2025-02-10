@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { identity } from "~/common/objectUtils";
-import { notLoaded, Status } from "~/common/status";
+import { notLoaded, Status } from "~/client/utils/status";
 import { type RichActivity } from "~/common/types";
 import { trpc } from "~/trpc/proxy";
 

@@ -2,7 +2,7 @@ import { Button, Select, Spin } from "antd";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 import { assertNever } from "~/common/errorUtils";
-import { Status } from "~/common/status";
+import { Status } from "~/client/utils/status";
 import { Editor } from "../components/Editor";
 import { LoadingPage } from "../components/Loading";
 import { VoiceTranscriber } from "../components/VoiceTranscriber";

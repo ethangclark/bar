@@ -1,5 +1,3 @@
-import { ShouldNeverHappenError } from "./errorUtils";
-
 export function splitPromise<T>() {
   let resolve: ((value: T) => void) | undefined;
   let reject: ((error: unknown) => void) | undefined;
@@ -7,7 +5,8 @@ export function splitPromise<T>() {
     resolve = res;
     reject = rej;
   });
-  if (!resolve || !reject) throw new ShouldNeverHappenError();
+  if (!resolve || !reject)
+    throw new Error("Resolve and reject are not defined");
   return { resolve, reject, promise };
 }
 

@@ -1,5 +1,5 @@
 import { autorun, makeAutoObservable, runInAction } from "mobx";
-import { Status } from "~/common/status";
+import { Status } from "~/client/utils/status";
 import { type EvalKey } from "~/server/db/schema";
 import { type ActivityEditorStore } from "./activityEditorStore";
 
