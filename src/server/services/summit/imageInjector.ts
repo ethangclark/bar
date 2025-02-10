@@ -71,5 +71,19 @@ export async function injectImages(messages: Message[]) {
 
   const data = await getInjectionData(userId, messages);
 
+  const pieces = await db
+    .insert(db.x.enrichedMessageViewPiece)
+    .values(
+      data.map((_, idx) => ({
+        messageId: message1.id,
+        order: idx + 1,
+      })),
+    )
+    .returning();
+  const pieceIds = pieces.map((p) => p.id);
+
+  // PROBLEM: what if the activity has changed since message formation??!?
+  // We should probably include a DB ID of the image in the prompt and ask this prompt to return that :/
+
   console.log("TODO: leverage injection data", data);
 }

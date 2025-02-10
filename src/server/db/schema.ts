@@ -499,6 +499,7 @@ export const senderRoleEnum = pgEnum("sender_role", [
 export const senderRoleSchema = z.enum(senderRoleEnum.enumValues);
 export type SenderRole = z.infer<typeof senderRoleSchema>;
 
+// could add image support to messages at some point if that makes sense
 export const messages = pgTable(
   "message",
   {
@@ -536,3 +537,75 @@ export const messagesRelations = relations(messages, ({ one }) => ({
   }),
 }));
 export const messageSchema = createSelectSchema(messages);
+
+// TODO: make infoImages use this and add an image-loading endpoint
+// that loads these from the DB and returns them as actual image data
+// and an Image component whicih takes an imageId and handles this
+export const image = pgTable("image", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  dataUrl: text("data_url").notNull(),
+});
+export type Image = InferSelectModel<typeof image>;
+export const imageRelations = relations(image, () => ({}));
+export const imageSchema = createSelectSchema(image);
+
+export const enrichedMessageViewPiece = pgTable("enriched_message_view_piece", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  messageId: uuid("message_id")
+    .notNull()
+    .references(() => messages.id, { onDelete: "cascade" }),
+  order: integer("order").notNull(),
+});
+export type EnrichedMessageViewPiece = InferSelectModel<
+  typeof enrichedMessageViewPiece
+>;
+export const enrichedMessageViewPieceRelations = relations(
+  enrichedMessageViewPiece,
+  ({ one, many }) => ({
+    message: one(messages, {
+      fields: [enrichedMessageViewPiece.messageId],
+      references: [messages.id],
+    }),
+    images: many(viewPieceImages),
+  }),
+);
+export const enrichedMessageViewPieceSchema = createSelectSchema(
+  enrichedMessageViewPiece,
+);
+
+export const viewPieceImages = pgTable("view_piece_image", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  viewPieceId: uuid("view_piece_id")
+    .notNull()
+    .references(() => enrichedMessageViewPiece.id, { onDelete: "cascade" }),
+  imageId: uuid("image_id")
+    .notNull()
+    .references(() => image.id, { onDelete: "cascade" }),
+});
+export type ViewPieceImage = InferSelectModel<typeof viewPieceImages>;
+export const viewPieceImagesRelations = relations(
+  viewPieceImages,
+  ({ one }) => ({
+    viewPiece: one(enrichedMessageViewPiece, {
+      fields: [viewPieceImages.viewPieceId],
+      references: [enrichedMessageViewPiece.id],
+    }),
+  }),
+);
+export const viewPieceImagesSchema = createSelectSchema(viewPieceImages);
+
+export const viewPieceText = pgTable("view_piece_text", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  viewPieceId: uuid("view_piece_id")
+    .notNull()
+    .references(() => enrichedMessageViewPiece.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+});
+export type ViewPieceText = InferSelectModel<typeof viewPieceText>;
+export const viewPieceTextRelations = relations(viewPieceText, ({ one }) => ({
+  viewPiece: one(enrichedMessageViewPiece, {
+    fields: [viewPieceText.viewPieceId],
+    references: [enrichedMessageViewPiece.id],
+  }),
+}));
+export const viewPieceTextSchema = createSelectSchema(viewPieceText);
