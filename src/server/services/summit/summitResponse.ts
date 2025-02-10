@@ -6,7 +6,7 @@ import { streamLlmResponse } from "~/server/ai/llm";
 import { messagePubSub } from "~/server/db/pubsub/messagePubSub";
 import { debouncePublish } from "./utils";
 import { assertOne } from "~/common/arrayUtils";
-import { injectReferences } from "./referenceInjector";
+import { injectImages } from "./imageInjector";
 
 const model = "google/gemini-2.0-flash-thinking-exp:free";
 
@@ -82,7 +82,7 @@ async function respondToThread({
         content: generated,
       })
       .where(eq(db.x.messages.id, newEmptyMessage.id)),
-    injectReferences(messages, newMessage.id),
+    injectImages(messages),
   ]);
 }
 

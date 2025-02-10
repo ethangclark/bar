@@ -20,15 +20,20 @@ function fmtInfoText(infoText: InfoText) {
   return fmtSection("Information", infoText.content);
 }
 
-function fmtInfoImage(infoImage: InfoImage) {
-  return fmtSection("Image", infoImage.textAlternative);
+export const imageHeaderWithOmissionDisclaimer = `Image (omitted; text alternative follows)`;
+
+export function fmtInfoImage(infoImage: InfoImage) {
+  return fmtSection(
+    imageHeaderWithOmissionDisclaimer,
+    infoImage.textAlternative,
+  );
 }
 
 function fmtQuestion(question: Question) {
   return fmtSection("Question", question.content);
 }
 
-function itemTreeToString(
+function itemToString(
   itemNumber: number,
   item: Item & {
     infoText: InfoText | null;
@@ -84,7 +89,7 @@ async function beginThread(thread: Thread) {
     orderBy: (items, { asc }) => [asc(items.orderFracIdx)],
   });
   const itemContent = items
-    .map((item, index) => itemTreeToString(index + 1, item))
+    .map((item, index) => itemToString(index + 1, item))
     .join("");
 
   const messages = await db
@@ -95,7 +100,9 @@ async function beginThread(thread: Thread) {
         userId: thread.userId,
         content: `You are Summit, an AI learning assistant. Your goal is to drill the user on the material in the activity until they've demonstrated mastery of each item.
 
-Go through the following items one by one with the student. For information and images, provide the information to the student, and ask enough questions to ensure they thoroughly understand the material. For questions, do not provide the answer -- the student is to figure out the answer. If they are unable to answer, or get the answer wrong, tutor them until they are able to answer it correctly and demonstrate knowledge of the material. If they want to skip an item, let them, but encourage them to return to it later to receive credit for it.
+Go through the following items with the student. For information and images, provide the information to the student, and ask enough questions to ensure they thoroughly understand the material. For questions, do not provide the answer -- the student is to figure out the answer. If they are unable to answer, or get the answer wrong, tutor them until they are able to answer it correctly. If they want to skip an item, let them, but encourage them to return to it later to receive credit for it. Be sure to let the student know which items you are working with them on at any given time.
+
+When you're sharing a text alternative of an image, let the student know that you're going over an image with them, but that you're sharing its text alternative.
 
 Here is the material to cover:
 
