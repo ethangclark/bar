@@ -5,6 +5,7 @@ import { type Message } from "~/server/db/schema";
 import { streamLlmResponse } from "~/server/ai/llm";
 import { messagePubSub } from "~/server/db/pubsub/messagePubSub";
 import { debouncePublish } from "./utils";
+import { assertOne } from "~/common/arrayUtils";
 
 const model = "google/gemini-2.0-flash-thinking-exp:free";
 
@@ -33,12 +34,7 @@ async function respondToThread({
       .returning(),
   ]);
 
-  const [newMessage, ...excessMessages] = newMessageArr;
-  if (!newMessage || excessMessages.length > 0) {
-    throw new Error(
-      `Failed to create singular new message; created ${newMessageArr.length} new messages.`,
-    );
-  }
+  const newMessage = assertOne(newMessageArr);
 
   const oldMessages = rawMessages
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())

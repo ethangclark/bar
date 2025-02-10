@@ -17,6 +17,7 @@ import { trpc } from "~/trpc/proxy";
 import { type ActivityStore } from "./activityStore";
 import { type Message } from "~/server/db/schema";
 import { type MessageDeltaSchema } from "~/common/types";
+import { assertOne } from "~/common/arrayUtils";
 
 const baseState = () => ({
   descendents: identity<DescendentTables | Status>(notLoaded),
@@ -160,12 +161,7 @@ export class DescendentStore {
       );
     });
     const allCreated = objectValues(result[descendentName]);
-    const [created, ...excess] = allCreated;
-    if (created === undefined || excess.length > 0) {
-      throw new Error(
-        `Created ${allCreated.length} descendents; expected 1; result: ${JSON.stringify(result)}`,
-      );
-    }
+    const created = assertOne(allCreated);
     return created as DescendentRows[T];
   }
   getById<T extends DescendentName>(descendentName: T, id: string) {
@@ -228,14 +224,7 @@ export class DescendentStore {
       );
     });
     const allUpdated = objectValues(result[descendentName]);
-    const [updated, ...excess] = allUpdated;
-    if (updated === undefined || excess.length > 0) {
-      throw new Error(
-        `Updated ${allUpdated.length} descendents; expected 1; result: ${JSON.stringify(
-          result,
-        )}`,
-      );
-    }
+    const updated = assertOne(allUpdated);
     return updated as DescendentRows[T];
   }
   async delete(descendentName: DescendentName, id: string) {

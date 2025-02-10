@@ -9,6 +9,7 @@ import {
   getCanvasCourses,
 } from "./canvasApiService";
 import { z } from "zod";
+import { assertOne } from "~/common/arrayUtils";
 
 async function getOneCanvasCourse({
   userId,
@@ -27,13 +28,7 @@ async function getOneCanvasCourse({
       getCanvasCourse({ userId, canvasIntegrationId, canvasCourseId, tx: db }),
     ),
   );
-  const [course, ...excess] = courses;
-  if (!course) {
-    throw new Error("Course not found");
-  }
-  if (excess.length > 0) {
-    throw new Error("More than one course found for course id");
-  }
+  const course = assertOne(courses);
   return course;
 }
 
@@ -119,16 +114,10 @@ async function courseToLmsCourse({
 export async function createCanvasIntegrationApi(
   integration: Integration,
 ): Promise<IntegrationApi> {
-  const [canvasIntegration, ...excess] =
-    await db.query.canvasIntegrations.findMany({
-      where: eq(db.x.canvasIntegrations.integrationId, integration.id),
-    });
-  if (excess.length > 0) {
-    throw new Error("More than one canvas integration found for integration");
-  }
-  if (!canvasIntegration) {
-    throw new Error("Canvas integration not found");
-  }
+  const cis = await db.query.canvasIntegrations.findMany({
+    where: eq(db.x.canvasIntegrations.integrationId, integration.id),
+  });
+  const canvasIntegration = assertOne(cis);
 
   const markValidated = () =>
     db

@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { assertOneOrNone } from "~/common/arrayUtils";
 import { getCanvasBaseUrl } from "~/common/canvasUtils";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
@@ -11,15 +12,10 @@ export const canvasRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const { subdomain } = input;
       const baseUrl = getCanvasBaseUrl(subdomain);
-      const [canvasIntegration, ...excess] =
-        await db.query.canvasIntegrations.findMany({
-          where: eq(db.x.canvasIntegrations.canvasBaseUrl, baseUrl),
-        });
-      if (excess.length > 0) {
-        throw new Error(
-          "Multiple canvas integrations found for this subdomain",
-        );
-      }
+      const cis = await db.query.canvasIntegrations.findMany({
+        where: eq(db.x.canvasIntegrations.canvasBaseUrl, baseUrl),
+      });
+      const canvasIntegration = assertOneOrNone(cis);
       if (!canvasIntegration) {
         return null;
       }

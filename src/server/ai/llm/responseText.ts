@@ -1,3 +1,4 @@
+import { assertOne } from "~/common/arrayUtils";
 import {
   type StreamingOpenRouterResponse,
   type OpenRouterResponse,
@@ -13,10 +14,7 @@ export function parseResponseText(
   if (typeof content === "string") {
     return content;
   }
-  const [c, ...excess] = content;
-  if (!c || excess.length) {
-    return new Error("Unexpected content array in response.");
-  }
+  const c = assertOne(content);
   if ("text" in c) {
     return c.text;
   }
