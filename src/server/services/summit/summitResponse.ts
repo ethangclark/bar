@@ -6,6 +6,7 @@ import { streamLlmResponse } from "~/server/ai/llm";
 import { messagePubSub } from "~/server/db/pubsub/messagePubSub";
 import { debouncePublish } from "./utils";
 import { assertOne } from "~/common/arrayUtils";
+import { injectReferences } from "./referenceInjector";
 
 const model = "google/gemini-2.0-flash-thinking-exp:free";
 
@@ -34,16 +35,16 @@ async function respondToThread({
       .returning(),
   ]);
 
-  const newMessage = assertOne(newMessageArr);
+  const newEmptyMessage = assertOne(newMessageArr);
 
   const oldMessages = rawMessages
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-    .filter((m) => m.id !== newMessage.id);
+    .filter((m) => m.id !== newEmptyMessage.id);
 
-  await messagePubSub.publish([newMessage]);
+  await messagePubSub.publish([newEmptyMessage]);
 
   const gen = streamLlmResponse(
-    newMessage.userId,
+    newEmptyMessage.userId,
     {
       model,
       messages: oldMessages.map((m) => ({
@@ -55,24 +56,34 @@ async function respondToThread({
   );
 
   function publish(delta: string) {
-    if (!newMessage) {
+    if (!newEmptyMessage) {
       throw new Error("No new message created.");
     }
     void messageDeltaPubSub.publish({
       activityId,
-      messageId: newMessage.id,
+      messageId: newEmptyMessage.id,
       contentDelta: delta,
     });
   }
 
   const { generated } = await debouncePublish(gen, 200, publish);
 
-  await db
-    .update(db.x.messages)
-    .set({
-      content: generated,
-    })
-    .where(eq(db.x.messages.id, newMessage.id));
+  const newMessage = {
+    ...newEmptyMessage,
+    content: generated,
+  };
+
+  const messages = [...oldMessages, newMessage];
+
+  await Promise.all([
+    db
+      .update(db.x.messages)
+      .set({
+        content: generated,
+      })
+      .where(eq(db.x.messages.id, newEmptyMessage.id)),
+    injectReferences(messages, newMessage.id),
+  ]);
 }
 
 export async function respondToUserMessages(userMessages: Message[]) {
