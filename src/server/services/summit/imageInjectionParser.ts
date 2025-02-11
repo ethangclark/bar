@@ -1,18 +1,18 @@
-import { idToBase } from "~/common/idUtils";
+import { imageNumberToNumericId } from "~/common/idUtils";
 
 export type ImageInjectionResponse =
   | {
       success: true;
       data: Array<
         | { type: "text"; textContent: string }
-        | { type: "image"; modelFacingIdBase: number }
+        | { type: "image"; numericId: number }
       >;
     }
   | { success: false; reason: string };
 
 export function parseImageInjectionResponse(
   input: string,
-  possibleInfoImageIdBases: number[],
+  possibleNumericIds: number[],
 ): ImageInjectionResponse {
   const textOpenCount = (input.match(/<text>/g) ?? []).length;
   const textCloseCount = (input.match(/<\/text>/g) ?? []).length;
@@ -28,8 +28,7 @@ export function parseImageInjectionResponse(
   const tagRegex = /<(text|image)>([\s\S]*?)<\/\1>/g;
   let match: RegExpExecArray | null;
   const results: Array<
-    | { type: "text"; textContent: string }
-    | { type: "image"; modelFacingIdBase: number }
+    { type: "text"; textContent: string } | { type: "image"; numericId: number }
   > = [];
 
   while ((match = tagRegex.exec(input)) !== null) {
@@ -45,11 +44,11 @@ export function parseImageInjectionResponse(
       if (Number.isNaN(imageNumber)) {
         return { success: false, reason: `Invalid image number: "${content}"` };
       }
-      const idBase = idToBase(imageNumber);
-      if (!possibleInfoImageIdBases.includes(idBase)) {
+      const numericId = imageNumberToNumericId(imageNumber);
+      if (!possibleNumericIds.includes(numericId)) {
         return { success: false, reason: `Invalid image number: "${content}"` };
       }
-      results.push({ type: "image", modelFacingIdBase: idBase });
+      results.push({ type: "image", numericId: numericId });
     }
   }
 

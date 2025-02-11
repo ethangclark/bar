@@ -9,7 +9,7 @@ describe("parseImageInjectionResponse", () => {
     if (result.success) {
       expect(result.data).toEqual([
         { type: "text", textContent: "Hello, world!" },
-        { type: "image", modelFacingIdBase: 42 },
+        { type: "image", numericId: 42 },
       ]);
     }
   });
@@ -22,9 +22,9 @@ describe("parseImageInjectionResponse", () => {
     if (result.success) {
       expect(result.data).toEqual([
         { type: "text", textContent: "First" },
-        { type: "image", modelFacingIdBase: 7 },
+        { type: "image", numericId: 7 },
         { type: "text", textContent: "Second" },
-        { type: "image", modelFacingIdBase: 8 },
+        { type: "image", numericId: 8 },
       ]);
     }
   });
@@ -37,7 +37,7 @@ describe("parseImageInjectionResponse", () => {
     if (result.success) {
       expect(result.data).toEqual([
         { type: "text", textContent: "Inside" },
-        { type: "image", modelFacingIdBase: 3 },
+        { type: "image", numericId: 3 },
       ]);
     }
   });

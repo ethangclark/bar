@@ -15,7 +15,7 @@ export const infoImageController: DescendentController<InfoImage> = {
       .values(
         rows.map(
           ({
-            modelFacingIdBase: _, // do not set this manually
+            numericId: _, // do not set this manually
             ...row
           }) => ({
             ...row,
@@ -39,7 +39,7 @@ export const infoImageController: DescendentController<InfoImage> = {
     const infoImagesNested = await Promise.all(
       rows.map(
         ({
-          modelFacingIdBase: _, // do not set this manually
+          numericId: _, // do not set this manually
           ...row
         }) =>
           tx

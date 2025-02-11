@@ -18,7 +18,7 @@ import { inArray } from "drizzle-orm";
 async function getInjectionResponse(
   userId: string,
   messages: Message[],
-  possibleInfoImageIdBases: number[],
+  possibleNumericIds: number[],
 ): Promise<ImageInjectionResponse> {
   const prompt = imageInjectorPrompt(messages);
 
@@ -34,10 +34,7 @@ async function getInjectionResponse(
     throw response;
   }
 
-  const parsed = parseImageInjectionResponse(
-    response,
-    possibleInfoImageIdBases,
-  );
+  const parsed = parseImageInjectionResponse(response, possibleNumericIds);
   if (!parsed.success) {
     console.error(
       `LLM response in ${injectImages.name} that could not be parsed:`,
@@ -51,15 +48,11 @@ async function getInjectionResponse(
 export async function getInjectionData(
   userId: string,
   messages: Message[],
-  possibleInfoImageIdBases: number[],
+  possibleNumericIds: number[],
 ) {
   let response: ImageInjectionResponse | null = null;
   for (let i = 0; i < 3; i++) {
-    response = await getInjectionResponse(
-      userId,
-      messages,
-      possibleInfoImageIdBases,
-    );
+    response = await getInjectionResponse(userId, messages, possibleNumericIds);
     if (response.success) {
       break;
     }
@@ -86,20 +79,16 @@ export async function injectImages(messages: Message[]) {
   }
   const { userId, activityId } = message1;
 
-  const possibleInfoImageIdBases = (
+  const possibleNumericIds = (
     await db.query.infoImages.findMany({
       where: eq(db.x.infoImages.activityId, activityId),
     })
-  ).map((i) => i.modelFacingIdBase);
+  ).map((i) => i.numericId);
 
-  const data = await getInjectionData(
-    userId,
-    messages,
-    possibleInfoImageIdBases,
-  );
+  const data = await getInjectionData(userId, messages, possibleNumericIds);
 
-  const modelFacingIdBases = data
-    .map((d) => (d.type === "image" ? d.modelFacingIdBase : null))
+  const numericIds = data
+    .map((d) => (d.type === "image" ? d.numericId : null))
     .filter((d): d is number => d !== null);
 
   const [enrichedPieces, infoImages] = await Promise.all([
@@ -113,15 +102,13 @@ export async function injectImages(messages: Message[]) {
       )
       .returning(),
     db.query.infoImages.findMany({
-      where: inArray(db.x.infoImages.modelFacingIdBase, modelFacingIdBases),
+      where: inArray(db.x.infoImages.numericId, numericIds),
     }),
   ]);
   if (
     data.every((datum) => {
       if (datum.type === "image") {
-        return infoImages.some(
-          (i) => i.modelFacingIdBase === datum.modelFacingIdBase,
-        );
+        return infoImages.some((i) => i.numericId === datum.numericId);
       }
       return true;
     })
@@ -149,7 +136,7 @@ export async function injectImages(messages: Message[]) {
       }
       case "image": {
         const infoImage = infoImages.find(
-          (i) => i.modelFacingIdBase === datum.modelFacingIdBase,
+          (i) => i.numericId === datum.numericId,
         );
         if (!infoImage) {
           throw new Error("Failed to find info image");

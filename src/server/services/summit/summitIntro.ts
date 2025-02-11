@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { assertNever } from "~/common/errorUtils";
-import { baseToId } from "~/common/idUtils";
+import { numericIdToImageNumber } from "~/common/idUtils";
 import { objectKeys } from "~/common/objectUtils";
 import { db } from "~/server/db";
 import { messagePubSub } from "~/server/db/pubsub/messagePubSub";
@@ -23,15 +23,12 @@ export function fmtInfoText(content: string) {
 
 export const omissionDisclaimer = `omitted; text alternative follows`;
 
-export const imageHeaderWithOmissionDisclaimer = (modelFacingId: number) =>
-  `Image ${modelFacingId} (${omissionDisclaimer})`;
+export const imageHeaderWithOmissionDisclaimer = (numericId: number) =>
+  `Image ${numericIdToImageNumber(numericId)} (${omissionDisclaimer})`;
 
-export function fmtInfoImage(
-  modelFacingIdBase: number,
-  textAlternative: string,
-) {
+export function fmtInfoImage(numericId: number, textAlternative: string) {
   return fmtSection(
-    imageHeaderWithOmissionDisclaimer(baseToId(modelFacingIdBase)),
+    imageHeaderWithOmissionDisclaimer(numericId),
     textAlternative,
   );
 }
@@ -67,7 +64,7 @@ function itemToString(
       case "infoImage":
         if (item.infoImage) {
           result += fmtInfoImage(
-            item.infoImage.modelFacingIdBase,
+            item.infoImage.numericId,
             item.infoImage.textAlternative,
           );
         }

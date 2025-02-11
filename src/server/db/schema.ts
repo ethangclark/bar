@@ -430,7 +430,7 @@ export const infoImages = pgTable(
   "info_image",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    modelFacingIdBase: serial("model_facing_id_base"), // we add 1000 to this
+    numericId: serial("numeric_id"), // we add 1000 to this
     activityId: uuid("activity_id")
       .notNull()
       .references(() => activities.id, { onDelete: "cascade" }),
@@ -441,7 +441,7 @@ export const infoImages = pgTable(
     textAlternative: text("text_alternative").notNull(),
   },
   (ii) => [
-    index("info_image_model_facing_id_idx").on(ii.modelFacingIdBase),
+    index("info_image_numeric_id_idx").on(ii.numericId),
     index("info_image_activity_id_idx").on(ii.activityId),
     index("info_image_item_id_idx").on(ii.itemId),
   ],
