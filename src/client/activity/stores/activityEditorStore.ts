@@ -13,7 +13,7 @@ import { loading, notLoaded, Status } from "~/client/utils/status";
 import {
   type DescendentRows,
   type DescendentTables,
-} from "~/server/descendents/types";
+} from "~/server/descendents/descendentTypes";
 import { trpc } from "~/trpc/proxy";
 import { type ActivityStore } from "./activityStore";
 import {

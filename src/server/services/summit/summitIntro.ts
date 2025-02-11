@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { assertNever } from "~/common/errorUtils";
+import { baseToId } from "~/common/idUtils";
 import { objectKeys } from "~/common/objectUtils";
 import { db } from "~/server/db";
 import { messagePubSub } from "~/server/db/pubsub/messagePubSub";
@@ -16,16 +17,22 @@ function fmtSection(header: string, content: string) {
   return `### ${header}\n${content}\n\n`;
 }
 
-function fmtInfoText(infoText: InfoText) {
-  return fmtSection("Information", infoText.content);
+export function fmtInfoText(content: string) {
+  return fmtSection("Information", content);
 }
 
-export const imageHeaderWithOmissionDisclaimer = `Image (omitted; text alternative follows)`;
+export const omissionDisclaimer = `omitted; text alternative follows`;
 
-export function fmtInfoImage(infoImage: InfoImage) {
+export const imageHeaderWithOmissionDisclaimer = (modelFacingId: number) =>
+  `Image ${modelFacingId} (${omissionDisclaimer})`;
+
+export function fmtInfoImage(
+  modelFacingIdBase: number,
+  textAlternative: string,
+) {
   return fmtSection(
-    imageHeaderWithOmissionDisclaimer,
-    infoImage.textAlternative,
+    imageHeaderWithOmissionDisclaimer(baseToId(modelFacingIdBase)),
+    textAlternative,
   );
 }
 
@@ -54,12 +61,15 @@ function itemToString(
         break;
       case "infoText":
         if (item.infoText) {
-          result += fmtInfoText(item.infoText);
+          result += fmtInfoText(item.infoText.content);
         }
         break;
       case "infoImage":
         if (item.infoImage) {
-          result += fmtInfoImage(item.infoImage);
+          result += fmtInfoImage(
+            item.infoImage.modelFacingIdBase,
+            item.infoImage.textAlternative,
+          );
         }
         break;
       case "question":

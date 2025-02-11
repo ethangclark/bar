@@ -20,7 +20,7 @@ import {
   type DescendentRows,
   type Descendents,
   type Modifications,
-} from "./types";
+} from "./descendentTypes";
 
 type Controllers = {
   [K in DescendentName]: DescendentController<DescendentRows[K]>;

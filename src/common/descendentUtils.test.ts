@@ -5,7 +5,7 @@ import {
   createEmptyDescendents,
   indexDescendents,
 } from "./descendentUtils";
-import { type Descendents } from "~/server/descendents/types";
+import { type Descendents } from "~/server/descendents/descendentTypes";
 
 describe(selectDescendents.name, () => {
   const tables = indexDescendents({

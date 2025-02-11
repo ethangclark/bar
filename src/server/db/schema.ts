@@ -1,10 +1,9 @@
-import { relations, sql, type InferSelectModel } from "drizzle-orm";
+import { relations, type InferSelectModel } from "drizzle-orm";
 import {
   boolean,
   index,
   integer,
   pgEnum,
-  pgSequence,
   pgTableCreator,
   primaryKey,
   serial,

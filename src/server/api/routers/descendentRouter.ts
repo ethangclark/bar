@@ -4,7 +4,7 @@ import { type MaybePromise } from "~/common/types";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { modifyDescendents, readDescendents } from "~/server/descendents";
-import { modificationsSchema } from "~/server/descendents/types";
+import { modificationsSchema } from "~/server/descendents/descendentTypes";
 import { getActivity } from "~/server/services/activityService";
 
 export const descendentRouter = createTRPCRouter({

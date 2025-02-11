@@ -2,7 +2,7 @@ import {
   type Modifications,
   type DescendentTables,
   type Descendents,
-} from "~/server/descendents/types";
+} from "~/server/descendents/descendentTypes";
 import { objectEntries, objectKeys, objectValues } from "./objectUtils";
 import { descendentNames } from "./descendentNames";
 import { indexById } from "./indexUtils";

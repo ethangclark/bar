@@ -2,7 +2,7 @@ import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
 import { type InfoImage } from "~/server/db/schema";
-import { type DescendentController } from "~/server/descendents/types";
+import { type DescendentController } from "~/server/descendents/descendentTypes";
 import { db } from "../db";
 
 export const infoImageController: DescendentController<InfoImage> = {
@@ -12,7 +12,17 @@ export const infoImageController: DescendentController<InfoImage> = {
     }
     const infoImages = await tx
       .insert(db.x.infoImages)
-      .values(rows.map((row) => ({ ...row, activityId })))
+      .values(
+        rows.map(
+          ({
+            modelFacingIdBase: _, // do not set this manually
+            ...row
+          }) => ({
+            ...row,
+            activityId,
+          }),
+        ),
+      )
       .returning();
     return infoImages;
   },
@@ -27,17 +37,21 @@ export const infoImageController: DescendentController<InfoImage> = {
       return [];
     }
     const infoImagesNested = await Promise.all(
-      rows.map((row) =>
-        tx
-          .update(db.x.infoImages)
-          .set({ ...row, activityId })
-          .where(
-            and(
-              eq(db.x.infoImages.id, row.id),
-              eq(db.x.infoImages.activityId, activityId),
-            ),
-          )
-          .returning(),
+      rows.map(
+        ({
+          modelFacingIdBase: _, // do not set this manually
+          ...row
+        }) =>
+          tx
+            .update(db.x.infoImages)
+            .set({ ...row, activityId })
+            .where(
+              and(
+                eq(db.x.infoImages.id, row.id),
+                eq(db.x.infoImages.activityId, activityId),
+              ),
+            )
+            .returning(),
       ),
     );
     return infoImagesNested.flat();

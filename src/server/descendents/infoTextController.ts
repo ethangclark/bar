@@ -2,7 +2,7 @@ import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
 import { type InfoText } from "~/server/db/schema";
-import { type DescendentController } from "~/server/descendents/types";
+import { type DescendentController } from "~/server/descendents/descendentTypes";
 import { db } from "../db";
 
 export const infoTextController: DescendentController<InfoText> = {

@@ -3,6 +3,7 @@ import { storeObserver } from "~/client/utils/storeObserver";
 import { invoke } from "~/common/fnUtils";
 import { type ActivityStatus } from "~/server/db/schema";
 import { TeacherSection } from "../components/TeacherSection";
+import { draftModelFacingIdBase } from "~/common/draftData";
 
 type IgodControlsProps = {
   activityStatus: ActivityStatus;
@@ -59,6 +60,7 @@ export const IgodControls = storeObserver<IgodControlsProps>(
                 itemId: itemStore.createItem().id,
                 url: "",
                 textAlternative: "",
+                modelFacingIdBase: draftModelFacingIdBase,
               });
             }}
           >
