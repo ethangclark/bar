@@ -1,11 +1,13 @@
-import { relations, type InferSelectModel } from "drizzle-orm";
+import { relations, sql, type InferSelectModel } from "drizzle-orm";
 import {
   boolean,
   index,
   integer,
   pgEnum,
+  pgSequence,
   pgTableCreator,
   primaryKey,
+  serial,
   text,
   timestamp,
   uniqueIndex,
@@ -429,6 +431,7 @@ export const infoImages = pgTable(
   "info_image",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    modelFacingIdBase: serial("model_facing_id_base"), // we add 1000 to this
     activityId: uuid("activity_id")
       .notNull()
       .references(() => activities.id, { onDelete: "cascade" }),
@@ -439,6 +442,7 @@ export const infoImages = pgTable(
     textAlternative: text("text_alternative").notNull(),
   },
   (ii) => [
+    index("info_image_model_facing_id_idx").on(ii.modelFacingIdBase),
     index("info_image_activity_id_idx").on(ii.activityId),
     index("info_image_item_id_idx").on(ii.itemId),
   ],
@@ -538,17 +542,6 @@ export const messagesRelations = relations(messages, ({ one }) => ({
 }));
 export const messageSchema = createSelectSchema(messages);
 
-// TODO: make infoImages use this and add an image-loading endpoint
-// that loads these from the DB and returns them as actual image data
-// and an Image component whicih takes an imageId and handles this
-export const image = pgTable("image", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  dataUrl: text("data_url").notNull(),
-});
-export type Image = InferSelectModel<typeof image>;
-export const imageRelations = relations(image, () => ({}));
-export const imageSchema = createSelectSchema(image);
-
 export const enrichedMessageViewPiece = pgTable("enriched_message_view_piece", {
   id: uuid("id").primaryKey().defaultRandom(),
   messageId: uuid("message_id")
@@ -578,9 +571,9 @@ export const viewPieceImages = pgTable("view_piece_image", {
   viewPieceId: uuid("view_piece_id")
     .notNull()
     .references(() => enrichedMessageViewPiece.id, { onDelete: "cascade" }),
-  imageId: uuid("image_id")
+  infoImageId: uuid("info_image_id")
     .notNull()
-    .references(() => image.id, { onDelete: "cascade" }),
+    .references(() => infoImages.id, { onDelete: "cascade" }),
 });
 export type ViewPieceImage = InferSelectModel<typeof viewPieceImages>;
 export const viewPieceImagesRelations = relations(
@@ -589,6 +582,10 @@ export const viewPieceImagesRelations = relations(
     viewPiece: one(enrichedMessageViewPiece, {
       fields: [viewPieceImages.viewPieceId],
       references: [enrichedMessageViewPiece.id],
+    }),
+    infoImage: one(infoImages, {
+      fields: [viewPieceImages.infoImageId],
+      references: [infoImages.id],
     }),
   }),
 );
