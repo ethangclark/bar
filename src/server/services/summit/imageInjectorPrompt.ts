@@ -29,7 +29,7 @@ As an example: Let's say the conversation includes the following:
 
 Drill the user on the material in the activity until they've demonstrated mastery of each item. Here is the material to cover:
 
-(items 1-2 here)
+(imagine items 1-2 are here)
 
 ## Item 3
 ${fmtInfoText("The mitochondria are the powerhouse of the cell. They live in the cell's cytoplasm.")}
@@ -40,7 +40,13 @@ ${fmtInfoImage(exampleNumericId, "The mitochondria are shown in purple, floating
 ## Item 5
 ${fmtInfoText("The cell membrane is the outermost layer of the cell. It is made up of a phospholipid bilayer.")}
 
-(items 4-10 hidden)
+(imagine items 6-10 are here)
+
+# system message
+
+Hi! My name is Summit. I'm an AI learning assistant.
+
+(imagine some back-and-forth between the student and the assistant)
 
 # assistant message
 
