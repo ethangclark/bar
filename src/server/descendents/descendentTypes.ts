@@ -1,5 +1,11 @@
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
-import { infoTextSchema, messageSchema } from "~/server/db/schema";
+import {
+  infoTextSchema,
+  messageSchema,
+  viewPieceSchema,
+  viewPieceImagesSchema,
+  viewPieceTextSchema,
+} from "~/server/db/schema";
 import {
   evalKeySchema,
   infoImageSchema,
@@ -20,6 +26,9 @@ export const descendentsSchema = z.object({
   infoImages: z.array(infoImageSchema),
   threads: z.array(threadSchema),
   messages: z.array(messageSchema),
+  viewPieces: z.array(viewPieceSchema),
+  viewPieceImages: z.array(viewPieceImagesSchema),
+  viewPieceTexts: z.array(viewPieceTextSchema),
 }) satisfies z.ZodType<{ [K in DescendentName]: unknown }>;
 export type Descendents = z.infer<typeof descendentsSchema>;
 

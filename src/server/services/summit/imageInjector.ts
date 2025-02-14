@@ -14,6 +14,8 @@ import { omissionDisclaimer } from "./summitIntro";
 import { assertNever } from "~/common/errorUtils";
 import { eq } from "drizzle-orm";
 import { inArray } from "drizzle-orm";
+import { createEmptyDescendents } from "~/common/descendentUtils";
+import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 
 async function getInjectionResponse(
   userId: string,
@@ -93,11 +95,13 @@ export async function injectImages(messages: Message[]) {
 
   const [viewPieces, infoImages] = await Promise.all([
     db
-      .insert(db.x.messageViewPiece)
+      .insert(db.x.viewPieces)
       .values(
         data.map((_, idx) => ({
           messageId: message1.id,
           order: idx + 1,
+          activityId,
+          userId,
         })),
       )
       .returning(),
@@ -120,8 +124,8 @@ export async function injectImages(messages: Message[]) {
   const textPieceDrafts = Array<ViewPieceText>();
 
   data.forEach((datum, idx) => {
-    const piece = viewPieces[idx];
-    if (!piece) {
+    const viewPiece = viewPieces[idx];
+    if (!viewPiece) {
       throw new Error("No piece found for datum");
     }
     const dt = datum.type;
@@ -129,8 +133,10 @@ export async function injectImages(messages: Message[]) {
       case "text": {
         textPieceDrafts.push({
           id: crypto.randomUUID(),
-          viewPieceId: piece.id,
+          viewPieceId: viewPiece.id,
           content: datum.textContent,
+          activityId,
+          userId,
         });
         break;
       }
@@ -143,8 +149,10 @@ export async function injectImages(messages: Message[]) {
         }
         imagePieceDrafts.push({
           id: crypto.randomUUID(),
-          viewPieceId: piece.id,
+          viewPieceId: viewPiece.id,
           infoImageId: infoImage.id,
+          activityId,
+          userId,
         });
         break;
       }
@@ -156,12 +164,12 @@ export async function injectImages(messages: Message[]) {
 
   const [viewPieceImages, viewPieceTexts] = await Promise.all([
     db.insert(db.x.viewPieceImages).values(imagePieceDrafts).returning(),
-    db.insert(db.x.viewPieceText).values(textPieceDrafts).returning(),
+    db.insert(db.x.viewPieceTexts).values(textPieceDrafts).returning(),
   ]);
 
-  console.log("TODO: pass updated artifacts to FE", {
-    viewPieces,
-    viewPieceImages,
-    viewPieceTexts,
-  });
+  const descendents = createEmptyDescendents();
+  descendents.viewPieces = viewPieces;
+  descendents.viewPieceImages = viewPieceImages;
+  descendents.viewPieceTexts = viewPieceTexts;
+  await descendentPubSub.publish(descendents);
 }

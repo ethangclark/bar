@@ -14,6 +14,9 @@ import { itemController } from "./itemController";
 import { messageController } from "./messageController";
 import { questionController } from "./questionController";
 import { threadController } from "./threadController";
+import { viewPieceController } from "./viewPieceController";
+import { viewPieceImageController } from "./viewPieceImageController";
+import { viewPieceTextController } from "./viewPieceTextController";
 import {
   type AfterTx,
   type DescendentController,
@@ -34,6 +37,9 @@ export const controllers: Controllers = {
   infoImages: infoImageController,
   threads: threadController,
   messages: messageController,
+  viewPieces: viewPieceController,
+  viewPieceImages: viewPieceImageController,
+  viewPieceTexts: viewPieceTextController,
 };
 
 export async function createDescendents({

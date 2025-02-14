@@ -11,6 +11,9 @@ export const descendentNames = [
   "infoImages",
   "threads",
   "messages",
+  "viewPieces",
+  "viewPieceImages",
+  "viewPieceTexts",
 ] as const;
 export const descendentNamesSchema = z.enum(descendentNames);
 export type DescendentName = z.infer<typeof descendentNamesSchema>;
