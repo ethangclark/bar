@@ -20,13 +20,13 @@ function MessageView({
   children,
   className,
   isLastMessage,
-  messageContentNotGonnaShowTho,
+  messageLength,
   scrollToBottom,
 }: {
   children: React.ReactNode;
   className?: string;
   isLastMessage: boolean;
-  messageContentNotGonnaShowTho: string;
+  messageLength: number;
   scrollToBottom: () => void;
 }) {
   useEffect(() => {
@@ -36,9 +36,9 @@ function MessageView({
   }, [
     isLastMessage,
     scrollToBottom,
-    // important to include messageContentNotGonnaShowTho in the dependency array
+    // important to include messageLength in the dependency array
     // so we re-scroll to the bottom when the message content changes
-    messageContentNotGonnaShowTho,
+    messageLength,
   ]);
 
   return <div className={`mb-4 flex ${className}`}>{children}</div>;
@@ -144,7 +144,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
                       key={m.id}
                       className="ml-[30%] justify-end"
                       isLastMessage={i === messages.length - 1}
-                      messageContentNotGonnaShowTho={m.content}
+                      messageLength={m.content.length}
                       scrollToBottom={scrollToBottom}
                     >
                       <div className="rounded-2xl bg-gray-100 px-4 py-2">
@@ -157,7 +157,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
                     <MessageView
                       key={m.id}
                       isLastMessage={i === messages.length - 1}
-                      messageContentNotGonnaShowTho={m.content}
+                      messageLength={m.content.length}
                       scrollToBottom={scrollToBottom}
                     >
                       <PreformattedText key={m.id}>
