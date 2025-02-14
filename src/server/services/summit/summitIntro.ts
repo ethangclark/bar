@@ -122,7 +122,7 @@ ${itemContent}`,
         threadId: thread.id,
         userId: thread.userId,
         content:
-          "My name is Summit. My goal is to help you master the material in this activity. Are you ready to begin?",
+          "Hi! My name is Summit. My goal is to help you master the material in this activity. Are you ready to begin?",
         senderRole: "assistant" as const,
         activityId: thread.activityId,
       },

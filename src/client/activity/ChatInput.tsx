@@ -5,15 +5,16 @@ import { storeObserver } from "../utils/storeObserver";
 import { Status } from "../utils/status";
 
 export const ChatInput = storeObserver<{
-  threadId: string | Status;
   messageProcessing: boolean;
   setMessageProcessing: (messageProcessing: boolean) => void;
 }>(function ChatInput({
-  threadId,
   messageProcessing,
   setMessageProcessing,
   descendentStore,
+  threadStore,
 }) {
+  const { selectedThreadId } = threadStore;
+
   const [v, setV] = useState("");
 
   const onTranscription = useCallback((text: string) => {
@@ -38,7 +39,7 @@ export const ChatInput = storeObserver<{
             }
             e.preventDefault();
 
-            if (threadId instanceof Status) {
+            if (selectedThreadId instanceof Status) {
               return;
             }
 
@@ -48,13 +49,13 @@ export const ChatInput = storeObserver<{
               await descendentStore.create("messages", {
                 content: v,
                 senderRole: "user",
-                threadId,
+                threadId: selectedThreadId,
               });
             } finally {
               setMessageProcessing(false);
             }
           }}
-          disabled={threadId instanceof Status || messageProcessing}
+          disabled={selectedThreadId instanceof Status || messageProcessing}
           className="mr-4"
         />
         <VoiceTranscriber onTranscription={onTranscription} />
