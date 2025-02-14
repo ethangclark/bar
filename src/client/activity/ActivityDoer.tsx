@@ -1,25 +1,18 @@
-import { Button, Select, Spin } from "antd";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { z } from "zod";
+import { Spin } from "antd";
+import { useCallback, useRef, useState } from "react";
 import { Status } from "~/client/utils/status";
 import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 import { assertNever } from "~/common/errorUtils";
-import { formatDateTime } from "~/common/timeUtils";
 import { LoadingPage } from "../components/Loading";
 import { PreformattedText } from "../components/PreformattedText";
-import { TeacherSection } from "../components/TeacherSection";
 import { scrollbarHeight } from "../utils/scrollbarWidth";
 import { storeObserver } from "../utils/storeObserver";
 import { ChatInput } from "./ChatInput";
 import { MessageView } from "./MessageView";
+import { ThreadSelection } from "./ThreadSelection";
 
 export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
-  function ActivityDoer({
-    assignmentTitle,
-    threadStore,
-    activityStore,
-    studentModeStore,
-  }) {
+  function ActivityDoer({ assignmentTitle, threadStore, activityStore }) {
     const messageWrapperRef = useRef<HTMLDivElement>(null);
 
     const { messages } = threadStore;
@@ -31,11 +24,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
         ? false
         : isGraderOrDeveloper(activityStore.enrolledAs);
 
-    const { sortedThreads, selectedThreadId } = threadStore;
-
-    useEffect(() => {
-      threadStore.selectOrCreateThread();
-    }, [threadStore]);
+    const { selectedThreadId } = threadStore;
 
     const scrollToBottom = useCallback(() => {
       messageWrapperRef.current?.scrollTo({
@@ -44,11 +33,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
       });
     }, []);
 
-    if (
-      messages instanceof Status ||
-      sortedThreads instanceof Status ||
-      selectedThreadId instanceof Status
-    ) {
+    if (messages instanceof Status) {
       return <LoadingPage />;
     }
 
@@ -62,32 +47,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
         <div className="md:text-md mb-4 flex w-full items-center justify-between">
           <div className="text-lg md:text-2xl">{assignmentTitle}</div>
         </div>
-        {igod && (
-          <TeacherSection className="mb-4 flex w-full flex-wrap justify-center gap-2 p-4">
-            <Select
-              className="grow"
-              value={selectedThreadId}
-              options={sortedThreads.map((t) => ({
-                label: `Chat created on ${formatDateTime(t.createdAt)}`,
-                value: t.id,
-              }))}
-              onChange={(value) =>
-                threadStore.selectThread(z.string().parse(value))
-              }
-            />
-            <div className="flex gap-2">
-              <Button onClick={() => threadStore.createThread()}>
-                New chat
-              </Button>
-              <Button
-                type="primary"
-                onClick={() => studentModeStore.setIsStudentMode(false)}
-              >
-                Back to design
-              </Button>
-            </div>
-          </TeacherSection>
-        )}
+        {igod && <ThreadSelection />}
         <div
           className="outline-3 flex h-full grow items-center overflow-y-auto rounded-3xl p-4 outline outline-gray-200"
           style={{ width: `calc(100% - 2px)` }} // to account for the outline

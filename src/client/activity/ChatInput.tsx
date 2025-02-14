@@ -2,9 +2,10 @@ import { useCallback, useState } from "react";
 import { Editor } from "../components/Editor";
 import { VoiceTranscriber } from "../components/VoiceTranscriber";
 import { storeObserver } from "../utils/storeObserver";
+import { Status } from "../utils/status";
 
 export const ChatInput = storeObserver<{
-  threadId: string;
+  threadId: string | Status;
   messageProcessing: boolean;
   setMessageProcessing: (messageProcessing: boolean) => void;
 }>(function ChatInput({
@@ -36,6 +37,11 @@ export const ChatInput = storeObserver<{
               return;
             }
             e.preventDefault();
+
+            if (threadId instanceof Status) {
+              return;
+            }
+
             setMessageProcessing(true);
             setV("");
             try {
@@ -48,7 +54,7 @@ export const ChatInput = storeObserver<{
               setMessageProcessing(false);
             }
           }}
-          disabled={messageProcessing}
+          disabled={threadId instanceof Status || messageProcessing}
           className="mr-4"
         />
         <VoiceTranscriber onTranscription={onTranscription} />

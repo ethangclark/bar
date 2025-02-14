@@ -2,7 +2,8 @@ import { Spin } from "antd";
 import { Page } from "./Page";
 import { Centered } from "./Centered";
 
-export const Loading = () => <Spin />;
+// not exported; should not use this directly
+const Loading = () => <Spin />;
 
 export const LoadingCentered = () => (
   <Centered>

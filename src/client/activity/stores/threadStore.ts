@@ -64,7 +64,7 @@ export class ThreadStore {
     this.selectedThreadId = threadId;
   }
 
-  selectOrCreateThread() {
+  ensureThreadSelection() {
     const stop = autorun(() => {
       const threads = this.descendentStore.get("threads");
       if (threads instanceof Status) {
