@@ -1,9 +1,11 @@
-import { Button, type ButtonProps } from "antd";
+import { Button, Modal, type ButtonProps } from "antd";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { invoke } from "~/common/fnUtils";
 import { type ActivityStatus } from "~/server/db/schema";
 import { TeacherSection } from "../components/TeacherSection";
 import { draftNumericId } from "~/common/draftData";
+import { useState } from "react";
+import { ModalPadding } from "../components/ModalPadding";
 
 type IgodControlsProps = {
   activityStatus: ActivityStatus;
@@ -20,13 +22,33 @@ export const IgodControls = storeObserver<IgodControlsProps>(
     studentModeStore,
     itemStore,
   }) {
+    const [confirmOpen, setConfirmOpen] = useState(false);
     return (
       <div className="mr-3 flex h-full flex-col items-center">
+        <Modal
+          open={confirmOpen}
+          onCancel={() => setConfirmOpen(false)}
+          onOk={() => {
+            void activityEditorStore.save();
+          }}
+          okText="Save"
+        >
+          <ModalPadding>
+            Are you sure you want to publish this activity? This will make it
+            visible to students.
+          </ModalPadding>
+        </Modal>
         <TeacherSection className="flex flex-col items-center gap-2 p-3">
           <ControlButton
             type="primary"
             disabled={activityEditorStore.canSave === false}
-            onClick={() => activityEditorStore.save()}
+            onClick={() => {
+              if (activityStatus === "published") {
+                setConfirmOpen(true);
+              } else {
+                void activityEditorStore.save();
+              }
+            }}
           >
             {invoke((): string => {
               switch (activityStatus) {
