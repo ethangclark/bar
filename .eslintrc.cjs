@@ -12,6 +12,10 @@ const config = {
   ],
   rules: {
     "@typescript-eslint/array-type": ["error", { default: "array-simple" }],
+    "@typescript-eslint/consistent-indexed-object-style": [
+      "error",
+      "index-signature",
+    ],
     "@typescript-eslint/consistent-type-definitions": "off",
     "@typescript-eslint/consistent-type-imports": [
       "error",

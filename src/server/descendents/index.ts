@@ -26,7 +26,7 @@ type Controllers = {
   [K in DescendentName]: DescendentController<DescendentRows[K]>;
 };
 
-const controllers: Controllers = {
+export const controllers: Controllers = {
   items: itemController,
   evalKeys: evalKeyController,
   questions: questionController,

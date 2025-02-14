@@ -3,10 +3,11 @@ import { db } from "~/server/db";
 import { messageDeltaPubSub } from "~/server/db/pubsub/messageDeltaPubSub";
 import { type Message } from "~/server/db/schema";
 import { streamLlmResponse } from "~/server/ai/llm";
-import { messagePubSub } from "~/server/db/pubsub/messagePubSub";
 import { debouncePublish } from "./utils";
 import { assertOne } from "~/common/arrayUtils";
 import { injectImages } from "./imageInjector";
+import { createEmptyDescendents } from "~/common/descendentUtils";
+import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 
 const model = "google/gemini-2.0-flash-thinking-exp:free";
 
@@ -41,7 +42,9 @@ async function respondToThread({
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
     .filter((m) => m.id !== newEmptyMessage.id);
 
-  await messagePubSub.publish([newEmptyMessage]);
+  const descendents = createEmptyDescendents();
+  descendents.messages.push(newEmptyMessage);
+  await descendentPubSub.publish(descendents);
 
   const gen = streamLlmResponse(
     newEmptyMessage.userId,
@@ -88,7 +91,7 @@ async function respondToThread({
 
 export async function respondToUserMessages(userMessages: Message[]) {
   // userIdToActivityIdToThreadIds
-  const u2a2ts: Record<string, Record<string, Set<string>>> = {};
+  const u2a2ts: { [key: string]: { [key: string]: Set<string> } } = {};
   for (const m of userMessages) {
     const a2ts = u2a2ts[m.userId] ?? {};
     u2a2ts[m.userId] = a2ts;

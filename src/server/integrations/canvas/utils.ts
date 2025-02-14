@@ -71,7 +71,7 @@ export async function makeCanvasRequest<T extends Json>({
   relPath: `/${string}`;
   method: "GET" | "POST";
   responseSchema: z.ZodType<T>;
-  urlParams?: Record<string, string | number>;
+  urlParams?: { [key: string]: string | number };
   refreshToken?: string;
 }): Promise<T> {
   const canvasIntegration = await getCanvasIntegration(canvasIntegrationId);

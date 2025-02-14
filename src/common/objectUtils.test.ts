@@ -49,8 +49,8 @@ describe("surgicalAssignDeep", () => {
   });
 
   it("should return the source primitive if different", () => {
-    expect(surgicalAssignDeep(5, 10)).toBe(10);
-    expect(surgicalAssignDeep("a", "b")).toBe("b");
+    expect(surgicalAssignDeep(5 as number, 10 as number)).toBe(10);
+    expect(surgicalAssignDeep("a" as string, "b" as string)).toBe("b");
   });
 
   it("should update objects deeply without replacing unchanged sub-objects", () => {
@@ -121,8 +121,8 @@ describe("surgicalAssignDeep", () => {
   });
 
   it("should return the source when target is null and source is an object", () => {
-    const target: Json = null;
-    const source: Json = { a: 1 };
+    const target = null as Json;
+    const source = { a: 1 as Json };
 
     const result = surgicalAssignDeep(target, source);
 

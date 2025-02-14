@@ -1,9 +1,10 @@
 import { eq } from "drizzle-orm";
+import { createEmptyDescendents } from "~/common/descendentUtils";
 import { assertNever } from "~/common/errorUtils";
 import { numericIdToImageNumber } from "~/common/idUtils";
 import { objectKeys } from "~/common/objectUtils";
 import { db } from "~/server/db";
-import { messagePubSub } from "~/server/db/pubsub/messagePubSub";
+import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import {
   type EvalKey,
   type InfoImage,
@@ -127,7 +128,10 @@ ${itemContent}`,
       },
     ])
     .returning();
-  await messagePubSub.publish(messages);
+
+  const descendents = createEmptyDescendents();
+  descendents.messages.push(...messages);
+  await descendentPubSub.publish(descendents);
 }
 
 export async function generateIntroMessages(threads: Thread[]) {

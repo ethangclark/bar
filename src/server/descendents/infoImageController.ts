@@ -1,13 +1,27 @@
 import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
-import { isDeveloper } from "~/common/enrollmentTypeUtils";
+import { type EnrollmentType, isDeveloper } from "~/common/enrollmentTypeUtils";
 import { type InfoImage } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/descendentTypes";
 import { db } from "../db";
 
+function canRead() {
+  return true;
+}
+
+function canWrite(enrolledAs: EnrollmentType[]) {
+  return isDeveloper(enrolledAs);
+}
+
 export const infoImageController: DescendentController<InfoImage> = {
+  canRead() {
+    return canRead();
+  },
+  canWrite(_, { enrolledAs }) {
+    return canWrite(enrolledAs);
+  },
   async create({ activityId, enrolledAs, tx, rows }) {
-    if (!isDeveloper(enrolledAs)) {
+    if (!canWrite(enrolledAs)) {
       return [];
     }
     const infoImages = await tx
@@ -27,13 +41,16 @@ export const infoImageController: DescendentController<InfoImage> = {
     return infoImages;
   },
   async read({ activityId, tx }) {
+    if (!canRead()) {
+      return [];
+    }
     return tx
       .select()
       .from(db.x.infoImages)
       .where(eq(db.x.infoImages.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
-    if (!isDeveloper(enrolledAs)) {
+    if (!canWrite(enrolledAs)) {
       return [];
     }
     const infoImagesNested = await Promise.all(
@@ -57,7 +74,7 @@ export const infoImageController: DescendentController<InfoImage> = {
     return infoImagesNested.flat();
   },
   async delete({ activityId, enrolledAs, tx, ids }) {
-    if (!isDeveloper(enrolledAs)) {
+    if (!canWrite(enrolledAs)) {
       return;
     }
     await tx

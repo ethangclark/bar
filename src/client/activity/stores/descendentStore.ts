@@ -7,15 +7,19 @@ import {
   mergeDescendents,
 } from "~/common/descendentUtils";
 import { getDraftDate, getDraftId } from "~/common/draftData";
-import { identity, objectValues } from "~/common/objectUtils";
+import {
+  identity,
+  objectValues,
+  surgicalAssignDeep,
+} from "~/common/objectUtils";
 import { loading, notLoaded, Status } from "~/client/utils/status";
 import {
+  type Descendents,
   type DescendentRows,
   type DescendentTables,
 } from "~/server/descendents/descendentTypes";
 import { trpc } from "~/trpc/proxy";
 import { type ActivityStore } from "./activityStore";
-import { type Message } from "~/server/db/schema";
 import { type MessageDeltaSchema } from "~/common/types";
 import { assertOne } from "~/common/arrayUtils";
 
@@ -42,7 +46,7 @@ export class DescendentStore {
         return;
       }
       void this.loadDescendents(activityId);
-      this.subscribeToActivityMessages(activityId);
+      this.subscribeToDescendents(activityId);
       this.subscribeToMessageDeltas(activityId);
     });
   }
@@ -57,19 +61,17 @@ export class DescendentStore {
       this.descendents = indexDescendents(descendents);
     });
   }
-  private subscribeToActivityMessages(activityId: string) {
-    const subscription = trpc.message.newMessages.subscribe(
+  private subscribeToDescendents(activityId: string) {
+    const subscription = trpc.descendent.newDescendents.subscribe(
       { activityId },
       {
-        onData: (messages: Message[]) => {
-          const { descendents } = this;
-          if (descendents instanceof Status) {
+        onData: (descendents: Descendents) => {
+          const existing = this.descendents;
+          if (existing instanceof Status) {
             return;
           }
           runInAction(() => {
-            messages.forEach((message) => {
-              descendents.messages[message.id] = message;
-            });
+            surgicalAssignDeep(existing, indexDescendents(descendents));
           });
         },
       },

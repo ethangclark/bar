@@ -1,4 +1,4 @@
-import { type Json } from "./types";
+import { type JsonOrUndefinedOrDate } from "./types";
 
 export function objectEntries<T extends object>(obj: T) {
   return Object.entries(obj) as Array<[keyof T, T[keyof T]]>;
@@ -16,7 +16,7 @@ export function identity<T>(x: T) {
   return x;
 }
 
-export function safeGet<T extends Record<string, unknown>>(
+export function safeGet<T extends { [key: string]: unknown }>(
   obj: T,
   key: string,
 ): T[keyof T] | undefined {
@@ -24,16 +24,23 @@ export function safeGet<T extends Record<string, unknown>>(
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
-function isComplex(value: Json): value is { [key: string]: Json } | Json[] {
+function isComplex(
+  value: JsonOrUndefinedOrDate,
+): value is { [key: string]: JsonOrUndefinedOrDate } | JsonOrUndefinedOrDate[] {
   return value !== null && typeof value === "object";
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
-function isPlainObject(value: Json): value is { [key: string]: Json } {
+function isPlainObject(
+  value: JsonOrUndefinedOrDate,
+): value is { [key: string]: JsonOrUndefinedOrDate } {
   return isComplex(value) && !Array.isArray(value);
 }
 
-export function surgicalAssignDeep<T extends Json>(target: T, source: T): T {
+export function surgicalAssignDeep<
+  T extends JsonOrUndefinedOrDate,
+  S extends T,
+>(target: T, source: S): T {
   // If they are exactly equal (or both primitives with same value), do nothing.
   if (target === source) return target;
 

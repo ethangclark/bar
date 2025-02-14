@@ -4,6 +4,6 @@ export function indexById<T extends { id: string }>(arr: T[]) {
       acc[item.id] = item;
       return acc;
     },
-    {} as Record<string, T>,
+    {} as { [key: string]: T },
   );
 }

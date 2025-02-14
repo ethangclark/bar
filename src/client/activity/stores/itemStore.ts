@@ -9,9 +9,9 @@ import { type ActivityEditorStore } from "./activityEditorStore";
 import { generateKeyBetween } from "fractional-indexing";
 
 export class ItemStore {
-  private itemIdToTextInfo: Record<string, InfoText> = {};
-  private itemIdToQuestion: Record<string, Question> = {};
-  private itemIdToInfoImage: Record<string, InfoImage> = {};
+  private itemIdToTextInfo: { [key: string]: InfoText } = {};
+  private itemIdToQuestion: { [key: string]: Question } = {};
+  private itemIdToInfoImage: { [key: string]: InfoImage } = {};
 
   constructor(private activityEditorStore: ActivityEditorStore) {
     makeAutoObservable(this);

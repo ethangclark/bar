@@ -4,7 +4,7 @@ import { type EvalKey } from "~/server/db/schema";
 import { type ActivityEditorStore } from "./activityEditorStore";
 
 export class QuestionStore {
-  private questionIdToEvalKey: Record<string, EvalKey> = {};
+  private questionIdToEvalKey: { [key: string]: EvalKey } = {};
 
   constructor(private activityEditorStore: ActivityEditorStore) {
     makeAutoObservable(this);

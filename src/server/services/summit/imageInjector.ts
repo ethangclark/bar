@@ -155,8 +155,8 @@ export async function injectImages(messages: Message[]) {
   });
 
   const [viewPieceImages, viewPieceTexts] = await Promise.all([
-    db.insert(db.x.viewPieceImages).values(imagePieceDrafts),
-    db.insert(db.x.viewPieceText).values(textPieceDrafts),
+    db.insert(db.x.viewPieceImages).values(imagePieceDrafts).returning(),
+    db.insert(db.x.viewPieceText).values(textPieceDrafts).returning(),
   ]);
 
   console.log("TODO: pass updated artifacts to FE", {

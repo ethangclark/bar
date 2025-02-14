@@ -6,7 +6,27 @@ import { type DescendentController } from "~/server/descendents/descendentTypes"
 import { db } from "../db";
 import { respondToUserMessages } from "../services/summit/summitResponse";
 
+const canRead: DescendentController<Message>["canRead"] = (
+  message,
+  { enrolledAs, userId },
+) => {
+  if (message.userId === userId) {
+    return true;
+  }
+  if (isGrader(enrolledAs)) {
+    return true;
+  }
+  return false;
+};
+
+function canWrite() {
+  return true;
+}
+
 export const messageController: DescendentController<Message> = {
+  canRead,
+  canWrite,
+
   // anyone can create a message for themselves
   async create({ activityId, tx, rows, userId, afterTx }) {
     const messages = await tx
