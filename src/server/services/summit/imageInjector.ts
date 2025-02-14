@@ -12,14 +12,19 @@ import { omissionDisclaimer } from "./summitIntro";
 import { getInjectionData } from "./injectionDataGetter";
 
 export async function injectImages(messages: Message[]) {
+  // nothing to do if there are no images to inject
   if (!messages.some((m) => m.content.includes(omissionDisclaimer))) {
     return;
   }
-  const [message1] = messages;
-  if (!message1) {
+
+  const lastMessage = messages[messages.length - 1];
+  if (!lastMessage) {
     throw new Error("No message to inject images into");
   }
-  const { userId, activityId } = message1;
+  if (lastMessage.senderRole !== "assistant") {
+    throw new Error("Last message must be an assistant message");
+  }
+  const { userId, activityId } = lastMessage;
 
   const possibleNumericIds = (
     await db.query.infoImages.findMany({
@@ -38,7 +43,7 @@ export async function injectImages(messages: Message[]) {
       .insert(db.x.viewPieces)
       .values(
         data.map((_, idx) => ({
-          messageId: message1.id,
+          messageId: lastMessage.id,
           order: idx + 1,
           activityId,
           userId,
