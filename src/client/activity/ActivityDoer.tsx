@@ -11,38 +11,8 @@ import { TeacherSection } from "../components/TeacherSection";
 import { z } from "zod";
 import { formatDateTime } from "~/common/timeUtils";
 import { scrollbarHeight } from "../utils/scrollbarWidth";
-
-export function PreformattedText({ children }: { children: React.ReactNode }) {
-  return <pre className="text-wrap font-serif">{children}</pre>;
-}
-
-function MessageView({
-  children,
-  className,
-  isLastMessage,
-  messageLength,
-  scrollToBottom,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  isLastMessage: boolean;
-  messageLength: number;
-  scrollToBottom: () => void;
-}) {
-  useEffect(() => {
-    if (isLastMessage) {
-      scrollToBottom();
-    }
-  }, [
-    isLastMessage,
-    scrollToBottom,
-    // important to include messageLength in the dependency array
-    // so we re-scroll to the bottom when the message content changes
-    messageLength,
-  ]);
-
-  return <div className={`mb-4 flex ${className}`}>{children}</div>;
-}
+import { MessageView } from "./MessageView";
+import { PreformattedText } from "../components/PreformattedText";
 
 export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
   function ActivityDoer({
