@@ -1,18 +1,17 @@
 import { Button, Select, Spin } from "antd";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { z } from "zod";
+import { Status } from "~/client/utils/status";
 import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 import { assertNever } from "~/common/errorUtils";
-import { Status } from "~/client/utils/status";
-import { Editor } from "../components/Editor";
-import { LoadingPage } from "../components/Loading";
-import { VoiceTranscriber } from "../components/VoiceTranscriber";
-import { storeObserver } from "../utils/storeObserver";
-import { TeacherSection } from "../components/TeacherSection";
-import { z } from "zod";
 import { formatDateTime } from "~/common/timeUtils";
-import { scrollbarHeight } from "../utils/scrollbarWidth";
-import { MessageView } from "./MessageView";
+import { LoadingPage } from "../components/Loading";
 import { PreformattedText } from "../components/PreformattedText";
+import { TeacherSection } from "../components/TeacherSection";
+import { scrollbarHeight } from "../utils/scrollbarWidth";
+import { storeObserver } from "../utils/storeObserver";
+import { ChatInput } from "./ChatInput";
+import { MessageView } from "./MessageView";
 
 export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
   function ActivityDoer({
@@ -20,15 +19,12 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
     threadStore,
     activityStore,
     studentModeStore,
-    descendentStore,
   }) {
-    const [v, setV] = useState("");
-
     const messageWrapperRef = useRef<HTMLDivElement>(null);
 
     const { messages } = threadStore;
 
-    const messageProcessing = false;
+    const [messageProcessing, setMessageProcessing] = useState(false);
 
     const igod =
       activityStore.enrolledAs instanceof Status
@@ -46,10 +42,6 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
         top: messageWrapperRef.current.scrollHeight,
         behavior: "smooth",
       });
-    }, []);
-
-    const onTranscription = useCallback((text: string) => {
-      setV((v) => (v ? v + " " + text : text));
     }, []);
 
     if (
@@ -149,41 +141,18 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
           </div>
         </div>
         <div
-          className="w-[350px] md:w-[562px]"
+          className="flex w-full justify-center"
           style={{
             position: "relative",
             bottom: 0,
             marginTop: 20,
           }}
         >
-          <div className="mb-2 flex">
-            <Editor
-              value={v}
-              setValue={setV}
-              placeholder="Compose your message..."
-              height={70}
-              onKeyDown={async (e) => {
-                if (e.key !== "Enter" || e.shiftKey) {
-                  return;
-                }
-                e.preventDefault();
-                setV("");
-                await descendentStore.create("messages", {
-                  content: v,
-                  senderRole: "user",
-                  threadId: selectedThreadId,
-                });
-              }}
-              disabled={messageProcessing}
-              className="mr-4"
-            />
-            <VoiceTranscriber onTranscription={onTranscription} />
-          </div>
-          <div className="w-full text-center text-xs text-gray-400">
-            Press enter to send. Response may take a few seconds. Let Summit
-            know if you want to move on to another part of the activity, or need
-            help. Email questions and issues to hello@summited.ai
-          </div>
+          <ChatInput
+            threadId={selectedThreadId}
+            messageProcessing={messageProcessing}
+            setMessageProcessing={setMessageProcessing}
+          />
         </div>
       </div>
     );
