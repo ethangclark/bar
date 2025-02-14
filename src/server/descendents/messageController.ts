@@ -10,22 +10,11 @@ const canRead: DescendentController<Message>["canRead"] = (
   message,
   { enrolledAs, userId },
 ) => {
-  if (message.userId === userId) {
-    return true;
-  }
-  if (isGrader(enrolledAs)) {
-    return true;
-  }
-  return false;
+  return message.userId === userId || isGrader(enrolledAs);
 };
-
-function canWrite() {
-  return true;
-}
 
 export const messageController: DescendentController<Message> = {
   canRead,
-  canWrite,
 
   // anyone can create a message for themselves
   async create({ activityId, tx, rows, userId, afterTx }) {

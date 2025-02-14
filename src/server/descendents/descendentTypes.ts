@@ -60,12 +60,10 @@ type DeleteParams = ActionBaseParams & {
 };
 
 export type DescendentController<T extends DescendentRow> = {
-  // important: these methods have not been implemented in the controllers
+  // important: this method has not been implemented in the controllers
   // to check that the activityId on the row matches that in the params;
-  // the code leveraging controller.canRead and controller.canWrite must
-  // implement that check
+  // the code leveraging controller.canRead must implement that check
   canRead(descendent: T, params: PermissionParams): boolean;
-  canWrite(descendent: T, params: PermissionParams): boolean;
 
   create(params: CreateParams<T>): Promise<T[]>;
   read(params: ReadParams): Promise<T[]>;

@@ -13,20 +13,13 @@ function canRead(enrolledAs: EnrollmentType[]) {
   return isGraderOrDeveloper(enrolledAs);
 }
 
-function canWrite(enrolledAs: EnrollmentType[]) {
-  return isDeveloper(enrolledAs);
-}
-
 export const evalKeyController: DescendentController<EvalKey> = {
   canRead(_, { enrolledAs }) {
     return canRead(enrolledAs);
   },
-  canWrite(_, { enrolledAs }) {
-    return canWrite(enrolledAs);
-  },
 
   async create({ activityId, enrolledAs, tx, rows }) {
-    if (!canWrite(enrolledAs)) {
+    if (!isDeveloper(enrolledAs)) {
       return [];
     }
     const evalKeys = await tx
@@ -45,7 +38,7 @@ export const evalKeyController: DescendentController<EvalKey> = {
       .where(eq(db.x.evalKeys.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
-    if (!canWrite(enrolledAs)) {
+    if (!isDeveloper(enrolledAs)) {
       return [];
     }
     const evalKeysNested = await Promise.all(
@@ -65,7 +58,7 @@ export const evalKeyController: DescendentController<EvalKey> = {
     return evalKeysNested.flat();
   },
   async delete({ activityId, enrolledAs, tx, ids }) {
-    if (!canWrite(enrolledAs)) {
+    if (!isDeveloper(enrolledAs)) {
       return;
     }
     await tx

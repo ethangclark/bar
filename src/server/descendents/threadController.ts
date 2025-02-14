@@ -13,19 +13,11 @@ const canRead: DescendentController<Thread>["canRead"] = (
   return thread.userId === userId || isGrader(enrolledAs);
 };
 
-function canWrite() {
-  return true;
-}
-
 export const threadController: DescendentController<Thread> = {
   canRead,
-  canWrite,
 
   // anyone can create a thread for themselves
   async create({ activityId, tx, rows, userId, afterTx }) {
-    if (!canWrite()) {
-      return [];
-    }
     const threads = await tx
       .insert(db.x.threads)
       .values(

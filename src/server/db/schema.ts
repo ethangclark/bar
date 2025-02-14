@@ -541,35 +541,31 @@ export const messagesRelations = relations(messages, ({ one }) => ({
 }));
 export const messageSchema = createSelectSchema(messages);
 
-export const enrichedMessageViewPiece = pgTable("enriched_message_view_piece", {
+export const messageViewPiece = pgTable("message_view_piece", {
   id: uuid("id").primaryKey().defaultRandom(),
   messageId: uuid("message_id")
     .notNull()
     .references(() => messages.id, { onDelete: "cascade" }),
   order: integer("order").notNull(),
 });
-export type EnrichedMessageViewPiece = InferSelectModel<
-  typeof enrichedMessageViewPiece
->;
-export const enrichedMessageViewPieceRelations = relations(
-  enrichedMessageViewPiece,
+export type MessageViewPiece = InferSelectModel<typeof messageViewPiece>;
+export const messageViewPieceRelations = relations(
+  messageViewPiece,
   ({ one, many }) => ({
     message: one(messages, {
-      fields: [enrichedMessageViewPiece.messageId],
+      fields: [messageViewPiece.messageId],
       references: [messages.id],
     }),
     images: many(viewPieceImages),
   }),
 );
-export const enrichedMessageViewPieceSchema = createSelectSchema(
-  enrichedMessageViewPiece,
-);
+export const messageViewPieceSchema = createSelectSchema(messageViewPiece);
 
 export const viewPieceImages = pgTable("view_piece_image", {
   id: uuid("id").primaryKey().defaultRandom(),
   viewPieceId: uuid("view_piece_id")
     .notNull()
-    .references(() => enrichedMessageViewPiece.id, { onDelete: "cascade" }),
+    .references(() => messageViewPiece.id, { onDelete: "cascade" }),
   infoImageId: uuid("info_image_id")
     .notNull()
     .references(() => infoImages.id, { onDelete: "cascade" }),
@@ -578,9 +574,9 @@ export type ViewPieceImage = InferSelectModel<typeof viewPieceImages>;
 export const viewPieceImagesRelations = relations(
   viewPieceImages,
   ({ one }) => ({
-    viewPiece: one(enrichedMessageViewPiece, {
+    viewPiece: one(messageViewPiece, {
       fields: [viewPieceImages.viewPieceId],
-      references: [enrichedMessageViewPiece.id],
+      references: [messageViewPiece.id],
     }),
     infoImage: one(infoImages, {
       fields: [viewPieceImages.infoImageId],
@@ -594,14 +590,14 @@ export const viewPieceText = pgTable("view_piece_text", {
   id: uuid("id").primaryKey().defaultRandom(),
   viewPieceId: uuid("view_piece_id")
     .notNull()
-    .references(() => enrichedMessageViewPiece.id, { onDelete: "cascade" }),
+    .references(() => messageViewPiece.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
 });
 export type ViewPieceText = InferSelectModel<typeof viewPieceText>;
 export const viewPieceTextRelations = relations(viewPieceText, ({ one }) => ({
-  viewPiece: one(enrichedMessageViewPiece, {
+  viewPiece: one(messageViewPiece, {
     fields: [viewPieceText.viewPieceId],
-    references: [enrichedMessageViewPiece.id],
+    references: [messageViewPiece.id],
   }),
 }));
 export const viewPieceTextSchema = createSelectSchema(viewPieceText);

@@ -1,6 +1,6 @@
 import { and, inArray } from "drizzle-orm";
 import { eq } from "drizzle-orm";
-import { type EnrollmentType, isDeveloper } from "~/common/enrollmentTypeUtils";
+import { isDeveloper } from "~/common/enrollmentTypeUtils";
 import { type Item } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/descendentTypes";
 import { db } from "../db";
@@ -9,19 +9,10 @@ function canRead() {
   return true;
 }
 
-function canWrite(enrolledAs: EnrollmentType[]) {
-  return isDeveloper(enrolledAs);
-}
-
 export const itemController: DescendentController<Item> = {
-  canRead() {
-    return canRead();
-  },
-  canWrite(_, { enrolledAs }) {
-    return canWrite(enrolledAs);
-  },
+  canRead,
   async create({ activityId, enrolledAs, tx, rows }) {
-    if (!canWrite(enrolledAs)) {
+    if (!isDeveloper(enrolledAs)) {
       return [];
     }
     const items = await tx
@@ -40,7 +31,7 @@ export const itemController: DescendentController<Item> = {
       .where(eq(db.x.items.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
-    if (!canWrite(enrolledAs)) {
+    if (!isDeveloper(enrolledAs)) {
       return [];
     }
     const itemsNested = await Promise.all(
@@ -60,7 +51,7 @@ export const itemController: DescendentController<Item> = {
     return itemsNested.flat();
   },
   async delete({ activityId, enrolledAs, tx, ids }) {
-    if (!canWrite(enrolledAs)) {
+    if (!isDeveloper(enrolledAs)) {
       return;
     }
     await tx

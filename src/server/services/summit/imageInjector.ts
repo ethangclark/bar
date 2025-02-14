@@ -91,9 +91,9 @@ export async function injectImages(messages: Message[]) {
     .map((d) => (d.type === "image" ? d.numericId : null))
     .filter((d): d is number => d !== null);
 
-  const [enrichedPieces, infoImages] = await Promise.all([
+  const [viewPieces, infoImages] = await Promise.all([
     db
-      .insert(db.x.enrichedMessageViewPiece)
+      .insert(db.x.messageViewPiece)
       .values(
         data.map((_, idx) => ({
           messageId: message1.id,
@@ -119,8 +119,8 @@ export async function injectImages(messages: Message[]) {
   const imagePieceDrafts = Array<ViewPieceImage>();
   const textPieceDrafts = Array<ViewPieceText>();
 
-  data.forEach((datum, id) => {
-    const piece = enrichedPieces[id];
+  data.forEach((datum, idx) => {
+    const piece = viewPieces[idx];
     if (!piece) {
       throw new Error("No piece found for datum");
     }
@@ -160,7 +160,7 @@ export async function injectImages(messages: Message[]) {
   ]);
 
   console.log("TODO: pass updated artifacts to FE", {
-    enrichedPieces,
+    viewPieces,
     viewPieceImages,
     viewPieceTexts,
   });
