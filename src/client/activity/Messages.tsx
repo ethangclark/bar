@@ -27,11 +27,11 @@ export const Messages = storeObserver<{
 
   return (
     <div
-      className="outline-3 flex h-full grow items-center overflow-y-auto rounded-2xl p-4 outline outline-gray-200"
+      className="outline-3 flex h-full grow items-center overflow-y-auto rounded-lg outline outline-gray-200"
       style={{ width: `calc(100% - 2px)` }} // to account for the outline
     >
       <div
-        className="flex h-full w-full flex-col overflow-y-auto p-4"
+        className="flex h-full w-full flex-col overflow-y-auto p-6"
         ref={messageWrapperRef}
       >
         {messages.map((m, i) => {
