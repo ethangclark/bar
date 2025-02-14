@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Status } from "~/client/utils/status";
 import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 import { scrollbarHeight } from "../utils/scrollbarWidth";
@@ -9,8 +8,6 @@ import { ThreadSelection } from "./ThreadSelection";
 
 export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
   function ActivityDoer({ assignmentTitle, activityStore }) {
-    const [messageProcessing, setMessageProcessing] = useState(false);
-
     const igod =
       activityStore.enrolledAs instanceof Status
         ? false
@@ -27,7 +24,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
           <div className="text-lg md:text-2xl">{assignmentTitle}</div>
         </div>
         {igod && <ThreadSelection />}
-        <Messages messageProcessing={messageProcessing} />
+        <Messages />
         <div
           className="flex w-full justify-center"
           style={{
@@ -36,10 +33,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
             marginTop: 20,
           }}
         >
-          <ChatInput
-            messageProcessing={messageProcessing}
-            setMessageProcessing={setMessageProcessing}
-          />
+          <ChatInput />
         </div>
       </div>
     );

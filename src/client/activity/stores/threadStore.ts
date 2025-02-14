@@ -50,6 +50,18 @@ export class ThreadStore {
       .sort((m1, m2) => m1.createdAt.getTime() - m2.createdAt.getTime());
   }
 
+  get lastMessageComplete() {
+    const messages = this.messages;
+    if (messages instanceof Status) {
+      return messages;
+    }
+    const lastMessage = messages[messages.length - 1];
+    if (!lastMessage) {
+      return true;
+    }
+    return lastMessage.completed;
+  }
+
   async createThread() {
     runInAction(() => {
       this.selectedThreadId = loading;

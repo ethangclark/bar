@@ -1,0 +1,1 @@
+ALTER TABLE "message" ADD COLUMN "completed" boolean DEFAULT true NOT NULL;

@@ -17,7 +17,7 @@ export const messageController: DescendentController<Message> = {
   canRead,
 
   // anyone can create a message for themselves
-  async create({ activityId, tx, rows, userId, afterTx }) {
+  async create({ activityId, tx, rows, userId, queueSideEffect }) {
     const messages = await tx
       .insert(db.x.messages)
       .values(
@@ -30,7 +30,7 @@ export const messageController: DescendentController<Message> = {
       )
       .returning();
 
-    afterTx(() => respondToUserMessages(messages));
+    queueSideEffect(() => respondToUserMessages(messages));
 
     return messages;
   },

@@ -3,23 +3,26 @@ import { Editor } from "../components/Editor";
 import { VoiceTranscriber } from "../components/VoiceTranscriber";
 import { storeObserver } from "../utils/storeObserver";
 import { Status } from "../utils/status";
-
-export const ChatInput = storeObserver<{
-  messageProcessing: boolean;
-  setMessageProcessing: (messageProcessing: boolean) => void;
-}>(function ChatInput({
-  messageProcessing,
-  setMessageProcessing,
+import { LoadingCentered } from "../components/Loading";
+export const ChatInput = storeObserver(function ChatInput({
   descendentStore,
   threadStore,
 }) {
   const { selectedThreadId } = threadStore;
 
   const [v, setV] = useState("");
+  const [isMessageSending, setIsMessageSending] = useState(false);
 
   const onTranscription = useCallback((text: string) => {
     setV((v) => (v ? v + " " + text : text));
   }, []);
+
+  const { lastMessageComplete } = threadStore;
+
+  const loading =
+    selectedThreadId instanceof Status ||
+    isMessageSending ||
+    !lastMessageComplete;
 
   return (
     <div
@@ -27,7 +30,12 @@ export const ChatInput = storeObserver<{
         width: "calc(100% - 2px)",
       }}
     >
-      <div className="mb-2 flex">
+      <div className="relative mb-2 flex">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <LoadingCentered />
+          </div>
+        )}
         <Editor
           value={v}
           setValue={setV}
@@ -43,19 +51,20 @@ export const ChatInput = storeObserver<{
               return;
             }
 
-            setMessageProcessing(true);
+            setIsMessageSending(true);
             setV("");
             try {
               await descendentStore.create("messages", {
                 content: v,
                 senderRole: "user",
                 threadId: selectedThreadId,
+                completed: true,
               });
             } finally {
-              setMessageProcessing(false);
+              setIsMessageSending(false);
             }
           }}
-          disabled={selectedThreadId instanceof Status || messageProcessing}
+          disabled={loading}
           className="mr-4"
         />
         <VoiceTranscriber onTranscription={onTranscription} />

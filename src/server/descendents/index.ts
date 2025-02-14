@@ -48,21 +48,21 @@ export async function createDescendents({
   descendents,
   userId,
   tx,
-  afterTx,
+  queueSideEffect,
 }: {
   activityId: string;
   enrolledAs: EnrollmentType[];
   descendents: Descendents;
   userId: string;
   tx: DbOrTx;
-  afterTx: AfterTx;
+  queueSideEffect: AfterTx;
 }) {
   const baseParams = {
     userId,
     activityId,
     enrolledAs,
     tx,
-    afterTx,
+    queueSideEffect,
   };
 
   const result: Partial<Descendents> = {};
@@ -123,21 +123,21 @@ export async function updateDescendents({
   userId,
   enrolledAs,
   tx,
-  afterTx,
+  queueSideEffect,
 }: {
   activityId: string;
   descendents: Descendents;
   userId: string;
   enrolledAs: EnrollmentType[];
   tx: DbOrTx;
-  afterTx: AfterTx;
+  queueSideEffect: AfterTx;
 }) {
   const baseParams = {
     userId,
     activityId,
     enrolledAs,
     tx,
-    afterTx,
+    queueSideEffect,
   };
 
   const result: Partial<Descendents> = {};
@@ -167,14 +167,14 @@ export async function deleteDescendents({
   enrolledAs,
   descendents,
   tx,
-  afterTx,
+  queueSideEffect,
 }: {
   activityId: string;
   userId: string;
   enrolledAs: EnrollmentType[];
   descendents: Descendents;
   tx: DbOrTx;
-  afterTx: AfterTx;
+  queueSideEffect: AfterTx;
 }) {
   const baseParams = {
     userId,
@@ -182,7 +182,7 @@ export async function deleteDescendents({
     enrolledAs,
     descendents,
     tx,
-    afterTx,
+    queueSideEffect,
   };
 
   await Promise.all(
@@ -208,9 +208,10 @@ export async function modifyDescendents(params: {
   userId: string;
   enrolledAs: EnrollmentType[];
   tx: DbOrTx;
-  afterTx: AfterTx;
+  queueSideEffect: AfterTx;
 }): Promise<Descendents> {
-  const { activityId, modifications, userId, enrolledAs, tx, afterTx } = params;
+  const { activityId, modifications, userId, enrolledAs, tx, queueSideEffect } =
+    params;
 
   const rectified = rectifyModifications(modifications);
   const { toCreate, toUpdate, toDelete } = rectified;
@@ -262,7 +263,7 @@ export async function modifyDescendents(params: {
     activityId,
     enrolledAs,
     tx,
-    afterTx,
+    queueSideEffect,
   };
 
   const [created, updated] = await Promise.all([

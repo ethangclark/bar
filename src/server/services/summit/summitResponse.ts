@@ -5,7 +5,7 @@ import { type Message } from "~/server/db/schema";
 import { streamLlmResponse } from "~/server/ai/llm";
 import { debouncePublish } from "./utils";
 import { assertOne } from "~/common/arrayUtils";
-import { injectImages } from "./imageInjector";
+import { postProcessAssistantResponse } from "./postProcessor";
 import { createEmptyDescendents } from "~/common/descendentUtils";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 
@@ -32,6 +32,7 @@ async function respondToThread({
         threadId,
         senderRole: "assistant" as const,
         content: "",
+        completed: false, // needs post-processing
       })
       .returning(),
   ]);
@@ -85,7 +86,7 @@ async function respondToThread({
         content: generated,
       })
       .where(eq(db.x.messages.id, newEmptyMessage.id)),
-    injectImages(messages),
+    postProcessAssistantResponse(newMessage, messages),
   ]);
 }
 

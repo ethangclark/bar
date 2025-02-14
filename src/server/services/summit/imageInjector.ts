@@ -11,20 +11,16 @@ import {
 import { omissionDisclaimer } from "./summitIntro";
 import { getInjectionData } from "./injectionDataGetter";
 
-export async function injectImages(messages: Message[]) {
+export async function injectImages(
+  assistantResponse: Message,
+  allMessages: Message[],
+) {
   // nothing to do if there are no images to inject
-  if (!messages.some((m) => m.content.includes(omissionDisclaimer))) {
+  if (!allMessages.some((m) => m.content.includes(omissionDisclaimer))) {
     return;
   }
 
-  const lastMessage = messages[messages.length - 1];
-  if (!lastMessage) {
-    throw new Error("No message to inject images into");
-  }
-  if (lastMessage.senderRole !== "assistant") {
-    throw new Error("Last message must be an assistant message");
-  }
-  const { userId, activityId } = lastMessage;
+  const { userId, activityId } = assistantResponse;
 
   const possibleNumericIds = (
     await db.query.infoImages.findMany({
@@ -32,7 +28,7 @@ export async function injectImages(messages: Message[]) {
     })
   ).map((i) => i.numericId);
 
-  const data = await getInjectionData(userId, messages, possibleNumericIds);
+  const data = await getInjectionData(userId, allMessages, possibleNumericIds);
 
   const numericIds = data
     .map((d) => (d.type === "image" ? d.numericId : null))
@@ -43,7 +39,7 @@ export async function injectImages(messages: Message[]) {
       .insert(db.x.viewPieces)
       .values(
         data.map((_, idx) => ({
-          messageId: lastMessage.id,
+          messageId: assistantResponse.id,
           order: idx + 1,
           activityId,
           userId,

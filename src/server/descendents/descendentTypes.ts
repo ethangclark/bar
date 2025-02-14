@@ -56,7 +56,7 @@ type ActionBaseParams = PermissionParams & {
 
 type EditParams<T extends DescendentRow> = ActionBaseParams & {
   rows: T[];
-  afterTx: (cb: () => MaybePromise<void>) => void;
+  queueSideEffect: (cb: () => MaybePromise<void>) => void;
 };
 
 type CreateParams<T extends DescendentRow> = EditParams<T>;

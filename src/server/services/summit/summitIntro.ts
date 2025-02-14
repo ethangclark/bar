@@ -117,6 +117,7 @@ Here is the material to cover:
 ${itemContent}`,
         senderRole: "system" as const,
         activityId: thread.activityId,
+        completed: true,
       },
       {
         threadId: thread.id,
@@ -125,6 +126,7 @@ ${itemContent}`,
           "Hi! My name is Summit. My goal is to help you master the material in this activity. Are you ready to begin?",
         senderRole: "assistant" as const,
         activityId: thread.activityId,
+        completed: true,
       },
     ])
     .returning();

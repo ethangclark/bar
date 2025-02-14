@@ -1,4 +1,3 @@
-import { Spin } from "antd";
 import { useCallback, useRef } from "react";
 import { Status } from "~/client/utils/status";
 import { assertNever } from "~/common/errorUtils";
@@ -6,10 +5,9 @@ import { LoadingCentered } from "../components/Loading";
 import { PreformattedText } from "../components/PreformattedText";
 import { storeObserver } from "../utils/storeObserver";
 import { MessageView } from "./MessageView";
+import { AssistantMessage } from "./AssistantMessage";
 
-export const Messages = storeObserver<{
-  messageProcessing: boolean;
-}>(function Messages({ messageProcessing, threadStore }) {
+export const Messages = storeObserver(function Messages({ threadStore }) {
   const messageWrapperRef = useRef<HTMLDivElement>(null);
 
   const { messages } = threadStore;
@@ -54,26 +52,17 @@ export const Messages = storeObserver<{
               );
             case "assistant":
               return (
-                <MessageView
+                <AssistantMessage
                   key={m.id}
+                  message={m}
                   isLastMessage={i === messages.length - 1}
-                  messageLength={m.content.length}
                   scrollToBottom={scrollToBottom}
-                >
-                  <PreformattedText key={m.id}>{m.content}</PreformattedText>
-                </MessageView>
+                />
               );
             default:
               assertNever(m.senderRole);
           }
         })}
-        <div className="flex w-full justify-center">
-          {messageProcessing ? (
-            <div className="text-gray-500">
-              Even AIs need a moment... One minute... <Spin />
-            </div>
-          ) : null}
-        </div>
       </div>
     </div>
   );

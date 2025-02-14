@@ -521,6 +521,7 @@ export const messages = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    completed: boolean("completed").notNull(),
   },
   (x) => [
     index("message_user_id_idx").on(x.userId),

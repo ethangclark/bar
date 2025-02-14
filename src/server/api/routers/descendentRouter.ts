@@ -63,9 +63,9 @@ export const descendentRouter = createTRPCRouter({
         activityId,
       });
 
-      const postTxQueue = Array<() => MaybePromise<void>>();
-      const afterTx = (cb: () => MaybePromise<void>) => {
-        postTxQueue.push(cb);
+      const sideEffectQueue = Array<() => MaybePromise<void>>();
+      const queueSideEffect = (cb: () => MaybePromise<void>) => {
+        sideEffectQueue.push(cb);
       };
 
       const result = await db.transaction(async (tx) => {
@@ -75,11 +75,11 @@ export const descendentRouter = createTRPCRouter({
           userId,
           enrolledAs: activity.course.enrolledAs,
           tx,
-          afterTx,
+          queueSideEffect,
         });
       });
 
-      setTimeout(() => postTxQueue.forEach(invoke));
+      setTimeout(() => sideEffectQueue.forEach(invoke));
 
       return result;
     }),
