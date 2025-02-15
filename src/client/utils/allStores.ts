@@ -1,10 +1,11 @@
+import { ActivityEditorStore } from "../activity/stores/activityEditorStore";
 import { ActivityStore } from "../activity/stores/activityStore";
 import { DescendentStore } from "../activity/stores/descendentStore";
-import { ActivityEditorStore } from "../activity/stores/activityEditorStore";
 import { ItemStore } from "../activity/stores/itemStore";
-import { ThreadStore } from "../activity/stores/threadStore";
 import { QuestionStore } from "../activity/stores/questionStore";
 import { StudentModeStore } from "../activity/stores/studentModeStore";
+import { ThreadStore } from "../activity/stores/threadStore";
+import { ViewPieceStore } from "../activity/stores/viewPieceStore";
 
 const activityStore = new ActivityStore();
 const descendentStore = new DescendentStore(activityStore);
@@ -16,6 +17,7 @@ const activityEditorStore = new ActivityEditorStore(
 const itemStore = new ItemStore(activityEditorStore);
 const questionStore = new QuestionStore(activityEditorStore);
 const studentModeStore = new StudentModeStore(activityStore);
+const viewPieceStore = new ViewPieceStore(descendentStore);
 
 export const stores = {
   activityStore,
@@ -25,6 +27,7 @@ export const stores = {
   itemStore,
   questionStore,
   studentModeStore,
+  viewPieceStore,
 };
 
 export type Stores = typeof stores;

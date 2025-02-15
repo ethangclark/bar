@@ -1,17 +1,17 @@
+import { Tooltip, Typography } from "antd";
+import { CircleHelp } from "lucide-react";
+import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
 import {
   type InfoImage,
   type InfoText,
-  type Question,
   type Item as ItemType,
+  type Question,
 } from "~/server/db/schema";
 import { Editor } from "../components/Editor";
-import { ImageFromDataUrl } from "../components/ImageFromDataUrl";
-import { storeObserver } from "../utils/storeObserver";
-import { Tooltip, Typography } from "antd";
-import { CircleHelp } from "lucide-react";
+import { Image } from "../components/Image";
 import { ImageUploadLink } from "../components/ImageUploader";
 import { TeacherSection } from "../components/TeacherSection";
-import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
+import { storeObserver } from "../utils/storeObserver";
 
 export const Item = storeObserver<{
   item: ItemType;
@@ -54,9 +54,9 @@ export const Item = storeObserver<{
       <div className={`w-full ${deleted ? "opacity-30" : ""}`}>
         {infoImage ? (
           <div key={infoImage.id} className="w-full">
-            <ImageFromDataUrl
+            <Image
               alt={infoImage.url ? infoImage.textAlternative : "Missing image"}
-              src={infoImage.url}
+              url={infoImage.url}
               style={{
                 maxWidth: "100%",
                 marginBottom: 4,
