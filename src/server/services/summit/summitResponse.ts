@@ -9,8 +9,6 @@ import { type Message } from "~/server/db/schema";
 import { postProcessAssistantResponse } from "./postProcessor";
 import { debouncePublish } from "./utils";
 
-const model = "google/gemini-2.0-flash-thinking-exp:free";
-
 async function respondToThread({
   userId,
   activityId,
@@ -52,7 +50,7 @@ async function respondToThread({
   const gen = streamLlmResponse(
     newEmptyMessage.userId,
     {
-      model,
+      model: "google/gemini-2.0-flash-thinking-exp:free",
       messages: oldMessages.map((m) => ({
         role: m.senderRole,
         content: m.content,
