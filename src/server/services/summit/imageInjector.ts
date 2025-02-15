@@ -112,9 +112,11 @@ export async function injectImages(
     db.insert(db.x.viewPieceTexts).values(textPieceDrafts).returning(),
   ]);
 
-  const descendents = createEmptyDescendents();
-  descendents.viewPieces = viewPieces;
-  descendents.viewPieceImages = viewPieceImages;
-  descendents.viewPieceTexts = viewPieceTexts;
+  const descendents = {
+    ...createEmptyDescendents(),
+    viewPieces,
+    viewPieceImages,
+    viewPieceTexts,
+  };
   await descendentPubSub.publish(descendents);
 }

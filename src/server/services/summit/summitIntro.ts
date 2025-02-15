@@ -131,8 +131,10 @@ ${itemContent}`,
     ])
     .returning();
 
-  const descendents = createEmptyDescendents();
-  descendents.messages.push(...messages);
+  const descendents = {
+    ...createEmptyDescendents(),
+    messages,
+  };
   await descendentPubSub.publish(descendents);
 }
 

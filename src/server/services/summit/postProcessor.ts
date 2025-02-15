@@ -20,11 +20,15 @@ export async function postProcessAssistantResponse(
       .update(db.x.messages)
       .set(updates)
       .where(eq(db.x.messages.id, assistantResponse.id));
-    const descendent = createEmptyDescendents();
-    descendent.messages.push({
+
+    const updatedMessage = {
       ...assistantResponse,
       ...updates,
-    });
+    };
+    const descendent = {
+      ...createEmptyDescendents(),
+      messages: [updatedMessage],
+    };
     await descendentPubSub.publish(descendent);
   }
 }

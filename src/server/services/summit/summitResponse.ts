@@ -43,8 +43,10 @@ async function respondToThread({
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
     .filter((m) => m.id !== newEmptyMessage.id);
 
-  const descendents = createEmptyDescendents();
-  descendents.messages.push(newEmptyMessage);
+  const descendents = {
+    ...createEmptyDescendents(),
+    messages: [newEmptyMessage],
+  };
   await descendentPubSub.publish(descendents);
 
   const gen = streamLlmResponse(
