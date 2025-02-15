@@ -2,16 +2,12 @@ import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
 import { type DescendentName } from "~/common/descendentNames";
 import {
   createEmptyDescendents,
-  deindexDescendents,
   indexDescendents,
   mergeDescendents,
+  upsertDescendents,
 } from "~/common/descendentUtils";
 import { getDraftDate, getDraftId } from "~/common/draftData";
-import {
-  identity,
-  objectValues,
-  surgicalAssignDeep,
-} from "~/common/objectUtils";
+import { identity, objectValues } from "~/common/objectUtils";
 import { loading, notLoaded, Status } from "~/client/utils/status";
 import {
   type Descendents,
@@ -71,7 +67,7 @@ export class DescendentStore {
             return;
           }
           runInAction(() => {
-            surgicalAssignDeep(existing, indexDescendents(descendents));
+            upsertDescendents(existing, descendents);
           });
         },
       },
@@ -158,9 +154,7 @@ export class DescendentStore {
         // another activity is loading
         return;
       }
-      this.descendents = indexDescendents(
-        mergeDescendents(deindexDescendents(this.descendents), result),
-      );
+      upsertDescendents(this.descendents, result);
     });
     const allCreated = objectValues(result[descendentName]);
     const created = assertOne(allCreated);
@@ -221,9 +215,7 @@ export class DescendentStore {
         // another activity is loading
         return;
       }
-      this.descendents = indexDescendents(
-        mergeDescendents(deindexDescendents(this.descendents), result),
-      );
+      upsertDescendents(this.descendents, result);
     });
     const allUpdated = objectValues(result[descendentName]);
     const updated = assertOne(allUpdated);

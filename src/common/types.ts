@@ -14,12 +14,12 @@ export const jsonSchema: z.ZodType<Json> = z.lazy(() =>
   z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)]),
 );
 
-export type JsonOrUndefinedOrDate =
+export type JsonPlus =
   | Literal
   | undefined
   | Date
-  | JsonOrUndefinedOrDate[]
-  | { [key: string]: JsonOrUndefinedOrDate };
+  | JsonPlus[]
+  | { [key: string]: JsonPlus };
 
 export const audioDataXSchema = z.object({
   data: z.string(), // base64 encoded audio

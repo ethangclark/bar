@@ -1,11 +1,11 @@
 import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
 import { descendentNames, type DescendentName } from "~/common/descendentNames";
 import {
-  deindexDescendents,
   indexDescendents,
   mergeDescendents,
   rectifyModifications,
   selectDescendents,
+  upsertDescendents,
 } from "~/common/descendentUtils";
 import { getDraftDate, getDraftId } from "~/common/draftData";
 import { identity, objectValues } from "~/common/objectUtils";
@@ -94,17 +94,13 @@ export class ActivityEditorStore {
         }),
       });
       runInAction(() => {
-        const withUpdates = mergeDescendents(
-          deindexDescendents(drafts),
-          descendents,
-        );
-        const newDrafts = indexDescendents(withUpdates);
+        upsertDescendents(drafts, descendents);
         this.changes.deletedIds.forEach((id) => {
           descendentNames.forEach((name) => {
-            delete newDrafts[name][id];
+            delete drafts[name][id];
           });
         });
-        this.drafts = newDrafts;
+        this.drafts = drafts;
         this.changes = baseState().changes;
       });
     } catch (e) {

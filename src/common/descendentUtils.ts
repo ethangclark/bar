@@ -28,6 +28,7 @@ export function mergeDescendents(
     const newById = indexById(newRows);
     const oldRows = descendents[name];
     const refreshed: any[] = [];
+    /* eslint-enable @typescript-eslint/no-explicit-any */
     oldRows.forEach((oldRow) => {
       const newRow = newById[oldRow.id];
       if (newRow) {
@@ -39,7 +40,6 @@ export function mergeDescendents(
     });
     refreshed.push(...objectValues(newById));
     descendents[name] = refreshed;
-    /* eslint-enable @typescript-eslint/no-explicit-any */
   });
   return descendents;
 }
@@ -52,12 +52,15 @@ export function indexDescendents(descendents: Descendents): DescendentTables {
   }, {} as DescendentTables);
 }
 
-export function deindexDescendents(tables: DescendentTables): Descendents {
-  return descendentNames.reduce((acc, name) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    acc[name] = objectValues(tables[name]) as any;
-    return acc;
-  }, {} as Descendents);
+export function upsertDescendents(
+  tables: DescendentTables,
+  descendents: Descendents,
+) {
+  objectEntries(descendents).forEach(([name, rows]) => {
+    rows.forEach((row) => {
+      tables[name][row.id] = row;
+    });
+  });
 }
 
 export function selectDescendents(
@@ -72,6 +75,15 @@ export function selectDescendents(
 }
 
 export function rectifyModifications(mods: Modifications): Modifications {
+  function deindexDescendents(tables: DescendentTables): Descendents {
+    const deindexed = createEmptyDescendents();
+    objectEntries(tables).forEach(([name, indexed]) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      deindexed[name] = objectValues(indexed) as any;
+    });
+    return deindexed;
+  }
+
   const safeMods = clone(mods);
   const toCreate = indexDescendents(safeMods.toCreate);
   const toUpdate = indexDescendents(safeMods.toUpdate);
