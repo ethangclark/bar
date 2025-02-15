@@ -1,13 +1,36 @@
 import { eq } from "drizzle-orm";
-import { assertOne } from "~/common/arrayUtils";
 import { createEmptyDescendents } from "~/common/descendentUtils";
 import { streamLlmResponse } from "~/server/ai/llm";
 import { db } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import { messageDeltaPubSub } from "~/server/db/pubsub/messageDeltaPubSub";
 import { type Message } from "~/server/db/schema";
+import { publishNextIncompleteMessage } from "./nextIncompleteMessage";
 import { postProcessAssistantResponse } from "./postProcessor";
 import { debouncePublish } from "./utils";
+
+export async function updateAndPublishCompletion(assistantResponse: Message) {
+  const updates = {
+    completed: true,
+  };
+
+  const updatedMessage = {
+    ...assistantResponse,
+    ...updates,
+  };
+  const descendent = {
+    ...createEmptyDescendents(),
+    messages: [updatedMessage],
+  };
+
+  await Promise.all([
+    db
+      .update(db.x.messages)
+      .set(updates)
+      .where(eq(db.x.messages.id, assistantResponse.id)),
+    descendentPubSub.publish(descendent),
+  ]);
+}
 
 async function respondToThread({
   userId,
@@ -18,37 +41,15 @@ async function respondToThread({
   activityId: string;
   threadId: string;
 }) {
-  const [rawMessages, newMessageArr] = await Promise.all([
-    db.query.messages.findMany({
-      where: eq(db.x.messages.threadId, threadId),
-    }),
-    db
-      .insert(db.x.messages)
-      .values({
-        activityId,
-        userId,
-        threadId,
-        senderRole: "assistant" as const,
-        content: "",
-        completed: false, // needs post-processing
-      })
-      .returning(),
-  ]);
-
-  const newEmptyMessage = assertOne(newMessageArr);
-
-  const oldMessages = rawMessages
-    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-    .filter((m) => m.id !== newEmptyMessage.id);
-
-  const descendents = {
-    ...createEmptyDescendents(),
-    messages: [newEmptyMessage],
-  };
-  await descendentPubSub.publish(descendents);
+  const { emptyIncompleteMessage, oldMessages } =
+    await publishNextIncompleteMessage({
+      userId,
+      activityId,
+      threadId,
+    });
 
   const gen = streamLlmResponse(
-    newEmptyMessage.userId,
+    emptyIncompleteMessage.userId,
     {
       model: "google/gemini-2.0-flash-thinking-exp:free",
       messages: oldMessages.map((m) => ({
@@ -59,35 +60,34 @@ async function respondToThread({
     db,
   );
 
-  function publish(delta: string) {
-    if (!newEmptyMessage) {
-      throw new Error("No new message created.");
-    }
-    void messageDeltaPubSub.publish({
+  const { streamed } = await debouncePublish(gen, 200, (delta) =>
+    messageDeltaPubSub.publish({
       activityId,
-      messageId: newEmptyMessage.id,
+      messageId: emptyIncompleteMessage.id,
       contentDelta: delta,
-    });
-  }
+    }),
+  );
 
-  const { generated } = await debouncePublish(gen, 200, publish);
-
-  const newMessage = {
-    ...newEmptyMessage,
-    content: generated,
+  const streamedIncompleteMessage = {
+    ...emptyIncompleteMessage,
+    content: streamed,
   };
 
-  const messages = [...oldMessages, newMessage];
+  const messages = [...oldMessages, streamedIncompleteMessage];
 
-  await Promise.all([
-    db
-      .update(db.x.messages)
-      .set({
-        content: generated,
-      })
-      .where(eq(db.x.messages.id, newEmptyMessage.id)),
-    postProcessAssistantResponse(newMessage, messages),
-  ]);
+  try {
+    await Promise.all([
+      db
+        .update(db.x.messages)
+        .set({
+          content: streamed,
+        })
+        .where(eq(db.x.messages.id, emptyIncompleteMessage.id)),
+      postProcessAssistantResponse(streamedIncompleteMessage, messages),
+    ]);
+  } finally {
+    await updateAndPublishCompletion(streamedIncompleteMessage);
+  }
 }
 
 export async function respondToUserMessages(userMessages: Message[]) {

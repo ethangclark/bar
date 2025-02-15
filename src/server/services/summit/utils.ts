@@ -4,15 +4,15 @@ export async function debouncePublish(
   gen: AsyncGenerator<string | null>,
   intervalMs: number,
   publishFn: (combinedDelta: string) => MaybePromise<void>,
-): Promise<{ generated: string }> {
-  let complete = "";
+): Promise<{ streamed: string }> {
+  let streamed = "";
   let partial = "";
   let lastPublish = new Date(0);
   for await (const resp of gen) {
     if (typeof resp !== "string") {
       continue;
     }
-    complete += resp;
+    streamed += resp;
     partial += resp;
     const now = new Date();
     if (now.getTime() - lastPublish.getTime() > intervalMs) {
@@ -25,5 +25,5 @@ export async function debouncePublish(
     void publishFn(partial);
   }
 
-  return { generated: complete };
+  return { streamed };
 }
