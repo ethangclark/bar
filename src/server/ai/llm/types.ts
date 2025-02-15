@@ -75,14 +75,14 @@ export type ResponseUsage = z.infer<typeof responseUsageSchema>;
 
 export const openRouterResponseSchema = z.object({
   id: z.string(),
-  choices: z.array(nonStreamingChoiceSchema), // IF CHANGING: make usage optional
+  choices: z.array(nonStreamingChoiceSchema).optional(),
   usage: responseUsageSchema,
 });
 export type OpenRouterResponse = z.infer<typeof openRouterResponseSchema>;
 
 export const streamingOpenRouterResponseSchema = z.object({
   id: z.string(),
-  choices: z.array(streamingChoiceSchema),
+  choices: z.array(streamingChoiceSchema).optional(),
   // Usage data is always returned for non-streaming.
   // When streaming, you will get one usage object at
   // the end accompanied by an empty choices array.

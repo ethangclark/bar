@@ -1,13 +1,13 @@
 import { eq } from "drizzle-orm";
+import { assertOne } from "~/common/arrayUtils";
+import { createEmptyDescendents } from "~/common/descendentUtils";
+import { streamLlmResponse } from "~/server/ai/llm";
 import { db } from "~/server/db";
+import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import { messageDeltaPubSub } from "~/server/db/pubsub/messageDeltaPubSub";
 import { type Message } from "~/server/db/schema";
-import { streamLlmResponse } from "~/server/ai/llm";
-import { debouncePublish } from "./utils";
-import { assertOne } from "~/common/arrayUtils";
 import { postProcessAssistantResponse } from "./postProcessor";
-import { createEmptyDescendents } from "~/common/descendentUtils";
-import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
+import { debouncePublish } from "./utils";
 
 const model = "google/gemini-2.0-flash-thinking-exp:free";
 
@@ -100,11 +100,17 @@ export async function respondToUserMessages(userMessages: Message[]) {
     a2ts[m.activityId] = ts;
     ts.add(m.threadId);
   }
+  const promises: Array<Promise<void>> = [];
   for (const [userId, a2ts] of Object.entries(u2a2ts)) {
     for (const [activityId, ts] of Object.entries(a2ts)) {
       for (const threadId of ts) {
-        void respondToThread({ userId, activityId, threadId });
+        promises.push(
+          respondToThread({ userId, activityId, threadId }).catch((e) => {
+            console.error(e);
+          }),
+        );
       }
     }
   }
+  await Promise.all(promises);
 }

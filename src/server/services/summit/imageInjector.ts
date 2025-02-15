@@ -8,8 +8,8 @@ import {
   type ViewPieceImage,
   type ViewPieceText,
 } from "~/server/db/schema";
-import { omissionDisclaimer } from "./summitIntro";
 import { getInjectionData } from "./injectionDataGetter";
+import { omissionDisclaimer } from "./summitIntro";
 
 export async function injectImages(
   assistantResponse: Message,
@@ -34,6 +34,10 @@ export async function injectImages(
     .map((d) => (d.type === "image" ? d.numericId : null))
     .filter((d): d is number => d !== null);
 
+  if (data.length === 0) {
+    return;
+  }
+
   const [viewPieces, infoImages] = await Promise.all([
     db
       .insert(db.x.viewPieces)
@@ -51,7 +55,7 @@ export async function injectImages(
     }),
   ]);
   if (
-    data.every((datum) => {
+    !data.every((datum) => {
       if (datum.type === "image") {
         return infoImages.some((i) => i.numericId === datum.numericId);
       }

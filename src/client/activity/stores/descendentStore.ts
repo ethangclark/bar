@@ -1,23 +1,22 @@
 import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
+import { loading, notLoaded, Status } from "~/client/utils/status";
+import { assertOne } from "~/common/arrayUtils";
 import { type DescendentName } from "~/common/descendentNames";
 import {
   createEmptyDescendents,
   indexDescendents,
-  mergeDescendents,
   upsertDescendents,
 } from "~/common/descendentUtils";
 import { getDraftDate, getDraftId } from "~/common/draftData";
 import { identity, objectValues } from "~/common/objectUtils";
-import { loading, notLoaded, Status } from "~/client/utils/status";
+import { type MessageDeltaSchema } from "~/common/types";
 import {
-  type Descendents,
   type DescendentRows,
+  type Descendents,
   type DescendentTables,
 } from "~/server/descendents/descendentTypes";
 import { trpc } from "~/trpc/proxy";
 import { type ActivityStore } from "./activityStore";
-import { type MessageDeltaSchema } from "~/common/types";
-import { assertOne } from "~/common/arrayUtils";
 
 const baseState = () => ({
   descendents: identity<DescendentTables | Status>(notLoaded),

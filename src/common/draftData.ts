@@ -7,4 +7,4 @@ export const getDraftDate = () => new Date(Date.now() + 1000 * 60 * 60 * 24);
 
 // heh
 // (must be overridden by the server for creates/updates)
-export const draftNumericId = -Infinity;
+export const draftNumericId = -1;
