@@ -1,5 +1,4 @@
-import { and, inArray } from "drizzle-orm";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { isGrader } from "~/common/enrollmentTypeUtils";
 import { type Message } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/descendentTypes";
@@ -17,7 +16,7 @@ export const messageController: DescendentController<Message> = {
   canRead,
 
   // anyone can create a message for themselves
-  async create({ activityId, tx, rows, userId, queueSideEffect }) {
+  async create({ activityId, tx, rows, userId, enqueueAgentEffect }) {
     const messages = await tx
       .insert(db.x.messages)
       .values(
@@ -30,7 +29,7 @@ export const messageController: DescendentController<Message> = {
       )
       .returning();
 
-    queueSideEffect(() => respondToUserMessages(messages));
+    enqueueAgentEffect(() => respondToUserMessages(messages));
 
     return messages;
   },

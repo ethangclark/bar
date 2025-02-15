@@ -1,22 +1,20 @@
+import { z } from "zod";
+import { type DescendentName } from "~/common/descendentNames";
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
-import {
-  infoTextSchema,
-  messageSchema,
-  viewPieceSchema,
-  viewPieceImagesSchema,
-  viewPieceTextSchema,
-} from "~/server/db/schema";
+import { type MaybePromise } from "~/common/types";
 import {
   evalKeySchema,
   infoImageSchema,
+  infoTextSchema,
+  itemSchema,
+  messageSchema,
   questionSchema,
   threadSchema,
+  viewPieceImagesSchema,
+  viewPieceSchema,
+  viewPieceTextSchema,
 } from "~/server/db/schema";
-import { z } from "zod";
-import { itemSchema } from "~/server/db/schema";
 import { type DbOrTx } from "../db";
-import { type DescendentName } from "~/common/descendentNames";
-import { type MaybePromise } from "~/common/types";
 
 export const descendentsSchema = z.object({
   items: z.array(itemSchema),
@@ -56,7 +54,7 @@ type ActionBaseParams = PermissionParams & {
 
 type EditParams<T extends DescendentRow> = ActionBaseParams & {
   rows: T[];
-  queueSideEffect: (cb: () => MaybePromise<void>) => void;
+  enqueueAgentEffect: (cb: () => MaybePromise<void>) => void;
 };
 
 type CreateParams<T extends DescendentRow> = EditParams<T>;

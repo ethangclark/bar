@@ -1,5 +1,4 @@
-import { and, inArray } from "drizzle-orm";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { isGrader } from "~/common/enrollmentTypeUtils";
 import { type Thread } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/descendentTypes";
@@ -17,7 +16,7 @@ export const threadController: DescendentController<Thread> = {
   canRead,
 
   // anyone can create a thread for themselves
-  async create({ activityId, tx, rows, userId, queueSideEffect }) {
+  async create({ activityId, tx, rows, userId, enqueueAgentEffect }) {
     const threads = await tx
       .insert(db.x.threads)
       .values(
@@ -29,7 +28,7 @@ export const threadController: DescendentController<Thread> = {
       )
       .returning();
 
-    queueSideEffect(() => generateIntroMessages(threads));
+    enqueueAgentEffect(() => generateIntroMessages(threads));
 
     return threads;
   },

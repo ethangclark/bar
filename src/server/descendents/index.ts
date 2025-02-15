@@ -7,6 +7,13 @@ import {
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
 import { objectEntries, objectValues } from "~/common/objectUtils";
 import { type DbOrTx } from "~/server/db";
+import {
+  type AfterTx,
+  type DescendentController,
+  type DescendentRows,
+  type Descendents,
+  type Modifications,
+} from "./descendentTypes";
 import { evalKeyController } from "./evalKeyController";
 import { infoImageController } from "./infoImageController";
 import { infoTextController } from "./infoTextController";
@@ -17,13 +24,6 @@ import { threadController } from "./threadController";
 import { viewPieceController } from "./viewPieceController";
 import { viewPieceImageController } from "./viewPieceImageController";
 import { viewPieceTextController } from "./viewPieceTextController";
-import {
-  type AfterTx,
-  type DescendentController,
-  type DescendentRows,
-  type Descendents,
-  type Modifications,
-} from "./descendentTypes";
 
 type Controllers = {
   [K in DescendentName]: DescendentController<DescendentRows[K]>;
@@ -48,21 +48,21 @@ export async function createDescendents({
   descendents,
   userId,
   tx,
-  queueSideEffect,
+  enqueueAgentEffect,
 }: {
   activityId: string;
   enrolledAs: EnrollmentType[];
   descendents: Descendents;
   userId: string;
   tx: DbOrTx;
-  queueSideEffect: AfterTx;
+  enqueueAgentEffect: AfterTx;
 }) {
   const baseParams = {
     userId,
     activityId,
     enrolledAs,
     tx,
-    queueSideEffect,
+    enqueueAgentEffect,
   };
 
   const result: Partial<Descendents> = {};
@@ -123,21 +123,21 @@ export async function updateDescendents({
   userId,
   enrolledAs,
   tx,
-  queueSideEffect,
+  enqueueAgentEffect,
 }: {
   activityId: string;
   descendents: Descendents;
   userId: string;
   enrolledAs: EnrollmentType[];
   tx: DbOrTx;
-  queueSideEffect: AfterTx;
+  enqueueAgentEffect: AfterTx;
 }) {
   const baseParams = {
     userId,
     activityId,
     enrolledAs,
     tx,
-    queueSideEffect,
+    enqueueAgentEffect,
   };
 
   const result: Partial<Descendents> = {};
@@ -167,14 +167,14 @@ export async function deleteDescendents({
   enrolledAs,
   descendents,
   tx,
-  queueSideEffect,
+  enqueueAgentEffect,
 }: {
   activityId: string;
   userId: string;
   enrolledAs: EnrollmentType[];
   descendents: Descendents;
   tx: DbOrTx;
-  queueSideEffect: AfterTx;
+  enqueueAgentEffect: AfterTx;
 }) {
   const baseParams = {
     userId,
@@ -182,7 +182,7 @@ export async function deleteDescendents({
     enrolledAs,
     descendents,
     tx,
-    queueSideEffect,
+    enqueueAgentEffect,
   };
 
   await Promise.all(
@@ -208,10 +208,16 @@ export async function modifyDescendents(params: {
   userId: string;
   enrolledAs: EnrollmentType[];
   tx: DbOrTx;
-  queueSideEffect: AfterTx;
+  enqueueAgentEffect: AfterTx;
 }): Promise<Descendents> {
-  const { activityId, modifications, userId, enrolledAs, tx, queueSideEffect } =
-    params;
+  const {
+    activityId,
+    modifications,
+    userId,
+    enrolledAs,
+    tx,
+    enqueueAgentEffect,
+  } = params;
 
   const rectified = rectifyModifications(modifications);
   const { toCreate, toUpdate, toDelete } = rectified;
@@ -263,7 +269,7 @@ export async function modifyDescendents(params: {
     activityId,
     enrolledAs,
     tx,
-    queueSideEffect,
+    enqueueAgentEffect,
   };
 
   const [created, updated] = await Promise.all([
