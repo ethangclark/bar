@@ -6,7 +6,8 @@ import { type SenderRole, senderRoleSchema } from "~/server/db/schema";
 // see https://openrouter.ai/models
 const modelSchema = z.enum([
   // "anthropic/claude-3.5-sonnet:beta",
-  "google/gemini-2.0-flash-thinking-exp:free",
+  "google/gemini-2.0-flash-thinking-exp:free", // rate limits are bad
+  "google/gemini-2.0-flash-001",
   // "google/gemini-2.0-pro-exp-02-05:free",
   // "deepseek/deepseek-chat",
 ]);

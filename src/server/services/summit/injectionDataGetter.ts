@@ -17,7 +17,7 @@ async function getInjectionResponse(
   const response = await getLlmResponse(
     userId,
     {
-      model: "google/gemini-2.0-flash-thinking-exp:free",
+      model: "google/gemini-2.0-flash-001",
       messages: [{ role: "user", content: prompt }],
     },
     db,

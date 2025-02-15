@@ -52,7 +52,7 @@ async function respondToThread({
     const gen = streamLlmResponse(
       emptyIncompleteMessage.userId,
       {
-        model: "google/gemini-2.0-flash-thinking-exp:free",
+        model: "google/gemini-2.0-flash-001",
         messages: oldMessages.map((m) => ({
           role: m.senderRole,
           content: m.content,
