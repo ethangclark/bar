@@ -48,34 +48,34 @@ async function respondToThread({
       threadId,
     });
 
-  const gen = streamLlmResponse(
-    emptyIncompleteMessage.userId,
-    {
-      model: "google/gemini-2.0-flash-thinking-exp:free",
-      messages: oldMessages.map((m) => ({
-        role: m.senderRole,
-        content: m.content,
-      })),
-    },
-    db,
-  );
-
-  const { streamed } = await debouncePublish(gen, 200, (delta) =>
-    messageDeltaPubSub.publish({
-      activityId,
-      messageId: emptyIncompleteMessage.id,
-      contentDelta: delta,
-    }),
-  );
-
-  const streamedIncompleteMessage = {
-    ...emptyIncompleteMessage,
-    content: streamed,
-  };
-
-  const messages = [...oldMessages, streamedIncompleteMessage];
-
   try {
+    const gen = streamLlmResponse(
+      emptyIncompleteMessage.userId,
+      {
+        model: "google/gemini-2.0-flash-thinking-exp:free",
+        messages: oldMessages.map((m) => ({
+          role: m.senderRole,
+          content: m.content,
+        })),
+      },
+      db,
+    );
+
+    const { streamed } = await debouncePublish(gen, 200, (delta) =>
+      messageDeltaPubSub.publish({
+        activityId,
+        messageId: emptyIncompleteMessage.id,
+        contentDelta: delta,
+      }),
+    );
+
+    const streamedIncompleteMessage = {
+      ...emptyIncompleteMessage,
+      content: streamed,
+    };
+
+    const messages = [...oldMessages, streamedIncompleteMessage];
+
     await Promise.all([
       db
         .update(db.x.messages)
@@ -85,8 +85,10 @@ async function respondToThread({
         .where(eq(db.x.messages.id, emptyIncompleteMessage.id)),
       postProcessAssistantResponse(streamedIncompleteMessage, messages),
     ]);
-  } finally {
     await updateAndPublishCompletion(streamedIncompleteMessage);
+  } catch (error) {
+    await updateAndPublishCompletion(emptyIncompleteMessage);
+    throw error;
   }
 }
 

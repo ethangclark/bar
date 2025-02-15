@@ -1,12 +1,12 @@
 import { env } from "~/env";
+import { type DbOrTx } from "~/server/db";
+import { assertUsageOk, incrementUsage } from "~/server/services/usageService";
 import {
   openRouterResponseSchema,
-  type OpenRouterRequest,
   streamingOpenRouterResponseSchema,
+  type OpenRouterRequest,
   type StreamingOpenRouterResponse,
 } from "./types";
-import { assertUsageOk, incrementUsage } from "~/server/services/usageService";
-import { type DbOrTx } from "~/server/db";
 
 export async function getOpenRouterResponse(
   userId: string,
@@ -26,9 +26,15 @@ export async function getOpenRouterResponse(
     },
   );
   const json = await response.json();
-  const result = openRouterResponseSchema.parse(json);
-  await incrementUsage(userId, result.usage.total_tokens, tx);
-  return result;
+  try {
+    const result = openRouterResponseSchema.parse(json);
+    await incrementUsage(userId, result.usage.total_tokens, tx);
+    return result;
+  } catch (error) {
+    console.error(error);
+    console.error("raw json:", json);
+    throw new Error("Failed to parse OpenRouter response");
+  }
 }
 
 export async function* streamOpenRouterResponse(
@@ -81,8 +87,16 @@ export async function* streamOpenRouterResponse(
         }
 
         const json = JSON.parse(jsonStr);
-        const result = streamingOpenRouterResponseSchema.parse(json);
-        yield result;
+        try {
+          const result = streamingOpenRouterResponseSchema.parse(json);
+          yield result;
+        } catch (error) {
+          console.error(error);
+          console.error("raw json:", json);
+          throw new Error(
+            "Failed to parse streaming OpenRouter response (code 1)",
+          );
+        }
       }
     }
   }
@@ -90,7 +104,13 @@ export async function* streamOpenRouterResponse(
   // Handle any remaining data in the buffer
   if (buffer.trim()) {
     const json = JSON.parse(buffer);
-    const result = streamingOpenRouterResponseSchema.parse(json);
-    yield result;
+    try {
+      const result = streamingOpenRouterResponseSchema.parse(json);
+      yield result;
+    } catch (error) {
+      console.error(error);
+      console.error("raw json:", json);
+      throw new Error("Failed to parse streaming OpenRouter response (code 2)");
+    }
   }
 }
