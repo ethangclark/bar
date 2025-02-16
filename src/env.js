@@ -1,5 +1,5 @@
-import "dotenv/config";
 import { createEnv } from "@t3-oss/env-nextjs";
+import "dotenv/config";
 import { z } from "zod";
 
 export const env = createEnv({
@@ -13,15 +13,9 @@ export const env = createEnv({
       .enum(["development", "test", "production"])
       .default("development"),
     TEST_TYPE: z.enum(["prompt_test"]).optional(),
-    NEXTAUTH_SECRET:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
-    NEXTAUTH_URL: z.string().url(),
     EMAIL_SERVER: z.string().url(),
     EMAIL_FROM: z.string().email(),
     OPENAI_API_KEY: z.string(),
-    ANTHROPIC_API_KEY: z.string(),
     HEADFUL: z.boolean(),
     OPENROUTER_API_KEY: z.string(),
     PORT: z.string().default("3000"),
@@ -44,12 +38,9 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
     TEST_TYPE: process.env.TEST_TYPE,
-    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     EMAIL_SERVER: process.env.EMAIL_SERVER,
     EMAIL_FROM: process.env.EMAIL_FROM,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     HEADFUL: process.env.HEADFUL === "true",
     OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
     PORT: process.env.PORT,

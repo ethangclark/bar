@@ -1,7 +1,6 @@
-import { type Session } from "next-auth";
-import { db } from "~/server/db";
-import { users } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
+import { db } from "~/server/db";
+import { type Session, users } from "~/server/db/schema";
 
 export async function getLoginInfo(userId: string, session: Session | null) {
   const user = await db.query.users.findFirst({

@@ -13,7 +13,6 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
-import { type AdapterAccount } from "next-auth/adapters";
 import { z } from "zod";
 
 export const pgTable = pgTableCreator((name) => name);
@@ -80,36 +79,6 @@ export const ipUsersRelations = relations(ipUsers, ({ one }) => ({
   user: one(users, { fields: [ipUsers.userId], references: [users.id] }),
 }));
 export const ipUserSchema = createSelectSchema(ipUsers);
-
-export const accounts = pgTable(
-  "account",
-  {
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    type: text("type").$type<AdapterAccount["type"]>().notNull(),
-    provider: text("provider").notNull(),
-    providerAccountId: text("provider_account_id").notNull(),
-    refresh_token: text("refresh_token"),
-    access_token: text("access_token"),
-    expires_at: integer("expires_at"),
-    token_type: text("token_type"),
-    scope: text("scope"),
-    id_token: text("id_token"),
-    session_state: text("session_state"),
-  },
-  (account) => [
-    primaryKey({
-      columns: [account.provider, account.providerAccountId],
-    }),
-    index("account_user_id_idx").on(account.userId),
-  ],
-);
-export type Account = InferSelectModel<typeof accounts>;
-export const accountsRelations = relations(accounts, ({ one }) => ({
-  user: one(users, { fields: [accounts.userId], references: [users.id] }),
-}));
-export const accountSchema = createSelectSchema(accounts);
 
 export const sessions = pgTable(
   "session",

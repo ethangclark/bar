@@ -1,21 +1,31 @@
-import Email from "next-auth/providers/email";
 import nodemailer from "nodemailer";
-import { html, text } from "./emailUtils";
 import { env } from "~/env";
+import { html, text } from "./emailUtils";
 
-export const emailProvider = Email({
+// Will have to ChatGPT etc how to create a nodemailer transport using gmail token or whatever
+export const emailStuff = {
   server: env.EMAIL_SERVER,
   from: env.EMAIL_FROM,
-  async sendVerificationRequest({ identifier: email, url, provider }) {
+  async sendVerificationRequest({
+    email,
+    urlWithLoginToken,
+    provider,
+  }: {
+    email: string;
+    urlWithLoginToken: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    provider: any;
+  }) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const transport = nodemailer.createTransport(provider.server);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const result = await transport.sendMail({
       to: email,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       from: provider.from,
       subject: "Sign in to your account",
-      text: text({ urlWithLoginToken: url, email }),
-      html: html({ urlWithLoginToken: url, email }),
+      text: text({ urlWithLoginToken, email }),
+      html: html({ urlWithLoginToken, email }),
     });
 
     if (env.NODE_ENV !== "production") {
@@ -27,4 +37,4 @@ export const emailProvider = Email({
       console.log("Login link: %s", url);
     }
   },
-});
+};
