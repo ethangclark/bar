@@ -24,26 +24,24 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
         <div className="w-full text-3xl">{activity.assignment.title}</div>
         <EditorControls activityStatus={activity.status} />
       </div>
-      <ScrollyContentBox className="mb-5">
-        <div className="h-full w-full p-6 pb-24">
-          {sortedItems.map((item, idx) => {
-            const infoImage = itemStore.getInfoImage(item.id);
-            const infoText = itemStore.getTextInfo(item.id);
-            const question = itemStore.getQuestion(item.id);
-            return (
-              <Item
-                key={item.id}
-                item={item}
-                itemNumber={idx + 1}
-                deleted={activityEditorStore.isDeletedDraft(item.id)}
-                enrolledAs={activity.course.enrolledAs}
-                infoImage={infoImage}
-                infoText={infoText}
-                question={question}
-              />
-            );
-          })}
-        </div>
+      <ScrollyContentBox className="mb-5 p-6 pb-24">
+        {sortedItems.map((item, idx) => {
+          const infoImage = itemStore.getInfoImage(item.id);
+          const infoText = itemStore.getTextInfo(item.id);
+          const question = itemStore.getQuestion(item.id);
+          return (
+            <Item
+              key={item.id}
+              item={item}
+              itemNumber={idx + 1}
+              deleted={activityEditorStore.isDeletedDraft(item.id)}
+              enrolledAs={activity.course.enrolledAs}
+              infoImage={infoImage}
+              infoText={infoText}
+              question={question}
+            />
+          );
+        })}
       </ScrollyContentBox>
       <div className="flex justify-center">
         <AddItemButtons />

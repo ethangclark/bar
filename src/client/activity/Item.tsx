@@ -12,7 +12,6 @@ import {
 import { Editor } from "../components/Editor";
 import { Image } from "../components/Image";
 import { ImageUploadLink } from "../components/ImageUploader";
-import { TeacherSection } from "../components/TeacherSection";
 import { isStoreName, type Stores } from "../utils/allStores";
 import { storeObserver } from "../utils/storeObserver";
 
@@ -80,7 +79,7 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
   const evalKey = question && questionStore.getEvalKey(question.id);
 
   return (
-    <div className={`mb-2 flex w-full flex-col items-center pb-4`}>
+    <div className="mb-12 flex w-full flex-col items-center">
       <div className="flex w-full items-center justify-between">
         <div className="mb-1 flex items-center gap-2">
           <div className="text-lg font-bold">Item {itemNumber}</div>
@@ -169,28 +168,23 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
               />
             </div>
             {evalKey ? (
-              <div className="h-full w-full">
-                <TypeTitle>Answer</TypeTitle>
-                <TeacherSection>
-                  <div className="mb-[-4px] mr-[-4px] pl-1">
-                    <Editor
-                      placeholder="Insert answer here..."
-                      value={evalKey.key}
-                      setValue={(v) => {
-                        activityEditorStore.updateDraft("evalKeys", {
-                          id: evalKey.id,
-                          key: v,
-                        });
-                      }}
-                      outlineCn={"outline-none"}
-                      className={
-                        question.content && !evalKey.key
-                          ? "placeholder-red-500"
-                          : ""
-                      }
-                    />
-                  </div>
-                </TeacherSection>
+              <div className="ml-7">
+                <div className="text-sm font-bold">Answer</div>
+                <Editor
+                  placeholder="Insert answer here..."
+                  value={evalKey.key}
+                  setValue={(v) => {
+                    activityEditorStore.updateDraft("evalKeys", {
+                      id: evalKey.id,
+                      key: v,
+                    });
+                  }}
+                  className={
+                    question.content && !evalKey.key
+                      ? "placeholder-red-500"
+                      : ""
+                  }
+                />
               </div>
             ) : null}
           </div>
