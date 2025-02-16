@@ -6,7 +6,7 @@ import { invoke } from "~/common/fnUtils";
 import { type ActivityStatus } from "~/server/db/schema";
 import { ModalPadding } from "../components/ModalPadding";
 
-type IgodControlsProps = {
+type EditorControlsProps = {
   activityStatus: ActivityStatus;
 };
 
@@ -14,8 +14,8 @@ function ControlButton(props: ButtonProps) {
   return <Button {...props} className={`w-full ${props.className ?? ""}`} />;
 }
 
-export const IgodControls = storeObserver<IgodControlsProps>(
-  function IgodControls({
+export const EditorControls = storeObserver<EditorControlsProps>(
+  function EditorControls({
     activityStatus,
     activityEditorStore,
     studentModeStore,
