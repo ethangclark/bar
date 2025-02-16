@@ -81,8 +81,7 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
 
   return (
     <div
-      className={`mb-2 flex flex-col items-center px-4 pb-4`}
-      style={{ width: 500 }}
+      className={`mb-2 flex w-[500px] flex-col items-center px-4 pb-4 lg:w-[680px]`}
     >
       <div className="flex w-full items-center justify-between">
         <div className="mb-1 flex items-center gap-2">
@@ -106,37 +105,29 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
             <Image
               alt={infoImage.url ? infoImage.textAlternative : "Missing image"}
               url={infoImage.url}
-              style={{
-                maxWidth: "100%",
-                marginBottom: 4,
-              }}
+              className="max-w-full"
             />
+            <div className="mb-1 flex w-full justify-center">
+              <ImageUploadLink
+                label="Replace image"
+                onFileSelect={({ imageDataUrl }) => {
+                  activityEditorStore.updateDraft("infoImages", {
+                    id: infoImage.id,
+                    url: imageDataUrl,
+                  });
+                }}
+              />
+            </div>
             <div className="flex items-center">
-              <div className="flex items-center">
-                <div className="mr-1">
-                  <TypeTitle>Description</TypeTitle>
-                </div>
-                <Tooltip
-                  title="Summit can't understand images yet. This text describes the image to Summit so it knows what's being seen."
-                  className="text-gray-500"
-                >
-                  <CircleHelp size={16} />
-                </Tooltip>
+              <div className="mr-1">
+                <TypeTitle>Description</TypeTitle>
               </div>
-              <div className="flex">
-                <span className="mx-2 text-gray-300">|</span>
-                <div className="mb-1">
-                  <ImageUploadLink
-                    label="Replace image"
-                    onFileSelect={({ imageDataUrl }) => {
-                      activityEditorStore.updateDraft("infoImages", {
-                        id: infoImage.id,
-                        url: imageDataUrl,
-                      });
-                    }}
-                  />
-                </div>
-              </div>
+              <Tooltip
+                title="Summit can't understand images yet. This text describes the image to Summit so it knows what's being seen."
+                className="text-gray-500"
+              >
+                <CircleHelp size={16} />
+              </Tooltip>
             </div>
             <Editor
               value={infoImage.textAlternative}
