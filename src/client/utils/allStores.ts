@@ -30,4 +30,8 @@ export const stores = {
   viewPieceStore,
 };
 
+export function isStoreName(name: string): name is keyof typeof stores {
+  return name in stores;
+}
+
 export type Stores = typeof stores;

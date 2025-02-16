@@ -1,6 +1,8 @@
 import { Tooltip, Typography } from "antd";
 import { CircleHelp } from "lucide-react";
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
+import { assertNever } from "~/common/errorUtils";
+import { objectKeys } from "~/common/objectUtils";
 import {
   type InfoImage,
   type InfoText,
@@ -11,9 +13,10 @@ import { Editor } from "../components/Editor";
 import { Image } from "../components/Image";
 import { ImageUploadLink } from "../components/ImageUploader";
 import { TeacherSection } from "../components/TeacherSection";
+import { isStoreName, type Stores } from "../utils/allStores";
 import { storeObserver } from "../utils/storeObserver";
 
-export const Item = storeObserver<{
+type CustomProps = {
   item: ItemType;
   itemNumber: number;
   deleted: boolean;
@@ -21,25 +24,66 @@ export const Item = storeObserver<{
   infoImage: InfoImage | null;
   infoText: InfoText | null;
   question: Question | null;
-}>(function Item({
-  item,
-  itemNumber,
-  deleted,
-  activityEditorStore,
-  infoImage,
-  infoText,
-  question,
-  questionStore,
-}) {
+};
+
+function getItemTitle(props: CustomProps & Stores): string {
+  for (const propKey of objectKeys(props)) {
+    if (isStoreName(propKey)) {
+      continue;
+    }
+    switch (propKey) {
+      case "item":
+      case "itemNumber":
+      case "deleted":
+      case "enrolledAs":
+        continue;
+      case "infoImage": {
+        if (props.infoImage) {
+          return "Image";
+        }
+        continue;
+      }
+      case "infoText": {
+        if (props.infoText) {
+          return "Text";
+        }
+        continue;
+      }
+      case "question": {
+        if (props.question) {
+          return "Question";
+        }
+        continue;
+      }
+      default:
+        assertNever(propKey);
+    }
+  }
+  return "";
+}
+
+export const Item = storeObserver<CustomProps>(function Item(props) {
+  const {
+    item,
+    itemNumber,
+    deleted,
+    activityEditorStore,
+    infoImage,
+    infoText,
+    question,
+    questionStore,
+  } = props;
   const evalKey = question && questionStore.getEvalKey(question.id);
 
   return (
     <div
-      className={`flex flex-col items-center px-4 pb-4`}
+      className={`mb-2 flex flex-col items-center px-4 pb-4`}
       style={{ width: 500 }}
     >
       <div className="flex w-full items-center justify-between">
-        <div className="font-bold">Item {itemNumber}</div>
+        <div className="mb-1 text-lg font-bold">
+          Item {itemNumber} - {getItemTitle(props)}
+        </div>
         <Typography.Link
           onClick={() => activityEditorStore.toggleDeletion(item.id)}
           className="text-xs"
