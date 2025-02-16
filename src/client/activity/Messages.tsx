@@ -4,8 +4,9 @@ import { assertNever } from "~/common/errorUtils";
 import { LoadingCentered } from "../components/Loading";
 import { PreformattedText } from "../components/PreformattedText";
 import { storeObserver } from "../utils/storeObserver";
-import { MessageView } from "./MessageView";
 import { AssistantMessage } from "./AssistantMessage";
+import { MessageView } from "./MessageView";
+import { ScrollyContentBox } from "./ScrollyContentBox";
 
 export const Messages = storeObserver(function Messages({ threadStore }) {
   const messageWrapperRef = useRef<HTMLDivElement>(null);
@@ -24,10 +25,7 @@ export const Messages = storeObserver(function Messages({ threadStore }) {
   }
 
   return (
-    <div
-      className="outline-3 flex h-full grow items-center overflow-y-auto rounded-lg outline outline-gray-200"
-      style={{ width: `calc(100% - 2px)` }} // to account for the outline
-    >
+    <ScrollyContentBox>
       <div
         className="flex h-full w-full flex-col overflow-y-auto p-6"
         ref={messageWrapperRef}
@@ -64,6 +62,6 @@ export const Messages = storeObserver(function Messages({ threadStore }) {
           }
         })}
       </div>
-    </div>
+    </ScrollyContentBox>
   );
 });
