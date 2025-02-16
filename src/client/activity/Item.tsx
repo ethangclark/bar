@@ -62,6 +62,10 @@ function getItemTitle(props: CustomProps & Stores): string {
   return "";
 }
 
+const TypeTitle = ({ children }: { children: React.ReactNode }) => {
+  return <div className="text-sm text-gray-500">{children}</div>;
+};
+
 export const Item = storeObserver<CustomProps>(function Item(props) {
   const {
     item,
@@ -81,8 +85,9 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
       style={{ width: 500 }}
     >
       <div className="flex w-full items-center justify-between">
-        <div className="mb-1 text-lg font-bold">
-          Item {itemNumber} - {getItemTitle(props)}
+        <div className="mb-1 flex items-center gap-2">
+          <div className="text-lg font-bold">Item {itemNumber}</div>
+          <TypeTitle>{getItemTitle(props)}</TypeTitle>
         </div>
         <Typography.Link
           onClick={() => activityEditorStore.toggleDeletion(item.id)}
@@ -107,8 +112,10 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
               }}
             />
             <div className="flex items-center">
-              <div className="flex items-center text-sm text-gray-700">
-                <div className="mr-1">Description</div>
+              <div className="flex items-center">
+                <div className="mr-1">
+                  <TypeTitle>Description</TypeTitle>
+                </div>
                 <Tooltip
                   title="Summit can't understand images yet. This text describes the image to Summit so it knows what's being seen."
                   className="text-gray-500"
@@ -116,17 +123,19 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
                   <CircleHelp size={16} />
                 </Tooltip>
               </div>
-              <div>
+              <div className="flex">
                 <span className="mx-2 text-gray-300">|</span>
-                <ImageUploadLink
-                  label="Replace image"
-                  onFileSelect={({ imageDataUrl }) => {
-                    activityEditorStore.updateDraft("infoImages", {
-                      id: infoImage.id,
-                      url: imageDataUrl,
-                    });
-                  }}
-                />
+                <div className="mb-1">
+                  <ImageUploadLink
+                    label="Replace image"
+                    onFileSelect={({ imageDataUrl }) => {
+                      activityEditorStore.updateDraft("infoImages", {
+                        id: infoImage.id,
+                        url: imageDataUrl,
+                      });
+                    }}
+                  />
+                </div>
               </div>
             </div>
             <Editor
@@ -172,6 +181,7 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
             </div>
             {evalKey ? (
               <div className="h-full w-full">
+                <TypeTitle>Answer</TypeTitle>
                 <TeacherSection>
                   <div className="mb-[-4px] mr-[-4px] pl-1">
                     <Editor
