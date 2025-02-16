@@ -80,9 +80,7 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
   const evalKey = question && questionStore.getEvalKey(question.id);
 
   return (
-    <div
-      className={`mb-2 flex w-[500px] flex-col items-center px-4 pb-4 lg:w-[680px]`}
-    >
+    <div className={`mb-2 flex w-full flex-col items-center pb-4`}>
       <div className="flex w-full items-center justify-between">
         <div className="mb-1 flex items-center gap-2">
           <div className="text-lg font-bold">Item {itemNumber}</div>

@@ -1,10 +1,9 @@
 import { Button, Modal, type ButtonProps } from "antd";
+import { useState } from "react";
 import { storeObserver } from "~/client/utils/storeObserver";
+import { draftNumericId } from "~/common/draftData";
 import { invoke } from "~/common/fnUtils";
 import { type ActivityStatus } from "~/server/db/schema";
-import { TeacherSection } from "../components/TeacherSection";
-import { draftNumericId } from "~/common/draftData";
-import { useState } from "react";
 import { ModalPadding } from "../components/ModalPadding";
 
 type IgodControlsProps = {
@@ -24,7 +23,7 @@ export const IgodControls = storeObserver<IgodControlsProps>(
   }) {
     const [confirmOpen, setConfirmOpen] = useState(false);
     return (
-      <div className="mr-3 flex h-full flex-col items-center">
+      <div className="flex flex flex-col flex-col items-center gap-2">
         <Modal
           open={confirmOpen}
           onCancel={() => setConfirmOpen(false)}
@@ -38,73 +37,71 @@ export const IgodControls = storeObserver<IgodControlsProps>(
             visible to students.
           </ModalPadding>
         </Modal>
-        <TeacherSection className="flex flex-col items-center gap-2 p-3">
-          <ControlButton
-            type="primary"
-            disabled={activityEditorStore.canSave === false}
-            onClick={() => {
-              if (activityStatus === "published") {
-                setConfirmOpen(true);
-              } else {
-                void activityEditorStore.save();
-              }
-            }}
-          >
-            {invoke((): string => {
-              switch (activityStatus) {
-                case "draft":
-                  return "Save";
-                case "published":
-                  return "Publish";
-              }
-            })}
-          </ControlButton>
-          <ControlButton
-            type="primary"
-            onClick={() => studentModeStore.setIsStudentMode(true)}
-            disabled={activityEditorStore.canSave}
-          >
-            See demo
-          </ControlButton>
-          <ControlButton
-            onClick={() => {
-              activityEditorStore.createDraft("infoTexts", {
-                itemId: itemStore.createItem().id,
-                content: "",
-              });
-            }}
-          >
-            + Add text
-          </ControlButton>
-          <ControlButton
-            onClick={() => {
-              activityEditorStore.createDraft("infoImages", {
-                itemId: itemStore.createItem().id,
-                url: "",
-                textAlternative: "",
-                numericId: draftNumericId,
-              });
-            }}
-          >
-            + Add image
-          </ControlButton>
-          <ControlButton
-            onClick={() => {
-              const q = activityEditorStore.createDraft("questions", {
-                itemId: itemStore.createItem().id,
-                content: "",
-              });
+        <ControlButton
+          type="primary"
+          disabled={activityEditorStore.canSave === false}
+          onClick={() => {
+            if (activityStatus === "published") {
+              setConfirmOpen(true);
+            } else {
+              void activityEditorStore.save();
+            }
+          }}
+        >
+          {invoke((): string => {
+            switch (activityStatus) {
+              case "draft":
+                return "Save";
+              case "published":
+                return "Publish";
+            }
+          })}
+        </ControlButton>
+        <ControlButton
+          type="primary"
+          onClick={() => studentModeStore.setIsStudentMode(true)}
+          disabled={activityEditorStore.canSave}
+        >
+          See demo
+        </ControlButton>
+        <ControlButton
+          onClick={() => {
+            activityEditorStore.createDraft("infoTexts", {
+              itemId: itemStore.createItem().id,
+              content: "",
+            });
+          }}
+        >
+          + Add text
+        </ControlButton>
+        <ControlButton
+          onClick={() => {
+            activityEditorStore.createDraft("infoImages", {
+              itemId: itemStore.createItem().id,
+              url: "",
+              textAlternative: "",
+              numericId: draftNumericId,
+            });
+          }}
+        >
+          + Add image
+        </ControlButton>
+        <ControlButton
+          onClick={() => {
+            const q = activityEditorStore.createDraft("questions", {
+              itemId: itemStore.createItem().id,
+              content: "",
+            });
 
-              // we could generate suggestions for this
-              activityEditorStore.createDraft("evalKeys", {
-                questionId: q.id,
-                key: "",
-              });
-            }}
-          >
-            + Add question
-          </ControlButton>
-        </TeacherSection>
+            // we could generate suggestions for this
+            activityEditorStore.createDraft("evalKeys", {
+              questionId: q.id,
+              key: "",
+            });
+          }}
+        >
+          + Add question
+        </ControlButton>
       </div>
     );
   },
