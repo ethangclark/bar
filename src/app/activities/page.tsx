@@ -16,7 +16,7 @@ export default function Courses() {
   return (
     <Page>
       <LogoutButton />
-      <div className="mb-4 text-4xl">Courses</div>
+      <div className="mb-4 text-4xl">Activities</div>
       <div>
         {courses?.map((c, idx) => (
           <div key={idx}>

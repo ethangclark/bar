@@ -235,20 +235,22 @@ export const activities = pgTable(
   "activity",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    exCourseIdJson: text("ex_course_id_json").notNull(),
-    exAssignmentIdJson: text("ex_assignment_id_json").notNull(),
-    integrationId: uuid("integration_id")
-      .notNull()
-      .references(
-        () =>
-          integrations.id /*, { onDelete: "cascade" } preserve in case of deletion */,
-      ),
+    exCourseIdJson: text("ex_course_id_json"),
+    exAssignmentIdJson: text("ex_assignment_id_json"),
+    integrationId: uuid("integration_id").references(
+      () => integrations.id,
+      /*, { onDelete: "cascade" } <- avoiding; we want to preserve activities even if integration is deleted */
+    ),
     status: activityStatusEnum("status").notNull().default("draft"),
+    manualCreatorId: uuid("manual_creator_id").references(() => users.id, {
+      onDelete: "cascade",
+    }),
   },
   (a) => [
     index("activity_ex_course_id_json_idx").on(a.exCourseIdJson),
     index("activity_ex_assignment_id_json_idx").on(a.exAssignmentIdJson),
     index("activity_integration_id_idx").on(a.integrationId),
+    index("activity_manual_creator_id_idx").on(a.manualCreatorId),
   ],
 );
 export type Activity = InferSelectModel<typeof activities>;
@@ -264,6 +266,10 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
   infoImages: many(infoImages),
   threads: many(threads),
   messages: many(messages),
+  manualCreator: one(users, {
+    fields: [activities.manualCreatorId],
+    references: [users.id],
+  }),
 }));
 export const activitySchema = createSelectSchema(activities);
 
