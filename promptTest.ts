@@ -10,7 +10,7 @@ if (isNaN(times) || times < 1) {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const [_, __, fileRelPath] = process.argv;
 if (!fileRelPath || !existsSync(fileRelPath)) {
-  console.error("Please pass the path of a file for the prompt tests.");
+  console.error("Please pass the path of a file for the prompt tests");
   process.exit(1);
 }
 

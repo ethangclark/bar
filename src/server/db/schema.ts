@@ -77,7 +77,7 @@ export const sessions = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    initialIpAddress: text("initial_ip_address").notNull(),
+    lastIpAddress: text("last_ip_address").notNull(),
   },
   (session) => [index("session_user_id_idx").on(session.userId)],
 );

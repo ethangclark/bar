@@ -1,27 +1,68 @@
+import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
-import { db } from "~/server/db";
-import { type Session, users } from "~/server/db/schema";
+import { assertOne } from "~/common/arrayUtils";
+import { db, DbOrTx } from "~/server/db";
+import { Session } from "../db/schema";
+import { hashLoginToken } from "../utils";
 
-export async function getLoginInfo(userId: string, session: Session | null) {
-  const user = await db.query.users.findFirst({
-    where: eq(users.id, userId),
-    with: {
-      userIntegrations: true,
-    },
+export async function getOrCreateVerifiedEmailUser({
+  email,
+  tx,
+}: {
+  email: string;
+  tx: DbOrTx;
+}) {
+  const existingVerified = await tx.query.users.findFirst({
+    where: eq(db.x.users.email, email),
   });
+  if (existingVerified) {
+    return existingVerified;
+  }
 
-  const loggedInViaSession = !!session;
-  const loggedInViaIntegration = (user?.userIntegrations.length ?? 0) > 0;
+  // clean up any existing unverified users with this email
+  // (simpler than trying to reuse unverified users if they exist)
+  await tx.delete(db.x.users).where(eq(db.x.users.unverifiedEmail, email));
 
-  const isLoggedIn = loggedInViaSession || loggedInViaIntegration;
-
-  return {
-    user,
-    isLoggedIn,
-  };
+  const users = await tx
+    .insert(db.x.users)
+    .values({ unverifiedEmail: email })
+    .returning();
+  return assertOne(users);
 }
 
-export async function isLoggedIn(userId: string, session: Session | null) {
-  const { isLoggedIn } = await getLoginInfo(userId, session);
-  return isLoggedIn;
+export async function loginUser(
+  loginToken: string,
+  session: Session,
+  tx: DbOrTx,
+) {
+  const loginTokenHash = hashLoginToken(loginToken);
+
+  // verify the login token
+  const user = await tx.query.users.findFirst({
+    where: eq(db.x.users.loginTokenHash, loginTokenHash),
+  });
+  if (!user) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+  const email = user.email || user.unverifiedEmail;
+  if (!email) {
+    throw new Error("Could not identify user email");
+  }
+
+  // ensure email is noted as verified
+  await db
+    .update(db.x.users)
+    .set({
+      email,
+      unverifiedEmail: null,
+      loginTokenHash: null,
+    })
+    .where(eq(db.x.users.id, user.id));
+
+  // associate the session with the user
+  await db
+    .update(db.x.sessions)
+    .set({
+      userId: user.id,
+    })
+    .where(eq(db.x.sessions.sessionCookieValue, session.sessionCookieValue));
 }

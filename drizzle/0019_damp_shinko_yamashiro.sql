@@ -1,0 +1,1 @@
+ALTER TABLE "session" RENAME COLUMN "initial_ip_address" TO "last_ip_address";

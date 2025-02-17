@@ -127,6 +127,20 @@
       "when": 1739818262522,
       "tag": "0017_even_riptide",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1739831424822,
+      "tag": "0018_young_stone_men",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1739832293486,
+      "tag": "0019_damp_shinko_yamashiro",
+      "breakpoints": true
     }
   ]
 }

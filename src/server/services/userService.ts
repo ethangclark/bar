@@ -18,7 +18,13 @@ export const createUser = async (tx: DbOrTx) => {
   return assertOne(user);
 };
 
-export const getOrCreateUser = async (userId: string | null, tx: DbOrTx) => {
+export const getOrCreateUser = async ({
+  userId,
+  tx,
+}: {
+  userId: string | null;
+  tx: DbOrTx;
+}) => {
   const user = await queryUser(userId, tx);
   if (user) return user;
   return createUser(tx);

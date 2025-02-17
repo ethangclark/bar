@@ -106,7 +106,7 @@ async function upsertCanvasUser({
       .where(eq(db.x.canvasUsers.canvasGlobalId, canvasUser.globalId));
     return { user: existing.user };
   } else {
-    const user = await getOrCreateUser(userId, tx);
+    const user = await getOrCreateUser({ userId, tx });
     await tx.insert(db.x.canvasUsers).values({
       userId: user.id,
       canvasIntegrationId,

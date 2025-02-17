@@ -1,4 +1,4 @@
-import { Form, Input } from "antd";
+import { Button, Form, Input } from "antd";
 import { useCallback, useState } from "react";
 import { z } from "zod";
 import { useNotify } from "~/client/hooks/useNotify";
@@ -35,7 +35,7 @@ export function EmailInputPage({
       <div className="mb-6">
         <FrontPageLogo />
       </div>
-      <Form onFinish={handleSubmit}>
+      <Form onFinish={handleSubmit} layout="inline" className="mb-8">
         <Form.Item name="email" label="Email">
           <Input
             type="email"
@@ -52,6 +52,15 @@ export function EmailInputPage({
                 : undefined
             }
           />
+        </Form.Item>
+        <Form.Item className="mr-0">
+          <Button
+            type="primary"
+            htmlType="submit"
+            disabled={!z.string().email().safeParse(email).success}
+          >
+            Sign in
+          </Button>
         </Form.Item>
       </Form>
       <div className={loading ? "visible" : "invisible"}>

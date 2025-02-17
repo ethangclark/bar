@@ -1,10 +1,10 @@
 import { and, eq, isNull } from "drizzle-orm";
-import { assertOne } from "~/common/arrayUtils";
 import { loginTokenQueryParam } from "~/common/constants";
 import { getBaseUrl } from "~/common/urlUtils";
 import { env } from "~/env";
 import { db } from "~/server/db";
 import { hashLoginToken } from "~/server/utils";
+import { getOrCreateVerifiedEmailUser } from "../authService";
 import { loginEmailHtml, loginEmailText } from "./loginEmailUtils";
 import { sendEmail } from "./sendEmail";
 
@@ -14,16 +14,8 @@ export async function sendLoginEmail({ email }: { email: string }) {
     .where(
       and(isNull(db.x.users.email), eq(db.x.users.unverifiedEmail, email)),
     );
-  const users = await db
-    .insert(db.x.users)
-    .values({
-      unverifiedEmail: email,
-    })
-    .onConflictDoNothing({
-      target: [db.x.users.unverifiedEmail],
-    })
-    .returning();
-  const user = assertOne(users);
+
+  const user = await getOrCreateVerifiedEmailUser({ email, tx: db });
 
   const loginToken = crypto.randomUUID();
   const loginTokenHash = hashLoginToken(loginToken);

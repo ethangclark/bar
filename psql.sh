@@ -7,7 +7,7 @@ if [ -z "$DATABASE_URL" ]; then
     # Extract the DATABASE_URL from the .env file
     DATABASE_URL=$(grep '^DATABASE_URL=' .env | cut -d '"' -f 2)
   else
-    echo ".env file not found."
+    echo ".env file not found"
     exit 1
   fi
 fi

@@ -1,9 +1,9 @@
 "use client";
 
-import { api } from "~/trpc/react";
 import { Assignment } from "~/client/components/Assignment";
-import { Page } from "~/client/components/Page";
 import { LoadingPage } from "~/client/components/Loading";
+import { Page } from "~/client/components/Page";
+import { api } from "~/trpc/react";
 
 export default function Courses() {
   const { data: courses, isLoading } = api.courses.all.useQuery();
@@ -14,7 +14,7 @@ export default function Courses() {
 
   return (
     <Page>
-      <div className="mb-4 text-6xl">Courses</div>
+      <div className="mb-4 text-4xl">Courses</div>
       <div>
         {courses?.map((c, idx) => (
           <div key={idx}>

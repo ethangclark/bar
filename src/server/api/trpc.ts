@@ -38,10 +38,15 @@ export const createTRPCContext = async (opts: {
     .insert(db.x.sessions)
     .values({
       sessionCookieValue: opts.sessionCookieValue ?? crypto.randomUUID(),
-      initialIpAddress: ipAddress,
+      lastIpAddress: ipAddress,
     })
-    .onConflictDoNothing({
+    .onConflictDoUpdate({
       target: [db.x.sessions.sessionCookieValue],
+      set: {
+        // doing an update here allows us to always return a value --
+        // tracking the IP is more of an excuse to do this than anything
+        lastIpAddress: ipAddress,
+      },
     })
     .returning();
   const session = assertOneOrNone(sessions);
