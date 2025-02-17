@@ -3,7 +3,7 @@
 import { Button, Dropdown } from "antd";
 import Link from "next/link";
 import { Image } from "~/client/components/Image";
-import { Logo, LogoText } from "~/client/components/Logo";
+import { FrontPageLogo } from "~/client/components/Logo";
 import { Page } from "~/client/components/Page";
 
 export default function Home() {
@@ -11,10 +11,7 @@ export default function Home() {
     <Page>
       <div className="mb-5 flex w-full items-center justify-between">
         <div className="flex flex-col items-center">
-          <div className="flex items-center">
-            <Logo height={50} />
-            <LogoText className="text-4xl md:text-5xl" />
-          </div>
+          <FrontPageLogo />
           <h1 className="text-lg font-bold md:text-xl">
             AI Learning Assistant
           </h1>

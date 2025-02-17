@@ -44,3 +44,12 @@ export const Logo = ({ height: h }: { height: number }) => {
     </div>
   );
 };
+
+export function FrontPageLogo() {
+  return (
+    <div className="flex items-center">
+      <Logo height={50} />
+      <LogoText className="text-4xl md:text-5xl" />
+    </div>
+  );
+}
