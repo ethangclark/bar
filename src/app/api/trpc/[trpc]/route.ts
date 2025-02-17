@@ -4,7 +4,7 @@ import { type NextRequest } from "next/server";
 import { env } from "~/env";
 import { appRouter } from "~/server/api/root";
 import { createTRPCContext } from "~/server/api/trpc";
-import { getSessionCookieValue } from "~/server/utils";
+import { sessionCookieName } from "~/server/utils";
 
 /**
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
@@ -13,9 +13,7 @@ import { getSessionCookieValue } from "~/server/utils";
 const createContext = async (req: NextRequest) => {
   return createTRPCContext({
     headers: req.headers,
-    sessionCookieValue: getSessionCookieValue(
-      (cookieName) => req.cookies.get(cookieName)?.value ?? null,
-    ),
+    sessionCookieValue: req.cookies.get(sessionCookieName)?.value ?? null,
   });
 };
 

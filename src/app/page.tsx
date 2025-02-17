@@ -22,11 +22,11 @@ export default function Home() {
               items: [
                 {
                   key: "student",
-                  label: <Link href="/signin/student">For students</Link>,
+                  label: <Link href="/login/student">For students</Link>,
                 },
                 {
                   key: "instructors",
-                  label: <Link href="/signin/instructor">For instructors</Link>,
+                  label: <Link href="/login/instructor">For instructors</Link>,
                 },
               ],
             }}
@@ -40,11 +40,11 @@ export default function Home() {
               items: [
                 {
                   key: "students",
-                  label: <Link href="/signin/student">For students</Link>,
+                  label: <Link href="/login/student">For students</Link>,
                 },
                 {
                   key: "instructors",
-                  label: <Link href="/signin/instructor">For instructors</Link>,
+                  label: <Link href="/login/instructor">For instructors</Link>,
                 },
               ],
             }}

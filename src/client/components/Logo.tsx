@@ -1,17 +1,5 @@
-// import Image from "next/image";
-
+import Link from "next/link";
 import { Title } from "./Title";
-
-// export function Logo({ wh }: { wh: number }) {
-//   return (
-//     <Image
-//       alt="summited logo"
-//       src="/images/spreader-logo.png"
-//       width={wh}
-//       height={wh}
-//     />
-//   );
-// }
 
 export function LogoText({ className }: { className: string }) {
   return (
@@ -47,9 +35,11 @@ export const Logo = ({ height: h }: { height: number }) => {
 
 export function FrontPageLogo() {
   return (
-    <div className="flex items-center">
-      <Logo height={50} />
-      <LogoText className="text-4xl md:text-5xl" />
-    </div>
+    <Link href="/">
+      <div className="flex items-center">
+        <Logo height={50} />
+        <LogoText className="text-4xl md:text-5xl" />
+      </div>
+    </Link>
   );
 }

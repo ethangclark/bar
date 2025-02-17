@@ -1,7 +1,6 @@
 import escapeHtml from "escape-html";
 
-// Email HTML body
-export function html({
+export function loginEmailHtml({
   urlWithLoginToken,
   email,
 }: {
@@ -13,13 +12,12 @@ export function html({
   const escapedUrl = escapeHtml(urlWithLoginToken);
   return `
     <body>
-      <p>Sign into SummitEd as <strong>${escapedEmail}</strong> by clicking <a href="${urlWithLoginToken}">here</a>, or by vising the following link:<br><br><a href="${urlWithLoginToken}">${escapedUrl}</a></p>
+      <p>Sign into SummitEd as <strong>${escapedEmail}</strong> by <a href="${urlWithLoginToken}">clicking here</a>, or by visiting the following link:<br><br><a href="${urlWithLoginToken}">${escapedUrl}</a></p>
     </body>
   `;
 }
 
-// Email text body
-export function text({
+export function loginEmailText({
   urlWithLoginToken,
   email,
 }: {

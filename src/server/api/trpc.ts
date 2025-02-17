@@ -11,7 +11,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { eq } from "drizzle-orm";
-import { assertOne } from "~/common/arrayUtils";
+import { assertOneOrNone } from "~/common/arrayUtils";
 import { db } from "~/server/db";
 import { queryUser } from "~/server/services/userService";
 import { getIpAddress } from "../utils";
@@ -30,25 +30,25 @@ import { getIpAddress } from "../utils";
  */
 export const createTRPCContext = async (opts: {
   headers: Headers;
-  sessionCookieValue: string;
+  sessionCookieValue: string | null;
 }) => {
   const ipAddress = getIpAddress((headerName) => opts.headers.get(headerName));
 
   const sessions = await db
     .insert(db.x.sessions)
     .values({
-      sessionCookieValue: opts.sessionCookieValue,
+      sessionCookieValue: opts.sessionCookieValue ?? crypto.randomUUID(),
       initialIpAddress: ipAddress,
     })
     .onConflictDoNothing({
       target: [db.x.sessions.sessionCookieValue],
     })
     .returning();
-  const session = assertOne(sessions);
+  const session = assertOneOrNone(sessions);
 
   const user =
     (await db.query.users.findFirst({
-      where: eq(db.x.users.id, session.userId ?? crypto.randomUUID()),
+      where: eq(db.x.users.id, session?.userId ?? crypto.randomUUID()),
     })) ?? null;
 
   return {

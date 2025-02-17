@@ -2,11 +2,14 @@ import { Form, Input } from "antd";
 import { useCallback, useState } from "react";
 import { z } from "zod";
 import { useNotify } from "~/client/hooks/useNotify";
+import { LoadingCentered } from "./Loading";
 import { FrontPageLogo } from "./Logo";
 
 export function EmailInputPage({
+  loading,
   onSubmitEmail,
 }: {
+  loading: boolean;
   onSubmitEmail: (email: string) => void;
 }) {
   const [email, setEmail] = useState("");
@@ -23,12 +26,8 @@ export function EmailInputPage({
       });
       return;
     }
-    // notify({
-    //   title: "Email sent",
-    //   description: "Please check your email for a link to sign in.",
-    // });
     onSubmitEmail(email);
-  }, [email]);
+  }, [email, notify, onSubmitEmail]);
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center">
@@ -55,6 +54,9 @@ export function EmailInputPage({
           />
         </Form.Item>
       </Form>
+      <div className={loading ? "visible" : "invisible"}>
+        <LoadingCentered />
+      </div>
     </div>
   );
 }

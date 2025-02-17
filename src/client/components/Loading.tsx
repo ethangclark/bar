@@ -1,6 +1,6 @@
 import { Spin } from "antd";
-import { Page } from "./Page";
 import { Centered } from "./Centered";
+import { Page } from "./Page";
 
 // not exported; should not use this directly
 const Loading = () => <Spin />;
@@ -10,6 +10,8 @@ export const LoadingCentered = () => (
     <Loading />
   </Centered>
 );
+
+export const LoadingNotCentered = () => <Loading />;
 
 export function LoadingPage() {
   return (

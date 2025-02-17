@@ -3,10 +3,10 @@
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { z } from "zod";
+import { LoadingPage } from "~/client/components/Loading";
 import { getCanvasBaseUrl, getRedirectUrl } from "~/common/canvasUtils";
 import { api } from "~/trpc/react";
 import { CreateIntegration } from "./createIntegration";
-import { LoadingPage } from "~/client/components/Loading";
 
 const state = Math.random().toString(36).substring(7); // could generate this legitimately + compare it in searchParams when invoked as callback
 
@@ -43,7 +43,7 @@ export default function CanvasLoginPage() {
       code,
       canvasIntegrationId: data.canvasIntegrationId,
     }).then(() => {
-      router.push("/courses");
+      router.push("/activities");
     });
   }, [data, code, processCode, router]);
 

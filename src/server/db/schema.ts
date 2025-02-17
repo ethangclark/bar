@@ -44,15 +44,24 @@ export const postsRelations = relations(posts, ({ one }) => ({
 }));
 export const postSchema = createSelectSchema(posts);
 
-export const users = pgTable("user", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name"),
-  email: text("email"),
-  unverifiedEmail: text("unverified_email"),
-  passwordSalt: uuid("password_salt").notNull().defaultRandom(),
-  passwordHash: text("password_hash"),
-  llmTokensUsed: integer("tokens_used").default(0).notNull(),
-});
+export const users = pgTable(
+  "user",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name"),
+    email: text("email"),
+    unverifiedEmail: text("unverified_email"),
+    passwordSalt: uuid("password_salt").notNull().defaultRandom(),
+    passwordHash: text("password_hash"),
+    loginTokenHash: text("login_token_hash"),
+    llmTokensUsed: integer("tokens_used").default(0).notNull(),
+  },
+  (u) => [
+    index("user_email_idx").on(u.email),
+    index("user_unverified_email_idx").on(u.unverifiedEmail),
+    index("user_login_token_hash_idx").on(u.loginTokenHash),
+  ],
+);
 export type User = InferSelectModel<typeof users>;
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
@@ -66,9 +75,6 @@ export const sessions = pgTable(
     sessionCookieValue: uuid("session_cookie_value").notNull().primaryKey(),
     userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    refreshedAt: timestamp("refreshed_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
     initialIpAddress: text("initial_ip_address").notNull(),

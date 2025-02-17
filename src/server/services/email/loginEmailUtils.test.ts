@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { html, text } from "./emailUtils";
+import { describe, expect, it } from "vitest";
+import { loginEmailHtml, loginEmailText } from "./loginEmailUtils";
 
 describe("emailUtils", () => {
   describe("html function", () => {
     it("should return correct HTML with escaped email and URL", () => {
-      const result = html({
+      const result = loginEmailHtml({
         urlWithLoginToken: "http://example.com/token",
         email: "test@example.com",
       });
@@ -15,7 +15,7 @@ describe("emailUtils", () => {
 
   describe("text function", () => {
     it("should return correct text with email and URL", () => {
-      const result = text({
+      const result = loginEmailText({
         urlWithLoginToken: "http://example.com/token",
         email: "test@example.com",
       });
