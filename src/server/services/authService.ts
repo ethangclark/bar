@@ -66,3 +66,12 @@ export async function loginUser(
     })
     .where(eq(db.x.sessions.sessionCookieValue, session.sessionCookieValue));
 }
+
+export async function logoutUser(session: Session, tx: DbOrTx) {
+  await tx
+    .update(db.x.sessions)
+    .set({
+      userId: null,
+    })
+    .where(eq(db.x.sessions.sessionCookieValue, session.sessionCookieValue));
+}

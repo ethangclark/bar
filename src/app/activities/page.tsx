@@ -2,6 +2,7 @@
 
 import { Assignment } from "~/client/components/Assignment";
 import { LoadingPage } from "~/client/components/Loading";
+import { LogoutButton } from "~/client/components/LogoutButton";
 import { Page } from "~/client/components/Page";
 import { api } from "~/trpc/react";
 
@@ -14,6 +15,7 @@ export default function Courses() {
 
   return (
     <Page>
+      <LogoutButton />
       <div className="mb-4 text-4xl">Courses</div>
       <div>
         {courses?.map((c, idx) => (

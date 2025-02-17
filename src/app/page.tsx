@@ -21,12 +21,12 @@ export default function Home() {
             menu={{
               items: [
                 {
-                  key: "student",
-                  label: <Link href="/login/student">For students</Link>,
-                },
-                {
                   key: "instructors",
                   label: <Link href="/login/instructor">For instructors</Link>,
+                },
+                {
+                  key: "student",
+                  label: <Link href="/login/student">For students</Link>,
                 },
               ],
             }}
@@ -39,12 +39,12 @@ export default function Home() {
             menu={{
               items: [
                 {
-                  key: "students",
-                  label: <Link href="/login/student">For students</Link>,
-                },
-                {
                   key: "instructors",
                   label: <Link href="/login/instructor">For instructors</Link>,
+                },
+                {
+                  key: "students",
+                  label: <Link href="/login/student">For students</Link>,
                 },
               ],
             }}

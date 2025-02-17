@@ -1,8 +1,12 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { executeUserInitiation } from "~/server/integrations/canvas/canvasApiService";
-import { loginUser } from "~/server/services/authService";
+import { loginUser, logoutUser } from "~/server/services/authService";
 import { sendLoginEmail } from "~/server/services/email/loginEmail";
 
 export const authRouter = createTRPCRouter({
@@ -21,6 +25,11 @@ export const authRouter = createTRPCRouter({
       const { loginToken } = input;
       await loginUser(loginToken, session, db);
     }),
+
+  logout: protectedProcedure.mutation(async ({ ctx }) => {
+    const { session } = ctx;
+    await logoutUser(session, db);
+  }),
 
   processCanvasCode: publicProcedure
     .input(z.object({ code: z.string(), canvasIntegrationId: z.string() }))
