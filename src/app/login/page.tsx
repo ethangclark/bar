@@ -2,8 +2,8 @@
 
 import { Typography } from "antd";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { LoadingNotCentered } from "~/client/components/Loading";
+import { Suspense, useEffect, useState } from "react";
+import { LoadingNotCentered, LoadingPage } from "~/client/components/Loading";
 import { FrontPageLogo } from "~/client/components/Logo";
 import { NoScrollPage } from "~/client/components/Page";
 import { Redirect } from "~/client/components/Redirect";
@@ -11,7 +11,7 @@ import { loginTokenQueryParam } from "~/common/constants";
 import { invoke } from "~/common/fnUtils";
 import { trpc } from "~/trpc/proxy";
 
-export default function LoginPage() {
+function LoginPageInner() {
   const searchParams = useSearchParams();
   const loginToken = searchParams.get(loginTokenQueryParam);
   const router = useRouter();
@@ -52,5 +52,13 @@ export default function LoginPage() {
         </div>
       </div>
     </NoScrollPage>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoadingPage />}>
+      <LoginPageInner />
+    </Suspense>
   );
 }
