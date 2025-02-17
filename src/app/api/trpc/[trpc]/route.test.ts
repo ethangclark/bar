@@ -1,10 +1,10 @@
-import { GET, POST } from "./route";
+import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { type NextRequest } from "next/server";
+import { noop } from "~/common/fnUtils";
 import { env } from "~/env";
 import { appRouter } from "~/server/api/root";
 import { createTRPCContext } from "~/server/api/trpc";
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { noop } from "~/common/fnUtils";
+import { GET, POST } from "./route";
 
 vi.mock("@trpc/server/adapters/fetch", () => ({
   fetchRequestHandler: vi.fn(),
@@ -22,8 +22,10 @@ vi.mock("~/server/api/trpc", () => ({
 
 describe("tRPC route handler", () => {
   const mockHeaders = new Headers();
+  const mockCookies = { get: vi.fn() };
   const mockRequest = {
     headers: mockHeaders,
+    cookies: mockCookies,
   } as unknown as NextRequest;
 
   beforeEach(() => {
@@ -64,6 +66,7 @@ describe("tRPC route handler", () => {
 
     expect(createTRPCContext).toHaveBeenCalledWith({
       headers: mockHeaders,
+      sessionCookieValue: null,
     });
   });
 

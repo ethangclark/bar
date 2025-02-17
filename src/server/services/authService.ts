@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { assertOne } from "~/common/arrayUtils";
-import { db, DbOrTx } from "~/server/db";
-import { Session } from "../db/schema";
+import { db, type DbOrTx } from "~/server/db";
+import { type Session } from "../db/schema";
 import { hashLoginToken } from "../utils";
 
 export async function getOrCreateVerifiedEmailUser({
@@ -43,6 +43,7 @@ export async function loginUser(
   });
   if (!user) throw new TRPCError({ code: "UNAUTHORIZED" });
 
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   const email = user.email || user.unverifiedEmail;
   if (!email) {
     throw new Error("Could not identify user email");
