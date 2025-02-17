@@ -1,74 +1,63 @@
 "use client";
 
+import { Button } from "antd";
 import Link from "next/link";
-import { api } from "~/trpc/react";
-import { BigTitlePage } from "~/client/components/BigTitlePage";
+import { Image } from "~/client/components/Image";
+import { Logo, LogoText } from "~/client/components/Logo";
+import { Page } from "~/client/components/Page";
 
 export default function Home() {
-  const { data } = api.auth.seatsRemaining.useQuery();
-  const { isLoggedIn, seatsRemaining } = data ?? {};
-
   return (
-    <BigTitlePage>
-      {isLoggedIn ? (
-        <div className="mt-20 flex flex-grow flex-col items-center justify-between">
-          <div>Hello</div>
-          <Link
-            href={"/api/auth/signout"}
-            className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-          >
-            {"Sign out"}
-          </Link>
+    <Page>
+      <div className="mb-5 flex gap-24">
+        <div className="flex flex-col items-center">
+          <div className="flex items-center">
+            <Logo height={50} />
+            <LogoText className="text-4xl md:text-6xl" />
+          </div>
+          <h1 className="text-lg font-bold md:text-2xl">
+            AI Learning Assistant
+          </h1>
         </div>
-      ) : (
-        <div className="flex flex-grow flex-col items-center justify-between">
-          <div className="mb-4 flex flex-grow flex-col items-center justify-center md:gap-8">
-            <h1 className="w-full pb-8 text-center text-4xl font-bold md:text-[108px] md:leading-[120px]">
-              Pass the bar with confidence
-            </h1>
-            <div
-              className="mb-6 flex flex-col items-center gap-6 text-center md:gap-8"
-              style={{ maxWidth: 450 }}
+        <div className="flex gap-4">
+          <Button type="primary">Instructors</Button>
+          <Button type="primary">Students</Button>
+        </div>
+      </div>
+      <div className="flex flex-grow flex-col items-center justify-between">
+        <div className="mb-4 flex flex-grow flex-col items-center justify-center md:gap-8">
+          <h1 className="mb-[-24px] text-center text-4xl font-bold">
+            Raising student achievement. Dramatically.
+          </h1>
+          <h2 className="text-center text-xl">
+            Tutored student activities for less than the cost of a textbook
+          </h2>
+          <Image url="/images/bloom.png" alt="Hero" width={750} />
+          <div className="flex gap-4">
+            <a
+              href="/api/auth/signin"
+              className="rounded-full bg-blue-500 px-10 py-3 font-semibold text-white no-underline transition hover:bg-blue-600"
             >
-              <p>
-                SummitEd.ai provides an instant chat and voice-based tutor that
-                reviews all the material you need to pass the bar, drilling into
-                areas of improvement until you've reached proficiency.
-              </p>
-              <p>
-                We are providing <span className="font-bold">free</span> access
-                to 200 signups.
-              </p>
-              <p className="flex items-center">
-                <span className="mr-1">Seats remaining:</span>
-                <span className="font-bold">{seatsRemaining}</span>
-              </p>
-            </div>
-            {(seatsRemaining ?? 0) > 0 && (
-              <div className="flex gap-4">
-                <a
-                  href="/api/auth/signin"
-                  className="rounded-full bg-blue-500 px-10 py-3 font-semibold text-white no-underline transition hover:bg-blue-600"
-                >
-                  Sign up
-                </a>
-                <a
-                  href="/api/auth/signin"
-                  className="rounded-full bg-gray-300 px-10 py-3 font-semibold no-underline transition hover:bg-blue-200"
-                >
-                  Sign in
-                </a>
-              </div>
-            )}
-          </div>
-          <div
-            className="text-center text-sm text-gray-500"
-            style={{ marginBottom: -24 }}
-          >
-            Questions? Comments? Email us at hello@summited.ai
+              Sign up
+            </a>
+            <a
+              href="/api/auth/signin"
+              className="rounded-full bg-gray-300 px-10 py-3 font-semibold no-underline transition hover:bg-blue-200"
+            >
+              Sign in
+            </a>
+            <Link
+              href={"/api/auth/signout"}
+              className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
+            >
+              {"Sign out"}
+            </Link>
           </div>
         </div>
-      )}
-    </BigTitlePage>
+        <div className="text-center text-sm text-gray-500">
+          Questions? Comments? Email us at hello@summited.ai
+        </div>
+      </div>
+    </Page>
   );
 }

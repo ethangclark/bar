@@ -1,13 +1,13 @@
 import "~/styles/globals.css";
 
 import { AntdRegistry } from "@ant-design/nextjs-registry";
+import { ConfigProvider } from "antd";
 import { GeistSans } from "geist/font/sans";
 import { TRPCReactProvider } from "~/trpc/react";
-import { ConfigProvider } from "antd";
 
 export const metadata = {
-  title: "SummitEd.ai",
-  description: "Loan officer empowerment",
+  title: "SummitEd",
+  description: "AI Learning Assistant",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 

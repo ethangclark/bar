@@ -1,13 +1,12 @@
-import { postRouter } from "~/server/api/routers/postRouter";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
-import { coursesRouter } from "./routers/coursesRouter";
-import { transcriptionRouter } from "./routers/transcriptionRouter";
+import { activityRouter } from "./routers/activityRouter";
 import { authRouter } from "./routers/authRouter";
 import { canvasRouter } from "./routers/canvasRouter";
-import { integrationRouter } from "./routers/integrationRouter";
-import { activityRouter } from "./routers/activityRouter";
+import { coursesRouter } from "./routers/coursesRouter";
 import { descendentRouter } from "./routers/descendentRouter";
+import { integrationRouter } from "./routers/integrationRouter";
 import { messageRouter } from "./routers/messageRouter";
+import { transcriptionRouter } from "./routers/transcriptionRouter";
 
 /**
  * This is the primary router for your server.
@@ -22,7 +21,6 @@ export const appRouter = createTRPCRouter({
   courses: coursesRouter,
   integration: integrationRouter,
   message: messageRouter,
-  post: postRouter,
   trascription: transcriptionRouter,
 });
 

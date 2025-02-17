@@ -10,12 +10,11 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { getServerAuthSession } from "~/server/auth/auth";
-import { db } from "~/server/db";
-import { ipUsers, users } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
+import { assertOne } from "~/common/arrayUtils";
+import { db } from "~/server/db";
 import { queryUser } from "~/server/services/userService";
-import { getLoginInfo } from "~/server/services/authService";
+import { getIpAddress } from "../utils";
 
 /**
  * 1. CONTEXT
@@ -29,45 +28,34 @@ import { getLoginInfo } from "~/server/services/authService";
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const ipAddressHeader = opts.headers.get("x-forwarded-for") ?? "";
-  const ipAddress = ipAddressHeader.split(",")[0];
-  if (!ipAddress) throw new Error("IP address not found");
+export const createTRPCContext = async (opts: {
+  headers: Headers;
+  sessionCookieValue: string;
+}) => {
+  const ipAddress = getIpAddress((headerName) => opts.headers.get(headerName));
 
-  const session = await getServerAuthSession();
+  const sessions = await db
+    .insert(db.x.sessions)
+    .values({
+      sessionCookieValue: opts.sessionCookieValue,
+      initialIpAddress: ipAddress,
+    })
+    .onConflictDoNothing({
+      target: [db.x.sessions.sessionCookieValue],
+    })
+    .returning();
+  const session = assertOne(sessions);
 
-  const user = await db.transaction(async (tx) => {
-    if (session?.user) {
-      const u = await queryUser(session.user.id, tx);
-      if (!u) throw new Error("Session user not found");
-      return u;
-    }
-
-    const ipUser = await tx.query.ipUsers.findFirst({
-      where: eq(ipUsers.ipAddress, ipAddress),
-      with: { user: true },
-    });
-    if (ipUser) {
-      return ipUser.user;
-    }
-    // create a new user automatically
-    const [u] = await tx.insert(users).values({ email: "" }).returning();
-    if (!u)
-      throw new Error(
-        "User (ip addr only) created via create statement not found",
-      );
-
-    await tx.insert(ipUsers).values({
-      ipAddress,
-      userId: u.id,
-    });
-    return u;
-  });
+  const user =
+    (await db.query.users.findFirst({
+      where: eq(db.x.users.id, session.userId ?? crypto.randomUUID()),
+    })) ?? null;
 
   return {
     ipAddress,
-    userId: user.id,
     session,
+    user,
+    userId: user?.id ?? null,
   };
 };
 
@@ -124,15 +112,18 @@ export const publicProcedure = t.procedure;
 
 // Throws if user is not logged in
 export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
-  const { user, isLoggedIn } = await getLoginInfo(ctx.userId, ctx.session);
-  if (!isLoggedIn) {
+  const { session, user, userId } = ctx;
+  if (!session || !user || !userId) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({
     ctx: {
       ...ctx,
-      // infers the `session` as non-nullable
-      session: { ...ctx.session, user },
+
+      // infers fields as non-nullable
+      session,
+      user,
+      userId,
     },
   });
 });

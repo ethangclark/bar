@@ -120,6 +120,13 @@
       "when": 1739576533838,
       "tag": "0016_green_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1739818262522,
+      "tag": "0017_even_riptide",
+      "breakpoints": true
     }
   ]
 }

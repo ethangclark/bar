@@ -13,7 +13,7 @@ export function html({
   const escapedUrl = escapeHtml(urlWithLoginToken);
   return `
     <body>
-      <p>Sign into SummitEd.ai as <strong>${escapedEmail}</strong> by clicking <a href="${urlWithLoginToken}">here</a>, or by vising the following link:<br><br><a href="${urlWithLoginToken}">${escapedUrl}</a></p>
+      <p>Sign into SummitEd as <strong>${escapedEmail}</strong> by clicking <a href="${urlWithLoginToken}">here</a>, or by vising the following link:<br><br><a href="${urlWithLoginToken}">${escapedUrl}</a></p>
     </body>
   `;
 }
@@ -26,5 +26,5 @@ export function text({
   urlWithLoginToken: string;
   email: string;
 }) {
-  return `Sign in to SummitEd.ai as ${email} with this link: ${urlWithLoginToken}\n\n`;
+  return `Sign in to SummitEd as ${email} with this link: ${urlWithLoginToken}\n\n`;
 }

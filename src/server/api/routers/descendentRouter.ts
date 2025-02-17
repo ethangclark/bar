@@ -3,7 +3,7 @@ import { createEmptyDescendents } from "~/common/descendentUtils";
 import { invoke } from "~/common/fnUtils";
 import { objectKeys } from "~/common/objectUtils";
 import { type MaybePromise } from "~/common/types";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import {
@@ -18,7 +18,7 @@ import {
 import { getActivity } from "~/server/services/activityService";
 
 export const descendentRouter = createTRPCRouter({
-  read: publicProcedure
+  read: protectedProcedure
     .input(
       z.object({
         activityId: z.string(),
@@ -46,7 +46,7 @@ export const descendentRouter = createTRPCRouter({
       });
     }),
 
-  modify: publicProcedure
+  modify: protectedProcedure
     .input(
       z.object({
         activityId: z.string(),
@@ -84,7 +84,7 @@ export const descendentRouter = createTRPCRouter({
       return result;
     }),
 
-  newDescendents: publicProcedure
+  newDescendents: protectedProcedure
     .input(z.object({ activityId: z.string() }))
     .subscription(async function* ({
       input,

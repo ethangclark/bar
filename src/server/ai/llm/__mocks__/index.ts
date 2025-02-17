@@ -10,7 +10,7 @@ export const getResponseFromLlm = vi.fn(
   }): Promise<
     | {
         response: string;
-        tokensUsed: number;
+        llmTokensUsed: number;
         promptTokens: number;
         completionTokens: number;
       }
@@ -19,7 +19,7 @@ export const getResponseFromLlm = vi.fn(
     // Mock implementation
     return {
       response: "Mocked response",
-      tokensUsed: 100,
+      llmTokensUsed: 100,
       promptTokens: 50,
       completionTokens: 50,
     };

@@ -1,12 +1,27 @@
-import { type DbOrTx } from "~/server/db";
 import { eq } from "drizzle-orm";
-import { users } from "~/server/db/schema";
+import { assertOne } from "~/common/arrayUtils";
 import { env } from "~/env";
+import { type DbOrTx } from "~/server/db";
+import { users } from "~/server/db/schema";
 
-export const queryUser = async (userId: string, tx: DbOrTx) => {
-  return await tx.query.users.findFirst({
-    where: eq(users.id, userId),
-  });
+export const queryUser = async (userId: string | null, tx: DbOrTx) => {
+  if (userId === null) return null;
+  return (
+    (await tx.query.users.findFirst({
+      where: eq(users.id, userId),
+    })) ?? null
+  );
+};
+
+export const createUser = async (tx: DbOrTx) => {
+  const user = await tx.insert(users).values({}).returning();
+  return assertOne(user);
+};
+
+export const getOrCreateUser = async (userId: string | null, tx: DbOrTx) => {
+  const user = await queryUser(userId, tx);
+  if (user) return user;
+  return createUser(tx);
 };
 
 export const getUser = async (userId: string, tx: DbOrTx) => {

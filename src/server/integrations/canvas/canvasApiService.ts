@@ -1,7 +1,9 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getRedirectUrl } from "~/common/canvasUtils";
+import { parseDateOrNull } from "~/common/timeUtils";
 import { db, type DbOrTx } from "~/server/db";
+import { getOrCreateUser } from "~/server/services/userService";
 import { updateTokenCache } from "./canvasTokenCache";
 import {
   ambiguousEnrollmentTypeSchema,
@@ -9,7 +11,6 @@ import {
   makeCanvasRequest,
   narrowCanvasEnrollmentType,
 } from "./utils";
-import { parseDateOrNull } from "~/common/timeUtils";
 
 /*
 This file is a mess.
@@ -70,16 +71,22 @@ async function getLoginResponse({
 
 type LoginResponse = Awaited<ReturnType<typeof getLoginResponse>>;
 
-async function upsertUser(
-  userId: string,
-  canvasIntegrationId: string,
-  loginResponse: LoginResponse,
-  tx: DbOrTx,
-) {
+async function upsertCanvasUser({
+  userId,
+  canvasIntegrationId,
+  loginResponse,
+  tx,
+}: {
+  userId: string | null;
+  canvasIntegrationId: string;
+  loginResponse: LoginResponse;
+  tx: DbOrTx;
+}) {
   const { lifespanMs, refreshToken, canvasUser } = loginResponse;
 
   const existing = await tx.query.canvasUsers.findFirst({
     where: eq(db.x.canvasUsers.canvasGlobalId, canvasUser.globalId),
+    with: { user: true },
   });
   if (existing) {
     const existingNonGlobalIds = z
@@ -97,9 +104,11 @@ async function upsertUser(
         accessTokenLifespanMs: lifespanMs,
       })
       .where(eq(db.x.canvasUsers.canvasGlobalId, canvasUser.globalId));
+    return { user: existing.user };
   } else {
+    const user = await getOrCreateUser(userId, tx);
     await tx.insert(db.x.canvasUsers).values({
-      userId,
+      userId: user.id,
       canvasIntegrationId,
       canvasGlobalId: canvasUser.globalId,
       nonGlobalIdsArrJson: JSON.stringify([canvasUser.id]),
@@ -107,16 +116,17 @@ async function upsertUser(
       oauthRefreshToken: refreshToken,
       accessTokenLifespanMs: lifespanMs,
     });
+    return { user };
   }
 }
 
 export async function executeUserInitiation({
-  userId,
+  userId: maybeUserId,
   oauthCode,
   canvasIntegrationId,
   tx,
 }: {
-  userId: string;
+  userId: string | null;
   oauthCode: string;
   canvasIntegrationId: string;
   tx: DbOrTx;
@@ -135,12 +145,17 @@ export async function executeUserInitiation({
     oauthCode,
   });
 
-  await upsertUser(userId, canvasIntegrationId, loginResponse, tx);
+  const { user } = await upsertCanvasUser({
+    userId: maybeUserId,
+    canvasIntegrationId,
+    loginResponse,
+    tx,
+  });
 
   await tx
     .insert(db.x.userIntegrations)
     .values({
-      userId,
+      userId: user.id,
       integrationId: canvasIntegration.integrationId,
     })
     .onConflictDoNothing({

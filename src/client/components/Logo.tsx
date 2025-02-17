@@ -16,7 +16,7 @@ import { Title } from "./Title";
 export function LogoText({ className }: { className: string }) {
   return (
     <Title className={className} marginBottomCn="mb-0">
-      SummitEd.ai
+      SummitEd
     </Title>
   );
 }

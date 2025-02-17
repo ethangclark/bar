@@ -5,7 +5,7 @@ import { getUser } from "./userService";
 
 export async function determineIfUsageOk(userId: string, tx: DbOrTx) {
   const user = await getUser(userId, tx);
-  if (user.tokensUsed > 10 * 1000 * 1000) {
+  if (user.llmTokensUsed > 100 * 1000 * 1000) {
     return new Error(
       "You have exceeded your allotted usage. Please contact support.",
     );
@@ -23,14 +23,14 @@ export async function assertUsageOk(userId: string, tx: DbOrTx) {
 
 export async function incrementUsage(
   userId: string,
-  tokensUsed: number,
+  llmTokensUsed: number,
   tx: DbOrTx,
 ) {
   const user = await getUser(userId, tx);
   await tx
     .update(users)
     .set({
-      tokensUsed: sql`${users.tokensUsed} + ${tokensUsed}`,
+      llmTokensUsed: sql`${users.llmTokensUsed} + ${llmTokensUsed}`,
     })
     .where(eq(users.id, user.id));
 }

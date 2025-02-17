@@ -1,10 +1,11 @@
 import "server-only";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { cache } from "react";
 
 import { createCaller } from "~/server/api/root";
 import { createTRPCContext } from "~/server/api/trpc";
+import { getSessionCookieValue } from "~/server/utils";
 
 /**
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
@@ -16,6 +17,9 @@ const createContext = cache(() => {
 
   return createTRPCContext({
     headers: heads,
+    sessionCookieValue: getSessionCookieValue(
+      (cookieName) => cookies().get(cookieName)?.value ?? null,
+    ),
   });
 });
 

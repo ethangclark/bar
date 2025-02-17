@@ -47,50 +47,31 @@ export const postSchema = createSelectSchema(posts);
 export const users = pgTable("user", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name"),
-  email: text("email").notNull(),
-  emailVerified: timestamp("email_verified", {
-    mode: "date",
-    withTimezone: true,
-  }),
-  tokensUsed: integer("tokens_used").default(0).notNull(),
-  image: text("image"),
+  email: text("email"),
+  unverifiedEmail: text("unverified_email"),
+  passwordSalt: uuid("password_salt").notNull().defaultRandom(),
+  passwordHash: text("password_hash"),
+  llmTokensUsed: integer("tokens_used").default(0).notNull(),
 });
 export type User = InferSelectModel<typeof users>;
 export const usersRelations = relations(users, ({ many }) => ({
-  accounts: many(accounts),
   sessions: many(sessions),
-  ipUsers: many(ipUsers),
   userIntegrations: many(userIntegrations),
 }));
 export const userSchema = createSelectSchema(users);
 
-export const ipUsers = pgTable(
-  "ip_user",
-  {
-    ipAddress: text("ip_address").notNull().primaryKey(),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-  },
-  (ipu) => [index("ip_user_user_id_idx").on(ipu.userId)],
-);
-export type IpUser = InferSelectModel<typeof ipUsers>;
-export const ipUsersRelations = relations(ipUsers, ({ one }) => ({
-  user: one(users, { fields: [ipUsers.userId], references: [users.id] }),
-}));
-export const ipUserSchema = createSelectSchema(ipUsers);
-
 export const sessions = pgTable(
   "session",
   {
-    sessionToken: text("session_token").notNull().primaryKey(),
-    userId: uuid("user_id")
+    sessionCookieValue: uuid("session_cookie_value").notNull().primaryKey(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    expires: timestamp("expires", {
-      mode: "date",
-      withTimezone: true,
-    }).notNull(),
+      .defaultNow(),
+    refreshedAt: timestamp("refreshed_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    initialIpAddress: text("initial_ip_address").notNull(),
   },
   (session) => [index("session_user_id_idx").on(session.userId)],
 );

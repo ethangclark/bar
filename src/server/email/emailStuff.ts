@@ -34,7 +34,7 @@ export const emailStuff = {
         "Email preview URL: %s",
         nodemailer.getTestMessageUrl(result),
       );
-      console.log("Login link: %s", url);
+      console.log("Login link: %s", urlWithLoginToken);
     }
   },
 };

@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { getActivity } from "~/server/services/activityService";
 
 export const activityRouter = createTRPCRouter({
-  get: publicProcedure
+  get: protectedProcedure
     .input(z.object({ activityId: z.string() }))
     .query(async ({ input, ctx }) => {
       const activity = await getActivity({

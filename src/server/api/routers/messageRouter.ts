@@ -1,12 +1,12 @@
 import { z } from "zod";
 import { type MessageDeltaSchema } from "~/common/types";
 
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { messageDeltaPubSub } from "~/server/db/pubsub/messageDeltaPubSub";
 import { getActivity } from "~/server/services/activityService";
 
 export const messageRouter = createTRPCRouter({
-  messageDeltas: publicProcedure
+  messageDeltas: protectedProcedure
     .input(z.object({ activityId: z.string() }))
     .subscription(async function* ({
       input,
