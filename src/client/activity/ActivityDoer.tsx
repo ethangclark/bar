@@ -7,11 +7,11 @@ import { Messages } from "./Messages";
 import { ThreadSelection } from "./ThreadSelection";
 
 export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
-  function ActivityDoer({ assignmentTitle, activityStore }) {
+  function ActivityDoer({ assignmentTitle, focusedActivityStore }) {
     const igod =
-      activityStore.enrolledAs instanceof Status
+      focusedActivityStore.enrolledAs instanceof Status
         ? false
-        : isGraderOrDeveloper(activityStore.enrolledAs);
+        : isGraderOrDeveloper(focusedActivityStore.enrolledAs);
 
     return (
       <div

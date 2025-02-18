@@ -7,10 +7,10 @@ import { ActivityDoer } from "./ActivityDoer";
 import { ActivityEditor } from "./ActivityEditor";
 
 export const Activity = storeObserver(function Activity({
-  activityStore,
+  focusedActivityStore,
   studentModeStore,
 }) {
-  const { juicyDeets } = activityStore;
+  const { juicyDeets } = focusedActivityStore;
 
   if (juicyDeets instanceof Status) {
     return <LoadingPage />;

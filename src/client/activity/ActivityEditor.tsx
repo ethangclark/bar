@@ -7,11 +7,11 @@ import { Item } from "./Item";
 import { ScrollyContentBox } from "./ScrollyContentBox";
 
 export const ActivityEditor = storeObserver(function ActivityEditor({
-  activityStore,
+  focusedActivityStore,
   activityEditorStore,
   itemStore,
 }) {
-  const { juicyDeets } = activityStore;
+  const { juicyDeets } = focusedActivityStore;
   const { sortedItems } = itemStore;
 
   if (juicyDeets instanceof Status || sortedItems instanceof Status) {

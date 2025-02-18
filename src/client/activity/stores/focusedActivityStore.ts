@@ -10,7 +10,7 @@ const baseState = () => ({
   activity: identity<RichActivity | Status>(notLoaded),
 });
 
-export class ActivityStore {
+export class FocusedActivityStore {
   public activityId = baseState().activityId;
   public activity = baseState().activity;
 

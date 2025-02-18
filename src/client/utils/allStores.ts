@@ -1,26 +1,26 @@
 import { ActivityEditorStore } from "../activity/stores/activityEditorStore";
-import { ActivityStore } from "../activity/stores/activityStore";
 import { DescendentStore } from "../activity/stores/descendentStore";
+import { FocusedActivityStore } from "../activity/stores/focusedActivityStore";
 import { ItemStore } from "../activity/stores/itemStore";
 import { QuestionStore } from "../activity/stores/questionStore";
 import { StudentModeStore } from "../activity/stores/studentModeStore";
 import { ThreadStore } from "../activity/stores/threadStore";
 import { ViewPieceStore } from "../activity/stores/viewPieceStore";
 
-const activityStore = new ActivityStore();
-const descendentStore = new DescendentStore(activityStore);
+const focusedActivityStore = new FocusedActivityStore();
+const descendentStore = new DescendentStore(focusedActivityStore);
 const threadStore = new ThreadStore(descendentStore);
 const activityEditorStore = new ActivityEditorStore(
-  activityStore,
+  focusedActivityStore,
   descendentStore,
 );
 const itemStore = new ItemStore(activityEditorStore);
 const questionStore = new QuestionStore(activityEditorStore);
-const studentModeStore = new StudentModeStore(activityStore);
+const studentModeStore = new StudentModeStore(focusedActivityStore);
 const viewPieceStore = new ViewPieceStore(descendentStore);
 
 export const stores = {
-  activityStore,
+  focusedActivityStore,
   descendentStore,
   threadStore,
   activityEditorStore,

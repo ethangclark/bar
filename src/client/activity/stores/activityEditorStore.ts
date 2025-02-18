@@ -14,11 +14,11 @@ import {
   type DescendentTables,
 } from "~/server/descendents/descendentTypes";
 import { trpc } from "~/trpc/proxy";
-import { type ActivityStore } from "./activityStore";
 import {
   type DescendentCreateParams,
   type DescendentStore,
 } from "./descendentStore";
+import { type FocusedActivityStore } from "./focusedActivityStore";
 const baseState = () => ({
   drafts: identity<DescendentTables | Status>(notLoaded),
   changes: {
@@ -33,7 +33,7 @@ export class ActivityEditorStore {
   private changes = baseState().changes;
 
   constructor(
-    private activityStore: ActivityStore,
+    private focusedActivityStore: FocusedActivityStore,
     private descendentStore: DescendentStore,
   ) {
     makeAutoObservable(this);
@@ -42,7 +42,7 @@ export class ActivityEditorStore {
     // create drafts based on the new descendents
     // (once they load)
     reaction(
-      () => this.activityStore.activityId,
+      () => this.focusedActivityStore.activityId,
       () => {
         runInAction(() => {
           this.reset();
@@ -77,14 +77,17 @@ export class ActivityEditorStore {
   }
 
   async save() {
-    if (!this.activityStore.activityId || this.drafts instanceof Status) {
+    if (
+      !this.focusedActivityStore.activityId ||
+      this.drafts instanceof Status
+    ) {
       throw new Error("Descendents are not loaded");
     }
     const { drafts } = this;
     this.drafts = loading;
     try {
       const descendents = await trpc.descendent.modify.mutate({
-        activityId: this.activityStore.activityId,
+        activityId: this.focusedActivityStore.activityId,
         modifications: rectifyModifications({
           toCreate: selectDescendents(drafts, this.changes.createdIds),
           toUpdate: selectDescendents(drafts, this.changes.updatedIds),
@@ -113,7 +116,7 @@ export class ActivityEditorStore {
     descendentName: T,
     descendent: DescendentCreateParams<T>,
   ) {
-    if (!this.activityStore.activityId) {
+    if (!this.focusedActivityStore.activityId) {
       throw new Error("Activity ID is not set");
     }
     if (this.drafts instanceof Status) {
@@ -123,7 +126,7 @@ export class ActivityEditorStore {
     const newDescendent = {
       ...descendent,
       id,
-      activityId: this.activityStore.activityId,
+      activityId: this.focusedActivityStore.activityId,
       userId: getDraftId(),
       createdAt: getDraftDate(),
     };

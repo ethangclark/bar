@@ -16,7 +16,7 @@ import {
   type DescendentTables,
 } from "~/server/descendents/descendentTypes";
 import { trpc } from "~/trpc/proxy";
-import { type ActivityStore } from "./activityStore";
+import { type FocusedActivityStore } from "./focusedActivityStore";
 
 const baseState = () => ({
   descendents: identity<DescendentTables | Status>(notLoaded),
@@ -33,10 +33,10 @@ export type DescendentCreateParams<T extends DescendentName> = Omit<
 export class DescendentStore {
   public descendents = baseState().descendents;
 
-  constructor(private activityStore: ActivityStore) {
+  constructor(private focusedActivityStore: FocusedActivityStore) {
     makeAutoObservable(this);
     autorun(() => {
-      const { activityId } = this.activityStore;
+      const { activityId } = this.focusedActivityStore;
       if (!activityId) {
         return;
       }
@@ -72,7 +72,7 @@ export class DescendentStore {
       },
     );
     reaction(
-      () => this.activityStore.activityId,
+      () => this.focusedActivityStore.activityId,
       () => {
         subscription.unsubscribe();
       },
@@ -100,7 +100,7 @@ export class DescendentStore {
       },
     );
     reaction(
-      () => this.activityStore.activityId,
+      () => this.focusedActivityStore.activityId,
       () => {
         subscription.unsubscribe();
       },
@@ -115,13 +115,13 @@ export class DescendentStore {
     descendentName: T,
     descendent: DescendentCreateParams<T>,
   ): Promise<DescendentRows[T]> {
-    if (!this.activityStore.activityId) {
+    if (!this.focusedActivityStore.activityId) {
       throw new Error("Activity ID is not set");
     }
     const newDescendent = {
       ...descendent,
       id: getDraftId(),
-      activityId: this.activityStore.activityId,
+      activityId: this.focusedActivityStore.activityId,
       userId: getDraftId(),
       createdAt: getDraftDate(),
     };
@@ -141,7 +141,7 @@ export class DescendentStore {
     });
 
     const result = await trpc.descendent.modify.mutate({
-      activityId: this.activityStore.activityId,
+      activityId: this.focusedActivityStore.activityId,
       modifications: {
         toCreate,
         toUpdate: createEmptyDescendents(),
@@ -175,7 +175,7 @@ export class DescendentStore {
     descendentName: T,
     updatePartial: { id: string } & Partial<DescendentRows[T]>,
   ): Promise<DescendentRows[T]> {
-    if (!this.activityStore.activityId) {
+    if (!this.focusedActivityStore.activityId) {
       throw new Error("Activity ID is not set");
     }
     const descendent = this.getById(descendentName, updatePartial.id);
@@ -202,7 +202,7 @@ export class DescendentStore {
     });
 
     const result = await trpc.descendent.modify.mutate({
-      activityId: this.activityStore.activityId,
+      activityId: this.focusedActivityStore.activityId,
       modifications: {
         toCreate: createEmptyDescendents(),
         toUpdate,
@@ -221,7 +221,7 @@ export class DescendentStore {
     return updated as DescendentRows[T];
   }
   async delete(descendentName: DescendentName, id: string) {
-    if (!this.activityStore.activityId) {
+    if (!this.focusedActivityStore.activityId) {
       throw new Error("Activity ID is not set");
     }
     const descendent = this.getById(descendentName, id);
@@ -243,7 +243,7 @@ export class DescendentStore {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     toDelete[descendentName].push(descendent as any);
     await trpc.descendent.modify.mutate({
-      activityId: this.activityStore.activityId,
+      activityId: this.focusedActivityStore.activityId,
       modifications: {
         toCreate: createEmptyDescendents(),
         toUpdate: createEmptyDescendents(),

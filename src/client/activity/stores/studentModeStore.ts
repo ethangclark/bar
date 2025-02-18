@@ -1,13 +1,13 @@
 import { makeAutoObservable, reaction } from "mobx";
-import { type ActivityStore } from "./activityStore";
+import { type FocusedActivityStore } from "./focusedActivityStore";
 
 export class StudentModeStore {
   public isStudentMode = false;
 
-  constructor(activityStore: ActivityStore) {
+  constructor(focusedActivityStore: FocusedActivityStore) {
     makeAutoObservable(this);
     reaction(
-      () => activityStore.activityId,
+      () => focusedActivityStore.activityId,
       () => {
         this.isStudentMode = false;
       },
