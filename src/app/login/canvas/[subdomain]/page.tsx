@@ -43,7 +43,7 @@ export default function CanvasLoginPage() {
       code,
       canvasIntegrationId: data.canvasIntegrationId,
     }).then(() => {
-      router.push("/activities");
+      router.push("/overview");
     });
   }, [data, code, processCode, router]);
 

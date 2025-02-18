@@ -23,7 +23,7 @@ function LoginPageInner() {
     }
     void invoke(async () => {
       await trpc.auth.login.mutate({ loginToken });
-      router.push("/activities");
+      router.push("/overview");
     });
   }, [loginToken, router]);
 

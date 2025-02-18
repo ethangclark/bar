@@ -1,22 +1,13 @@
-"use client";
-
-import { Button } from "antd";
 import { Assignment } from "~/client/components/Assignment";
 import { LoadingPage } from "~/client/components/Loading";
 import { LogoutButton } from "~/client/components/LogoutButton";
 import { Page } from "~/client/components/Page";
+import { assertNever } from "~/common/errorUtils";
 import { allIntegrationTypes } from "~/common/types";
-import { IntegrationType } from "~/server/db/schema";
 import { api } from "~/trpc/react";
+import { ConnectToCanvas } from "./ConnectToCanvas";
 
-function getIntegrationLabel(integrationType: IntegrationType): string {
-  switch (integrationType) {
-    case "canvas":
-      return "Canvas";
-  }
-}
-
-export default function Courses() {
+export function Overview() {
   const { data: courses, isLoading: isLoadingCourses } =
     api.courses.all.useQuery();
 
@@ -41,11 +32,14 @@ export default function Courses() {
           </div>
         ))}
         {courses?.length === 0 &&
-          allIntegrationTypes.map((it) => (
-            <Button type="link" href={`/login/${it}/${domain}`} key={it}>
-              Connect to {getIntegrationLabel(it)}
-            </Button>
-          ))}
+          allIntegrationTypes.map((it) => {
+            switch (it) {
+              case "canvas":
+                return <ConnectToCanvas />;
+              default:
+                assertNever(it);
+            }
+          })}
       </div>
     </Page>
   );
