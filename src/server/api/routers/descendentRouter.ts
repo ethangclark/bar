@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createEmptyDescendents } from "~/common/descendentUtils";
+import { getEnrolledAs } from "~/common/enrollmentTypeUtils";
 import { invoke } from "~/common/fnUtils";
 import { objectKeys } from "~/common/objectUtils";
 import { type MaybePromise } from "~/common/types";
@@ -39,7 +40,7 @@ export const descendentRouter = createTRPCRouter({
         return readDescendents({
           activityId,
           userId,
-          enrolledAs: activity.course.enrolledAs,
+          enrolledAs: getEnrolledAs(activity),
           includeUserIds: includeUserIds ?? [],
           tx,
         });
@@ -73,7 +74,7 @@ export const descendentRouter = createTRPCRouter({
           activityId,
           modifications,
           userId,
-          enrolledAs: activity.course.enrolledAs,
+          enrolledAs: getEnrolledAs(activity),
           tx,
           enqueueAgentEffect,
         });
@@ -112,7 +113,7 @@ export const descendentRouter = createTRPCRouter({
               controller.canRead(descendent as any, {
                 activityId,
                 userId,
-                enrolledAs: activity.course.enrolledAs,
+                enrolledAs: getEnrolledAs(activity),
               }),
           );
           total += filtered.length;

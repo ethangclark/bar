@@ -11,17 +11,19 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
   activityEditorStore,
   itemStore,
 }) {
-  const { activity } = activityStore;
+  const { juicyDeets } = activityStore;
   const { sortedItems } = itemStore;
 
-  if (activity instanceof Status || sortedItems instanceof Status) {
+  if (juicyDeets instanceof Status || sortedItems instanceof Status) {
     return <LoadingCentered />;
   }
+
+  const { activity, enrolledAs, title } = juicyDeets;
 
   return (
     <div className="mx-4 flex h-full w-[672px] flex-col justify-between pb-2">
       <div className="mb-5 flex items-start justify-between gap-2">
-        <div className="w-full text-3xl">{activity.assignment.title}</div>
+        <div className="w-full text-3xl">{title}</div>
         <EditorControls activityStatus={activity.status} />
       </div>
       <ScrollyContentBox className="mb-5 p-6 pb-24">
@@ -35,7 +37,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
               item={item}
               itemNumber={idx + 1}
               deleted={activityEditorStore.isDeletedDraft(item.id)}
-              enrolledAs={activity.course.enrolledAs}
+              enrolledAs={enrolledAs}
               infoImage={infoImage}
               infoText={infoText}
               question={question}

@@ -1,15 +1,15 @@
 import { eq, inArray } from "drizzle-orm";
+import { z } from "zod";
+import { assertOne } from "~/common/arrayUtils";
 import { db } from "~/server/db";
 import { type Integration } from "~/server/db/schema";
-import { type LmsCourse, type IntegrationApi } from "../types";
+import { type IntegrationApi, type LmsCourse } from "../types";
 import {
   type CanvasCourse,
   getCanvasAssignments,
   getCanvasCourse,
   getCanvasCourses,
 } from "./canvasApiService";
-import { z } from "zod";
-import { assertOne } from "~/common/arrayUtils";
 
 async function getOneCanvasCourse({
   userId,
@@ -46,6 +46,87 @@ async function getAllCanvasCourses(userId: string) {
   return courses;
 }
 
+async function createIntegrationActivities({
+  exAssignmentIdJsons,
+  exCourseIdJson,
+  integrationId,
+}: {
+  exAssignmentIdJsons: string[];
+  exCourseIdJson: string;
+  integrationId: string;
+}) {
+  // so drizzle doesn't complain
+  if (exAssignmentIdJsons.length === 0) return [];
+
+  return await db.transaction(async (tx) => {
+    const newActivities = await tx
+      .insert(db.x.activities)
+      .values(exAssignmentIdJsons.map(() => ({})))
+      .returning();
+    const nias = await tx
+      .insert(db.x.integrationActivities)
+      .values(
+        exAssignmentIdJsons.map((iaij, index) => {
+          const newActivity = newActivities[index];
+          if (!newActivity) throw new Error("No activity found");
+          return {
+            exCourseIdJson,
+            exAssignmentIdJson: iaij,
+            integrationId,
+            activityId: newActivity.id,
+          };
+        }),
+      )
+      .returning();
+    return nias.map((nia) => {
+      const activity = newActivities.find((a) => a.id === nia.activityId);
+      if (!activity) throw new Error("Activity not found");
+      return {
+        ...nia,
+        activity,
+      };
+    });
+  });
+}
+
+async function createFullIntegrationActivityMap({
+  exAssignmentIdJsons,
+  exCourseIdJson,
+  integrationId,
+}: {
+  exAssignmentIdJsons: string[];
+  exCourseIdJson: string;
+  integrationId: string;
+}) {
+  const integrationActivities = await db.query.integrationActivities.findMany({
+    where: inArray(
+      db.x.integrationActivities.exAssignmentIdJson,
+      exAssignmentIdJsons,
+    ),
+    with: {
+      activity: true,
+    },
+  });
+
+  const integrationActivityMap = new Map(
+    integrationActivities.map((ia) => [ia.exAssignmentIdJson, ia] as const),
+  );
+
+  const missingJsons = exAssignmentIdJsons.filter(
+    (eij) => !integrationActivityMap.has(eij),
+  );
+  const newIntegrationActivities = await createIntegrationActivities({
+    exAssignmentIdJsons: missingJsons,
+    exCourseIdJson,
+    integrationId,
+  });
+  for (const ia of newIntegrationActivities) {
+    integrationActivityMap.set(ia.exAssignmentIdJson, ia);
+  }
+
+  return integrationActivityMap;
+}
+
 async function courseToLmsCourse({
   userId,
   canvasCourse,
@@ -57,54 +138,36 @@ async function courseToLmsCourse({
   canvasIntegrationId: string;
   integrationId: string;
 }) {
+  const exCourseIdJson = JSON.stringify(canvasCourse.id);
   const rawAssignments = await getCanvasAssignments({
     userId,
     canvasIntegrationId,
     canvasCourseId: canvasCourse.id,
-    tx: db,
   });
   const exAssignmentIdJsons = rawAssignments.map((a) => JSON.stringify(a.id));
-  const activites = await db.query.activities.findMany({
-    where: inArray(db.x.activities.exAssignmentIdJson, exAssignmentIdJsons),
+
+  const integrationActivityMap = await createFullIntegrationActivityMap({
+    exAssignmentIdJsons,
+    exCourseIdJson,
+    integrationId,
   });
-  const activityMap = new Map(
-    activites.map((a) => [a.exAssignmentIdJson, a] as const),
-  );
-  const missingActivitiesexAssignmentIdJsons = exAssignmentIdJsons.filter(
-    (eij) => !activityMap.has(eij),
-  );
-  const exCourseIdJson = JSON.stringify(canvasCourse.id);
-  if (missingActivitiesexAssignmentIdJsons.length > 0) {
-    // create an activity for each missing assignment that doesn't have an associated one
-    const newActivities = await db
-      .insert(db.x.activities)
-      .values(
-        missingActivitiesexAssignmentIdJsons.map((exAssignmentIdJson) => ({
-          exCourseIdJson,
-          exAssignmentIdJson,
-          integrationId,
-        })),
-      )
-      .returning();
-    for (const a of newActivities) {
-      activityMap.set(a.exAssignmentIdJson, a);
-    }
-  }
 
   const lmsCourse: LmsCourse = {
     title: canvasCourse.name,
     enrolledAs: canvasCourse.enrollments.map((e) => e.enrolledAs),
     assignments: rawAssignments.map((a) => {
-      const activity = activityMap.get(JSON.stringify(a.id));
-      if (!activity) {
-        throw new Error("Activity not found");
-      }
+      const integrationActivity = integrationActivityMap.get(
+        JSON.stringify(a.id),
+      );
+      if (!integrationActivity)
+        throw new Error("Integration activity not found");
       return {
         exAssignmentIdJson: JSON.stringify(a.id),
         dueAt: a.dueAt,
         lockedAt: a.lockedAt,
         title: a.name,
-        activity,
+        integrationActivity,
+        activity: integrationActivity.activity,
       };
     }),
   };

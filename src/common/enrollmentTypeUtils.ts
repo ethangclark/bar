@@ -1,12 +1,15 @@
 import { z } from "zod";
+import { type RichActivity } from "~/server/services/activityService";
 
-export const enrollmentTypeSchema = z.enum([
+export const enrollmentTypes = [
   "student",
   "teacher",
   "ta",
   "designer",
   "observer",
-]);
+] as const;
+export const allEnrollmentTypes = [...enrollmentTypes];
+export const enrollmentTypeSchema = z.enum(enrollmentTypes);
 export type EnrollmentType = z.infer<typeof enrollmentTypeSchema>;
 
 const developers = new Set<EnrollmentType>(["teacher", "designer"]);
@@ -22,4 +25,13 @@ export function isGrader(enrollmentTypes: EnrollmentType[]) {
 const gradersAndDevelopers = new Set([...graders, ...developers]);
 export function isGraderOrDeveloper(enrollmentTypes: EnrollmentType[]) {
   return enrollmentTypes.some((et) => gradersAndDevelopers.has(et));
+}
+
+export function getEnrolledAs(activity: RichActivity): EnrollmentType[] {
+  switch (activity.type) {
+    case "integration":
+      return activity.course.enrolledAs;
+    case "adHoc":
+      return allEnrollmentTypes;
+  }
 }

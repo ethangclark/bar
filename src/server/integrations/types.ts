@@ -1,6 +1,7 @@
 import {
-  type Integration,
   type Activity,
+  type Integration,
+  type IntegrationActivity,
   type IntegrationType,
 } from "~/server/db/schema";
 import { type NarrowedCanvasEnrollmentType } from "./canvas/utils";
@@ -10,6 +11,7 @@ export type LmsAssignment = {
   title: string;
   dueAt: Date | null;
   lockedAt: Date | null;
+  integrationActivity: IntegrationActivity;
   activity: Activity;
 };
 export type LmsCourse = {

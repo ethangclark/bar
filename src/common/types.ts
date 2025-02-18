@@ -1,7 +1,7 @@
-import { z } from "zod";
-import type { Activity } from "~/server/db/schema";
-import type { LmsCourse, LmsAssignment } from "~/server/integrations/types";
 import type superjson from "superjson";
+import { z } from "zod";
+
+export { type RichActivity } from "~/server/services/activityService";
 
 export type SuperJSONValue = Parameters<typeof superjson.serialize>[0];
 
@@ -35,8 +35,3 @@ export const MessageDeltaSchema = z.object({
   contentDelta: z.string(),
 });
 export type MessageDeltaSchema = z.infer<typeof MessageDeltaSchema>;
-
-export type RichActivity = Activity & {
-  course: LmsCourse;
-  assignment: LmsAssignment;
-};

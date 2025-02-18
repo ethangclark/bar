@@ -5,41 +5,30 @@ import { noop } from "~/common/fnUtils";
 import { db } from "~/server/db";
 import { type LmsAssignment } from "~/server/integrations/types";
 import { getIntegrationApi } from "~/server/services/integrationService";
+import { type IntegrationActivity } from "../db/schema";
 
-export async function getActivity({
+async function getCourseAndAssignment({
   userId,
-  activityId,
-  assertAccess,
+  integrationActivity,
 }: {
   userId: string;
-  activityId: string;
-  assertAccess: true;
+  integrationActivity: IntegrationActivity;
 }) {
-  // this is just to call out what exactly the function is responsible for
-  noop(assertAccess);
-
-  const activity = await db.query.activities.findFirst({
-    where: eq(db.x.activities.id, activityId),
-  });
-  if (!activity) {
-    throw new Error("Activity not found");
-  }
-
   const integrationApi = await getIntegrationApi({
     userId,
-    integrationId: activity.integrationId,
+    integrationId: integrationActivity.integrationId,
   });
 
   const course = await integrationApi.getCourse({
     userId,
-    exCourseIdJson: activity.exCourseIdJson,
+    exCourseIdJson: integrationActivity.exCourseIdJson,
   });
 
   // ensure that the activity is associated with an assignment that's visible to the user
   // (hiding unpublished assignments from students)
   let assignment: LmsAssignment | null = null;
   for (const a of course.assignments) {
-    if (a.activity?.id !== activity.id) {
+    if (a.integrationActivity.activityId !== integrationActivity.activityId) {
       continue;
     }
     if (isDeveloper(course.enrolledAs)) {
@@ -58,8 +47,64 @@ export async function getActivity({
     throw new Error("Activity not found");
   }
 
-  return { ...activity, course, assignment };
+  return { course, assignment };
 }
+
+export async function getActivity({
+  userId,
+  activityId,
+  assertAccess,
+}: {
+  userId: string;
+  activityId: string;
+  assertAccess: true;
+}) {
+  // this is just to call out what exactly the function is responsible for
+  noop(assertAccess);
+
+  const activity = await db.query.activities.findFirst({
+    where: eq(db.x.activities.id, activityId),
+    with: {
+      integrationActivity: true,
+      adHocActivity: true,
+    },
+  });
+  if (!activity) {
+    throw new Error("Activity not found");
+  }
+
+  const { integrationActivity, adHocActivity } = activity;
+
+  if (integrationActivity) {
+    const { course, assignment } = await getCourseAndAssignment({
+      userId,
+      integrationActivity,
+    });
+    return {
+      ...activity,
+      type: "integration" as const,
+      course,
+      assignment,
+
+      // infers as non-nullable
+      integrationActivity,
+    };
+  }
+
+  if (adHocActivity) {
+    return {
+      ...activity,
+      type: "adHoc" as const,
+
+      // infers as non-nullable
+      adHocActivity,
+    };
+  }
+
+  throw new Error("Could not determine activity type");
+}
+
+export type RichActivity = Awaited<ReturnType<typeof getActivity>>;
 
 export async function assertActivityAccess({
   userId,

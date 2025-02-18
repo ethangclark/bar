@@ -306,14 +306,12 @@ export async function getCanvasAssignments({
   userId,
   canvasIntegrationId,
   canvasCourseId,
-  tx,
 }: {
   userId: string;
   canvasIntegrationId: string;
   canvasCourseId: number;
-  tx: DbOrTx;
 }) {
-  const canvasUsers = await tx.query.canvasUsers.findMany({
+  const canvasUsers = await db.query.canvasUsers.findMany({
     where: eq(db.x.canvasUsers.userId, userId),
   });
   const rawAssignments =

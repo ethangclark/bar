@@ -231,34 +231,12 @@ export const activityStatusEnum = pgEnum("activity_status", [
 export const activityStatusSchema = z.enum(activityStatusEnum.enumValues);
 export type ActivityStatus = z.infer<typeof activityStatusSchema>;
 
-export const activities = pgTable(
-  "activity",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    exCourseIdJson: text("ex_course_id_json"),
-    exAssignmentIdJson: text("ex_assignment_id_json"),
-    integrationId: uuid("integration_id").references(
-      () => integrations.id,
-      /*, { onDelete: "cascade" } <- avoiding; we want to preserve activities even if integration is deleted */
-    ),
-    status: activityStatusEnum("status").notNull().default("draft"),
-    manualCreatorId: uuid("manual_creator_id").references(() => users.id, {
-      onDelete: "cascade",
-    }),
-  },
-  (a) => [
-    index("activity_ex_course_id_json_idx").on(a.exCourseIdJson),
-    index("activity_ex_assignment_id_json_idx").on(a.exAssignmentIdJson),
-    index("activity_integration_id_idx").on(a.integrationId),
-    index("activity_manual_creator_id_idx").on(a.manualCreatorId),
-  ],
-);
+export const activities = pgTable("activity", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  status: activityStatusEnum("status").notNull().default("draft"),
+});
 export type Activity = InferSelectModel<typeof activities>;
 export const activitiesRelations = relations(activities, ({ one, many }) => ({
-  integration: one(integrations, {
-    fields: [activities.integrationId],
-    references: [integrations.id],
-  }),
   items: many(items),
   evalKeys: many(evalKeys),
   questions: many(questions),
@@ -266,14 +244,92 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
   infoImages: many(infoImages),
   threads: many(threads),
   messages: many(messages),
-  manualCreator: one(users, {
-    fields: [activities.manualCreatorId],
-    references: [users.id],
-  }),
+
+  // should be exactly one of these
+  adHocActivity: one(adHocActivities),
+  integrationActivity: one(integrationActivities),
 }));
 export const activitySchema = createSelectSchema(activities);
 
-// should have a questionId XOR infoTextId
+export const integrationActivities = pgTable(
+  "integration_activities",
+  {
+    integrationId: uuid("integration_id")
+      .notNull()
+      .references(() => integrations.id, {
+        onDelete: "cascade",
+      }),
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, {
+        onDelete: "cascade",
+      })
+      .unique(),
+    exCourseIdJson: text("ex_course_id_json").notNull(),
+    exAssignmentIdJson: text("ex_assignment_id_json").notNull(),
+  },
+  (ia) => [
+    primaryKey({ columns: [ia.integrationId, ia.activityId] }),
+    index("integration_activities_ex_course_id_json_idx").on(ia.exCourseIdJson),
+    index("integration_activities_ex_assignment_id_json_idx").on(
+      ia.exAssignmentIdJson,
+    ),
+  ],
+);
+export type IntegrationActivity = InferSelectModel<
+  typeof integrationActivities
+>;
+export const integrationActivitiesRelations = relations(
+  integrationActivities,
+  ({ one }) => ({
+    integration: one(integrations, {
+      fields: [integrationActivities.integrationId],
+      references: [integrations.id],
+    }),
+    activity: one(activities, {
+      fields: [integrationActivities.activityId],
+      references: [activities.id],
+    }),
+  }),
+);
+export const integrationActivitySchema = createSelectSchema(
+  integrationActivities,
+);
+
+export const adHocActivities = pgTable(
+  "ad_hoc_activities",
+  {
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, {
+        onDelete: "cascade",
+      })
+      .unique(),
+    creatorId: uuid("creator_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "cascade",
+      }),
+    title: text("title").notNull(),
+  },
+  (ma) => [index("ad_hoc_activities_creator_id_idx").on(ma.creatorId)],
+);
+export type AdHocActivity = InferSelectModel<typeof adHocActivities>;
+export const adHocActivitiesRelations = relations(
+  adHocActivities,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [adHocActivities.activityId],
+      references: [activities.id],
+    }),
+    creator: one(users, {
+      fields: [adHocActivities.creatorId],
+      references: [users.id],
+    }),
+  }),
+);
+export const adHocActivitySchema = createSelectSchema(adHocActivities);
+
 export const items = pgTable(
   "item",
   {
@@ -291,6 +347,8 @@ export const itemRelations = relations(items, ({ one }) => ({
     fields: [items.activityId],
     references: [activities.id],
   }),
+
+  // should be exactly one of these
   question: one(questions),
   infoText: one(infoTexts),
   infoImage: one(infoImages),
