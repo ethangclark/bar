@@ -14,6 +14,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import { integrationTypes } from "~/common/types";
 
 export const pgTable = pgTableCreator((name) => name);
 
@@ -118,7 +119,7 @@ export type Lock = InferSelectModel<typeof locks>;
 export const locksRelations = relations(locks, () => ({}));
 export const lockSchema = createSelectSchema(locks);
 
-export const integrationTypeEnum = pgEnum("integration_type", ["canvas"]);
+export const integrationTypeEnum = pgEnum("integration_type", integrationTypes);
 export const integrationTypeSchema = z.enum(integrationTypeEnum.enumValues);
 export type IntegrationType = z.infer<typeof integrationTypeSchema>;
 

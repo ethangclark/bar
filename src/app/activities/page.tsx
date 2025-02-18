@@ -1,15 +1,26 @@
 "use client";
 
+import { Button } from "antd";
 import { Assignment } from "~/client/components/Assignment";
 import { LoadingPage } from "~/client/components/Loading";
 import { LogoutButton } from "~/client/components/LogoutButton";
 import { Page } from "~/client/components/Page";
+import { allIntegrationTypes } from "~/common/types";
+import { IntegrationType } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
-export default function Courses() {
-  const { data: courses, isLoading } = api.courses.all.useQuery();
+function getIntegrationLabel(integrationType: IntegrationType): string {
+  switch (integrationType) {
+    case "canvas":
+      return "Canvas";
+  }
+}
 
-  if (isLoading) {
+export default function Courses() {
+  const { data: courses, isLoading: isLoadingCourses } =
+    api.courses.all.useQuery();
+
+  if (isLoadingCourses) {
     return <LoadingPage />;
   }
 
@@ -17,6 +28,7 @@ export default function Courses() {
     <Page>
       <LogoutButton />
       <div className="mb-4 text-4xl">Activities</div>
+      <div className="mb-4 text-2xl">Course activities</div>
       <div>
         {courses?.map((c, idx) => (
           <div key={idx}>
@@ -28,6 +40,12 @@ export default function Courses() {
             </div>
           </div>
         ))}
+        {courses?.length === 0 &&
+          allIntegrationTypes.map((it) => (
+            <Button type="link" href={`/login/${it}/${domain}`} key={it}>
+              Connect to {getIntegrationLabel(it)}
+            </Button>
+          ))}
       </div>
     </Page>
   );

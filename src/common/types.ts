@@ -35,3 +35,6 @@ export const MessageDeltaSchema = z.object({
   contentDelta: z.string(),
 });
 export type MessageDeltaSchema = z.infer<typeof MessageDeltaSchema>;
+
+export const integrationTypes = ["canvas"] as const;
+export const allIntegrationTypes = [...integrationTypes];
