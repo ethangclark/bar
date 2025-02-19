@@ -1,4 +1,4 @@
-import { Button } from "antd";
+import { Button, Typography } from "antd";
 import { useState } from "react";
 import { Assignment } from "~/client/components/Assignment";
 import { LoadingPage } from "~/client/components/Loading";
@@ -17,10 +17,12 @@ const SectionTitle = ({ title }: { title: string }) => (
 export function Overview() {
   const { data: courses, isLoading: isLoadingCourses } =
     api.courses.all.useQuery();
+  const { data: activities, isLoading: isLoadingActivities } =
+    api.activity.getAll.useQuery();
 
   const [creating, setCreating] = useState(false);
 
-  if (isLoadingCourses) {
+  if (isLoadingCourses || isLoadingActivities) {
     return <LoadingPage />;
   }
 
@@ -38,7 +40,18 @@ export function Overview() {
       >
         Create activity
       </Button>
-      TODO: display activities
+      {activities?.map((a) => {
+        if (a.type === "adHoc") {
+          return (
+            <div key={a.id}>
+              <Typography.Link href={`/activity/${a.id}`}>
+                {a.adHocActivity.title}
+              </Typography.Link>
+            </div>
+          );
+        }
+        return null;
+      })}
       <SectionTitle title="Course activities" />
       <div>
         To create activities for course assignments, connect to your LMS.
