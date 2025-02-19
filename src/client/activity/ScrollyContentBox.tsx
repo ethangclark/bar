@@ -7,7 +7,7 @@ export function ScrollyContentBox({
 }) {
   return (
     <div
-      className={`outline-3 flex h-full grow flex-col items-center overflow-y-auto rounded-lg outline outline-gray-200 ${className}`}
+      className={`flex h-full grow flex-col items-center overflow-y-auto rounded-lg outline outline-1 outline-gray-200 ${className}`}
       style={{ width: `calc(100% - 2px)` }} // to account for the outline
     >
       {children}
