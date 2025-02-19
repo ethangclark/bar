@@ -1,9 +1,9 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Editor } from "../components/Editor";
-import { VoiceTranscriber } from "../components/VoiceTranscriber";
-import { storeObserver } from "../utils/storeObserver";
-import { Status } from "../utils/status";
 import { LoadingCentered } from "../components/Loading";
+import { VoiceTranscriber } from "../components/VoiceTranscriber";
+import { Status } from "../utils/status";
+import { storeObserver } from "../utils/storeObserver";
 export const ChatInput = storeObserver(function ChatInput({
   descendentStore,
   threadStore,
@@ -15,9 +15,19 @@ export const ChatInput = storeObserver(function ChatInput({
 
   const onTranscription = useCallback((text: string) => {
     setV((v) => (v ? v + " " + text : text));
+    if (editorRef.current) {
+      editorRef.current.focus();
+    }
   }, []);
 
   const { lastMessageComplete } = threadStore;
+
+  const editorRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+    }
+  }, []);
 
   const loading =
     selectedThreadId instanceof Status ||
@@ -37,6 +47,7 @@ export const ChatInput = storeObserver(function ChatInput({
           </div>
         )}
         <Editor
+          ref={editorRef}
           value={v}
           setValue={setV}
           placeholder="Compose your message..."
@@ -62,6 +73,9 @@ export const ChatInput = storeObserver(function ChatInput({
               });
             } finally {
               setIsMessageSending(false);
+              if (editorRef.current) {
+                editorRef.current.focus();
+              }
             }
           }}
           disabled={loading}

@@ -27,6 +27,13 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
         <EditorControls activityStatus={activity.status} />
       </div>
       <ScrollyContentBox className="mb-5 p-6 pb-24">
+        {sortedItems.length === 0 && (
+          <div className="flex h-full w-full items-center justify-center">
+            <div className="text-gray-500">
+              No items yet. Add one to get started.
+            </div>
+          </div>
+        )}
         {sortedItems.map((item, idx) => {
           const infoImage = itemStore.getInfoImage(item.id);
           const infoText = itemStore.getTextInfo(item.id);
