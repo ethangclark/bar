@@ -1,7 +1,7 @@
 import type superjson from "superjson";
 import { z } from "zod";
 
-export { type RichActivity } from "~/server/services/activityService";
+export { type RichActivity } from "~/server/services/activity/activityService";
 
 export type SuperJSONValue = Parameters<typeof superjson.serialize>[0];
 

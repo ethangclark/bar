@@ -16,7 +16,7 @@ import {
   type Descendents,
   modificationsSchema,
 } from "~/server/descendents/descendentTypes";
-import { getActivity } from "~/server/services/activityService";
+import { getActivity } from "~/server/services/activity/activityService";
 
 export const descendentRouter = createTRPCRouter({
   read: protectedProcedure

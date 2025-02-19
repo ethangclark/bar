@@ -5,7 +5,7 @@ import { noop } from "~/common/fnUtils";
 import { db } from "~/server/db";
 import { type LmsAssignment } from "~/server/integrations/types";
 import { getIntegrationApi } from "~/server/services/integrationService";
-import { type IntegrationActivity } from "../db/schema";
+import { type IntegrationActivity } from "../../db/schema";
 
 async function getCourseAndAssignment({
   userId,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { type RichActivity } from "~/server/services/activityService";
+import { type RichActivity } from "~/server/services/activity/activityService";
 
 export const enrollmentTypes = [
   "student",

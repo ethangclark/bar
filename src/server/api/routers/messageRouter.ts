@@ -3,7 +3,7 @@ import { type MessageDeltaSchema } from "~/common/types";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { messageDeltaPubSub } from "~/server/db/pubsub/messageDeltaPubSub";
-import { getActivity } from "~/server/services/activityService";
+import { getActivity } from "~/server/services/activity/activityService";
 
 export const messageRouter = createTRPCRouter({
   messageDeltas: protectedProcedure
