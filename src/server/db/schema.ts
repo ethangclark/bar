@@ -67,6 +67,7 @@ export type User = InferSelectModel<typeof users>;
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   userIntegrations: many(userIntegrations),
+  adHocActivities: many(adHocActivities),
 }));
 export const userSchema = createSelectSchema(users);
 
@@ -133,6 +134,7 @@ export const integrationsRelations = relations(
   ({ one, many }) => ({
     userIntegraitons: many(userIntegrations),
     canvasIntegration: one(canvasIntegrations),
+    integrationActivities: many(integrationActivities),
   }),
 );
 

@@ -2,7 +2,10 @@ import { z } from "zod";
 import { assertOne } from "~/common/arrayUtils";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db, schema } from "~/server/db";
-import { getActivity } from "~/server/services/activity/activityService";
+import {
+  getActivity,
+  getAllActivities,
+} from "~/server/services/activity/activityService";
 
 export const activityRouter = createTRPCRouter({
   get: protectedProcedure
@@ -15,6 +18,10 @@ export const activityRouter = createTRPCRouter({
       });
       return activity;
     }),
+  getAll: protectedProcedure.query(async ({ ctx }) => {
+    const activities = await getAllActivities({ userId: ctx.userId });
+    return activities;
+  }),
   create: protectedProcedure
     .input(z.object({ title: z.string() }))
     .mutation(async ({ ctx, input }) => {

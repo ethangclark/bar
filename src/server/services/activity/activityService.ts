@@ -1,54 +1,10 @@
 import { eq } from "drizzle-orm";
-import { isDeveloper } from "~/common/enrollmentTypeUtils";
-import { assertNever } from "~/common/errorUtils";
 import { noop } from "~/common/fnUtils";
 import { db, schema } from "~/server/db";
-import { type LmsAssignment } from "~/server/integrations/types";
-import { getIntegrationApi } from "~/server/services/integrationService";
-import { type IntegrationActivity } from "../../db/schema";
-
-async function getCourseAndAssignment({
-  userId,
-  integrationActivity,
-}: {
-  userId: string;
-  integrationActivity: IntegrationActivity;
-}) {
-  const integrationApi = await getIntegrationApi({
-    userId,
-    integrationId: integrationActivity.integrationId,
-  });
-
-  const course = await integrationApi.getCourse({
-    userId,
-    exCourseIdJson: integrationActivity.exCourseIdJson,
-  });
-
-  // ensure that the activity is associated with an assignment that's visible to the user
-  // (hiding unpublished assignments from students)
-  let assignment: LmsAssignment | null = null;
-  for (const a of course.assignments) {
-    if (a.integrationActivity.activityId !== integrationActivity.activityId) {
-      continue;
-    }
-    if (isDeveloper(course.enrolledAs)) {
-      assignment = a;
-    }
-    switch (a.activity.status) {
-      case "published":
-        assignment = a;
-      case "draft":
-        // do nothing;
-        continue;
-    }
-    assertNever(a.activity.status);
-  }
-  if (!course || !assignment) {
-    throw new Error("Activity not found");
-  }
-
-  return { course, assignment };
-}
+import {
+  getAssignmentActivities,
+  getCourseAndAssignment,
+} from "./activityCourses";
 
 export async function getActivity({
   userId,
@@ -80,30 +36,33 @@ export async function getActivity({
       userId,
       integrationActivity,
     });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { adHocActivity, ...rest } = activity;
     return {
-      ...activity,
+      ...rest,
       type: "integration" as const,
       course,
       assignment,
-
-      // infers as non-nullable
-      integrationActivity,
+      integrationActivity, // infers as non-nullable
     };
   }
 
   if (adHocActivity) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { integrationActivity, ...rest } = activity;
     return {
-      ...activity,
+      ...rest,
       type: "adHoc" as const,
-
-      // infers as non-nullable
-      adHocActivity,
+      adHocActivity, // infers as non-nullable
     };
   }
 
   throw new Error("Could not determine activity type");
 }
 
+// we're sort of mushing together the adHocActivity and integrationActivity
+// into a single type, but it works for now (and at least it's represented
+// in an explicit union type)
 export type RichActivity = Awaited<ReturnType<typeof getActivity>>;
 
 export async function assertActivityAccess({
@@ -114,4 +73,38 @@ export async function assertActivityAccess({
   activityId: string;
 }) {
   await getActivity({ userId, activityId, assertAccess: true });
+}
+
+export async function getAllActivities({
+  userId,
+}: {
+  userId: string;
+}): Promise<RichActivity[]> {
+  const result = Array<RichActivity>();
+  const assignmentActivities = await getAssignmentActivities({ userId });
+  for (const assignmentActivity of assignmentActivities) {
+    result.push({
+      ...assignmentActivity.activity,
+      type: "integration" as const,
+      course: assignmentActivity.course,
+      assignment: assignmentActivity.assignment,
+      integrationActivity: assignmentActivity.integrationActivity,
+    });
+  }
+
+  const adHocActivities = await db.query.adHocActivities.findMany({
+    where: eq(schema.adHocActivities.creatorId, userId),
+    with: {
+      activity: true,
+    },
+  });
+  for (const adHocActivity of adHocActivities) {
+    result.push({
+      ...adHocActivity.activity,
+      type: "adHoc" as const,
+      adHocActivity,
+    });
+  }
+
+  return result;
 }

@@ -31,21 +31,17 @@ export async function getIntegration({
   return ui.integration;
 }
 
-export async function getIntegrations(userId: string) {
+async function getIntegrations(userId: string) {
   const uis = await db.query.userIntegrations.findMany({
     where: eq(schema.userIntegrations.userId, userId),
     with: {
-      integration: {
-        with: {
-          canvasIntegration: true,
-        },
-      },
+      integration: true,
     },
   });
   return uis.map((ui) => ui.integration);
 }
 
-async function apiFromIntegration(integration: Integration) {
+export async function apiFromIntegration(integration: Integration) {
   switch (integration.type) {
     case "canvas": {
       return createCanvasIntegrationApi(integration);
