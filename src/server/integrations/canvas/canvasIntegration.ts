@@ -1,7 +1,7 @@
 import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { assertOne } from "~/common/arrayUtils";
-import { db } from "~/server/db";
+import { db, schema } from "~/server/db";
 import { type Integration } from "~/server/db/schema";
 import { type IntegrationApi, type LmsCourse } from "../types";
 import {
@@ -19,7 +19,7 @@ async function getOneCanvasCourse({
   exCourseIdJson: string;
 }) {
   const canvasUsers = await db.query.canvasUsers.findMany({
-    where: eq(db.x.canvasUsers.userId, userId),
+    where: eq(schema.canvasUsers.userId, userId),
   });
   const canvasIntegrationIds = canvasUsers.map((cu) => cu.canvasIntegrationId);
   const canvasCourseId = z.number().parse(JSON.parse(exCourseIdJson));
@@ -34,7 +34,7 @@ async function getOneCanvasCourse({
 
 async function getAllCanvasCourses(userId: string) {
   const canvasUsers = await db.query.canvasUsers.findMany({
-    where: eq(db.x.canvasUsers.userId, userId),
+    where: eq(schema.canvasUsers.userId, userId),
   });
   const canvasIntegrationIds = canvasUsers.map((cu) => cu.canvasIntegrationId);
   const courseLists = await Promise.all(
@@ -60,11 +60,11 @@ async function createIntegrationActivities({
 
   return await db.transaction(async (tx) => {
     const newActivities = await tx
-      .insert(db.x.activities)
+      .insert(schema.activities)
       .values(exAssignmentIdJsons.map(() => ({})))
       .returning();
     const nias = await tx
-      .insert(db.x.integrationActivities)
+      .insert(schema.integrationActivities)
       .values(
         exAssignmentIdJsons.map((iaij, index) => {
           const newActivity = newActivities[index];
@@ -100,7 +100,7 @@ async function createFullIntegrationActivityMap({
 }) {
   const integrationActivities = await db.query.integrationActivities.findMany({
     where: inArray(
-      db.x.integrationActivities.exAssignmentIdJson,
+      schema.integrationActivities.exAssignmentIdJson,
       exAssignmentIdJsons,
     ),
     with: {
@@ -178,15 +178,15 @@ export async function createCanvasIntegrationApi(
   integration: Integration,
 ): Promise<IntegrationApi> {
   const cis = await db.query.canvasIntegrations.findMany({
-    where: eq(db.x.canvasIntegrations.integrationId, integration.id),
+    where: eq(schema.canvasIntegrations.integrationId, integration.id),
   });
   const canvasIntegration = assertOne(cis);
 
   const markValidated = () =>
     db
-      .update(db.x.canvasIntegrations)
+      .update(schema.canvasIntegrations)
       .set({ validated: true })
-      .where(eq(db.x.canvasIntegrations.id, canvasIntegration.id));
+      .where(eq(schema.canvasIntegrations.id, canvasIntegration.id));
 
   return {
     type: "canvas",

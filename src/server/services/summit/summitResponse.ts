@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { createEmptyDescendents } from "~/common/descendentUtils";
 import { streamLlmResponse } from "~/server/ai/llm";
-import { db } from "~/server/db";
+import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import { messageDeltaPubSub } from "~/server/db/pubsub/messageDeltaPubSub";
 import { type Message } from "~/server/db/schema";
@@ -25,9 +25,9 @@ export async function updateAndPublishCompletion(assistantResponse: Message) {
 
   await Promise.all([
     db
-      .update(db.x.messages)
+      .update(schema.messages)
       .set(updates)
-      .where(eq(db.x.messages.id, assistantResponse.id)),
+      .where(eq(schema.messages.id, assistantResponse.id)),
     descendentPubSub.publish(descendent),
   ]);
 }
@@ -78,11 +78,11 @@ async function respondToThread({
 
     await Promise.all([
       db
-        .update(db.x.messages)
+        .update(schema.messages)
         .set({
           content: streamed,
         })
-        .where(eq(db.x.messages.id, emptyIncompleteMessage.id)),
+        .where(eq(schema.messages.id, emptyIncompleteMessage.id)),
       postProcessAssistantResponse(streamedIncompleteMessage, messages),
     ]);
     await updateAndPublishCompletion(streamedIncompleteMessage);

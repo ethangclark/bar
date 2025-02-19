@@ -1,9 +1,8 @@
-import { and, inArray } from "drizzle-orm";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { isGrader } from "~/common/enrollmentTypeUtils";
 import { type ViewPieceImage } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/descendentTypes";
-import { db } from "../db";
+import { schema } from "../db";
 
 const canRead: DescendentController<ViewPieceImage>["canRead"] = (
   viewPieceImage,
@@ -30,11 +29,11 @@ export const viewPieceImageController: DescendentController<ViewPieceImage> = {
     }
     return tx
       .select()
-      .from(db.x.viewPieceImages)
+      .from(schema.viewPieceImages)
       .where(
         and(
-          eq(db.x.viewPieceImages.activityId, activityId),
-          inArray(db.x.viewPieceImages.userId, userIds),
+          eq(schema.viewPieceImages.activityId, activityId),
+          inArray(schema.viewPieceImages.userId, userIds),
         ),
       );
   },
@@ -48,12 +47,12 @@ export const viewPieceImageController: DescendentController<ViewPieceImage> = {
   // anyone can delete a view piece image for themselves
   async delete({ activityId, tx, ids, userId }) {
     await tx
-      .delete(db.x.viewPieceImages)
+      .delete(schema.viewPieceImages)
       .where(
         and(
-          inArray(db.x.viewPieceImages.id, ids),
-          eq(db.x.viewPieceImages.activityId, activityId),
-          eq(db.x.viewPieceImages.userId, userId),
+          inArray(schema.viewPieceImages.id, ids),
+          eq(schema.viewPieceImages.activityId, activityId),
+          eq(schema.viewPieceImages.userId, userId),
         ),
       );
   },

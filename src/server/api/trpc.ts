@@ -12,7 +12,7 @@ import { ZodError } from "zod";
 
 import { eq } from "drizzle-orm";
 import { assertOneOrNone } from "~/common/arrayUtils";
-import { db } from "~/server/db";
+import { db, schema } from "~/server/db";
 import { queryUser } from "~/server/services/userService";
 import { getIpAddress } from "../utils";
 
@@ -35,13 +35,13 @@ export const createTRPCContext = async (opts: {
   const ipAddress = getIpAddress((headerName) => opts.headers.get(headerName));
 
   const sessions = await db
-    .insert(db.x.sessions)
+    .insert(schema.sessions)
     .values({
       sessionCookieValue: opts.sessionCookieValue ?? crypto.randomUUID(),
       lastIpAddress: ipAddress,
     })
     .onConflictDoUpdate({
-      target: [db.x.sessions.sessionCookieValue],
+      target: [schema.sessions.sessionCookieValue],
       set: {
         // doing an update here allows us to always return a value --
         // tracking the IP is more of an excuse to do this than anything
@@ -53,7 +53,7 @@ export const createTRPCContext = async (opts: {
 
   const user =
     (await db.query.users.findFirst({
-      where: eq(db.x.users.id, session?.userId ?? crypto.randomUUID()),
+      where: eq(schema.users.id, session?.userId ?? crypto.randomUUID()),
     })) ?? null;
 
   return {

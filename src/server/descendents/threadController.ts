@@ -2,7 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { isGrader } from "~/common/enrollmentTypeUtils";
 import { type Thread } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/descendentTypes";
-import { db } from "../db";
+import { schema } from "../db";
 import { generateIntroMessages } from "../services/summit/summitIntro";
 
 const canRead: DescendentController<Thread>["canRead"] = (
@@ -18,7 +18,7 @@ export const threadController: DescendentController<Thread> = {
   // anyone can create a thread for themselves
   async create({ activityId, tx, rows, userId, enqueueAgentEffect }) {
     const threads = await tx
-      .insert(db.x.threads)
+      .insert(schema.threads)
       .values(
         rows.map(({ createdAt: _, ...row }) => ({
           ...row,
@@ -41,11 +41,11 @@ export const threadController: DescendentController<Thread> = {
     }
     return tx
       .select()
-      .from(db.x.threads)
+      .from(schema.threads)
       .where(
         and(
-          eq(db.x.threads.activityId, activityId),
-          inArray(db.x.threads.userId, userIds),
+          eq(schema.threads.activityId, activityId),
+          inArray(schema.threads.userId, userIds),
         ),
       );
   },
@@ -59,12 +59,12 @@ export const threadController: DescendentController<Thread> = {
   // anyone can delete a thread for themselves
   async delete({ activityId, tx, ids, userId }) {
     await tx
-      .delete(db.x.threads)
+      .delete(schema.threads)
       .where(
         and(
-          inArray(db.x.threads.id, ids),
-          eq(db.x.threads.activityId, activityId),
-          eq(db.x.threads.userId, userId),
+          inArray(schema.threads.id, ids),
+          eq(schema.threads.activityId, activityId),
+          eq(schema.threads.userId, userId),
         ),
       );
   },

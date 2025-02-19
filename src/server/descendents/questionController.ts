@@ -2,7 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
 import { type Question } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/descendentTypes";
-import { db } from "../db";
+import { schema } from "../db";
 
 function canRead() {
   return true;
@@ -15,7 +15,7 @@ export const questionController: DescendentController<Question> = {
       return [];
     }
     const questions = await tx
-      .insert(db.x.questions)
+      .insert(schema.questions)
       .values(rows.map((row) => ({ ...row, activityId })))
       .returning();
     return questions;
@@ -26,8 +26,8 @@ export const questionController: DescendentController<Question> = {
     }
     return tx
       .select()
-      .from(db.x.questions)
-      .where(eq(db.x.questions.activityId, activityId));
+      .from(schema.questions)
+      .where(eq(schema.questions.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
@@ -36,12 +36,12 @@ export const questionController: DescendentController<Question> = {
     const questionsNested = await Promise.all(
       rows.map((row) =>
         tx
-          .update(db.x.questions)
+          .update(schema.questions)
           .set({ ...row, activityId })
           .where(
             and(
-              eq(db.x.questions.id, row.id),
-              eq(db.x.questions.activityId, activityId),
+              eq(schema.questions.id, row.id),
+              eq(schema.questions.activityId, activityId),
             ),
           )
           .returning(),
@@ -54,11 +54,11 @@ export const questionController: DescendentController<Question> = {
       return;
     }
     await tx
-      .delete(db.x.questions)
+      .delete(schema.questions)
       .where(
         and(
-          inArray(db.x.questions.id, ids),
-          eq(db.x.questions.activityId, activityId),
+          inArray(schema.questions.id, ids),
+          eq(schema.questions.activityId, activityId),
         ),
       );
   },

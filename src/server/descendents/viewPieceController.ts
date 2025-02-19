@@ -1,9 +1,8 @@
-import { and, inArray } from "drizzle-orm";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { isGrader } from "~/common/enrollmentTypeUtils";
 import { type ViewPiece } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/descendentTypes";
-import { db } from "../db";
+import { schema } from "../db";
 
 const canRead: DescendentController<ViewPiece>["canRead"] = (
   viewPiece,
@@ -30,11 +29,11 @@ export const viewPieceController: DescendentController<ViewPiece> = {
     }
     return tx
       .select()
-      .from(db.x.viewPieces)
+      .from(schema.viewPieces)
       .where(
         and(
-          eq(db.x.viewPieces.activityId, activityId),
-          inArray(db.x.viewPieces.userId, userIds),
+          eq(schema.viewPieces.activityId, activityId),
+          inArray(schema.viewPieces.userId, userIds),
         ),
       );
   },
@@ -48,12 +47,12 @@ export const viewPieceController: DescendentController<ViewPiece> = {
   // anyone can delete a view piece for themselves
   async delete({ activityId, tx, ids, userId }) {
     await tx
-      .delete(db.x.viewPieces)
+      .delete(schema.viewPieces)
       .where(
         and(
-          inArray(db.x.viewPieces.id, ids),
-          eq(db.x.viewPieces.activityId, activityId),
-          eq(db.x.viewPieces.userId, userId),
+          inArray(schema.viewPieces.id, ids),
+          eq(schema.viewPieces.activityId, activityId),
+          eq(schema.viewPieces.userId, userId),
         ),
       );
   },

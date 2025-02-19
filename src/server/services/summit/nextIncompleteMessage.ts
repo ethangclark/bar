@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { assertOne } from "~/common/arrayUtils";
 import { createEmptyDescendents } from "~/common/descendentUtils";
-import { db } from "~/server/db";
+import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 
 export async function publishNextIncompleteMessage({
@@ -15,10 +15,10 @@ export async function publishNextIncompleteMessage({
 }) {
   const [rawMessages, newMessageArr] = await Promise.all([
     db.query.messages.findMany({
-      where: eq(db.x.messages.threadId, threadId),
+      where: eq(schema.messages.threadId, threadId),
     }),
     db
-      .insert(db.x.messages)
+      .insert(schema.messages)
       .values({
         activityId,
         userId,

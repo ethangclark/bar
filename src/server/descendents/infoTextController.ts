@@ -1,9 +1,8 @@
-import { and, inArray } from "drizzle-orm";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
 import { type InfoText } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/descendentTypes";
-import { db } from "../db";
+import { schema } from "../db";
 
 function canRead() {
   return true;
@@ -16,7 +15,7 @@ export const infoTextController: DescendentController<InfoText> = {
       return [];
     }
     const infoTexts = await tx
-      .insert(db.x.infoTexts)
+      .insert(schema.infoTexts)
       .values(rows.map((row) => ({ ...row, activityId })))
       .returning();
     return infoTexts;
@@ -27,8 +26,8 @@ export const infoTextController: DescendentController<InfoText> = {
     }
     return tx
       .select()
-      .from(db.x.infoTexts)
-      .where(eq(db.x.infoTexts.activityId, activityId));
+      .from(schema.infoTexts)
+      .where(eq(schema.infoTexts.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
@@ -37,12 +36,12 @@ export const infoTextController: DescendentController<InfoText> = {
     const infoTextsNested = await Promise.all(
       rows.map((row) =>
         tx
-          .update(db.x.infoTexts)
+          .update(schema.infoTexts)
           .set({ ...row, activityId })
           .where(
             and(
-              eq(db.x.infoTexts.id, row.id),
-              eq(db.x.infoTexts.activityId, activityId),
+              eq(schema.infoTexts.id, row.id),
+              eq(schema.infoTexts.activityId, activityId),
             ),
           )
           .returning(),
@@ -55,11 +54,11 @@ export const infoTextController: DescendentController<InfoText> = {
       return;
     }
     await tx
-      .delete(db.x.infoTexts)
+      .delete(schema.infoTexts)
       .where(
         and(
-          inArray(db.x.infoTexts.id, ids),
-          eq(db.x.infoTexts.activityId, activityId),
+          inArray(schema.infoTexts.id, ids),
+          eq(schema.infoTexts.activityId, activityId),
         ),
       );
   },

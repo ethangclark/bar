@@ -2,7 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
 import { type InfoImage } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/descendentTypes";
-import { db } from "../db";
+import { schema } from "../db";
 
 function canRead() {
   return true;
@@ -15,7 +15,7 @@ export const infoImageController: DescendentController<InfoImage> = {
       return [];
     }
     const infoImages = await tx
-      .insert(db.x.infoImages)
+      .insert(schema.infoImages)
       .values(
         rows.map(
           ({
@@ -36,8 +36,8 @@ export const infoImageController: DescendentController<InfoImage> = {
     }
     return tx
       .select()
-      .from(db.x.infoImages)
-      .where(eq(db.x.infoImages.activityId, activityId));
+      .from(schema.infoImages)
+      .where(eq(schema.infoImages.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
@@ -50,12 +50,12 @@ export const infoImageController: DescendentController<InfoImage> = {
           ...row
         }) =>
           tx
-            .update(db.x.infoImages)
+            .update(schema.infoImages)
             .set({ ...row, activityId })
             .where(
               and(
-                eq(db.x.infoImages.id, row.id),
-                eq(db.x.infoImages.activityId, activityId),
+                eq(schema.infoImages.id, row.id),
+                eq(schema.infoImages.activityId, activityId),
               ),
             )
             .returning(),
@@ -68,11 +68,11 @@ export const infoImageController: DescendentController<InfoImage> = {
       return;
     }
     await tx
-      .delete(db.x.infoImages)
+      .delete(schema.infoImages)
       .where(
         and(
-          inArray(db.x.infoImages.id, ids),
-          eq(db.x.infoImages.activityId, activityId),
+          inArray(schema.infoImages.id, ids),
+          eq(schema.infoImages.activityId, activityId),
         ),
       );
   },

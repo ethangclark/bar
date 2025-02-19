@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
 import { assertNever } from "~/common/errorUtils";
 import { noop } from "~/common/fnUtils";
-import { db } from "~/server/db";
+import { db, schema } from "~/server/db";
 import { type LmsAssignment } from "~/server/integrations/types";
 import { getIntegrationApi } from "~/server/services/integrationService";
 import { type IntegrationActivity } from "../../db/schema";
@@ -63,7 +63,7 @@ export async function getActivity({
   noop(assertAccess);
 
   const activity = await db.query.activities.findFirst({
-    where: eq(db.x.activities.id, activityId),
+    where: eq(schema.activities.id, activityId),
     with: {
       integrationActivity: true,
       adHocActivity: true,

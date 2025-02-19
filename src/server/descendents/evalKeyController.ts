@@ -1,5 +1,4 @@
-import { and, inArray } from "drizzle-orm";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import {
   type EnrollmentType,
   isDeveloper,
@@ -7,7 +6,7 @@ import {
 } from "~/common/enrollmentTypeUtils";
 import { type EvalKey } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/descendentTypes";
-import { db } from "../db";
+import { schema } from "../db";
 
 function canRead(enrolledAs: EnrollmentType[]) {
   return isGraderOrDeveloper(enrolledAs);
@@ -23,7 +22,7 @@ export const evalKeyController: DescendentController<EvalKey> = {
       return [];
     }
     const evalKeys = await tx
-      .insert(db.x.evalKeys)
+      .insert(schema.evalKeys)
       .values(rows.map((row) => ({ ...row, activityId })))
       .returning();
     return evalKeys;
@@ -34,8 +33,8 @@ export const evalKeyController: DescendentController<EvalKey> = {
     }
     return tx
       .select()
-      .from(db.x.evalKeys)
-      .where(eq(db.x.evalKeys.activityId, activityId));
+      .from(schema.evalKeys)
+      .where(eq(schema.evalKeys.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
@@ -44,12 +43,12 @@ export const evalKeyController: DescendentController<EvalKey> = {
     const evalKeysNested = await Promise.all(
       rows.map((row) =>
         tx
-          .update(db.x.evalKeys)
+          .update(schema.evalKeys)
           .set({ ...row, activityId })
           .where(
             and(
-              eq(db.x.evalKeys.id, row.id),
-              eq(db.x.evalKeys.activityId, activityId),
+              eq(schema.evalKeys.id, row.id),
+              eq(schema.evalKeys.activityId, activityId),
             ),
           )
           .returning(),
@@ -62,11 +61,11 @@ export const evalKeyController: DescendentController<EvalKey> = {
       return;
     }
     await tx
-      .delete(db.x.evalKeys)
+      .delete(schema.evalKeys)
       .where(
         and(
-          inArray(db.x.evalKeys.id, ids),
-          eq(db.x.evalKeys.activityId, activityId),
+          inArray(schema.evalKeys.id, ids),
+          eq(schema.evalKeys.activityId, activityId),
         ),
       );
   },

@@ -1,7 +1,7 @@
 import { eq, inArray } from "drizzle-orm";
 import { createEmptyDescendents } from "~/common/descendentUtils";
 import { assertNever } from "~/common/errorUtils";
-import { db } from "~/server/db";
+import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import {
   type Message,
@@ -24,7 +24,7 @@ export async function injectImages(
 
   const possibleNumericIds = (
     await db.query.infoImages.findMany({
-      where: eq(db.x.infoImages.activityId, activityId),
+      where: eq(schema.infoImages.activityId, activityId),
     })
   ).map((i) => i.numericId);
 
@@ -40,7 +40,7 @@ export async function injectImages(
 
   const [viewPieces, infoImages] = await Promise.all([
     db
-      .insert(db.x.viewPieces)
+      .insert(schema.viewPieces)
       .values(
         data.map((_, idx) => ({
           messageId: assistantResponse.id,
@@ -51,7 +51,7 @@ export async function injectImages(
       )
       .returning(),
     db.query.infoImages.findMany({
-      where: inArray(db.x.infoImages.numericId, numericIds),
+      where: inArray(schema.infoImages.numericId, numericIds),
     }),
   ]);
   if (
@@ -108,8 +108,8 @@ export async function injectImages(
   });
 
   const [viewPieceImages, viewPieceTexts] = await Promise.all([
-    db.insert(db.x.viewPieceImages).values(imagePieceDrafts).returning(),
-    db.insert(db.x.viewPieceTexts).values(textPieceDrafts).returning(),
+    db.insert(schema.viewPieceImages).values(imagePieceDrafts).returning(),
+    db.insert(schema.viewPieceTexts).values(textPieceDrafts).returning(),
   ]);
 
   const descendents = {

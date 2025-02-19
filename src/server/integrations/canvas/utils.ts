@@ -1,14 +1,14 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { type Json } from "~/common/types";
-import { db } from "~/server/db";
-import { getCachedAccessToken, updateTokenCache } from "./canvasTokenCache";
-import { assertError } from "~/common/errorUtils";
 import { enrollmentTypeSchema } from "~/common/enrollmentTypeUtils";
+import { assertError } from "~/common/errorUtils";
+import { type Json } from "~/common/types";
+import { db, schema } from "~/server/db";
+import { getCachedAccessToken, updateTokenCache } from "./canvasTokenCache";
 
 export async function getCanvasIntegration(canvasIntegrationId: string) {
   const canvasIntegration = await db.query.canvasIntegrations.findFirst({
-    where: eq(db.x.canvasIntegrations.id, canvasIntegrationId),
+    where: eq(schema.canvasIntegrations.id, canvasIntegrationId),
   });
   if (!canvasIntegration) {
     throw new Error("Canvas integration not found");
@@ -93,7 +93,7 @@ export async function makeCanvasRequest<T extends Json>({
       const startTime = Date.now();
       const maxDurationMs = 1000 * 30;
       let [lock] = await db
-        .insert(db.x.locks)
+        .insert(schema.locks)
         .values({ name: lockName, maxDurationMs })
         .onConflictDoNothing()
         .returning();
@@ -125,7 +125,7 @@ export async function makeCanvasRequest<T extends Json>({
           do {
             await new Promise((resolve) => setTimeout(resolve, 100));
             lock = await db.query.locks.findFirst({
-              where: eq(db.x.locks.name, lockName),
+              where: eq(schema.locks.name, lockName),
             });
           } while (lock && Date.now() < startTime + lock.maxDurationMs);
           accessToken = getCachedAccessToken(refreshToken);
@@ -134,7 +134,7 @@ export async function makeCanvasRequest<T extends Json>({
           }
         }
       } finally {
-        await db.delete(db.x.locks).where(eq(db.x.locks.name, lockName));
+        await db.delete(schema.locks).where(eq(schema.locks.name, lockName));
       }
     }
   }

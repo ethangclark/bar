@@ -4,7 +4,7 @@ import { assertOneOrNone } from "~/common/arrayUtils";
 import { getCanvasBaseUrl } from "~/common/canvasUtils";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { db } from "~/server/db";
+import { db, schema } from "~/server/db";
 
 export const canvasRouter = createTRPCRouter({
   loginDeets: publicProcedure
@@ -13,7 +13,7 @@ export const canvasRouter = createTRPCRouter({
       const { subdomain } = input;
       const baseUrl = getCanvasBaseUrl(subdomain);
       const cis = await db.query.canvasIntegrations.findMany({
-        where: eq(db.x.canvasIntegrations.canvasBaseUrl, baseUrl),
+        where: eq(schema.canvasIntegrations.canvasBaseUrl, baseUrl),
       });
       const canvasIntegration = assertOneOrNone(cis);
       if (!canvasIntegration) {

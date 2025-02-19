@@ -1,9 +1,8 @@
-import { and, inArray } from "drizzle-orm";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
 import { type Item } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/descendentTypes";
-import { db } from "../db";
+import { schema } from "../db";
 
 function canRead() {
   return true;
@@ -16,7 +15,7 @@ export const itemController: DescendentController<Item> = {
       return [];
     }
     const items = await tx
-      .insert(db.x.items)
+      .insert(schema.items)
       .values(rows.map((row) => ({ ...row, activityId })))
       .returning();
     return items;
@@ -27,8 +26,8 @@ export const itemController: DescendentController<Item> = {
     }
     return tx
       .select()
-      .from(db.x.items)
-      .where(eq(db.x.items.activityId, activityId));
+      .from(schema.items)
+      .where(eq(schema.items.activityId, activityId));
   },
   async update({ activityId, enrolledAs, tx, rows }) {
     if (!isDeveloper(enrolledAs)) {
@@ -37,12 +36,12 @@ export const itemController: DescendentController<Item> = {
     const itemsNested = await Promise.all(
       rows.map((row) =>
         tx
-          .update(db.x.items)
+          .update(schema.items)
           .set({ ...row, activityId })
           .where(
             and(
-              eq(db.x.items.id, row.id),
-              eq(db.x.items.activityId, activityId),
+              eq(schema.items.id, row.id),
+              eq(schema.items.activityId, activityId),
             ),
           )
           .returning(),
@@ -55,9 +54,12 @@ export const itemController: DescendentController<Item> = {
       return;
     }
     await tx
-      .delete(db.x.items)
+      .delete(schema.items)
       .where(
-        and(inArray(db.x.items.id, ids), eq(db.x.items.activityId, activityId)),
+        and(
+          inArray(schema.items.id, ids),
+          eq(schema.items.activityId, activityId),
+        ),
       );
   },
 };

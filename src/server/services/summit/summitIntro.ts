@@ -3,7 +3,7 @@ import { createEmptyDescendents } from "~/common/descendentUtils";
 import { assertNever } from "~/common/errorUtils";
 import { numericIdToImageNumber } from "~/common/idUtils";
 import { objectKeys } from "~/common/objectUtils";
-import { db } from "~/server/db";
+import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import {
   type EvalKey,
@@ -84,7 +84,7 @@ function itemToString(
 
 async function beginThread(thread: Thread) {
   const items = await db.query.items.findMany({
-    where: eq(db.x.items.activityId, thread.activityId),
+    where: eq(schema.items.activityId, thread.activityId),
     with: {
       infoText: true,
       infoImage: true,
@@ -101,7 +101,7 @@ async function beginThread(thread: Thread) {
     .join("");
 
   const messages = await db
-    .insert(db.x.messages)
+    .insert(schema.messages)
     .values([
       {
         threadId: thread.id,

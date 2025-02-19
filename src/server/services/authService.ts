@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { assertOne } from "~/common/arrayUtils";
-import { db, type DbOrTx } from "~/server/db";
+import { db, schema, type DbOrTx } from "~/server/db";
 import { type Session } from "../db/schema";
 import { hashLoginToken } from "../utils";
 
@@ -13,7 +13,7 @@ export async function getOrCreateVerifiedEmailUser({
   tx: DbOrTx;
 }) {
   const existingVerified = await tx.query.users.findFirst({
-    where: eq(db.x.users.email, email),
+    where: eq(schema.users.email, email),
   });
   if (existingVerified) {
     return existingVerified;
@@ -21,10 +21,10 @@ export async function getOrCreateVerifiedEmailUser({
 
   // clean up any existing unverified users with this email
   // (simpler than trying to reuse unverified users if they exist)
-  await tx.delete(db.x.users).where(eq(db.x.users.unverifiedEmail, email));
+  await tx.delete(schema.users).where(eq(schema.users.unverifiedEmail, email));
 
   const users = await tx
-    .insert(db.x.users)
+    .insert(schema.users)
     .values({ unverifiedEmail: email })
     .returning();
   return assertOne(users);
@@ -39,7 +39,7 @@ export async function loginUser(
 
   // verify the login token
   const user = await tx.query.users.findFirst({
-    where: eq(db.x.users.loginTokenHash, loginTokenHash),
+    where: eq(schema.users.loginTokenHash, loginTokenHash),
   });
   if (!user) throw new TRPCError({ code: "UNAUTHORIZED" });
 
@@ -51,28 +51,28 @@ export async function loginUser(
 
   // ensure email is noted as verified
   await db
-    .update(db.x.users)
+    .update(schema.users)
     .set({
       email,
       unverifiedEmail: null,
       loginTokenHash: null,
     })
-    .where(eq(db.x.users.id, user.id));
+    .where(eq(schema.users.id, user.id));
 
   // associate the session with the user
   await db
-    .update(db.x.sessions)
+    .update(schema.sessions)
     .set({
       userId: user.id,
     })
-    .where(eq(db.x.sessions.sessionCookieValue, session.sessionCookieValue));
+    .where(eq(schema.sessions.sessionCookieValue, session.sessionCookieValue));
 }
 
 export async function logoutUser(session: Session, tx: DbOrTx) {
   await tx
-    .update(db.x.sessions)
+    .update(schema.sessions)
     .set({
       userId: null,
     })
-    .where(eq(db.x.sessions.sessionCookieValue, session.sessionCookieValue));
+    .where(eq(schema.sessions.sessionCookieValue, session.sessionCookieValue));
 }

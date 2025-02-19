@@ -2,7 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { isGrader } from "~/common/enrollmentTypeUtils";
 import { type Message } from "~/server/db/schema";
 import { type DescendentController } from "~/server/descendents/descendentTypes";
-import { db } from "../db";
+import { schema } from "../db";
 import { respondToUserMessages } from "../services/summit/summitResponse";
 
 const canRead: DescendentController<Message>["canRead"] = (
@@ -18,7 +18,7 @@ export const messageController: DescendentController<Message> = {
   // anyone can create a message for themselves
   async create({ activityId, tx, rows, userId, enqueueAgentEffect }) {
     const messages = await tx
-      .insert(db.x.messages)
+      .insert(schema.messages)
       .values(
         rows.map(({ createdAt: _, ...row }) => ({
           ...row,
@@ -42,11 +42,11 @@ export const messageController: DescendentController<Message> = {
     }
     return tx
       .select()
-      .from(db.x.messages)
+      .from(schema.messages)
       .where(
         and(
-          eq(db.x.messages.activityId, activityId),
-          inArray(db.x.messages.userId, userIds),
+          eq(schema.messages.activityId, activityId),
+          inArray(schema.messages.userId, userIds),
         ),
       );
   },
@@ -60,12 +60,12 @@ export const messageController: DescendentController<Message> = {
   // anyone can delete a message for themselves
   async delete({ activityId, tx, ids, userId }) {
     await tx
-      .delete(db.x.messages)
+      .delete(schema.messages)
       .where(
         and(
-          inArray(db.x.messages.id, ids),
-          eq(db.x.messages.activityId, activityId),
-          eq(db.x.messages.userId, userId),
+          inArray(schema.messages.id, ids),
+          eq(schema.messages.activityId, activityId),
+          eq(schema.messages.userId, userId),
         ),
       );
   },

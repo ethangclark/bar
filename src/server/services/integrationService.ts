@@ -1,9 +1,9 @@
 import { and, eq } from "drizzle-orm";
-import { db } from "~/server/db";
+import { assertNever } from "~/common/errorUtils";
+import { db, schema } from "~/server/db";
 import { createCanvasIntegrationApi } from "~/server/integrations/canvas/canvasIntegration";
 import { type IntegrationApi } from "~/server/integrations/types";
 import { type Integration } from "../db/schema";
-import { assertNever } from "~/common/errorUtils";
 
 export async function getIntegration({
   userId,
@@ -14,8 +14,8 @@ export async function getIntegration({
 }) {
   const ui = await db.query.userIntegrations.findFirst({
     where: and(
-      eq(db.x.userIntegrations.userId, userId),
-      eq(db.x.userIntegrations.integrationId, integrationId),
+      eq(schema.userIntegrations.userId, userId),
+      eq(schema.userIntegrations.integrationId, integrationId),
     ),
     with: {
       integration: {
@@ -33,7 +33,7 @@ export async function getIntegration({
 
 export async function getIntegrations(userId: string) {
   const uis = await db.query.userIntegrations.findMany({
-    where: eq(db.x.userIntegrations.userId, userId),
+    where: eq(schema.userIntegrations.userId, userId),
     with: {
       integration: {
         with: {
