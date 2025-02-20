@@ -8,7 +8,8 @@ export function LogoutButton() {
   return (
     <div className="relative">
       <Button
-        className={`padding-0 border-none shadow-none ${loggingOut ? "invisible" : "visible"}`}
+        type="text"
+        className={`padding-0 ${loggingOut ? "invisible" : "visible"}`}
         onClick={async () => {
           void trpc.auth.logout.mutate().then(() => {
             window.location.href = "/";

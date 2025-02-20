@@ -3,7 +3,7 @@ import { useState } from "react";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { invoke } from "~/common/fnUtils";
 import { type ActivityStatus } from "~/server/db/schema";
-import { ModalPadding } from "../components/ModalPadding";
+import { InfoModalPadding } from "../components/InfoModalPadding";
 
 type EditorControlsProps = {
   activityStatus: ActivityStatus;
@@ -30,10 +30,10 @@ export const EditorControls = storeObserver<EditorControlsProps>(
           }}
           okText="Save"
         >
-          <ModalPadding>
+          <InfoModalPadding>
             Are you sure you want to publish this activity? This will make it
             visible to students.
-          </ModalPadding>
+          </InfoModalPadding>
         </Modal>
         <ControlButton
           type="primary"
