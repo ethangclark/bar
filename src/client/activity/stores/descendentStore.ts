@@ -8,12 +8,13 @@ import {
   upsertDescendents,
 } from "~/common/descendentUtils";
 import { getDraftDate, getDraftId } from "~/common/draftData";
-import { identity, objectValues } from "~/common/objectUtils";
+import { identity, objectEntries, objectValues } from "~/common/objectUtils";
 import { type MessageDeltaSchema } from "~/common/types";
 import {
   type DescendentRows,
   type Descendents,
   type DescendentTables,
+  type Modifications,
 } from "~/server/descendents/descendentTypes";
 import { trpc } from "~/trpc/proxy";
 import { type FocusedActivityStore } from "./focusedActivityStore";
@@ -111,6 +112,28 @@ export class DescendentStore {
     Object.assign(this, baseState());
   }
 
+  handleModifications(modifications: Partial<Modifications>) {
+    const { descendents } = this;
+    if (descendents instanceof Status) {
+      return;
+    }
+    if (modifications.toCreate) {
+      upsertDescendents(descendents, modifications.toCreate);
+    }
+    if (modifications.toUpdate) {
+      upsertDescendents(descendents, modifications.toUpdate);
+    }
+    if (modifications.toDelete) {
+      objectEntries(modifications.toDelete).forEach(
+        ([descendentName, toDelete]) => {
+          toDelete.forEach((descendent) => {
+            delete descendents[descendentName][descendent.id];
+          });
+        },
+      );
+    }
+  }
+
   async create<T extends DescendentName>(
     descendentName: T,
     descendent: DescendentCreateParams<T>,
@@ -130,17 +153,9 @@ export class DescendentStore {
     toCreate[descendentName].push(newDescendent as any);
 
     // optimistic update
-    runInAction(() => {
-      if (this.descendents instanceof Status) {
-        // another activity is loading
-        return;
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-      (this.descendents[descendentName] as any)[newDescendent.id] =
-        newDescendent;
-    });
+    this.handleModifications({ toCreate });
 
-    const result = await trpc.descendent.modify.mutate({
+    const modifications = await trpc.descendent.modify.mutate({
       activityId: this.focusedActivityStore.activityId,
       modifications: {
         toCreate,
@@ -148,14 +163,12 @@ export class DescendentStore {
         toDelete: createEmptyDescendents(),
       },
     });
-    runInAction(() => {
-      if (this.descendents instanceof Status) {
-        // another activity is loading
-        return;
-      }
-      upsertDescendents(this.descendents, result);
-    });
-    const allCreated = objectValues(result[descendentName]);
+
+    // might be some other updates in the modifications object
+    // (e.g. correct createdAt fields)
+    this.handleModifications(modifications);
+
+    const allCreated = objectValues(modifications.toCreate[descendentName]);
     const created = assertOne(allCreated);
     return created as DescendentRows[T];
   }
@@ -192,16 +205,9 @@ export class DescendentStore {
     toUpdate[descendentName].push(update as any);
 
     // optimistic update
-    runInAction(() => {
-      if (this.descendents instanceof Status) {
-        // another activity is loading
-        return;
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-      (this.descendents[descendentName] as any)[update.id] = update;
-    });
+    this.handleModifications({ toUpdate });
 
-    const result = await trpc.descendent.modify.mutate({
+    const modifications = await trpc.descendent.modify.mutate({
       activityId: this.focusedActivityStore.activityId,
       modifications: {
         toCreate: createEmptyDescendents(),
@@ -209,14 +215,12 @@ export class DescendentStore {
         toDelete: createEmptyDescendents(),
       },
     });
-    runInAction(() => {
-      if (this.descendents instanceof Status) {
-        // another activity is loading
-        return;
-      }
-      upsertDescendents(this.descendents, result);
-    });
-    const allUpdated = objectValues(result[descendentName]);
+
+    // might be some other updates in the modifications object
+    // (e.g. correct updatedAt fields)
+    this.handleModifications(modifications);
+
+    const allUpdated = objectValues(modifications.toUpdate[descendentName]);
     const updated = assertOne(allUpdated);
     return updated as DescendentRows[T];
   }
@@ -229,19 +233,13 @@ export class DescendentStore {
       return;
     }
 
-    // optimistic update
-    runInAction(() => {
-      if (this.descendents instanceof Status) {
-        throw new Error(
-          "Descendents are not loaded; cannot integrate result of descendent deletion",
-        );
-      }
-      delete this.descendents[descendentName][id];
-    });
-
     const toDelete = createEmptyDescendents();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     toDelete[descendentName].push(descendent as any);
+
+    // optimistic update
+    this.handleModifications({ toDelete });
+
     await trpc.descendent.modify.mutate({
       activityId: this.focusedActivityStore.activityId,
       modifications: {
@@ -250,5 +248,7 @@ export class DescendentStore {
         toDelete,
       },
     });
+
+    // deletes already handled; we're done
   }
 }

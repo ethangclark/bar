@@ -37,7 +37,7 @@ export const EditorControls = storeObserver<EditorControlsProps>(
         </Modal>
         <ControlButton
           type="primary"
-          disabled={activityEditorStore.canSave === false}
+          disabled={!activityEditorStore.canSave}
           onClick={() => {
             if (activityStatus === "published") {
               setConfirmOpen(true);
@@ -58,7 +58,7 @@ export const EditorControls = storeObserver<EditorControlsProps>(
         <ControlButton
           type="primary"
           onClick={() => studentModeStore.setIsStudentMode(true)}
-          disabled={activityEditorStore.canSave}
+          disabled={!activityEditorStore.canDemo}
         >
           See demo
         </ControlButton>

@@ -16,7 +16,7 @@ export const threadController: DescendentController<Thread> = {
   canRead,
 
   // anyone can create a thread for themselves
-  async create({ activityId, tx, rows, userId, enqueueAgentEffect }) {
+  async create({ activityId, tx, rows, userId, enqueueSideEffect }) {
     const threads = await tx
       .insert(schema.threads)
       .values(
@@ -28,7 +28,7 @@ export const threadController: DescendentController<Thread> = {
       )
       .returning();
 
-    enqueueAgentEffect(() => generateIntroMessages(threads));
+    enqueueSideEffect(() => generateIntroMessages(threads));
 
     return threads;
   },

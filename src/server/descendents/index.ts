@@ -1,7 +1,6 @@
 import { type DescendentName, descendentNames } from "~/common/descendentNames";
 import {
   createEmptyDescendents,
-  mergeDescendents,
   rectifyModifications,
 } from "~/common/descendentUtils";
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
@@ -48,21 +47,21 @@ export async function createDescendents({
   descendents,
   userId,
   tx,
-  enqueueAgentEffect,
+  enqueueSideEffect,
 }: {
   activityId: string;
   enrolledAs: EnrollmentType[];
   descendents: Descendents;
   userId: string;
   tx: DbOrTx;
-  enqueueAgentEffect: AfterTx;
+  enqueueSideEffect: AfterTx;
 }) {
   const baseParams = {
     userId,
     activityId,
     enrolledAs,
     tx,
-    enqueueAgentEffect,
+    enqueueSideEffect,
   };
 
   const result: Partial<Descendents> = {};
@@ -123,21 +122,21 @@ export async function updateDescendents({
   userId,
   enrolledAs,
   tx,
-  enqueueAgentEffect,
+  enqueueSideEffect,
 }: {
   activityId: string;
   descendents: Descendents;
   userId: string;
   enrolledAs: EnrollmentType[];
   tx: DbOrTx;
-  enqueueAgentEffect: AfterTx;
+  enqueueSideEffect: AfterTx;
 }) {
   const baseParams = {
     userId,
     activityId,
     enrolledAs,
     tx,
-    enqueueAgentEffect,
+    enqueueSideEffect,
   };
 
   const result: Partial<Descendents> = {};
@@ -167,14 +166,14 @@ export async function deleteDescendents({
   enrolledAs,
   descendents,
   tx,
-  enqueueAgentEffect,
+  enqueueSideEffect,
 }: {
   activityId: string;
   userId: string;
   enrolledAs: EnrollmentType[];
   descendents: Descendents;
   tx: DbOrTx;
-  enqueueAgentEffect: AfterTx;
+  enqueueSideEffect: AfterTx;
 }) {
   const baseParams = {
     userId,
@@ -182,7 +181,7 @@ export async function deleteDescendents({
     enrolledAs,
     descendents,
     tx,
-    enqueueAgentEffect,
+    enqueueSideEffect,
   };
 
   await Promise.all(
@@ -208,22 +207,20 @@ export async function modifyDescendents(params: {
   userId: string;
   enrolledAs: EnrollmentType[];
   tx: DbOrTx;
-  enqueueAgentEffect: AfterTx;
-}): Promise<Descendents> {
+  enqueueSideEffect: AfterTx;
+}): Promise<Modifications> {
   const {
     activityId,
     modifications,
     userId,
     enrolledAs,
     tx,
-    enqueueAgentEffect,
+    enqueueSideEffect,
   } = params;
 
-  const rectified = rectifyModifications(modifications);
-  const { toCreate, toUpdate, toDelete } = rectified;
-
+  const modIn = rectifyModifications(modifications);
   const notYetCreatedIds = new Set(
-    objectValues(toCreate).flatMap((descendents) =>
+    objectValues(modIn.toCreate).flatMap((descendents) =>
       descendents.map((d) => d.id),
     ),
   );
@@ -234,9 +231,13 @@ export async function modifyDescendents(params: {
     toDelete: createEmptyDescendents(),
   };
 
-  // defer creation of dependent rows until dependencies are created
+  // Defer creation of dependent rows until dependencies are created.
+  // MUTATES `modIn` AND MUTATES `deferred`!
   let anotherPassNeeded = false;
-  objectEntries({ toCreate, toUpdate }).forEach(([modType, descendents]) => {
+  objectEntries({
+    toCreate: modIn.toCreate,
+    toUpdate: modIn.toUpdate,
+  }).forEach(([modType, descendents]) => {
     descendentNames.forEach((descendentName) => {
       const rows = descendents[descendentName];
       const newRows = Array<(typeof rows)[number]>();
@@ -269,33 +270,44 @@ export async function modifyDescendents(params: {
     activityId,
     enrolledAs,
     tx,
-    enqueueAgentEffect,
+    enqueueSideEffect,
   };
 
   const [created, updated] = await Promise.all([
     createDescendents({
       ...baseParams,
-      descendents: toCreate,
+      descendents: modIn.toCreate,
     }),
     updateDescendents({
       ...baseParams,
-      descendents: toUpdate,
+      descendents: modIn.toUpdate,
     }),
     deleteDescendents({
       ...baseParams,
-      descendents: toDelete,
+      descendents: modIn.toDelete,
     }),
   ]);
 
-  const thisPassResult = mergeDescendents(created, updated);
+  const modOut: Modifications = {
+    toCreate: created,
+    toUpdate: updated,
+    toDelete: modIn.toDelete,
+  };
 
   if (anotherPassNeeded) {
     const nextResult = await modifyDescendents({
       ...params,
       modifications: deferred,
     });
-    return mergeDescendents(thisPassResult, nextResult);
+    objectEntries(nextResult).forEach(([modType, descendents]) => {
+      objectEntries(descendents).forEach(([descendentName, rows]) => {
+        rows.forEach((row) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          modOut[modType][descendentName].push(row as any);
+        });
+      });
+    });
   }
 
-  return thisPassResult;
+  return modOut;
 }

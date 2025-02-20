@@ -16,7 +16,7 @@ export const messageController: DescendentController<Message> = {
   canRead,
 
   // anyone can create a message for themselves
-  async create({ activityId, tx, rows, userId, enqueueAgentEffect }) {
+  async create({ activityId, tx, rows, userId, enqueueSideEffect }) {
     const messages = await tx
       .insert(schema.messages)
       .values(
@@ -29,7 +29,7 @@ export const messageController: DescendentController<Message> = {
       )
       .returning();
 
-    enqueueAgentEffect(() => respondToUserMessages(messages));
+    enqueueSideEffect(() => respondToUserMessages(messages));
 
     return messages;
   },

@@ -76,6 +76,17 @@ export class ActivityEditorStore {
     return totalChanges > 0;
   }
 
+  get canDemo() {
+    if (this.canSave) {
+      return false;
+    }
+    const items = this.descendentStore.get("items");
+    if (items instanceof Status) {
+      return false;
+    }
+    return items.length > 0;
+  }
+
   async save() {
     if (
       !this.focusedActivityStore.activityId ||
@@ -86,7 +97,7 @@ export class ActivityEditorStore {
     const { drafts } = this;
     this.drafts = loading;
     try {
-      const descendents = await trpc.descendent.modify.mutate({
+      const modifications = await trpc.descendent.modify.mutate({
         activityId: this.focusedActivityStore.activityId,
         modifications: rectifyModifications({
           toCreate: selectDescendents(drafts, this.changes.createdIds),
@@ -94,8 +105,10 @@ export class ActivityEditorStore {
           toDelete: selectDescendents(drafts, this.changes.deletedIds),
         }),
       });
+      this.descendentStore.handleModifications(modifications);
       runInAction(() => {
-        upsertDescendents(drafts, descendents);
+        upsertDescendents(drafts, modifications.toCreate);
+        upsertDescendents(drafts, modifications.toUpdate);
         this.changes.deletedIds.forEach((id) => {
           descendentNames.forEach((name) => {
             delete drafts[name][id];
@@ -174,6 +187,7 @@ export class ActivityEditorStore {
   }
 
   isDeletedDraft(id: string) {
+    // TODO: handle cascading deletes based off of foreign keys :/
     return this.changes.deletedIds.has(id);
   }
 }

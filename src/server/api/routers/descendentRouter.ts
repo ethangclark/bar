@@ -65,7 +65,7 @@ export const descendentRouter = createTRPCRouter({
       });
 
       const agentEffectQueue = Array<() => MaybePromise<void>>();
-      const enqueueAgentEffect = (cb: () => MaybePromise<void>) => {
+      const enqueueSideEffect = (cb: () => MaybePromise<void>) => {
         agentEffectQueue.push(cb);
       };
 
@@ -76,7 +76,7 @@ export const descendentRouter = createTRPCRouter({
           userId,
           enrolledAs: getEnrolledAs(activity),
           tx,
-          enqueueAgentEffect,
+          enqueueSideEffect,
         });
       });
 
