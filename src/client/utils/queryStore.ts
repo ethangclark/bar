@@ -1,6 +1,11 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { loading, type Status, notLoaded, NotLoaded } from "./status";
 import { identity } from "../../common/objectUtils";
+import { loading, notLoaded, NotLoaded, type Status } from "./status";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ARTOS<T extends (...args: any[]) => Promise<any>> =
+  | Awaited<ReturnType<T>>
+  | Status;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class QueryStore<T extends (...args: any[]) => Promise<any>> {
@@ -60,5 +65,13 @@ export class QueryStore<T extends (...args: any[]) => Promise<any>> {
   async refetch() {
     if (!this.lastArgs) return;
     return this.fetch(...this.lastArgs);
+  }
+
+  setCache(cbOrValue: ARTOS<T> | ((data: ARTOS<T>) => ARTOS<T>)) {
+    if (cbOrValue instanceof Function) {
+      this.data = cbOrValue(this.data);
+    } else {
+      this.data = cbOrValue;
+    }
   }
 }

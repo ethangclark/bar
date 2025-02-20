@@ -1,3 +1,5 @@
+import { TRPCError } from "@trpc/server";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { assertOne } from "~/common/arrayUtils";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -30,7 +32,7 @@ export const activityRouter = createTRPCRouter({
         .values({})
         .returning();
       const activity = assertOne(activities);
-      const adHocActivity = await db
+      const adHocActivities = await db
         .insert(schema.adHocActivities)
         .values({
           activityId: activity.id,
@@ -38,6 +40,26 @@ export const activityRouter = createTRPCRouter({
           title: input.title,
         })
         .returning();
+      const adHocActivity = assertOne(adHocActivities);
       return { activity, adHocActivity };
+    }),
+  deleteAdHocActivity: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const adHocActivity = await db.query.adHocActivities.findFirst({
+        where: and(
+          eq(schema.adHocActivities.activityId, input.id),
+          eq(schema.adHocActivities.creatorId, ctx.userId),
+        ),
+      });
+      if (!adHocActivity) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Ad hoc activity not found",
+        });
+      }
+      await db
+        .delete(schema.activities)
+        .where(eq(schema.activities.id, adHocActivity.activityId));
     }),
 });

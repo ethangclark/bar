@@ -1,13 +1,17 @@
 import { Button, Typography } from "antd";
-import { useState } from "react";
+import { Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Assignment } from "~/client/components/Assignment";
 import { LoadingPage } from "~/client/components/Loading";
 import { LogoutButton } from "~/client/components/LogoutButton";
 import { Page } from "~/client/components/Page";
 import { assertNever } from "~/common/errorUtils";
-import { allIntegrationTypes } from "~/common/types";
+import { allIntegrationTypes, type RichActivity } from "~/common/types";
 import { trpc } from "~/trpc/proxy";
 import { api } from "~/trpc/react";
+import { QueryStore } from "../utils/queryStore";
+import { Status } from "../utils/status";
+import { storeObserver } from "../utils/storeObserver";
 import { ConnectToCanvas } from "./ConnectToCanvas";
 
 const SectionTitle = ({ title }: { title: string }) => (
@@ -22,15 +26,22 @@ const SectionHeader = ({ children }: { children: React.ReactNode }) => (
   <div className="mb-3 flex w-full justify-between">{children}</div>
 );
 
-export function Overview() {
+const activitesStore = new QueryStore(trpc.activity.getAll.query);
+
+export const Overview = storeObserver(function Overview() {
   const { data: courses, isLoading: isLoadingCourses } =
     api.courses.all.useQuery();
-  const { data: activities, isLoading: isLoadingActivities } =
-    api.activity.getAll.useQuery();
 
   const [creating, setCreating] = useState(false);
 
-  if (isLoadingCourses || isLoadingActivities) {
+  useEffect(() => {
+    void activitesStore.fetch();
+    return () => activitesStore.reset();
+  }, []);
+
+  const activities = activitesStore.data;
+
+  if (isLoadingCourses || activities instanceof Status) {
     return <LoadingPage />;
   }
 
@@ -47,27 +58,66 @@ export function Overview() {
               disabled={creating}
               onClick={async () => {
                 setCreating(true);
-                await trpc.activity.create.mutate({ title: "New activity" });
+                const { activity, adHocActivity } =
+                  await trpc.activity.create.mutate({ title: "New activity" });
+                const richActivity: RichActivity = {
+                  type: "adHoc" as const,
+                  ...activity,
+                  adHocActivity,
+                };
+                activitesStore.setCache((activities) => {
+                  if (activities instanceof Status) {
+                    return activities;
+                  }
+                  return [...activities, richActivity];
+                });
                 setCreating(false);
               }}
             >
               Create activity
             </Button>
           </SectionHeader>
-          {activities?.map((a) => {
-            if (a.type === "adHoc") {
+          <div className="flex flex-col gap-2">
+            {activities?.map((activity) => {
+              if (activity.type !== "adHoc") {
+                return null;
+              }
               return (
-                <Typography.Link
-                  key={a.id}
-                  href={`/activity/${a.id}`}
-                  className="flex w-full justify-between rounded-md border border-gray-200 px-3 py-1 hover:bg-gray-50"
+                <div
+                  key={activity.id}
+                  className="flex w-full items-center rounded-md border border-gray-200 hover:bg-gray-50"
                 >
-                  {a.adHocActivity.title}
-                </Typography.Link>
+                  <Typography.Link
+                    href={`/activity/${activity.id}`}
+                    className="grow px-3 py-1"
+                  >
+                    {activity.adHocActivity.title}
+                  </Typography.Link>
+                  <Button
+                    type="text"
+                    icon={<Trash2 size={16} />}
+                    onClick={async () => {
+                      if (
+                        confirm(
+                          "Are you sure you want to delete this activity? This will delete the activity and all associated data, and it cannot be undone.",
+                        )
+                      ) {
+                        await trpc.activity.deleteAdHocActivity.mutate({
+                          id: activity.id,
+                        });
+                        activitesStore.setCache((activities) => {
+                          if (activities instanceof Status) {
+                            return activities;
+                          }
+                          return activities.filter((a) => a.id !== activity.id);
+                        });
+                      }
+                    }}
+                  />
+                </div>
               );
-            }
-            return null;
-          })}
+            })}
+          </div>
         </Section>
         <Section>
           <SectionHeader>
@@ -101,4 +151,4 @@ export function Overview() {
       </div>
     </Page>
   );
-}
+});
