@@ -1,3 +1,4 @@
+import { Typography } from "antd";
 import { LoadingCentered } from "~/client/components/Loading";
 import { Status } from "~/client/utils/status";
 import { storeObserver } from "~/client/utils/storeObserver";
@@ -22,8 +23,9 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
 
   return (
     <div className="mx-4 flex h-full w-[672px] flex-col justify-between pb-2">
+      <Typography.Link href="/overview">← All activities</Typography.Link>
       <div className="mb-5 flex items-start justify-between gap-2">
-        <div className="w-full text-3xl">{title}</div>
+        <div className="w-full text-2xl">{title}</div>
         <EditorControls activityStatus={activity.status} />
       </div>
       <ScrollyContentBox className="mb-5 p-6 pb-24">
