@@ -4,6 +4,7 @@ import {
   evalKeySchema,
   infoImageSchema,
   infoTextSchema,
+  infoVideoSchema,
   itemSchema,
   messageSchema,
   questionSchema,
@@ -19,7 +20,7 @@ import { objectEntries, objectKeys, objectValues } from "./objectUtils";
 import type { MaybePromise } from "./types";
 
 // =============================================================================
-// Constants & Utility Functions
+// Descendent Names, Schemas & Types
 // =============================================================================
 
 export const descendentNames = [
@@ -38,22 +39,13 @@ export const descendentNames = [
 export const descendentNamesSchema = z.enum(descendentNames);
 export type DescendentName = z.infer<typeof descendentNamesSchema>;
 
-export function isUuid(id: string): boolean {
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(id);
-}
-
-// =============================================================================
-// Descendent Schemas & Types
-// =============================================================================
-
 export const descendentsSchema = z.object({
   items: z.array(itemSchema),
   evalKeys: z.array(evalKeySchema),
   questions: z.array(questionSchema),
   infoTexts: z.array(infoTextSchema),
   infoImages: z.array(infoImageSchema),
+  infoVideos: z.array(infoVideoSchema),
   threads: z.array(threadSchema),
   messages: z.array(messageSchema),
   viewPieces: z.array(viewPieceSchema),
