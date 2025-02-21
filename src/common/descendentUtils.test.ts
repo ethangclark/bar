@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { type Descendents } from "~/server/descendents/descendentTypes";
 import {
   createEmptyDescendents,
   indexDescendents,
   selectDescendents,
+  type Descendents,
 } from "./descendentUtils";
 
 describe(selectDescendents.name, () => {

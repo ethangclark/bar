@@ -1,4 +1,4 @@
-import { type Descendents } from "~/server/descendents/descendentTypes";
+import { type Descendents } from "~/common/descendentUtils";
 import { PubSub } from "./pubsub";
 
 export const descendentPubSub = new PubSub<Descendents>("descendents");

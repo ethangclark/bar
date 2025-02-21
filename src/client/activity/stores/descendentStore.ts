@@ -1,21 +1,19 @@
 import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
 import { loading, notLoaded, Status } from "~/client/utils/status";
 import { assertOne } from "~/common/arrayUtils";
-import { type DescendentName } from "~/common/descendentNames";
 import {
   createEmptyDescendents,
   indexDescendents,
   upsertDescendents,
-} from "~/common/descendentUtils";
-import { getDraftDate, getDraftId } from "~/common/draftData";
-import { identity, objectEntries, objectValues } from "~/common/objectUtils";
-import { type MessageDeltaSchema } from "~/common/types";
-import {
+  type DescendentName,
   type DescendentRows,
   type Descendents,
   type DescendentTables,
   type Modifications,
-} from "~/server/descendents/descendentTypes";
+} from "~/common/descendentUtils";
+import { getDraftDate, getDraftId } from "~/common/draftData";
+import { identity, objectEntries, objectValues } from "~/common/objectUtils";
+import { type MessageDeltaSchema } from "~/common/types";
 import { trpc } from "~/trpc/proxy";
 import { type FocusedActivityStore } from "./focusedActivityStore";
 

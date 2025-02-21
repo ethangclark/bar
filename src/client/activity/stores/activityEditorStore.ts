@@ -1,18 +1,17 @@
 import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
 import { loading, notLoaded, Status } from "~/client/utils/status";
 import { clone } from "~/common/cloneUtils";
-import { descendentNames, type DescendentName } from "~/common/descendentNames";
 import {
+  descendentNames,
   rectifyModifications,
   selectDescendents,
   upsertDescendents,
+  type DescendentName,
+  type DescendentRows,
+  type DescendentTables,
 } from "~/common/descendentUtils";
 import { getDraftDate, getDraftId } from "~/common/draftData";
 import { identity, objectValues } from "~/common/objectUtils";
-import {
-  type DescendentRows,
-  type DescendentTables,
-} from "~/server/descendents/descendentTypes";
 import { trpc } from "~/trpc/proxy";
 import {
   type DescendentCreateParams,

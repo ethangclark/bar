@@ -1,7 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
+import { type DescendentController } from "~/common/descendentUtils";
 import { isGrader } from "~/common/enrollmentTypeUtils";
 import { type ViewPiece } from "~/server/db/schema";
-import { type DescendentController } from "~/server/descendents/descendentTypes";
 import { schema } from "../db";
 
 const canRead: DescendentController<ViewPiece>["canRead"] = (

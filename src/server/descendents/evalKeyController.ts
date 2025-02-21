@@ -1,11 +1,11 @@
 import { and, eq, inArray } from "drizzle-orm";
+import { type DescendentController } from "~/common/descendentUtils";
 import {
   type EnrollmentType,
   isDeveloper,
   isGraderOrDeveloper,
 } from "~/common/enrollmentTypeUtils";
 import { type EvalKey } from "~/server/db/schema";
-import { type DescendentController } from "~/server/descendents/descendentTypes";
 import { schema } from "../db";
 
 function canRead(enrolledAs: EnrollmentType[]) {

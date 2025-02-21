@@ -1,18 +1,17 @@
-import { type DescendentName, descendentNames } from "~/common/descendentNames";
 import {
+  type AfterTx,
   createEmptyDescendents,
+  type DescendentController,
+  type DescendentName,
+  descendentNames,
+  type DescendentRows,
+  type Descendents,
+  type Modifications,
   rectifyModifications,
 } from "~/common/descendentUtils";
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
 import { objectEntries, objectValues } from "~/common/objectUtils";
 import { type DbOrTx } from "~/server/db";
-import {
-  type AfterTx,
-  type DescendentController,
-  type DescendentRows,
-  type Descendents,
-  type Modifications,
-} from "./descendentTypes";
 import { evalKeyController } from "./evalKeyController";
 import { infoImageController } from "./infoImageController";
 import { infoTextController } from "./infoTextController";

@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { createEmptyDescendents } from "~/common/descendentUtils";
+import {
+  createEmptyDescendents,
+  type Descendents,
+  modificationsSchema,
+} from "~/common/descendentUtils";
 import { getEnrolledAs } from "~/common/enrollmentTypeUtils";
 import { invoke } from "~/common/fnUtils";
 import { objectKeys } from "~/common/objectUtils";
@@ -12,10 +16,6 @@ import {
   modifyDescendents,
   readDescendents,
 } from "~/server/descendents";
-import {
-  type Descendents,
-  modificationsSchema,
-} from "~/server/descendents/descendentTypes";
 import { getActivity } from "~/server/services/activity/activityService";
 
 export const descendentRouter = createTRPCRouter({
