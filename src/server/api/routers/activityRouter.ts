@@ -44,11 +44,11 @@ export const activityRouter = createTRPCRouter({
       return { activity, adHocActivity };
     }),
   deleteAdHocActivity: protectedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ activityId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const adHocActivity = await db.query.adHocActivities.findFirst({
         where: and(
-          eq(schema.adHocActivities.activityId, input.id),
+          eq(schema.adHocActivities.activityId, input.activityId),
           eq(schema.adHocActivities.creatorId, ctx.userId),
         ),
       });
@@ -61,5 +61,25 @@ export const activityRouter = createTRPCRouter({
       await db
         .delete(schema.activities)
         .where(eq(schema.activities.id, adHocActivity.activityId));
+    }),
+  updateAdHocActivity: protectedProcedure
+    .input(z.object({ activityId: z.string(), title: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const adHocActivity = await db.query.adHocActivities.findFirst({
+        where: and(
+          eq(schema.adHocActivities.activityId, input.activityId),
+          eq(schema.adHocActivities.creatorId, ctx.userId),
+        ),
+      });
+      if (!adHocActivity) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Ad hoc activity not found",
+        });
+      }
+      await db
+        .update(schema.adHocActivities)
+        .set({ title: input.title })
+        .where(eq(schema.adHocActivities.activityId, input.activityId));
     }),
 });

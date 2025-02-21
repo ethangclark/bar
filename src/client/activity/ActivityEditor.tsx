@@ -1,5 +1,10 @@
-import { Typography } from "antd";
-import { LoadingCentered } from "~/client/components/Loading";
+import { Input, Typography } from "antd";
+import classnames from "classnames";
+import { CheckCircle } from "lucide-react";
+import {
+  LoadingCentered,
+  LoadingNotCentered,
+} from "~/client/components/Loading";
 import { Status } from "~/client/utils/status";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { AddItemButtons } from "./AddItemButtons";
@@ -12,20 +17,50 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
   activityEditorStore,
   itemStore,
 }) {
-  const { juicyDeets } = focusedActivityStore;
+  const { data } = focusedActivityStore;
   const { sortedItems } = itemStore;
 
-  if (juicyDeets instanceof Status || sortedItems instanceof Status) {
+  if (data instanceof Status || sortedItems instanceof Status) {
     return <LoadingCentered />;
   }
 
-  const { activity, enrolledAs, title } = juicyDeets;
+  const { activity, enrolledAs, title, isTitleEditable } = data;
+
+  const { titleSaving, titleSaved } = focusedActivityStore;
 
   return (
     <div className="mx-4 flex h-full w-[672px] flex-col justify-between pb-2">
       <Typography.Link href="/overview">← All activities</Typography.Link>
-      <div className="mb-5 flex items-start justify-between gap-2">
-        <div className="w-full text-2xl">{title}</div>
+      <div className="mb-5 flex items-center justify-between gap-2">
+        <div className="mr-2 flex grow items-center gap-4">
+          <Input
+            className="w-full grow border-none text-2xl"
+            value={title}
+            onChange={(e) => {
+              if (isTitleEditable) {
+                void focusedActivityStore.updateTitle(e.target.value);
+              }
+            }}
+          />
+          <div className="relative">
+            <div className={titleSaving ? "visible" : "invisible"}>
+              <LoadingNotCentered />
+            </div>
+            <div
+              className={classnames(
+                "absolute inset-0 mt-1 flex items-center justify-center transition-opacity",
+                {
+                  "opacity-100 duration-[0ms]": titleSaved,
+                  "opacity-0 duration-[2000ms]": !titleSaved,
+                  invisible: titleSaving,
+                  visible: !titleSaving,
+                },
+              )}
+            >
+              <CheckCircle size={16} />
+            </div>
+          </div>
+        </div>
         <EditorControls activityStatus={activity.status} />
       </div>
       <ScrollyContentBox className="mb-5 p-6 pb-24">

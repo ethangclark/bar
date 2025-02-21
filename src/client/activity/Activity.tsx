@@ -10,13 +10,13 @@ export const Activity = storeObserver(function Activity({
   focusedActivityStore,
   studentModeStore,
 }) {
-  const { juicyDeets } = focusedActivityStore;
+  const { data } = focusedActivityStore;
 
-  if (juicyDeets instanceof Status) {
+  if (data instanceof Status) {
     return <LoadingPage />;
   }
 
-  const { enrolledAs, title } = juicyDeets;
+  const { enrolledAs, title } = data;
 
   const igod = isGraderOrDeveloper(enrolledAs);
 

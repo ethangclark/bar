@@ -32,7 +32,7 @@ export const AdHocActivityItem = storeObserver<{
             )
           ) {
             await trpc.activity.deleteAdHocActivity.mutate({
-              id: activity.id,
+              activityId: activity.id,
             });
             activitesStore.setCache((activities) => {
               if (activities instanceof Status) {
