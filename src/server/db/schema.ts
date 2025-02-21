@@ -245,6 +245,7 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
   questions: many(questions),
   infoTexts: many(infoTexts),
   infoImages: many(infoImages),
+  infoVideos: many(infoVideos),
   threads: many(threads),
   messages: many(messages),
 
@@ -355,6 +356,7 @@ export const itemRelations = relations(items, ({ one }) => ({
   question: one(questions),
   infoText: one(infoTexts),
   infoImage: one(infoImages),
+  infoVideo: one(infoVideos),
 }));
 export const itemSchema = createSelectSchema(items);
 
@@ -482,7 +484,37 @@ export const infoImagesRelations = relations(infoImages, ({ one }) => ({
 }));
 export const infoImageSchema = createSelectSchema(infoImages);
 
-// todo: infoVideo (will require video streaming solution)
+export const infoVideos = pgTable(
+  "info_video",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    cloudinaryPublicId: text("cloudinary_public_id").notNull(),
+    cloudinarySecureUrl: text("cloudinary_secure_url").notNull(),
+    cloudinaryAudioUrl: text("cloudinary_audio_url"),
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => items.id, { onDelete: "cascade" }),
+  },
+  (iv) => [
+    index("info_video_activity_id_idx").on(iv.activityId),
+    index("info_video_item_id_idx").on(iv.itemId),
+  ],
+);
+export type InfoVideo = InferSelectModel<typeof infoVideos>;
+export const infoVideosRelations = relations(infoVideos, ({ one }) => ({
+  activity: one(activities, {
+    fields: [infoVideos.activityId],
+    references: [activities.id],
+  }),
+  item: one(items, {
+    fields: [infoVideos.itemId],
+    references: [items.id],
+  }),
+}));
+export const infoVideoSchema = createSelectSchema(infoVideos);
 
 export const threads = pgTable(
   "thread",
