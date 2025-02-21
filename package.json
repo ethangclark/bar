@@ -32,6 +32,7 @@
     "antd": "^5.17.3",
     "canvas-confetti": "^1.9.3",
     "classnames": "^2.5.1",
+    "cloudinary": "^2.5.1",
     "dayjs": "^1.11.11",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.38.1",
