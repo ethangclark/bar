@@ -1,4 +1,5 @@
 import { Button, Form, Input, Modal } from "antd";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Assignment } from "~/client/components/Assignment";
 import { LoadingPage } from "~/client/components/Loading";
@@ -37,6 +38,8 @@ export const Overview = storeObserver(function Overview({ activitesStore }) {
 
   const activities = activitesStore.data;
 
+  const router = useRouter();
+
   const onCreate = useCallback(async () => {
     const { activity, adHocActivity } = await trpc.activity.create.mutate({
       title,
@@ -52,9 +55,10 @@ export const Overview = storeObserver(function Overview({ activitesStore }) {
       }
       return [...activities, richActivity];
     });
+    router.push(`/activity/${activity.id}`);
     setTitle("");
     setCreating(false);
-  }, [activitesStore, title]);
+  }, [activitesStore, title, router]);
 
   if (isLoadingCourses || activities instanceof Status) {
     return <LoadingPage />;
