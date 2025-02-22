@@ -29,6 +29,7 @@ export const descendentNames = [
   "questions",
   "infoTexts",
   "infoImages",
+  "infoVideos",
   "threads",
   "messages",
   "viewPieces",

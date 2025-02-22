@@ -484,19 +484,40 @@ export const infoImagesRelations = relations(infoImages, ({ one }) => ({
 }));
 export const infoImageSchema = createSelectSchema(infoImages);
 
-export const infoVideos = pgTable(
-  "info_video",
+// not going to make this a descendent, as the data flow will be different
+export const videos = pgTable(
+  "video",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     cloudinaryPublicId: text("cloudinary_public_id").notNull(),
     cloudinarySecureUrl: text("cloudinary_secure_url").notNull(),
     cloudinaryAudioUrl: text("cloudinary_audio_url"),
+    audioTranscript: text("audio_transcript"),
+  },
+  (v) => [
+    index("video_cloudinary_public_id_idx").on(v.cloudinaryPublicId),
+    index("video_cloudinary_secure_url_idx").on(v.cloudinarySecureUrl),
+  ],
+);
+export type Video = InferSelectModel<typeof videos>;
+export const videosRelations = relations(videos, ({ many }) => ({
+  infoVideos: many(infoVideos),
+}));
+export const videoSchema = createSelectSchema(videos);
+
+export const infoVideos = pgTable(
+  "info_video",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
     activityId: uuid("activity_id")
       .notNull()
       .references(() => activities.id, { onDelete: "cascade" }),
     itemId: uuid("item_id")
       .notNull()
       .references(() => items.id, { onDelete: "cascade" }),
+    videoId: uuid("video_id")
+      .notNull()
+      .references(() => videos.id, { onDelete: "cascade" }),
   },
   (iv) => [
     index("info_video_activity_id_idx").on(iv.activityId),

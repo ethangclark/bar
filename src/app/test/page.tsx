@@ -1,10 +1,10 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useState } from "react";
+import { type ChangeEvent, type FormEvent, useState } from "react";
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
-  const [videoData, setVideoData] = useState(null);
+  const [videoData, setVideoData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {

@@ -15,6 +15,7 @@ import { type DbOrTx } from "~/server/db";
 import { evalKeyController } from "./evalKeyController";
 import { infoImageController } from "./infoImageController";
 import { infoTextController } from "./infoTextController";
+import { infoVideoController } from "./infoVideoController";
 import { itemController } from "./itemController";
 import { messageController } from "./messageController";
 import { questionController } from "./questionController";
@@ -33,6 +34,7 @@ export const controllers: Controllers = {
   questions: questionController,
   infoTexts: infoTextController,
   infoImages: infoImageController,
+  infoVideos: infoVideoController,
   threads: threadController,
   messages: messageController,
   viewPieces: viewPieceController,
