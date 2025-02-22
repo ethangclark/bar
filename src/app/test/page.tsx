@@ -48,7 +48,7 @@ export default function UploadPage() {
             width="640"
             height="360"
             controls
-            src={videoData.video_url}
+            src={`/api/video/stream?url=${encodeURIComponent(videoData.video_url)}`}
           ></video>
 
           <h2>Audio Track</h2>

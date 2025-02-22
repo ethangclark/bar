@@ -2,9 +2,8 @@
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const url = searchParams.get("url");
-
-  if (!url) {
+  let videoUrl = searchParams.get("url");
+  if (!videoUrl) {
     return new Response(
       JSON.stringify({ error: "Missing url query parameter" }),
       {
@@ -13,39 +12,47 @@ export async function GET(request: Request) {
       },
     );
   }
+  videoUrl = decodeURIComponent(videoUrl);
 
-  // Forward the Range header if provided
+  // Pass the Range header along if provided
   const headers: Record<string, string> = {};
-  const range = request.headers.get("range");
-  if (range) {
-    headers["Range"] = range;
+  const rangeHeader = request.headers.get("range");
+  if (rangeHeader) {
+    headers["Range"] = rangeHeader;
   }
 
   try {
-    // Fetch the video stream from Cloudinary
-    const fetchResponse = await fetch(url, { headers });
+    const responseFromCloudinary = await fetch(videoUrl, { headers });
 
-    if (!fetchResponse.ok) {
+    if (!responseFromCloudinary.ok) {
       return new Response(JSON.stringify({ error: "Error fetching video" }), {
-        status: fetchResponse.status,
+        status: responseFromCloudinary.status,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    // Prepare headers for the client response
+    // Forward specific headers necessary for video streaming
     const responseHeaders = new Headers();
-    const contentType = fetchResponse.headers.get("content-type");
-    if (contentType) {
-      responseHeaders.set("Content-Type", contentType);
-    }
-    const contentLength = fetchResponse.headers.get("content-length");
-    if (contentLength) {
-      responseHeaders.set("Content-Length", contentLength);
-    }
-    responseHeaders.set("Accept-Ranges", "bytes");
+    const headersToForward = [
+      "content-type",
+      "content-length",
+      "content-range",
+      "accept-ranges",
+    ];
+    headersToForward.forEach((header) => {
+      const value = responseFromCloudinary.headers.get(header);
+      if (value) {
+        responseHeaders.set(header, value);
+      }
+    });
 
-    return new Response(fetchResponse.body, {
-      status: fetchResponse.status,
+    // Fallback: if accept-ranges isn't provided, set it explicitly
+    if (!responseHeaders.has("accept-ranges")) {
+      responseHeaders.set("accept-ranges", "bytes");
+    }
+
+    return new Response(responseFromCloudinary.body, {
+      status: responseFromCloudinary.status,
       headers: responseHeaders,
     });
   } catch (error) {
