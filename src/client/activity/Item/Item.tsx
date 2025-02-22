@@ -98,7 +98,7 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
               if (!infoVideo) return null;
               return (
                 <div key={infoVideo.id} className="w-full">
-                  <InfoVideoUpload />
+                  <InfoVideoUpload infoVideo={infoVideo} />
                 </div>
               );
             }

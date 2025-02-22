@@ -493,27 +493,6 @@ export const infoImagesRelations = relations(infoImages, ({ one }) => ({
   }),
 }));
 export const infoImageSchema = createSelectSchema(infoImages);
-
-// not going to make this a descendent, as the data flow will be different
-export const videos = pgTable(
-  "video",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    cloudinaryPublicId: text("cloudinary_public_id").notNull(),
-    cloudinarySecureUrl: text("cloudinary_secure_url").notNull(),
-    cloudinaryAudioUrl: text("cloudinary_audio_url"), // null if no audio track
-  },
-  (v) => [
-    index("video_cloudinary_public_id_idx").on(v.cloudinaryPublicId),
-    index("video_cloudinary_secure_url_idx").on(v.cloudinarySecureUrl),
-  ],
-);
-export type Video = InferSelectModel<typeof videos>;
-export const videosRelations = relations(videos, ({ many }) => ({
-  infoVideos: many(infoVideos),
-}));
-export const videoSchema = createSelectSchema(videos);
-
 export const infoVideos = pgTable(
   "info_video",
   {
@@ -525,9 +504,6 @@ export const infoVideos = pgTable(
     itemId: uuid("item_id")
       .notNull()
       .references(() => items.id, { onDelete: "cascade" }),
-    videoId: uuid("video_id")
-      .notNull()
-      .references(() => videos.id, { onDelete: "cascade" }),
     textAlternative: text("text_alternative").notNull(),
   },
   (iv) => [
@@ -536,7 +512,7 @@ export const infoVideos = pgTable(
   ],
 );
 export type InfoVideo = InferSelectModel<typeof infoVideos>;
-export const infoVideosRelations = relations(infoVideos, ({ one }) => ({
+export const infoVideosRelations = relations(infoVideos, ({ one, many }) => ({
   activity: one(activities, {
     fields: [infoVideos.activityId],
     references: [activities.id],
@@ -545,8 +521,32 @@ export const infoVideosRelations = relations(infoVideos, ({ one }) => ({
     fields: [infoVideos.itemId],
     references: [items.id],
   }),
+  video: one(videos),
 }));
 export const infoVideoSchema = createSelectSchema(infoVideos);
+
+// not going to make this a descendent, as the data flow will be different
+export const videos = pgTable(
+  "video",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    infoVideoId: uuid("info_video_id")
+      .notNull()
+      .references(() => infoVideos.id, { onDelete: "cascade" }),
+    cloudinaryPublicExId: text("cloudinary_public_ex_id").notNull(),
+    cloudinarySecureUrl: text("cloudinary_secure_url").notNull(),
+    cloudinaryAudioUrl: text("cloudinary_audio_url"), // null if no audio track
+  },
+  (v) => [index("video_cloudinary_public_id_idx").on(v.cloudinaryPublicExId)],
+);
+export type Video = InferSelectModel<typeof videos>;
+export const videosRelations = relations(videos, ({ one }) => ({
+  infoVideo: one(infoVideos, {
+    fields: [videos.infoVideoId],
+    references: [infoVideos.id],
+  }),
+}));
+export const videoSchema = createSelectSchema(videos);
 
 export const threads = pgTable(
   "thread",

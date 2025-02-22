@@ -21,7 +21,7 @@ export const appRouter = createTRPCRouter({
   courses: coursesRouter,
   integration: integrationRouter,
   message: messageRouter,
-  trascription: transcriptionRouter,
+  transcription: transcriptionRouter,
 });
 
 // export type definition of API

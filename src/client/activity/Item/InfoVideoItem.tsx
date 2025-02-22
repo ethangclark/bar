@@ -1,9 +1,10 @@
+import { InfoVideo } from "~/server/db/schema";
 import { InfoVideoUpload } from "./InfoVideoUpload";
 
-export function InfoVideoItem() {
+export function InfoVideoItem({ infoVideo }: { infoVideo: InfoVideo }) {
   return (
     <div className="w-full">
-      <InfoVideoUpload />
+      <InfoVideoUpload infoVideo={infoVideo} />
     </div>
   );
 }
