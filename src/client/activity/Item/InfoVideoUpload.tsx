@@ -35,7 +35,7 @@ export const InfoVideoUpload = storeObserver<Props>(function InfoVideoUpload({
           videoSelected ? "visible" : "invisible",
         ])}
       >
-        Save to preview
+        Save to upload
       </div>
     </div>
   );

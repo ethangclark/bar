@@ -6,7 +6,7 @@ import { type ItemWithChildren } from "~/server/db/schema";
 import { storeObserver } from "../../utils/storeObserver";
 import { InfoImageItem } from "./InfoImageItem";
 import { InfoTextItem } from "./InfoTextItem";
-import { InfoVideoUpload } from "./InfoVideoUpload";
+import { InfoVideoItem } from "./InfoVideoItem";
 import { TypeTitle } from "./Layout";
 import { QuestionItem } from "./QuestionItem";
 
@@ -86,26 +86,22 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
             case "infoImage": {
               const { infoImage } = item;
               if (!infoImage) return null;
-              return <InfoImageItem infoImage={infoImage} />;
+              return <InfoImageItem key={infoImage.id} infoImage={infoImage} />;
             }
             case "infoText": {
               const { infoText } = item;
               if (!infoText) return null;
-              return <InfoTextItem infoText={infoText} />;
+              return <InfoTextItem key={infoText.id} infoText={infoText} />;
             }
             case "infoVideo": {
               const { infoVideo } = item;
               if (!infoVideo) return null;
-              return (
-                <div key={infoVideo.id} className="w-full">
-                  <InfoVideoUpload infoVideo={infoVideo} />
-                </div>
-              );
+              return <InfoVideoItem key={infoVideo.id} infoVideo={infoVideo} />;
             }
             case "question": {
               const { question } = item;
               if (!question) return null;
-              return <QuestionItem question={question} />;
+              return <QuestionItem key={question.id} question={question} />;
             }
             default:
               assertTypesExhausted(itemKey);
