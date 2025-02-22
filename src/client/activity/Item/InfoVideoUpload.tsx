@@ -3,7 +3,10 @@ import { type ChangeEvent, type FormEvent, useState } from "react";
 
 export function InfoVideoUpload() {
   const [file, setFile] = useState<File | null>(null);
-  const [videoData, setVideoData] = useState<any>(null);
+  const [videoData, setVideoData] = useState<{
+    videoUrl: string;
+    audioUrl: string;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -46,11 +49,11 @@ export function InfoVideoUpload() {
             width="640"
             height="360"
             controls
-            src={`/api/video/stream?url=${encodeURIComponent(videoData.video_url)}`}
-          ></video>
+            src={`/api/video/stream?url=${encodeURIComponent(videoData.videoUrl)}`}
+          />
 
           <h2>Audio Track</h2>
-          <audio controls src={videoData.audio_url}></audio>
+          <audio controls src={videoData.audioUrl}></audio>
         </div>
       )}
     </div>

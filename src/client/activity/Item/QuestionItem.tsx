@@ -34,12 +34,11 @@ export const QuestionItem = storeObserver<{
               });
             }}
             className={
-              question.content && !evalKey.key
-                ? "placeholder-red-500"
-                : ""
+              question.content && !evalKey.key ? "placeholder-red-500" : ""
             }
           />
         </div>
       ) : null}
     </div>
+  );
 });

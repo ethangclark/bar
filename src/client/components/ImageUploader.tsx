@@ -3,8 +3,8 @@ import { identity } from "@trpc/server/unstable-core-do-not-import";
 import type { UploadProps } from "antd";
 import { Typography, Upload } from "antd";
 import { useMemo } from "react";
-import { type Notify, useNotify } from "../hooks/useNotify";
 import { isImageDataUrl } from "~/common/pngUtils";
+import { type Notify, useNotify } from "../hooks/useNotify";
 
 type OnFileSelect = (params: { imageDataUrl: string }) => void;
 

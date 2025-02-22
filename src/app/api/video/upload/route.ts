@@ -55,10 +55,10 @@ export async function POST(req: Request): Promise<Response> {
     // Optionally, save uploadResult and audioUrl to your Postgres DB here
 
     return NextResponse.json({
-      public_id: uploadResult.public_id,
-      video_url: uploadResult.secure_url,
-      audio_url: audioUrl,
-      audio_buffer_length: audioBuffer.length, // example detail
+      publicId: uploadResult.public_id,
+      videoUrl: uploadResult.secure_url,
+      audioUrl: audioUrl,
+      audioBufferLength: audioBuffer.length, // example detail
     });
   } catch (error: any) {
     return NextResponse.json(

@@ -56,8 +56,7 @@ function getItemTitle(item: ItemWithChildren): string {
 }
 
 export const Item = storeObserver<CustomProps>(function Item(props) {
-  const { item, itemNumber, deleted, activityEditorStore, questionStore } =
-    props;
+  const { item, itemNumber, deleted, activityEditorStore } = props;
 
   return (
     <div className="mb-12 flex w-full flex-col items-center">

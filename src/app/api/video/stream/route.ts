@@ -1,5 +1,3 @@
-// app/api/proxy-video/route.ts
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   let videoUrl = searchParams.get("url");
@@ -15,10 +13,10 @@ export async function GET(request: Request) {
   videoUrl = decodeURIComponent(videoUrl);
 
   // Pass the Range header along if provided
-  const headers: Record<string, string> = {};
+  const headers: { Range?: string } = {};
   const rangeHeader = request.headers.get("range");
   if (rangeHeader) {
-    headers["Range"] = rangeHeader;
+    headers.Range = rangeHeader;
   }
 
   try {

@@ -6,15 +6,7 @@ export function isImageDataUrl(url: string): url is imageDataUrl {
   return url.startsWith(imageDataUrlPrefix);
 }
 
-export const pngAsUrlPrefix = `${imageDataUrlPrefix}png;base64,`;
-export const jpegAsUrlPrefix = `${imageDataUrlPrefix}jpeg;base64,`;
-
-export function isPngContainedAsUrl(url: string) {
-  return url.startsWith(pngAsUrlPrefix);
-}
-export function isJpegContainedAsUrl(url: string) {
-  return url.startsWith(jpegAsUrlPrefix);
-}
+const pngAsUrlPrefix = `${imageDataUrlPrefix}png;base64,`;
 
 export function pngAsUrlToBase64(pngAsUrl: string) {
   return pngAsUrl.slice(pngAsUrlPrefix.length);
