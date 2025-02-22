@@ -18,8 +18,8 @@ const activityEditorStore = new ActivityEditorStore(
   focusedActivityStore,
   descendentStore,
 );
-const itemStore = new ItemStore(activityEditorStore);
 const questionStore = new QuestionStore(activityEditorStore);
+const itemStore = new ItemStore(activityEditorStore, questionStore);
 const studentModeStore = new StudentModeStore(focusedActivityStore);
 const viewPieceStore = new ViewPieceStore(descendentStore);
 

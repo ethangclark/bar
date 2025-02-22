@@ -1,4 +1,4 @@
-import { assertNever } from "~/common/errorUtils";
+import { assertTypesExhausted } from "~/common/assertions";
 import { type Message } from "~/server/db/schema";
 import { Image } from "../components/Image";
 import { PreformattedText } from "../components/PreformattedText";
@@ -44,7 +44,7 @@ export const AssistantMessage = storeObserver<{
                 </MessageView>
               );
             default:
-              assertNever(child);
+              assertTypesExhausted(child);
           }
         })}
       </>

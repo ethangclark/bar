@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { assertOne } from "~/common/arrayUtils";
+import { assertOne } from "~/common/assertions";
 import { env } from "~/env";
 import { type DbOrTx } from "~/server/db";
 import { users } from "~/server/db/schema";

@@ -1,15 +1,15 @@
 import { eq } from "drizzle-orm";
+import { assertTypesExhausted } from "~/common/assertions";
 import { createEmptyDescendents } from "~/common/descendentUtils";
-import { assertNever } from "~/common/errorUtils";
-import { numericIdToImageNumber } from "~/common/idUtils";
+import {
+  numericIdToImageNumber,
+  numericIdToVideoNumber,
+} from "~/common/idUtils";
 import { objectKeys } from "~/common/objectUtils";
 import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import {
-  type EvalKey,
-  type InfoImage,
-  type InfoText,
-  type Item,
+  type ItemWithChildren,
   type Question,
   type Thread,
 } from "~/server/db/schema";
@@ -27,9 +27,19 @@ export const omissionDisclaimer = `omitted; text alternative follows`;
 export const imageHeaderWithOmissionDisclaimer = (numericId: number) =>
   `Image ${numericIdToImageNumber(numericId)} (${omissionDisclaimer})`;
 
+export const videoHeaderWithOmissionDisclaimer = (numericId: number) =>
+  `Video ${numericIdToVideoNumber(numericId)} (${omissionDisclaimer})`;
+
 export function fmtInfoImage(numericId: number, textAlternative: string) {
   return fmtSection(
     imageHeaderWithOmissionDisclaimer(numericId),
+    textAlternative,
+  );
+}
+
+function fmtInfoVideo(numericId: number, textAlternative: string) {
+  return fmtSection(
+    videoHeaderWithOmissionDisclaimer(numericId),
     textAlternative,
   );
 }
@@ -38,20 +48,9 @@ function fmtQuestion(question: Question) {
   return fmtSection("Question", question.content);
 }
 
-function itemToString(
-  itemNumber: number,
-  item: Item & {
-    infoText: InfoText | null;
-    infoImage: InfoImage | null;
-    question:
-      | null
-      | (Question & {
-          evalKey: null | EvalKey;
-        });
-  },
-) {
+function itemToString(itemNumber: number, item: ItemWithChildren) {
   let result = `## Item ${itemNumber}.\n`;
-  objectKeys(item).forEach((key) => {
+  for (const key of objectKeys(item)) {
     switch (key) {
       case "id":
       case "activityId":
@@ -70,15 +69,23 @@ function itemToString(
           );
         }
         break;
+      case "infoVideo":
+        if (item.infoVideo) {
+          result += fmtInfoVideo(
+            item.infoVideo.numericId,
+            item.infoVideo.textAlternative,
+          );
+        }
+        break;
       case "question":
         if (item.question) {
           result += fmtQuestion(item.question);
         }
         break;
       default:
-        assertNever(key);
+        assertTypesExhausted(key);
     }
-  });
+  }
   return result;
 }
 
@@ -88,6 +95,7 @@ async function beginThread(thread: Thread) {
     with: {
       infoText: true,
       infoImage: true,
+      infoVideo: true,
       question: {
         with: {
           evalKey: true,

@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
 import { Status } from "~/client/utils/status";
-import { assertNever } from "~/common/errorUtils";
+import { assertTypesExhausted } from "~/common/assertions";
 import { LoadingCentered } from "../components/Loading";
 import { PreformattedText } from "../components/PreformattedText";
 import { storeObserver } from "../utils/storeObserver";
@@ -58,7 +58,7 @@ export const Messages = storeObserver(function Messages({ threadStore }) {
                 />
               );
             default:
-              assertNever(m.senderRole);
+              assertTypesExhausted(m.senderRole);
           }
         })}
       </div>

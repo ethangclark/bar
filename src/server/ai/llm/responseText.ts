@@ -1,4 +1,4 @@
-import { assertOne } from "~/common/arrayUtils";
+import { assertOne } from "~/common/assertions";
 import {
   type OpenRouterResponse,
   type StreamingOpenRouterResponse,

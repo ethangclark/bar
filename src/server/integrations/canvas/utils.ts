@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { assertError } from "~/common/assertions";
 import { enrollmentTypeSchema } from "~/common/enrollmentTypeUtils";
-import { assertError } from "~/common/errorUtils";
 import { type Json } from "~/common/types";
 import { db, schema } from "~/server/db";
 import { getCachedAccessToken, updateTokenCache } from "./canvasTokenCache";

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
+import { assertTypesExhausted } from "~/common/assertions";
 import { isDeveloper } from "~/common/enrollmentTypeUtils";
-import { assertNever } from "~/common/errorUtils";
 import { db, schema } from "~/server/db";
 import { type LmsAssignment } from "~/server/integrations/types";
 import {
@@ -46,7 +46,7 @@ export async function getCourseAndAssignment({
         // do nothing;
         continue;
     }
-    assertNever(courseAssignment.activity.status);
+    assertTypesExhausted(courseAssignment.activity.status);
   }
   if (!course || !assignment) {
     throw new Error("Activity not found");

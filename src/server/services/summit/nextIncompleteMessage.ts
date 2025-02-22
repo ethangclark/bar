@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { assertOne } from "~/common/arrayUtils";
+import { assertOne } from "~/common/assertions";
 import { createEmptyDescendents } from "~/common/descendentUtils";
 import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";

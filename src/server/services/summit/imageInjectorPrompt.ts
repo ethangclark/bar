@@ -1,10 +1,10 @@
+import { numericIdToImageNumber } from "~/common/idUtils";
 import { type Message } from "~/server/db/schema";
 import {
   fmtInfoImage,
   fmtInfoText,
   imageHeaderWithOmissionDisclaimer,
 } from "./summitIntro";
-import { numericIdToImageNumber } from "~/common/idUtils";
 
 const exampleNumericId = 5789;
 

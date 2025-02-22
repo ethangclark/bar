@@ -1,8 +1,7 @@
-"use client";
-
+import { Button } from "antd";
 import { type ChangeEvent, type FormEvent, useState } from "react";
 
-export default function UploadPage() {
+export function InfoVideoUpload() {
   const [file, setFile] = useState<File | null>(null);
   const [videoData, setVideoData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -32,13 +31,12 @@ export default function UploadPage() {
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Upload a Video</h1>
+    <div>
       <form onSubmit={handleUpload}>
         <input type="file" accept="video/*" onChange={handleFileChange} />
-        <button type="submit" disabled={loading}>
+        <Button type="primary" htmlType="submit" disabled={!file || loading}>
           {loading ? "Uploading..." : "Upload Video"}
-        </button>
+        </Button>
       </form>
 
       {videoData && (

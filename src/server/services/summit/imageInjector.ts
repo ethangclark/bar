@@ -1,6 +1,6 @@
 import { eq, inArray } from "drizzle-orm";
+import { assertTypesExhausted } from "~/common/assertions";
 import { createEmptyDescendents } from "~/common/descendentUtils";
-import { assertNever } from "~/common/errorUtils";
 import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import {
@@ -102,7 +102,7 @@ export async function injectImages(
         break;
       }
       default: {
-        assertNever(dt);
+        assertTypesExhausted(dt);
       }
     }
   });

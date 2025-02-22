@@ -1,7 +1,7 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { notLoaded, Status } from "~/client/utils/status";
+import { assertTypesExhausted } from "~/common/assertions";
 import { getEnrolledAs } from "~/common/enrollmentTypeUtils";
-import { assertNever } from "~/common/errorUtils";
 import { noop } from "~/common/fnUtils";
 import { identity } from "~/common/objectUtils";
 import { type RichActivity } from "~/common/types";
@@ -95,7 +95,7 @@ export class FocusedActivityStore {
       case "integration":
         break;
       default:
-        assertNever(this.activity);
+        assertTypesExhausted(this.activity);
     }
   }
 

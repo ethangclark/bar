@@ -11,7 +11,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { eq } from "drizzle-orm";
-import { assertOneOrNone } from "~/common/arrayUtils";
+import { assertOneOrNone } from "~/common/assertions";
 import { db, schema } from "~/server/db";
 import { queryUser } from "~/server/services/userService";
 import { getIpAddress } from "../utils";

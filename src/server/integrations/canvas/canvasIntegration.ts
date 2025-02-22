@@ -1,6 +1,6 @@
 import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
-import { assertOne } from "~/common/arrayUtils";
+import { assertOne } from "~/common/assertions";
 import { db, schema } from "~/server/db";
 import { type Integration } from "~/server/db/schema";
 import { type IntegrationApi, type LmsCourse } from "../types";

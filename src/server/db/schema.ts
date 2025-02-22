@@ -359,6 +359,16 @@ export const itemRelations = relations(items, ({ one }) => ({
   infoVideo: one(infoVideos),
 }));
 export const itemSchema = createSelectSchema(items);
+export type ItemWithChildren = Item & {
+  question:
+    | (Question & {
+        evalKey: null | EvalKey;
+      })
+    | null;
+  infoText: InfoText | null;
+  infoImage: InfoImage | null;
+  infoVideo: InfoVideo | null;
+};
 
 export const evalKeys = pgTable(
   "eval_key",
@@ -491,8 +501,7 @@ export const videos = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     cloudinaryPublicId: text("cloudinary_public_id").notNull(),
     cloudinarySecureUrl: text("cloudinary_secure_url").notNull(),
-    cloudinaryAudioUrl: text("cloudinary_audio_url"),
-    audioTranscript: text("audio_transcript"),
+    cloudinaryAudioUrl: text("cloudinary_audio_url"), // null if no audio track
   },
   (v) => [
     index("video_cloudinary_public_id_idx").on(v.cloudinaryPublicId),
@@ -509,6 +518,7 @@ export const infoVideos = pgTable(
   "info_video",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    numericId: serial("numeric_id"), // we add 2000 to this
     activityId: uuid("activity_id")
       .notNull()
       .references(() => activities.id, { onDelete: "cascade" }),
@@ -518,6 +528,7 @@ export const infoVideos = pgTable(
     videoId: uuid("video_id")
       .notNull()
       .references(() => videos.id, { onDelete: "cascade" }),
+    textAlternative: text("text_alternative").notNull(),
   },
   (iv) => [
     index("info_video_activity_id_idx").on(iv.activityId),

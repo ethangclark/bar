@@ -32,6 +32,18 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
       </ControlButton>
       <ControlButton
         onClick={() => {
+          activityEditorStore.createDraft("infoVideos", {
+            itemId: itemStore.createItem().id,
+            numericId: draftNumericId,
+            videoId: "",
+            textAlternative: "",
+          });
+        }}
+      >
+        + Add video
+      </ControlButton>
+      <ControlButton
+        onClick={() => {
           const q = activityEditorStore.createDraft("questions", {
             itemId: itemStore.createItem().id,
             content: "",

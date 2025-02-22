@@ -5,7 +5,7 @@ import { Assignment } from "~/client/components/Assignment";
 import { LoadingPage } from "~/client/components/Loading";
 import { LogoutButton } from "~/client/components/LogoutButton";
 import { Page } from "~/client/components/Page";
-import { assertNever } from "~/common/errorUtils";
+import { assertTypesExhausted } from "~/common/assertions";
 import { allIntegrationTypes, type RichActivity } from "~/common/types";
 import { trpc } from "~/trpc/proxy";
 import { api } from "~/trpc/react";
@@ -137,7 +137,7 @@ export const Overview = storeObserver(function Overview({ activitesStore }) {
                   case "canvas":
                     return <ConnectToCanvas key={it} />;
                   default:
-                    assertNever(it);
+                    assertTypesExhausted(it);
                 }
               })}
           </div>

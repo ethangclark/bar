@@ -72,19 +72,13 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
           </div>
         )}
         {sortedItems.map((item, idx) => {
-          const infoImage = itemStore.getInfoImage(item.id);
-          const infoText = itemStore.getTextInfo(item.id);
-          const question = itemStore.getQuestion(item.id);
           return (
             <Item
               key={item.id}
-              item={item}
+              item={itemStore.getItemWithChildren(item)}
               itemNumber={idx + 1}
               deleted={activityEditorStore.isDeletedDraft(item.id)}
               enrolledAs={enrolledAs}
-              infoImage={infoImage}
-              infoText={infoText}
-              question={question}
             />
           );
         })}

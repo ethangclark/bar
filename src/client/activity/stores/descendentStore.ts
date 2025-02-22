@@ -1,6 +1,6 @@
 import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
 import { loading, notLoaded, Status } from "~/client/utils/status";
-import { assertOne } from "~/common/arrayUtils";
+import { assertOne } from "~/common/assertions";
 import {
   createEmptyDescendents,
   indexDescendents,

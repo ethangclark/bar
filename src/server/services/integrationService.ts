@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { assertNever } from "~/common/errorUtils";
+import { assertTypesExhausted } from "~/common/assertions";
 import { db, schema } from "~/server/db";
 import { createCanvasIntegrationApi } from "~/server/integrations/canvas/canvasIntegration";
 import { type IntegrationApi } from "~/server/integrations/types";
@@ -47,7 +47,7 @@ export async function apiFromIntegration(integration: Integration) {
       return createCanvasIntegrationApi(integration);
     }
   }
-  assertNever(integration.type);
+  assertTypesExhausted(integration.type);
 }
 
 export async function getIntegrationApi({

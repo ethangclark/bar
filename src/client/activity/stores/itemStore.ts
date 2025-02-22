@@ -1,33 +1,44 @@
+import { generateKeyBetween } from "fractional-indexing";
 import { autorun, makeAutoObservable, runInAction } from "mobx";
 import { Status } from "~/client/utils/status";
 import {
   type InfoImage,
   type InfoText,
+  type InfoVideo,
+  type Item,
+  type ItemWithChildren,
   type Question,
 } from "~/server/db/schema";
 import { type ActivityEditorStore } from "./activityEditorStore";
-import { generateKeyBetween } from "fractional-indexing";
+import { type QuestionStore } from "./questionStore";
 
 export class ItemStore {
   private itemIdToTextInfo: { [key: string]: InfoText } = {};
   private itemIdToQuestion: { [key: string]: Question } = {};
   private itemIdToInfoImage: { [key: string]: InfoImage } = {};
+  private itemIdToInfoVideo: { [key: string]: InfoVideo } = {};
 
-  constructor(private activityEditorStore: ActivityEditorStore) {
+  constructor(
+    private activityEditorStore: ActivityEditorStore,
+    private questionStore: QuestionStore,
+  ) {
     makeAutoObservable(this);
     autorun(() => {
       const infoTexts = this.activityEditorStore.getDrafts("infoTexts");
       const questions = this.activityEditorStore.getDrafts("questions");
       const infoImages = this.activityEditorStore.getDrafts("infoImages");
+      const infoVideos = this.activityEditorStore.getDrafts("infoVideos");
       runInAction(() => {
         if (
           infoTexts instanceof Status ||
           questions instanceof Status ||
-          infoImages instanceof Status
+          infoImages instanceof Status ||
+          infoVideos instanceof Status
         ) {
           this.itemIdToTextInfo = {};
           this.itemIdToQuestion = {};
           this.itemIdToInfoImage = {};
+          this.itemIdToInfoVideo = {};
           return;
         }
         for (const draft of infoTexts) {
@@ -38,6 +49,9 @@ export class ItemStore {
         }
         for (const draft of infoImages) {
           this.itemIdToInfoImage[draft.itemId] = draft;
+        }
+        for (const draft of infoVideos) {
+          this.itemIdToInfoVideo[draft.itemId] = draft;
         }
       });
     });
@@ -87,5 +101,30 @@ export class ItemStore {
       return null;
     }
     return infoImage;
+  }
+  getInfoVideo(itemId: string) {
+    const infoVideo = this.itemIdToInfoVideo[itemId];
+    if (!infoVideo || infoVideo instanceof Status) {
+      return null;
+    }
+    return infoVideo;
+  }
+  getItemWithChildren(item: Item): ItemWithChildren {
+    const infoText = this.getTextInfo(item.id);
+    const infoImage = this.getInfoImage(item.id);
+    const infoVideo = this.getInfoVideo(item.id);
+    const question = this.getQuestion(item.id);
+    return {
+      ...item,
+      infoText,
+      infoImage,
+      infoVideo,
+      question: question
+        ? {
+            ...question,
+            evalKey: this.questionStore.getEvalKey(question.id),
+          }
+        : null,
+    };
   }
 }

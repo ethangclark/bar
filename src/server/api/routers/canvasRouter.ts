@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { assertOneOrNone } from "~/common/arrayUtils";
+import { assertOneOrNone } from "~/common/assertions";
 import { getCanvasBaseUrl } from "~/common/canvasUtils";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
