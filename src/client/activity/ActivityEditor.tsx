@@ -14,7 +14,7 @@ import { ScrollyContentBox } from "./ScrollyContentBox";
 
 export const ActivityEditor = storeObserver(function ActivityEditor({
   focusedActivityStore,
-  activityDraftStore,
+  descendentDraftStore,
   itemStore,
 }) {
   const { data } = focusedActivityStore;
@@ -77,7 +77,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
               key={item.id}
               item={itemStore.getItemWithChildren(item)}
               itemNumber={idx + 1}
-              deleted={activityDraftStore.isDeletedDraft(item.id)}
+              deleted={descendentDraftStore.isDeletedDraft(item.id)}
               enrolledAs={enrolledAs}
             />
           );

@@ -27,7 +27,7 @@ const baseState = () => ({
   },
 });
 
-export class ActivityDraftStore {
+export class DescendentDraftStore {
   private drafts = baseState().drafts;
   private changes = baseState().changes;
 

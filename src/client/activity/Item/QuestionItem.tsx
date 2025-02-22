@@ -4,7 +4,7 @@ import { storeObserver } from "../../utils/storeObserver";
 
 export const QuestionItem = storeObserver<{
   question: Question;
-}>(function Question({ question, questionStore, activityDraftStore }) {
+}>(function Question({ question, questionStore, descendentDraftStore }) {
   const evalKey = questionStore.getEvalKey(question.id);
   return (
     <div key={question.id} className="flex w-full flex-col">
@@ -13,7 +13,7 @@ export const QuestionItem = storeObserver<{
           placeholder="Insert question here..."
           value={question.content}
           setValue={(v) => {
-            activityDraftStore.updateDraft("questions", {
+            descendentDraftStore.updateDraft("questions", {
               id: question.id,
               content: v,
             });
@@ -28,7 +28,7 @@ export const QuestionItem = storeObserver<{
             placeholder="Insert answer here..."
             value={evalKey.key}
             setValue={(v) => {
-              activityDraftStore.updateDraft("evalKeys", {
+              descendentDraftStore.updateDraft("evalKeys", {
                 id: evalKey.id,
                 key: v,
               });

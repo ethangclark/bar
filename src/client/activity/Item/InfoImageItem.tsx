@@ -9,7 +9,7 @@ import { TypeTitle } from "./Layout";
 
 export const InfoImageItem = storeObserver<{
   infoImage: InfoImage;
-}>(function InfoImage({ infoImage, activityDraftStore }) {
+}>(function InfoImage({ infoImage, descendentDraftStore }) {
   return (
     <div key={infoImage.id} className="w-full">
       <Image
@@ -21,7 +21,7 @@ export const InfoImageItem = storeObserver<{
         <ImageUploadLink
           label="Replace image"
           onFileSelect={({ imageDataUrl }) => {
-            activityDraftStore.updateDraft("infoImages", {
+            descendentDraftStore.updateDraft("infoImages", {
               id: infoImage.id,
               url: imageDataUrl,
             });
@@ -42,7 +42,7 @@ export const InfoImageItem = storeObserver<{
       <Editor
         value={infoImage.textAlternative}
         setValue={(v) => {
-          activityDraftStore.updateDraft("infoImages", {
+          descendentDraftStore.updateDraft("infoImages", {
             id: infoImage.id,
             textAlternative: v,
           });

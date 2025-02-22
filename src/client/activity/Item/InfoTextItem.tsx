@@ -4,13 +4,13 @@ import { storeObserver } from "../../utils/storeObserver";
 
 export const InfoTextItem = storeObserver<{
   infoText: InfoText;
-}>(function InfoText({ infoText, activityDraftStore }) {
+}>(function InfoText({ infoText, descendentDraftStore }) {
   return (
     <div key={infoText.id} className="w-full">
       <Editor
         value={infoText.content}
         setValue={(v) => {
-          activityDraftStore.updateDraft("infoTexts", {
+          descendentDraftStore.updateDraft("infoTexts", {
             id: infoText.id,
             content: v,
           });

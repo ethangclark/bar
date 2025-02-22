@@ -1,16 +1,16 @@
 import { storeObserver } from "~/client/utils/storeObserver";
 import { draftNumericId } from "~/common/draftData";
-import { ControlButton } from "./stores/ControlButton";
+import { ControlButton } from "./ControlButton";
 
 export const AddItemButtons = storeObserver(function AddItemButtons({
-  activityDraftStore,
+  descendentDraftStore,
   itemStore,
 }) {
   return (
     <div className="flex justify-center gap-2">
       <ControlButton
         onClick={() => {
-          activityDraftStore.createDraft("infoTexts", {
+          descendentDraftStore.createDraft("infoTexts", {
             itemId: itemStore.createItem().id,
             content: "",
           });
@@ -20,7 +20,7 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
       </ControlButton>
       <ControlButton
         onClick={() => {
-          activityDraftStore.createDraft("infoImages", {
+          descendentDraftStore.createDraft("infoImages", {
             itemId: itemStore.createItem().id,
             url: "",
             textAlternative: "",
@@ -32,7 +32,7 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
       </ControlButton>
       <ControlButton
         onClick={() => {
-          activityDraftStore.createDraft("infoVideos", {
+          descendentDraftStore.createDraft("infoVideos", {
             itemId: itemStore.createItem().id,
             numericId: draftNumericId,
             textAlternative: "",
@@ -43,13 +43,13 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
       </ControlButton>
       <ControlButton
         onClick={() => {
-          const q = activityDraftStore.createDraft("questions", {
+          const q = descendentDraftStore.createDraft("questions", {
             itemId: itemStore.createItem().id,
             content: "",
           });
 
           // we could generate suggestions for this
-          activityDraftStore.createDraft("evalKeys", {
+          descendentDraftStore.createDraft("evalKeys", {
             questionId: q.id,
             key: "",
           });

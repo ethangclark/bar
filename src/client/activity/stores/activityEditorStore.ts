@@ -1,18 +1,18 @@
 import { makeAutoObservable } from "mobx";
 import { Status } from "~/client/utils/status";
-import { type ActivityDraftStore } from "./activityDraftStore";
+import { type DescendentDraftStore } from "./descendentDraftStore";
 import { type DescendentStore } from "./descendentStore";
 
 export class ActivityEditorStore {
   constructor(
     private descendentStore: DescendentStore,
-    private activityDraftStore: ActivityDraftStore,
+    private descendentDraftStore: DescendentDraftStore,
   ) {
     makeAutoObservable(this);
   }
 
   get canSave() {
-    if (!this.activityDraftStore.hasChanges) {
+    if (!this.descendentDraftStore.hasChanges) {
       return false;
     }
     return true;
@@ -30,6 +30,6 @@ export class ActivityEditorStore {
   }
 
   async save() {
-    await this.activityDraftStore.saveChanges();
+    await this.descendentDraftStore.saveChanges();
   }
 }
