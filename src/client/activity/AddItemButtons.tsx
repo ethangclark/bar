@@ -3,14 +3,14 @@ import { draftNumericId } from "~/common/draftData";
 import { ControlButton } from "./stores/ControlButton";
 
 export const AddItemButtons = storeObserver(function AddItemButtons({
-  activityEditorStore,
+  activityDraftStore,
   itemStore,
 }) {
   return (
     <div className="flex justify-center gap-2">
       <ControlButton
         onClick={() => {
-          activityEditorStore.createDraft("infoTexts", {
+          activityDraftStore.createDraft("infoTexts", {
             itemId: itemStore.createItem().id,
             content: "",
           });
@@ -20,7 +20,7 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
       </ControlButton>
       <ControlButton
         onClick={() => {
-          activityEditorStore.createDraft("infoImages", {
+          activityDraftStore.createDraft("infoImages", {
             itemId: itemStore.createItem().id,
             url: "",
             textAlternative: "",
@@ -32,7 +32,7 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
       </ControlButton>
       <ControlButton
         onClick={() => {
-          activityEditorStore.createDraft("infoVideos", {
+          activityDraftStore.createDraft("infoVideos", {
             itemId: itemStore.createItem().id,
             numericId: draftNumericId,
             videoId: "",
@@ -44,13 +44,13 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
       </ControlButton>
       <ControlButton
         onClick={() => {
-          const q = activityEditorStore.createDraft("questions", {
+          const q = activityDraftStore.createDraft("questions", {
             itemId: itemStore.createItem().id,
             content: "",
           });
 
           // we could generate suggestions for this
-          activityEditorStore.createDraft("evalKeys", {
+          activityDraftStore.createDraft("evalKeys", {
             questionId: q.id,
             key: "",
           });

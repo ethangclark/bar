@@ -16,7 +16,7 @@ function ControlButton(props: ButtonProps) {
 export const EditorControls = storeObserver<EditorControlsProps>(
   function EditorControls({
     activityStatus,
-    activityEditorStore,
+    activityDraftStore,
     studentModeStore,
   }) {
     const [confirmOpen, setConfirmOpen] = useState(false);
@@ -26,7 +26,7 @@ export const EditorControls = storeObserver<EditorControlsProps>(
           open={confirmOpen}
           onCancel={() => setConfirmOpen(false)}
           onOk={() => {
-            void activityEditorStore.save();
+            void activityDraftStore.save();
           }}
           okText="Save"
         >
@@ -37,12 +37,12 @@ export const EditorControls = storeObserver<EditorControlsProps>(
         </Modal>
         <ControlButton
           type="primary"
-          disabled={!activityEditorStore.canSave}
+          disabled={!activityDraftStore.canSave}
           onClick={() => {
             if (activityStatus === "published") {
               setConfirmOpen(true);
             } else {
-              void activityEditorStore.save();
+              void activityDraftStore.save();
             }
           }}
         >
@@ -58,7 +58,7 @@ export const EditorControls = storeObserver<EditorControlsProps>(
         <ControlButton
           type="primary"
           onClick={() => studentModeStore.setIsStudentMode(true)}
-          disabled={!activityEditorStore.canDemo}
+          disabled={!activityDraftStore.canDemo}
         >
           See demo
         </ControlButton>

@@ -1,6 +1,6 @@
 import { trpc } from "~/trpc/proxy";
 import { VideoUploadStore } from "../activity/Item/videoUploadStore";
-import { ActivityEditorStore } from "../activity/stores/activityEditorStore";
+import { ActivityDraftStore } from "../activity/stores/activityDraftStore";
 import { DescendentStore } from "../activity/stores/descendentStore";
 import { FocusedActivityStore } from "../activity/stores/focusedActivityStore";
 import { ItemStore } from "../activity/stores/itemStore";
@@ -17,12 +17,12 @@ const activitesStore = new QueryStore(trpc.activity.getAll.query);
 const focusedActivityStore = new FocusedActivityStore();
 const descendentStore = new DescendentStore(focusedActivityStore);
 const threadStore = new ThreadStore(descendentStore);
-const activityEditorStore = new ActivityEditorStore(
+const activityDraftStore = new ActivityDraftStore(
   focusedActivityStore,
   descendentStore,
 );
-const questionStore = new QuestionStore(activityEditorStore);
-const itemStore = new ItemStore(activityEditorStore, questionStore);
+const questionStore = new QuestionStore(activityDraftStore);
+const itemStore = new ItemStore(activityDraftStore, questionStore);
 const studentModeStore = new StudentModeStore(focusedActivityStore);
 const viewPieceStore = new ViewPieceStore(descendentStore);
 
@@ -31,7 +31,7 @@ export const stores = {
   focusedActivityStore,
   descendentStore,
   threadStore,
-  activityEditorStore,
+  activityDraftStore,
   itemStore,
   questionStore,
   studentModeStore,

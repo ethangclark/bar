@@ -9,7 +9,7 @@ import {
   type ItemWithChildren,
   type Question,
 } from "~/server/db/schema";
-import { type ActivityEditorStore } from "./activityEditorStore";
+import { type ActivityDraftStore } from "./activityDraftStore";
 import { type QuestionStore } from "./questionStore";
 
 export class ItemStore {
@@ -19,15 +19,15 @@ export class ItemStore {
   private itemIdToInfoVideo: { [key: string]: InfoVideo } = {};
 
   constructor(
-    private activityEditorStore: ActivityEditorStore,
+    private activityDraftStore: ActivityDraftStore,
     private questionStore: QuestionStore,
   ) {
     makeAutoObservable(this);
     autorun(() => {
-      const infoTexts = this.activityEditorStore.getDrafts("infoTexts");
-      const questions = this.activityEditorStore.getDrafts("questions");
-      const infoImages = this.activityEditorStore.getDrafts("infoImages");
-      const infoVideos = this.activityEditorStore.getDrafts("infoVideos");
+      const infoTexts = this.activityDraftStore.getDrafts("infoTexts");
+      const questions = this.activityDraftStore.getDrafts("questions");
+      const infoImages = this.activityDraftStore.getDrafts("infoImages");
+      const infoVideos = this.activityDraftStore.getDrafts("infoVideos");
       runInAction(() => {
         if (
           infoTexts instanceof Status ||
@@ -58,7 +58,7 @@ export class ItemStore {
   }
 
   get sortedItems() {
-    const items = this.activityEditorStore.getDrafts("items");
+    const items = this.activityDraftStore.getDrafts("items");
     if (items instanceof Status) {
       return items;
     }
@@ -72,7 +72,7 @@ export class ItemStore {
     if (items instanceof Status) {
       throw new Error("Items are not loaded");
     }
-    const item = this.activityEditorStore.createDraft("items", {
+    const item = this.activityDraftStore.createDraft("items", {
       orderFracIdx: generateKeyBetween(
         items.slice(-1)[0]?.orderFracIdx ?? null,
         null,
