@@ -1,4 +1,4 @@
-import { InfoVideo } from "~/server/db/schema";
+import { type InfoVideo } from "~/server/db/schema";
 import { InfoVideoUpload } from "./InfoVideoUpload";
 
 export function InfoVideoItem({ infoVideo }: { infoVideo: InfoVideo }) {

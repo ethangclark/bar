@@ -512,7 +512,7 @@ export const infoVideos = pgTable(
   ],
 );
 export type InfoVideo = InferSelectModel<typeof infoVideos>;
-export const infoVideosRelations = relations(infoVideos, ({ one, many }) => ({
+export const infoVideosRelations = relations(infoVideos, ({ one }) => ({
   activity: one(activities, {
     fields: [infoVideos.activityId],
     references: [activities.id],

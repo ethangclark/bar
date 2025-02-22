@@ -35,7 +35,6 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
           activityDraftStore.createDraft("infoVideos", {
             itemId: itemStore.createItem().id,
             numericId: draftNumericId,
-            videoId: "",
             textAlternative: "",
           });
         }}

@@ -9,7 +9,7 @@ export function VoiceTranscriber({
   onTranscription: (text: string) => void;
 }) {
   const { mutateAsync: transcribe, isPending: isTranscribing } =
-    api.trascription.transcribe.useMutation();
+    api.transcription.transcribe.useMutation();
 
   const handleAudioDataX = useCallback(
     async (audioDataX: AudioDataX) => {

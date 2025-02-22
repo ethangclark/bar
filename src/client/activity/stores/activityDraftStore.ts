@@ -65,7 +65,7 @@ export class ActivityDraftStore {
     Object.assign(this, baseState());
   }
 
-  get canSave() {
+  get hasChanges() {
     if (this.drafts instanceof Status) {
       return false;
     }
@@ -75,18 +75,7 @@ export class ActivityDraftStore {
     return totalChanges > 0;
   }
 
-  get canDemo() {
-    if (this.canSave) {
-      return false;
-    }
-    const items = this.descendentStore.get("items");
-    if (items instanceof Status) {
-      return false;
-    }
-    return items.length > 0;
-  }
-
-  async save() {
+  async saveChanges() {
     if (
       !this.focusedActivityStore.activityId ||
       this.drafts instanceof Status

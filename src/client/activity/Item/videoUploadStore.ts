@@ -1,14 +1,11 @@
 import { message } from "antd";
 import { makeAutoObservable, observable } from "mobx";
-import {
-  InfoVideoIdParam,
-  VideoUploadResponse,
-} from "~/app/api/video/upload/route";
+import { type InfoVideoIdParam } from "~/app/api/video/upload/route";
 import { noop } from "~/common/fnUtils";
 import { objectEntries } from "~/common/objectUtils";
 
 export class VideoUploadStore {
-  private infoVideoIdToUnsavedVideo: Record<string, File> = {};
+  private infoVideoIdToUnsavedVideo: { [infoVideoId: string]: File } = {};
   private erroredInfoVideoIds = observable.set<string>();
   private infoVideoIdsUploading = observable.set<string>();
   reset() {
@@ -45,18 +42,17 @@ export class VideoUploadStore {
                 body: formData,
               },
             );
-            const data: VideoUploadResponse = await res.json();
 
             // Nothing to actually do with this lol.
             // Just keeping so the control flow is consistent and errors flow as expected
-            noop(data);
+            noop(await res.json());
 
             delete this.infoVideoIdToUnsavedVideo[infoVideoId];
             this.erroredInfoVideoIds.delete(infoVideoId);
           } catch (error) {
             // Could get fancy and include the item number in the error message
             // TODO: show descriptive error state on the failed video items
-            message.error("Video upload failed.");
+            void message.error("Video upload failed.");
             this.erroredInfoVideoIds.add(infoVideoId);
           }
         },
