@@ -4,11 +4,11 @@ import { assertTypesExhausted } from "~/common/assertions";
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
 import { objectKeys } from "~/common/objectUtils";
 import { ItemWithChildren } from "~/server/db/schema";
-import { Editor } from "../components/Editor";
-import { Image } from "../components/Image";
-import { ImageUploadLink } from "../components/ImageUploader";
-import { storeObserver } from "../utils/storeObserver";
-import { InfoVideoUpload } from "./InfoVideo/InfoVideoUpload";
+import { Editor } from "../../components/Editor";
+import { Image } from "../../components/Image";
+import { ImageUploadLink } from "../../components/ImageUploader";
+import { storeObserver } from "../../utils/storeObserver";
+import { InfoVideoUpload } from "./InfoVideoUpload";
 
 type CustomProps = {
   item: ItemWithChildren;

@@ -9,7 +9,7 @@ import { Status } from "~/client/utils/status";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { AddItemButtons } from "./AddItemButtons";
 import { EditorControls } from "./EditorControls";
-import { Item } from "./Item";
+import { Item } from "./Item/Item";
 import { ScrollyContentBox } from "./ScrollyContentBox";
 
 export const ActivityEditor = storeObserver(function ActivityEditor({
