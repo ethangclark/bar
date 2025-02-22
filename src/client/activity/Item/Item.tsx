@@ -1,14 +1,14 @@
-import { Tooltip, Typography } from "antd";
-import { CircleHelp } from "lucide-react";
+import { Typography } from "antd";
 import { assertTypesExhausted } from "~/common/assertions";
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
 import { objectKeys } from "~/common/objectUtils";
-import { ItemWithChildren } from "~/server/db/schema";
-import { Editor } from "../../components/Editor";
-import { Image } from "../../components/Image";
-import { ImageUploadLink } from "../../components/ImageUploader";
+import { type ItemWithChildren } from "~/server/db/schema";
 import { storeObserver } from "../../utils/storeObserver";
+import { InfoImageItem } from "./InfoImageItem";
+import { InfoTextItem } from "./InfoTextItem";
 import { InfoVideoUpload } from "./InfoVideoUpload";
+import { TypeTitle } from "./Layout";
+import { QuestionItem } from "./QuestionItem";
 
 type CustomProps = {
   item: ItemWithChildren;
@@ -55,10 +55,6 @@ function getItemTitle(item: ItemWithChildren): string {
   return "";
 }
 
-const TypeTitle = ({ children }: { children: React.ReactNode }) => {
-  return <div className="text-sm text-gray-500">{children}</div>;
-};
-
 export const Item = storeObserver<CustomProps>(function Item(props) {
   const { item, itemNumber, deleted, activityEditorStore, questionStore } =
     props;
@@ -91,69 +87,12 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
             case "infoImage": {
               const { infoImage } = item;
               if (!infoImage) return null;
-              return (
-                <div key={infoImage.id} className="w-full">
-                  <Image
-                    alt={
-                      infoImage.url
-                        ? infoImage.textAlternative
-                        : "Missing image"
-                    }
-                    url={infoImage.url}
-                    className="max-w-full"
-                  />
-                  <div className="mb-1 flex w-full justify-center">
-                    <ImageUploadLink
-                      label="Replace image"
-                      onFileSelect={({ imageDataUrl }) => {
-                        activityEditorStore.updateDraft("infoImages", {
-                          id: infoImage.id,
-                          url: imageDataUrl,
-                        });
-                      }}
-                    />
-                  </div>
-                  <div className="flex items-center">
-                    <div className="mr-1">
-                      <TypeTitle>Description</TypeTitle>
-                    </div>
-                    <Tooltip
-                      title="Summit can't understand images yet. This text describes the image to Summit so it knows what's being seen."
-                      className="text-gray-500"
-                    >
-                      <CircleHelp size={16} />
-                    </Tooltip>
-                  </div>
-                  <Editor
-                    value={infoImage.textAlternative}
-                    setValue={(v) => {
-                      activityEditorStore.updateDraft("infoImages", {
-                        id: infoImage.id,
-                        textAlternative: v,
-                      });
-                    }}
-                  />
-                </div>
-              );
+              return <InfoImageItem infoImage={infoImage} />;
             }
             case "infoText": {
               const { infoText } = item;
               if (!infoText) return null;
-              return (
-                <div key={infoText.id} className="w-full">
-                  <Editor
-                    value={infoText.content}
-                    setValue={(v) => {
-                      activityEditorStore.updateDraft("infoTexts", {
-                        id: infoText.id,
-                        content: v,
-                      });
-                    }}
-                    className={infoText.content ? "" : "placeholder-red-500"}
-                    placeholder="Insert text here..."
-                  />
-                </div>
-              );
+              return <InfoTextItem infoText={infoText} />;
             }
             case "infoVideo": {
               const { infoVideo } = item;
@@ -167,44 +106,7 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
             case "question": {
               const { question } = item;
               if (!question) return null;
-              const evalKey = questionStore.getEvalKey(question.id);
-              return (
-                <div key={question.id} className="flex w-full flex-col">
-                  <div className="mb-1">
-                    <Editor
-                      placeholder="Insert question here..."
-                      value={question.content}
-                      setValue={(v) => {
-                        activityEditorStore.updateDraft("questions", {
-                          id: question.id,
-                          content: v,
-                        });
-                      }}
-                      className={question.content ? "" : "placeholder-red-500"}
-                    />
-                  </div>
-                  {evalKey ? (
-                    <div className="ml-7">
-                      <div className="text-sm font-bold">Answer</div>
-                      <Editor
-                        placeholder="Insert answer here..."
-                        value={evalKey.key}
-                        setValue={(v) => {
-                          activityEditorStore.updateDraft("evalKeys", {
-                            id: evalKey.id,
-                            key: v,
-                          });
-                        }}
-                        className={
-                          question.content && !evalKey.key
-                            ? "placeholder-red-500"
-                            : ""
-                        }
-                      />
-                    </div>
-                  ) : null}
-                </div>
-              );
+              return <QuestionItem question={question} />;
             }
             default:
               assertTypesExhausted(itemKey);
