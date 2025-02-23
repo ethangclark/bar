@@ -20,6 +20,7 @@ export class ActivityEditorStore {
   get canSave() {
     if (this.videoUploadStore.teedForAJuicySave) {
       // we assume descendentDraftStore is in a valid state; it doesn't have an "invalid state" concept at present
+      // (TODO: add one)
       return true;
     }
     if (!this.videoUploadStore.isEverythingPersisted) {
