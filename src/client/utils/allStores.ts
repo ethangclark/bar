@@ -27,6 +27,7 @@ const activityEditorStore = new ActivityEditorStore(
   descendentStore,
   descendentDraftStore,
   videoUploadStore,
+  focusedActivityStore,
 );
 const questionStore = new QuestionStore(descendentDraftStore);
 const itemStore = new ItemStore(descendentDraftStore, questionStore);

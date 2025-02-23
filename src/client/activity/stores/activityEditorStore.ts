@@ -3,12 +3,16 @@ import { Status } from "~/client/utils/status";
 import { VideoUploadStore } from "../Item/videoUploadStore";
 import { type DescendentDraftStore } from "./descendentDraftStore";
 import { type DescendentStore } from "./descendentStore";
+import { FocusedActivityStore } from "./focusedActivityStore";
 
 export class ActivityEditorStore {
+  private savingChanges = false;
+
   constructor(
     private descendentStore: DescendentStore,
     private descendentDraftStore: DescendentDraftStore,
     private videoUploadStore: VideoUploadStore,
+    private focusedActivityStore: FocusedActivityStore,
   ) {
     makeAutoObservable(this);
   }
@@ -39,9 +43,15 @@ export class ActivityEditorStore {
   }
 
   async save() {
+    this.savingChanges = true;
     await Promise.all([
       this.descendentDraftStore.saveChanges(),
       this.videoUploadStore.saveVideos(),
     ]);
+    this.savingChanges = false;
+  }
+
+  get isSaving() {
+    return this.savingChanges;
   }
 }

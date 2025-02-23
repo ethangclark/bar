@@ -58,7 +58,6 @@ export class FocusedActivityStore {
     return this.activity.type === "adHoc";
   }
   titleSaving = false;
-  titleSaved = false;
   titleSavedTimeout = setTimeout(noop);
   async updateTitle(title: string) {
     if (this.activity instanceof Status) {
@@ -78,18 +77,7 @@ export class FocusedActivityStore {
           this.activity.adHocActivity.title = oldTitle;
           throw e;
         } finally {
-          setTimeout(() => {
-            runInAction(() => {
-              this.titleSaving = false;
-              this.titleSaved = true;
-              clearTimeout(this.titleSavedTimeout);
-              this.titleSavedTimeout = setTimeout(() => {
-                runInAction(() => {
-                  this.titleSaved = false;
-                });
-              }, 500);
-            });
-          }, 500);
+          this.titleSaving = false;
         }
         break;
       case "integration":

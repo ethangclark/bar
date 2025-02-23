@@ -1,9 +1,7 @@
-import { Input, Typography } from "antd";
-import classnames from "classnames";
-import { CheckCircle } from "lucide-react";
+import { Input } from "antd";
 import {
+  FancySavingIndicator,
   LoadingCentered,
-  LoadingNotCentered,
 } from "~/client/components/Loading";
 import { Status } from "~/client/utils/status";
 import { storeObserver } from "~/client/utils/storeObserver";
@@ -26,11 +24,10 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
 
   const { activity, enrolledAs, title, isTitleEditable } = data;
 
-  const { titleSaving, titleSaved } = focusedActivityStore;
+  const { titleSaving } = focusedActivityStore;
 
   return (
     <div className="mx-4 flex h-full w-[672px] flex-col justify-between pb-2">
-      <Typography.Link href="/overview">← All activities</Typography.Link>
       <div className="mb-5 flex items-center justify-between gap-2">
         <div className="mr-2 flex grow items-center gap-4">
           <Input
@@ -42,24 +39,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
               }
             }}
           />
-          <div className="relative">
-            <div className={titleSaving ? "visible" : "invisible"}>
-              <LoadingNotCentered />
-            </div>
-            <div
-              className={classnames(
-                "absolute inset-0 mt-1 flex items-center justify-center transition-opacity",
-                {
-                  "opacity-100 duration-[0ms]": titleSaved,
-                  "opacity-0 duration-[2000ms]": !titleSaved,
-                  invisible: titleSaving,
-                  visible: !titleSaving,
-                },
-              )}
-            >
-              <CheckCircle size={16} />
-            </div>
-          </div>
+          <FancySavingIndicator saving={titleSaving} />
         </div>
         <EditorControls activityStatus={activity.status} />
       </div>
