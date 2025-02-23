@@ -1,13 +1,13 @@
 export function objectEntries<T extends object>(obj: T) {
-  return Object.entries(obj) as Array<[keyof T, T[keyof T]]>;
+  return Object.entries(obj) as Array<[keyof T & string, T[keyof T]]>;
 }
 
 export function objectKeys<T extends object>(obj: T) {
-  return Object.keys(obj) as Array<keyof T>;
+  return Object.keys(obj) as Array<keyof T & string>;
 }
 
 export function objectValues<T extends object>(obj: T) {
-  return Object.values(obj) as Array<T[keyof T]>;
+  return Object.values(obj) as Array<T[keyof T & string]>;
 }
 
 export function identity<T>(x: T) {

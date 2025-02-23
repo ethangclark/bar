@@ -1,5 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { Status } from "~/client/utils/status";
+import { VideoUploadStore } from "../Item/videoUploadStore";
 import { type DescendentDraftStore } from "./descendentDraftStore";
 import { type DescendentStore } from "./descendentStore";
 
@@ -7,19 +8,27 @@ export class ActivityEditorStore {
   constructor(
     private descendentStore: DescendentStore,
     private descendentDraftStore: DescendentDraftStore,
+    private videoUploadStore: VideoUploadStore,
   ) {
     makeAutoObservable(this);
   }
 
   get canSave() {
-    if (!this.descendentDraftStore.hasChanges) {
+    if (this.videoUploadStore.teedForAJuicySave) {
+      // we assume descendentDraftStore is in a valid state; it doesn't have an "invalid state" concept at present
+      return true;
+    }
+    if (!this.videoUploadStore.isEverythingPersisted) {
       return false;
     }
-    return true;
+    return this.descendentDraftStore.hasChanges;
   }
 
   get canDemo() {
     if (this.canSave) {
+      return false;
+    }
+    if (!this.videoUploadStore.isEverythingPersisted) {
       return false;
     }
     const items = this.descendentStore.get("items");
@@ -30,6 +39,9 @@ export class ActivityEditorStore {
   }
 
   async save() {
-    await this.descendentDraftStore.saveChanges();
+    await Promise.all([
+      this.descendentDraftStore.saveChanges(),
+      this.videoUploadStore.saveVideos(),
+    ]);
   }
 }

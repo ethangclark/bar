@@ -1,7 +1,15 @@
+import { eq } from "drizzle-orm";
+import { db } from "~/server/db";
+
+const infoVideoIdParam = "infoVideoId";
+export type InfoVideoIdParam = typeof infoVideoIdParam;
+
+// TODO: this is insecure. We need to authenticate that the user has access to the video
+// via permissions checking on its corresponding activityId (comparable to the other route)
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  let videoUrl = searchParams.get("url");
-  if (!videoUrl) {
+  let infoVideoId = searchParams.get(infoVideoIdParam);
+  if (!infoVideoId) {
     return new Response(
       JSON.stringify({ error: "Missing url query parameter" }),
       {
@@ -10,7 +18,19 @@ export async function GET(request: Request) {
       },
     );
   }
-  videoUrl = decodeURIComponent(videoUrl);
+
+  const infoVideo = await db.query.infoVideos.findFirst({
+    where: eq(db.x.infoVideos.id, infoVideoId),
+    with: {
+      video: true,
+    },
+  });
+  const video = infoVideo?.video;
+  if (!video) {
+    return new Response(JSON.stringify({ error: "Video not found" }), {
+      status: 404,
+    });
+  }
 
   // Pass the Range header along if provided
   const headers: { Range?: string } = {};
@@ -20,7 +40,9 @@ export async function GET(request: Request) {
   }
 
   try {
-    const responseFromCloudinary = await fetch(videoUrl, { headers });
+    const responseFromCloudinary = await fetch(video.cloudinarySecureUrl, {
+      headers,
+    });
 
     if (!responseFromCloudinary.ok) {
       return new Response(JSON.stringify({ error: "Error fetching video" }), {

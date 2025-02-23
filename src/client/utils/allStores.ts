@@ -10,9 +10,6 @@ import { StudentModeStore } from "../activity/stores/studentModeStore";
 import { ThreadStore } from "../activity/stores/threadStore";
 import { ViewPieceStore } from "../activity/stores/viewPieceStore";
 import { QueryStore } from "./queryStore";
-
-const videoUploadStore = new VideoUploadStore();
-
 const activitesStore = new QueryStore(trpc.activity.getAll.query);
 
 const focusedActivityStore = new FocusedActivityStore();
@@ -22,9 +19,14 @@ const descendentDraftStore = new DescendentDraftStore(
   focusedActivityStore,
   descendentStore,
 );
+const videoUploadStore = new VideoUploadStore(
+  descendentStore,
+  descendentDraftStore,
+);
 const activityEditorStore = new ActivityEditorStore(
   descendentStore,
   descendentDraftStore,
+  videoUploadStore,
 );
 const questionStore = new QuestionStore(descendentDraftStore);
 const itemStore = new ItemStore(descendentDraftStore, questionStore);

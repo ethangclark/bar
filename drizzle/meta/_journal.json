@@ -169,6 +169,13 @@
       "when": 1740248350856,
       "tag": "0023_breezy_silk_fever",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1740267518147,
+      "tag": "0024_talented_skin",
+      "breakpoints": true
     }
   ]
 }
