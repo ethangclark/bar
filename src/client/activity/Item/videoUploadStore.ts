@@ -10,11 +10,11 @@ import { DescendentStore } from "../stores/descendentStore";
 export class VideoUploadStore {
   // pending === pending upload
   private infoVideoIdToPendingVideo: { [infoVideoId: string]: File } = {};
-  private erroredInfoVideoIds = observable.set<string>();
+  private erroredInfoVideoIdsToMessage: { [infoVideoId: string]: string } = {};
   private infoVideoIdsUploading = observable.set<string>();
   reset() {
     this.infoVideoIdToPendingVideo = {};
-    this.erroredInfoVideoIds.clear();
+    this.erroredInfoVideoIdsToMessage = {};
     this.infoVideoIdsUploading.clear();
   }
 
@@ -25,9 +25,18 @@ export class VideoUploadStore {
     makeAutoObservable(this);
   }
 
+  errorMessage({ infoVideoId }: { infoVideoId: string }) {
+    return this.erroredInfoVideoIdsToMessage[infoVideoId] ?? null;
+  }
+
   fileStatus({ infoVideoId }: { infoVideoId: string }) {
-    const pending = this.infoVideoIdToPendingVideo[infoVideoId];
-    if (pending) {
+    if (this.infoVideoIdsUploading.has(infoVideoId)) {
+      return "uploading";
+    }
+    if (this.erroredInfoVideoIdsToMessage[infoVideoId] !== undefined) {
+      return "errored";
+    }
+    if (this.infoVideoIdToPendingVideo[infoVideoId] !== undefined) {
       return "pending";
     }
     const saved = this.descendentStore.getById("infoVideos", infoVideoId);
@@ -101,14 +110,15 @@ export class VideoUploadStore {
 
             runInAction(() => {
               delete this.infoVideoIdToPendingVideo[infoVideoId];
-              this.erroredInfoVideoIds.delete(infoVideoId);
+              delete this.erroredInfoVideoIdsToMessage[infoVideoId];
             });
           } catch (error) {
             // Could get fancy and include the item number in the error message
             // TODO: show descriptive error state on the failed video items
             void message.error("Video upload failed.");
             runInAction(() => {
-              this.erroredInfoVideoIds.add(infoVideoId);
+              this.erroredInfoVideoIdsToMessage[infoVideoId] =
+                error instanceof Error ? error.message : "Unknown error";
             });
           } finally {
             runInAction(() => {

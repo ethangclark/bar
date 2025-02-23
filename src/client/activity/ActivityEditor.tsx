@@ -14,6 +14,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
   focusedActivityStore,
   descendentDraftStore,
   itemStore,
+  activityEditorStore,
 }) {
   const { data } = focusedActivityStore;
   const { sortedItems } = itemStore;
@@ -39,7 +40,9 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
               }
             }}
           />
-          <FancySavingIndicator saving={titleSaving} />
+          <FancySavingIndicator
+            saving={titleSaving || activityEditorStore.isSaving}
+          />
         </div>
         <EditorControls activityStatus={activity.status} />
       </div>
