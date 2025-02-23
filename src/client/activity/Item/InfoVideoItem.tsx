@@ -1,7 +1,7 @@
 import { UploadOutlined } from "@ant-design/icons";
 import { Button, Upload } from "antd";
 import classnames from "classnames";
-import { InfoVideoIdParam } from "~/app/api/video/upload/route";
+import { type InfoVideoIdParam } from "~/app/api/video/upload/route";
 import { LoadingNotCentered } from "~/client/components/Loading";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { assertTypesExhausted } from "~/common/assertions";

@@ -1,9 +1,8 @@
 import { makeAutoObservable } from "mobx";
 import { Status } from "~/client/utils/status";
-import { VideoUploadStore } from "../Item/videoUploadStore";
+import { type VideoUploadStore } from "../Item/videoUploadStore";
 import { type DescendentDraftStore } from "./descendentDraftStore";
 import { type DescendentStore } from "./descendentStore";
-import { FocusedActivityStore } from "./focusedActivityStore";
 
 export class ActivityEditorStore {
   private savingChanges = false;
@@ -12,7 +11,6 @@ export class ActivityEditorStore {
     private descendentStore: DescendentStore,
     private descendentDraftStore: DescendentDraftStore,
     private videoUploadStore: VideoUploadStore,
-    private focusedActivityStore: FocusedActivityStore,
   ) {
     makeAutoObservable(this);
   }

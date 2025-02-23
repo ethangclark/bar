@@ -2,11 +2,12 @@
 
 import { NextResponse } from "next/server";
 import { Readable } from "stream";
-import { assertOne } from "~/common/assertions";
+import { assertError, assertOne } from "~/common/assertions";
 import { db } from "~/server/db";
 
 // Cloudinary will auto-configure using process.env.CLOUDINARY_URL
 import { v2 as cloudinary } from "cloudinary";
+import { z } from "zod";
 
 const infoVideoIdParam = "infoVideoId";
 export type InfoVideoIdParam = typeof infoVideoIdParam;
@@ -43,7 +44,7 @@ export async function POST(req: Request): Promise<Response> {
     const buffer = Buffer.from(arrayBuffer);
 
     // Upload the video using Cloudinary's upload_stream API
-    const uploadResult = await new Promise<any>((resolve, reject) => {
+    const uploadResultRaw: unknown = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { resource_type: "video" },
         (error, result) => {
@@ -54,6 +55,12 @@ export async function POST(req: Request): Promise<Response> {
       const readable = Readable.from(buffer);
       readable.pipe(uploadStream);
     });
+    const uploadResult = z
+      .object({
+        public_id: z.string(),
+        secure_url: z.string(),
+      })
+      .parse(uploadResultRaw);
 
     const audioUrl = cloudinary.url(uploadResult.public_id, {
       resource_type: "video",
@@ -86,7 +93,8 @@ export async function POST(req: Request): Promise<Response> {
     assertOne(videos);
 
     return NextResponse.json({ ok: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    assertError(error);
     return NextResponse.json(
       { error: error.message || "Internal Server Error" },
       { status: 500 },

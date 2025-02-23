@@ -4,8 +4,8 @@ import { type InfoVideoIdParam } from "~/app/api/video/upload/route";
 import { NotLoaded, Status } from "~/client/utils/status";
 import { noop } from "~/common/fnUtils";
 import { objectEntries } from "~/common/objectUtils";
-import { DescendentDraftStore } from "../stores/descendentDraftStore";
-import { DescendentStore } from "../stores/descendentStore";
+import { type DescendentDraftStore } from "../stores/descendentDraftStore";
+import { type DescendentStore } from "../stores/descendentStore";
 
 export class VideoUploadStore {
   // pending === pending upload

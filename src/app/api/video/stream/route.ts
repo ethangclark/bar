@@ -8,7 +8,7 @@ export type InfoVideoIdParam = typeof infoVideoIdParam;
 // via permissions checking on its corresponding activityId (comparable to the other route)
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  let infoVideoId = searchParams.get(infoVideoIdParam);
+  const infoVideoId = searchParams.get(infoVideoIdParam);
   if (!infoVideoId) {
     return new Response(
       JSON.stringify({ error: "Missing url query parameter" }),

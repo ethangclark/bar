@@ -5,7 +5,6 @@ import { ControlButton } from "./ControlButton";
 export const AddItemButtons = storeObserver(function AddItemButtons({
   descendentDraftStore,
   itemStore,
-  videoUploadStore,
 }) {
   return (
     <div className="flex justify-center gap-2">
