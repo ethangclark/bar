@@ -8,7 +8,6 @@ import {
   type ItemWithDescendents,
   type Question,
 } from "~/server/db/schema";
-import { type VideoUploadStore } from "./videoUploadStore";
 
 export function isInfoTextDraftReady(draft: InfoText) {
   return draft.content !== "";
@@ -25,11 +24,8 @@ export function isInfoImageDraftReady(draft: InfoImage) {
   return isInfoImageDraftImageReady(draft) && isInfoImageDraftTextReady(draft);
 }
 
-export function isInfoVideoDraftReady(
-  draft: InfoVideo,
-  videoUploadStore: VideoUploadStore,
-) {
-  return videoUploadStore.isOkToSave({ infoVideoId: draft.id });
+export function isInfoVideoDraftReady(draft: InfoVideo) {
+  return draft.textAlternative !== "";
 }
 
 export function isQuestionDraftReady(draft: Question) {
@@ -55,10 +51,7 @@ export function isQuestionAndKeyDraftReady(
 // so please don't remove it unless that reminder is no longer needed!
 // (Also if you add something to this, be sure to audit uses of existing item validators
 // and add usage of the new validator to wherever it's needed based on those uses)
-export function isItemWithDescendentsDraftReady(
-  draft: ItemWithDescendents,
-  videoUploadStore: VideoUploadStore,
-) {
+export function isItemWithDescendentsDraftReady(draft: ItemWithDescendents) {
   for (const key of objectKeys(draft)) {
     switch (key) {
       case "id":
@@ -85,10 +78,7 @@ export function isItemWithDescendentsDraftReady(
       }
       case "infoVideo": {
         if (draft.infoVideo !== null) {
-          const isValid = isInfoVideoDraftReady(
-            draft.infoVideo,
-            videoUploadStore,
-          );
+          const isValid = isInfoVideoDraftReady(draft.infoVideo);
           if (!isValid) {
             return false;
           }

@@ -183,6 +183,13 @@
       "when": 1740452299120,
       "tag": "0025_big_talkback",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1740455709299,
+      "tag": "0026_gifted_rictor",
+      "breakpoints": true
     }
   ]
 }

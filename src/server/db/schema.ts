@@ -495,6 +495,22 @@ export const infoImagesRelations = relations(infoImages, ({ one }) => ({
   }),
 }));
 export const infoImageSchema = createSelectSchema(infoImages);
+
+// not going to make this a descendent, as the data flow will be different
+export const videos = pgTable(
+  "video",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    cloudinaryPublicExId: text("cloudinary_public_ex_id").notNull(),
+    cloudinarySecureUrl: text("cloudinary_secure_url").notNull(),
+    cloudinaryAudioUrl: text("cloudinary_audio_url"), // null if no audio track
+  },
+  (v) => [index("video_cloudinary_public_id_idx").on(v.cloudinaryPublicExId)],
+);
+export type Video = InferSelectModel<typeof videos>;
+export const videosRelations = relations(videos, () => ({}));
+export const videoSchema = createSelectSchema(videos);
+
 export const infoVideos = pgTable(
   "info_video",
   {
@@ -506,11 +522,15 @@ export const infoVideos = pgTable(
     itemId: uuid("item_id")
       .notNull()
       .references(() => items.id, { onDelete: "cascade" }),
+    videoId: uuid("video_id")
+      .notNull()
+      .references(() => videos.id, { onDelete: "cascade" }),
     textAlternative: text("text_alternative").notNull(),
   },
   (iv) => [
     index("info_video_activity_id_idx").on(iv.activityId),
     index("info_video_item_id_idx").on(iv.itemId),
+    index("info_video_video_id_idx").on(iv.videoId),
   ],
 );
 export type InfoVideo = InferSelectModel<typeof infoVideos>;
@@ -523,32 +543,12 @@ export const infoVideosRelations = relations(infoVideos, ({ one }) => ({
     fields: [infoVideos.itemId],
     references: [items.id],
   }),
-  video: one(videos),
-}));
-export const infoVideoSchema = createSelectSchema(infoVideos);
-
-// not going to make this a descendent, as the data flow will be different
-export const videos = pgTable(
-  "video",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    infoVideoId: uuid("info_video_id")
-      .notNull()
-      .references(() => infoVideos.id, { onDelete: "cascade" }),
-    cloudinaryPublicExId: text("cloudinary_public_ex_id").notNull(),
-    cloudinarySecureUrl: text("cloudinary_secure_url").notNull(),
-    cloudinaryAudioUrl: text("cloudinary_audio_url"), // null if no audio track
-  },
-  (v) => [index("video_cloudinary_public_id_idx").on(v.cloudinaryPublicExId)],
-);
-export type Video = InferSelectModel<typeof videos>;
-export const videosRelations = relations(videos, ({ one }) => ({
-  infoVideo: one(infoVideos, {
-    fields: [videos.infoVideoId],
-    references: [infoVideos.id],
+  video: one(videos, {
+    fields: [infoVideos.videoId],
+    references: [videos.id],
   }),
 }));
-export const videoSchema = createSelectSchema(videos);
+export const infoVideoSchema = createSelectSchema(infoVideos);
 
 export const threads = pgTable(
   "thread",

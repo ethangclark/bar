@@ -1,5 +1,4 @@
 import { trpc } from "~/trpc/proxy";
-import { VideoUploadStore } from "../activity/Item/videoUploadStore";
 import { ActivityEditorStore } from "../activity/stores/activityEditorStore";
 import { DescendentDraftStore } from "../activity/stores/descendentDraftStore";
 import { DescendentStore } from "../activity/stores/descendentStore";
@@ -19,15 +18,7 @@ const descendentDraftStore = new DescendentDraftStore(
   focusedActivityStore,
   descendentStore,
 );
-const videoUploadStore = new VideoUploadStore(
-  descendentStore,
-  descendentDraftStore,
-);
-const activityEditorStore = new ActivityEditorStore(
-  descendentStore,
-  descendentDraftStore,
-  videoUploadStore,
-);
+const activityEditorStore = new ActivityEditorStore(descendentDraftStore);
 const questionStore = new QuestionStore(descendentDraftStore);
 const itemStore = new ItemStore(descendentDraftStore, questionStore);
 const studentModeStore = new StudentModeStore(focusedActivityStore);
@@ -44,7 +35,6 @@ export const stores = {
   questionStore,
   studentModeStore,
   viewPieceStore,
-  videoUploadStore,
 };
 
 export function isStoreName(name: string): name is keyof typeof stores {

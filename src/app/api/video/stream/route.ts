@@ -1,15 +1,15 @@
 import { eq } from "drizzle-orm";
 import { db } from "~/server/db";
 
-const infoVideoIdParam = "infoVideoId";
-export type InfoVideoIdParam = typeof infoVideoIdParam;
+const videoIdParam = "videoId";
+export type VideoIdParam = typeof videoIdParam;
 
 // TODO: this is insecure. We need to authenticate that the user has access to the video
 // via permissions checking on its corresponding activityId (comparable to the other route)
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const infoVideoId = searchParams.get(infoVideoIdParam);
-  if (!infoVideoId) {
+  const videoId = searchParams.get(videoIdParam);
+  if (!videoId) {
     return new Response(
       JSON.stringify({ error: "Missing url query parameter" }),
       {
@@ -19,16 +19,13 @@ export async function GET(request: Request) {
     );
   }
 
-  const infoVideo = await db.query.infoVideos.findFirst({
-    where: eq(db.x.infoVideos.id, infoVideoId),
-    with: {
-      video: true,
-    },
+  const video = await db.query.videos.findFirst({
+    where: eq(db.x.videos.id, videoId),
   });
-  const video = infoVideo?.video;
   if (!video) {
     return new Response(JSON.stringify({ error: "Video not found" }), {
       status: 404,
+      headers: { "Content-Type": "application/json" },
     });
   }
 

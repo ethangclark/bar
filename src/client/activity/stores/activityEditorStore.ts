@@ -11,18 +11,12 @@ import {
   isInfoVideoDraftReady,
   isQuestionDraftReady,
 } from "../Item/itemValidator";
-import { type VideoUploadStore } from "../Item/videoUploadStore";
 import { type DescendentDraftStore } from "./descendentDraftStore";
-import { type DescendentStore } from "./descendentStore";
 
 export class ActivityEditorStore {
   private savingChanges = false;
 
-  constructor(
-    private descendentStore: DescendentStore,
-    private descendentDraftStore: DescendentDraftStore,
-    private videoUploadStore: VideoUploadStore,
-  ) {
+  constructor(private descendentDraftStore: DescendentDraftStore) {
     makeAutoObservable(this);
   }
 
@@ -55,9 +49,7 @@ export class ActivityEditorStore {
       this.itemDraftStatus("evalKeys", isEvalKeyDraftReady),
       this.itemDraftStatus("infoImages", isInfoImageDraftReady),
       this.itemDraftStatus("infoTexts", isInfoTextDraftReady),
-      this.itemDraftStatus("infoVideos", (iv) =>
-        isInfoVideoDraftReady(iv, this.videoUploadStore),
-      ),
+      this.itemDraftStatus("infoVideos", (iv) => isInfoVideoDraftReady(iv)),
     ];
 
     const isLoading = statuses.some((s) => s.isLoading);
@@ -75,9 +67,7 @@ export class ActivityEditorStore {
     if (draftStatus.hasProblem) {
       return false;
     }
-    return (
-      draftStatus.includesSaveable || this.videoUploadStore.readyForAJuicySave
-    );
+    return draftStatus.includesSaveable;
   }
   get canDemo() {
     const draftStatus = this.draftStatus;
@@ -88,18 +78,12 @@ export class ActivityEditorStore {
       return false;
     }
 
-    return (
-      !draftStatus.includesSaveable &&
-      this.videoUploadStore.areAllVideosPersisted
-    );
+    return !draftStatus.includesSaveable;
   }
 
   async save() {
     this.savingChanges = true;
-    await Promise.all([
-      this.descendentDraftStore.saveChanges(),
-      this.videoUploadStore.saveVideos(),
-    ]);
+    await this.descendentDraftStore.saveChanges();
     this.savingChanges = false;
   }
 

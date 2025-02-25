@@ -9,26 +9,15 @@ import { db } from "~/server/db";
 import { v2 as cloudinary } from "cloudinary";
 import { z } from "zod";
 
-const infoVideoIdParam = "infoVideoId";
-export type InfoVideoIdParam = typeof infoVideoIdParam;
+export type VideoUploadResponse = {
+  videoId: string;
+};
 
 // TODO: this is insecure; anyone could overwrite any video using the ID.
 // Need to grab the session token and verify that the user has access to the infoVideoId
 // (Find the corresponding activityId, load that activity, and do the access check from there)
 export async function POST(req: Request): Promise<Response> {
   try {
-    const { searchParams } = new URL(req.url);
-    const infoVideoId = searchParams.get(infoVideoIdParam);
-    if (!infoVideoId) {
-      return new Response(
-        JSON.stringify({ error: "Missing url query parameter" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-    }
-
     // Get form data from the request
     const formData = await req.formData();
     const file = formData.get("video");
@@ -84,15 +73,16 @@ export async function POST(req: Request): Promise<Response> {
     const videos = await db
       .insert(db.x.videos)
       .values({
-        infoVideoId: infoVideoId,
         cloudinaryPublicExId: uploadResult.public_id,
         cloudinarySecureUrl: uploadResult.secure_url,
         cloudinaryAudioUrl: audioUrl,
       })
       .returning();
-    assertOne(videos);
+    const video = assertOne(videos);
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      videoId: video.id,
+    } satisfies VideoUploadResponse);
   } catch (error: unknown) {
     assertError(error);
     return NextResponse.json(

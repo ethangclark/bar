@@ -96,7 +96,9 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
             case "infoVideo": {
               const { infoVideo } = item;
               if (!infoVideo) return null;
-              return <InfoVideoItem key={infoVideo.id} infoVideo={infoVideo} />;
+              return (
+                <InfoVideoItem key={infoVideo.id} infoVideoDraft={infoVideo} />
+              );
             }
             case "question": {
               const { question } = item;
