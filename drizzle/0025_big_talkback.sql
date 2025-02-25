@@ -1,0 +1,1 @@
+ALTER TABLE "eval_key" RENAME COLUMN "key" TO "content";

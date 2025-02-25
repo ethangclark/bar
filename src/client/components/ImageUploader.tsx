@@ -69,16 +69,18 @@ export function ImageUploader({
 export function ImageUploadLink({
   onFileSelect,
   label = <span className="text-sm">Upload image</span>,
+  className,
 }: {
   onFileSelect: OnFileSelect;
   label?: React.ReactNode;
+  className?: string;
 }) {
   const [notify, contextHolder] = useNotify();
   const props = useProps({ notify, onFileSelect });
   return (
     <Upload {...props}>
       {contextHolder}
-      <Typography.Link>
+      <Typography.Link className={className}>
         <FileImageOutlined className="mr-1" />
         {label}
       </Typography.Link>

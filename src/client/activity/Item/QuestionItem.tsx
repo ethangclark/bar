@@ -1,11 +1,15 @@
 import { type Question } from "~/server/db/schema";
 import { Editor } from "../../components/Editor";
 import { storeObserver } from "../../utils/storeObserver";
+import { isEvalKeyDraftReady, isQuestionDraftReady } from "./itemValidator";
 
 export const QuestionItem = storeObserver<{
   question: Question;
 }>(function Question({ question, questionStore, descendentDraftStore }) {
   const evalKey = questionStore.getEvalKey(question.id);
+  const questionOk = isQuestionDraftReady(question);
+  const evalKeyOk = isEvalKeyDraftReady(evalKey);
+
   return (
     <div key={question.id} className="flex w-full flex-col">
       <div className="mb-1">
@@ -18,7 +22,7 @@ export const QuestionItem = storeObserver<{
               content: v,
             });
           }}
-          className={question.content ? "" : "placeholder-red-500"}
+          className={questionOk ? "" : "placeholder-red-500"}
         />
       </div>
       {evalKey ? (
@@ -26,16 +30,14 @@ export const QuestionItem = storeObserver<{
           <div className="text-sm font-bold">Answer</div>
           <Editor
             placeholder="Insert answer here..."
-            value={evalKey.key}
+            value={evalKey.content}
             setValue={(v) => {
               descendentDraftStore.updateDraft("evalKeys", {
                 id: evalKey.id,
-                key: v,
+                content: v,
               });
             }}
-            className={
-              question.content && !evalKey.key ? "placeholder-red-500" : ""
-            }
+            className={questionOk && !evalKeyOk ? "placeholder-red-500" : ""}
           />
         </div>
       ) : null}

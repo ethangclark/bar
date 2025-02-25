@@ -9,7 +9,7 @@ import { objectKeys } from "~/common/objectUtils";
 import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import {
-  type ItemWithChildren,
+  type ItemWithDescendents,
   type Question,
   type Thread,
 } from "~/server/db/schema";
@@ -48,7 +48,7 @@ function fmtQuestion(question: Question) {
   return fmtSection("Question", question.content);
 }
 
-function itemToString(itemNumber: number, item: ItemWithChildren) {
+function itemToString(itemNumber: number, item: ItemWithDescendents) {
   let result = `## Item ${itemNumber}.\n`;
   for (const key of objectKeys(item)) {
     switch (key) {

@@ -1,10 +1,12 @@
 import { type InfoText } from "~/server/db/schema";
 import { Editor } from "../../components/Editor";
 import { storeObserver } from "../../utils/storeObserver";
+import { isInfoTextDraftReady } from "./itemValidator";
 
 export const InfoTextItem = storeObserver<{
   infoText: InfoText;
 }>(function InfoText({ infoText, descendentDraftStore }) {
+  const isOk = isInfoTextDraftReady(infoText);
   return (
     <div key={infoText.id} className="w-full">
       <Editor
@@ -15,7 +17,7 @@ export const InfoTextItem = storeObserver<{
             content: v,
           });
         }}
-        className={infoText.content ? "" : "placeholder-red-500"}
+        className={isOk ? "" : "placeholder-red-500"}
         placeholder="Insert text here..."
       />
     </div>

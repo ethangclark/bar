@@ -6,10 +6,16 @@ import { Image } from "../../components/Image";
 import { ImageUploadLink } from "../../components/ImageUploader";
 import { storeObserver } from "../../utils/storeObserver";
 import { TypeTitle } from "./Layout";
+import {
+  isInfoImageDraftImageReady,
+  isInfoImageDraftTextReady,
+} from "./itemValidator";
 
 export const InfoImageItem = storeObserver<{
   infoImage: InfoImage;
 }>(function InfoImage({ infoImage, descendentDraftStore }) {
+  const imageOk = isInfoImageDraftImageReady(infoImage);
+  const textOk = isInfoImageDraftTextReady(infoImage);
   return (
     <div key={infoImage.id} className="w-full">
       <Image
@@ -19,7 +25,8 @@ export const InfoImageItem = storeObserver<{
       />
       <div className="mb-1 flex w-full justify-center">
         <ImageUploadLink
-          label="Replace image"
+          className={infoImage.url ? "" : "text-red-500"}
+          label={imageOk ? "Replace image" : "Click here to upload image"}
           onFileSelect={({ imageDataUrl }) => {
             descendentDraftStore.updateDraft("infoImages", {
               id: infoImage.id,
@@ -47,6 +54,8 @@ export const InfoImageItem = storeObserver<{
             textAlternative: v,
           });
         }}
+        className={imageOk && !textOk ? "placeholder-red-500" : ""}
+        placeholder="Describe the image here..."
       />
     </div>
   );

@@ -47,7 +47,7 @@ export const InfoVideoItem = storeObserver<{
             },
           ])}
         >
-          Please select a video to upload
+          Please select video to upload
         </div>
       </div>
 

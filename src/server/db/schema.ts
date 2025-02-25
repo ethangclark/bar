@@ -359,7 +359,8 @@ export const itemRelations = relations(items, ({ one }) => ({
   infoVideo: one(infoVideos),
 }));
 export const itemSchema = createSelectSchema(items);
-export type ItemWithChildren = Item & {
+
+export type ItemDescendents = {
   question:
     | (Question & {
         evalKey: null | EvalKey;
@@ -369,6 +370,7 @@ export type ItemWithChildren = Item & {
   infoImage: InfoImage | null;
   infoVideo: InfoVideo | null;
 };
+export type ItemWithDescendents = Item & ItemDescendents;
 
 export const evalKeys = pgTable(
   "eval_key",
@@ -380,7 +382,7 @@ export const evalKeys = pgTable(
     questionId: uuid("question_id")
       .notNull()
       .references(() => questions.id, { onDelete: "cascade" }),
-    key: text("key").notNull(),
+    content: text("content").notNull(),
   },
   (ek) => [
     index("eval_key_activity_id_idx").on(ek.activityId),

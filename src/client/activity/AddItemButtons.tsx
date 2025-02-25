@@ -51,7 +51,7 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
           // we could generate suggestions for this
           descendentDraftStore.createDraft("evalKeys", {
             questionId: q.id,
-            key: "",
+            content: "",
           });
         }}
       >

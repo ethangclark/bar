@@ -2,7 +2,7 @@ import { Typography } from "antd";
 import { assertTypesExhausted } from "~/common/assertions";
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
 import { objectKeys } from "~/common/objectUtils";
-import { type ItemWithChildren } from "~/server/db/schema";
+import { type ItemWithDescendents } from "~/server/db/schema";
 import { storeObserver } from "../../utils/storeObserver";
 import { InfoImageItem } from "./InfoImageItem";
 import { InfoTextItem } from "./InfoTextItem";
@@ -11,13 +11,13 @@ import { TypeTitle } from "./Layout";
 import { QuestionItem } from "./QuestionItem";
 
 type CustomProps = {
-  item: ItemWithChildren;
+  item: ItemWithDescendents;
   itemNumber: number;
   deleted: boolean;
   enrolledAs: EnrollmentType[];
 };
 
-function getItemTitle(item: ItemWithChildren): string {
+function getItemTitle(item: ItemWithDescendents): string {
   for (const propKey of objectKeys(item)) {
     switch (propKey) {
       case "id":

@@ -1,7 +1,7 @@
 import createSubscriber from "pg-listen";
-import { env } from "~/env";
-import type { SuperJSONValue } from "~/common/types";
 import superjson from "superjson";
+import type { SuperJSONValue } from "~/common/types";
+import { env } from "~/env";
 
 type Subscriber<T> = {
   push: (data: T) => void;
@@ -51,24 +51,39 @@ class AsyncQueue<T extends SuperJSONValue> {
   }
 }
 
+/**
+ * Cache the subscribers in development. This avoids creating a new subscriber on every HMR
+ * update.
+ */
+const globalForSubscribers = globalThis as unknown as {
+  subscribers?: {
+    [key: string]: ReturnType<typeof createSubscriber> | undefined;
+  };
+};
+
 export class PubSub<T extends SuperJSONValue> {
-  private channel: string;
   private subscriber: ReturnType<typeof createSubscriber>;
   private subscribers = new Set<Subscriber<T>>();
 
-  constructor(channel: string) {
-    this.channel = channel;
-    // NOTE: In a real app, supply a valid connection string.
-    this.subscriber = createSubscriber({
-      connectionString: env.DATABASE_URL,
-    });
+  constructor(private channel: string) {
+    globalForSubscribers.subscribers ??= {};
+    this.subscriber =
+      globalForSubscribers.subscribers?.[channel] ??
+      createSubscriber({
+        connectionString: env.DATABASE_URL,
+      });
+    if (env.NODE_ENV !== "production" && env.TEST_TYPE !== "prompt_test") {
+      globalForSubscribers.subscribers[`${env.DATABASE_URL}-${channel}`] =
+        this.subscriber;
+    }
+
     // When a notification comes in on our channel, broadcast it.
-    this.subscriber.notifications.on(this.channel, (payload: string) => {
+    this.subscriber.notifications.on(channel, (payload: string) => {
       this.broadcast(superjson.parse<T>(payload));
     });
     // Connect and start listening.
     void this.subscriber.connect().then(() => {
-      return this.subscriber.listenTo(this.channel);
+      return this.subscriber.listenTo(channel);
     });
   }
 

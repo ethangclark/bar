@@ -176,6 +176,13 @@
       "when": 1740267518147,
       "tag": "0024_talented_skin",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1740452299120,
+      "tag": "0025_big_talkback",
+      "breakpoints": true
     }
   ]
 }

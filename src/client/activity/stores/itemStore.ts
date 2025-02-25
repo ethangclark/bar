@@ -6,7 +6,7 @@ import {
   type InfoText,
   type InfoVideo,
   type Item,
-  type ItemWithChildren,
+  type ItemWithDescendents,
   type Question,
 } from "~/server/db/schema";
 import { type DescendentDraftStore } from "./descendentDraftStore";
@@ -109,7 +109,7 @@ export class ItemStore {
     }
     return infoVideo;
   }
-  getItemWithChildren(item: Item): ItemWithChildren {
+  getItemWithChildren(item: Item): ItemWithDescendents {
     const infoText = this.getTextInfo(item.id);
     const infoImage = this.getInfoImage(item.id);
     const infoVideo = this.getInfoVideo(item.id);

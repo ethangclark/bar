@@ -178,4 +178,20 @@ export class DescendentDraftStore {
     // TODO: handle cascading deletes based off of foreign keys :/
     return this.changes.deletedIds.has(id);
   }
+
+  getChangedItems<T extends DescendentName>(
+    descendentName: T,
+  ): Array<DescendentRows[T]> | Status {
+    const drafts = this.drafts;
+    if (drafts instanceof Status) {
+      return drafts;
+    }
+    const changedItemRaw = objectValues(drafts[descendentName]).filter((item) =>
+      objectValues(this.changes).some((changedIdSet) =>
+        changedIdSet.has(item.id),
+      ),
+    );
+    const changedItems = changedItemRaw as Array<DescendentRows[T]>; // really the same as the above, just simplified
+    return changedItems;
+  }
 }

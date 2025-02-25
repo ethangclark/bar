@@ -16,7 +16,14 @@ export const infoVideoController: DescendentController<InfoVideo> = {
     }
     await tx
       .insert(schema.infoVideos)
-      .values(rows.map((row) => ({ ...row, activityId })))
+      .values(
+        rows.map(
+          ({
+            numericId: _, // do not set this manually
+            ...row
+          }) => ({ ...row, activityId }),
+        ),
+      )
       .onConflictDoNothing({ target: [schema.infoVideos.id] });
 
     // return all info videos corresponding to rows, even if they were not inserted
@@ -50,17 +57,21 @@ export const infoVideoController: DescendentController<InfoVideo> = {
       return [];
     }
     const infoVideosNested = await Promise.all(
-      rows.map((row) =>
-        tx
-          .update(schema.infoVideos)
-          .set({ ...row, activityId })
-          .where(
-            and(
-              eq(schema.infoVideos.id, row.id),
-              eq(schema.infoVideos.activityId, activityId),
-            ),
-          )
-          .returning(),
+      rows.map(
+        ({
+          numericId: _, // do not set this manually
+          ...row
+        }) =>
+          tx
+            .update(schema.infoVideos)
+            .set({ ...row, activityId })
+            .where(
+              and(
+                eq(schema.infoVideos.id, row.id),
+                eq(schema.infoVideos.activityId, activityId),
+              ),
+            )
+            .returning(),
       ),
     );
     return infoVideosNested.flat();

@@ -8,6 +8,10 @@ We assume that foreign keys imply a dependence on the referenced record. This is
 
 As an implication of the above: All columns should be limited to null | boolean | number | string values. This lets us make nice assumptions. (Can revisit this, but if we do, want to make sure we think through it thoroughly.)
 
+# A note on the controller pattern
+
+Controllers should not affect anything outside of the core CRUD objects they're abstractly designed for except through `enqueueSideEffect` callbacks (which can publish events to the FE using descendentPubSub)
+
 # Create T3 App
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.

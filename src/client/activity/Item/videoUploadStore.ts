@@ -3,18 +3,17 @@ import { makeAutoObservable, observable, runInAction } from "mobx";
 import { type InfoVideoIdParam } from "~/app/api/video/upload/route";
 import { NotLoaded, Status } from "~/client/utils/status";
 import { noop } from "~/common/fnUtils";
-import { objectEntries } from "~/common/objectUtils";
 import { type DescendentDraftStore } from "../stores/descendentDraftStore";
 import { type DescendentStore } from "../stores/descendentStore";
 
 export class VideoUploadStore {
   // pending === pending upload
-  private infoVideoIdToPendingVideo: { [infoVideoId: string]: File } = {};
-  private erroredInfoVideoIdsToMessage: { [infoVideoId: string]: string } = {};
+  private infoVideoIdToPendingVideo = observable.map<string, File>();
+  private erroredInfoVideoIdsToMessage = observable.map<string, string>();
   private infoVideoIdsUploading = observable.set<string>();
   reset() {
-    this.infoVideoIdToPendingVideo = {};
-    this.erroredInfoVideoIdsToMessage = {};
+    this.infoVideoIdToPendingVideo.clear();
+    this.erroredInfoVideoIdsToMessage.clear();
     this.infoVideoIdsUploading.clear();
   }
 
@@ -26,17 +25,17 @@ export class VideoUploadStore {
   }
 
   errorMessage({ infoVideoId }: { infoVideoId: string }) {
-    return this.erroredInfoVideoIdsToMessage[infoVideoId] ?? null;
+    return this.erroredInfoVideoIdsToMessage.get(infoVideoId) ?? null;
   }
 
   fileStatus({ infoVideoId }: { infoVideoId: string }) {
     if (this.infoVideoIdsUploading.has(infoVideoId)) {
       return "uploading";
     }
-    if (this.erroredInfoVideoIdsToMessage[infoVideoId] !== undefined) {
+    if (this.erroredInfoVideoIdsToMessage.has(infoVideoId)) {
       return "errored";
     }
-    if (this.infoVideoIdToPendingVideo[infoVideoId] !== undefined) {
+    if (this.infoVideoIdToPendingVideo.has(infoVideoId)) {
       return "pending";
     }
     const saved = this.descendentStore.getById("infoVideos", infoVideoId);
@@ -46,7 +45,7 @@ export class VideoUploadStore {
     return "not selected";
   }
 
-  get someFileIsNotSelected() {
+  private get someFileIsNotSelected() {
     const drafts = this.descendentDraftStore.getDrafts("infoVideos");
     if (drafts instanceof Status) {
       return false;
@@ -55,40 +54,39 @@ export class VideoUploadStore {
       const saved = this.descendentStore.getById("infoVideos", draft.id);
       const noSavedFile = saved === undefined || saved instanceof NotLoaded;
       const noPendingFile =
-        this.infoVideoIdToPendingVideo[draft.id] === undefined;
+        this.infoVideoIdToPendingVideo.get(draft.id) === undefined;
       return noSavedFile && noPendingFile;
     });
   }
-
-  get areVideosUploading() {
+  private get areVideosUploading() {
     return this.infoVideoIdsUploading.size > 0;
   }
-  get areVideosPending() {
-    return Object.values(this.infoVideoIdToPendingVideo).length > 0;
+  private get isSomeVideoPending() {
+    return this.infoVideoIdToPendingVideo.size > 0;
+  }
+  private get isAwaitingLoadOrSelection() {
+    return this.someFileIsNotSelected || this.areVideosUploading;
   }
 
-  get isEverythingPersisted() {
-    return (
-      !this.someFileIsNotSelected &&
-      !this.areVideosUploading &&
-      !this.areVideosPending
-    );
+  get areAllVideosPersisted() {
+    return !this.isSomeVideoPending && !this.isAwaitingLoadOrSelection;
   }
-  get teedForAJuicySave() {
-    return (
-      this.areVideosPending &&
-      !this.someFileIsNotSelected &&
-      !this.areVideosUploading
-    );
+  get readyForAJuicySave() {
+    return this.isSomeVideoPending && !this.isAwaitingLoadOrSelection;
+  }
+
+  isOkToSave({ infoVideoId }: { infoVideoId: string }) {
+    const fileStatus = this.fileStatus({ infoVideoId });
+    return ["pending", "saved"].includes(fileStatus);
   }
 
   storePendingVideo(infoVideoId: string, file: File) {
-    this.infoVideoIdToPendingVideo[infoVideoId] = file;
+    this.infoVideoIdToPendingVideo.set(infoVideoId, file);
   }
 
   async saveVideos() {
     await Promise.all(
-      objectEntries(this.infoVideoIdToPendingVideo).map(
+      Array.from(this.infoVideoIdToPendingVideo.entries()).map(
         async ([infoVideoId, file]) => {
           this.infoVideoIdsUploading.add(infoVideoId);
           const formData = new FormData();
@@ -109,16 +107,18 @@ export class VideoUploadStore {
             noop(await res.json());
 
             runInAction(() => {
-              delete this.infoVideoIdToPendingVideo[infoVideoId];
-              delete this.erroredInfoVideoIdsToMessage[infoVideoId];
+              this.infoVideoIdToPendingVideo.delete(infoVideoId);
+              this.erroredInfoVideoIdsToMessage.delete(infoVideoId);
             });
           } catch (error) {
             // Could get fancy and include the item number in the error message
             // TODO: show descriptive error state on the failed video items
             void message.error("Video upload failed.");
             runInAction(() => {
-              this.erroredInfoVideoIdsToMessage[infoVideoId] =
-                error instanceof Error ? error.message : "Unknown error";
+              this.erroredInfoVideoIdsToMessage.set(
+                infoVideoId,
+                error instanceof Error ? error.message : "Unknown error",
+              );
             });
           } finally {
             runInAction(() => {
