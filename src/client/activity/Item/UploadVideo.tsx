@@ -19,7 +19,7 @@ export const UploadVideo = storeObserver<{
 }) {
   const doUpload = useCallback(
     async (file: File) => {
-      const { uploadId } = uploadStore.noteVideoUploading();
+      const { uploadId } = uploadStore.noteUploadStarted();
       const formData = new FormData();
       formData.append("video", file);
       try {
@@ -43,7 +43,7 @@ export const UploadVideo = storeObserver<{
         // TODO: show descriptive error state on the failed video items
         void message.error("Video upload failed.");
       } finally {
-        uploadStore.noteVideoUploadComplete({ uploadId });
+        uploadStore.noteUploadComplete({ uploadId });
       }
     },
     [uploadStore, onUploadStarted, onUploadComplete],

@@ -45,7 +45,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
             saving={
               titleSaving ||
               editorStore.isSaving ||
-              uploadStore.isVideoUploading
+              uploadStore.isSomethingUploading
             }
           />
         </div>

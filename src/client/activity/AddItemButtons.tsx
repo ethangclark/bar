@@ -8,11 +8,11 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
   itemStore,
   uploadStore,
 }) {
-  const { isVideoUploading } = uploadStore;
+  const { isSomethingUploading } = uploadStore;
   return (
     <div className="flex justify-center gap-2">
       <ControlButton
-        disabled={isVideoUploading}
+        disabled={isSomethingUploading}
         onClick={() => {
           draftStore.createDraft("infoTexts", {
             itemId: itemStore.createItem().id,
@@ -23,7 +23,7 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
         + Add text
       </ControlButton>
       <ControlButton
-        disabled={isVideoUploading}
+        disabled={isSomethingUploading}
         onClick={() => {
           draftStore.createDraft("infoImages", {
             itemId: itemStore.createItem().id,
@@ -45,10 +45,12 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
           });
         }}
       >
-        <ControlButton disabled={isVideoUploading}>+ Add video</ControlButton>
+        <ControlButton disabled={isSomethingUploading}>
+          + Add video
+        </ControlButton>
       </UploadVideo>
       <ControlButton
-        disabled={isVideoUploading}
+        disabled={isSomethingUploading}
         onClick={() => {
           const q = draftStore.createDraft("questions", {
             itemId: itemStore.createItem().id,

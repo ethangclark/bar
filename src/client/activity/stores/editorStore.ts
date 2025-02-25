@@ -71,7 +71,7 @@ export class EditorStore {
     if (draftStatus.hasProblem) {
       return false;
     }
-    if (this.uploadStore.isVideoUploading) {
+    if (this.uploadStore.isSomethingUploading) {
       return false;
     }
     return draftStatus.includesSaveable;
@@ -84,7 +84,7 @@ export class EditorStore {
     if (draftStatus.hasProblem) {
       return false;
     }
-    if (this.uploadStore.isVideoUploading) {
+    if (this.uploadStore.isSomethingUploading) {
       return false;
     }
     return !draftStatus.includesSaveable;
