@@ -14,7 +14,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
   focusedActivityStore,
   draftStore,
   itemStore,
-  activityEditorStore,
+  editorStore,
   uploadStore,
 }) {
   const { data } = focusedActivityStore;
@@ -44,7 +44,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
           <FancySavingIndicator
             saving={
               titleSaving ||
-              activityEditorStore.isSaving ||
+              editorStore.isSaving ||
               uploadStore.isVideoUploading
             }
           />

@@ -14,7 +14,7 @@ import {
 import { type DraftStore } from "./draftStore";
 import { type UploadStore } from "./uploadStore";
 
-export class ActivityEditorStore {
+export class EditorStore {
   private savingChanges = false;
 
   constructor(
