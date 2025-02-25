@@ -22,13 +22,14 @@ export function fmtInfoText(content: string) {
   return fmtSection("Information", content);
 }
 
-export const omissionDisclaimer = `omitted; text alternative follows`;
+export const imageOmissionDisclaimer = `image omitted; text alternative follows`;
+export const videoOmissionDisclaimer = `video omitted; text alternative follows`;
 
 export const imageHeaderWithOmissionDisclaimer = (numericId: number) =>
-  `Image ${numericIdToImageNumber(numericId)} (${omissionDisclaimer})`;
+  `Image ${numericIdToImageNumber(numericId)} (${imageOmissionDisclaimer})`;
 
 export const videoHeaderWithOmissionDisclaimer = (numericId: number) =>
-  `Video ${numericIdToVideoNumber(numericId)} (${omissionDisclaimer})`;
+  `Video ${numericIdToVideoNumber(numericId)} (${videoOmissionDisclaimer})`;
 
 export function fmtInfoImage(numericId: number, textAlternative: string) {
   return fmtSection(

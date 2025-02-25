@@ -9,14 +9,14 @@ import {
   type ViewPieceText,
 } from "~/server/db/schema";
 import { getInjectionData } from "./injectionDataGetter";
-import { omissionDisclaimer } from "./summitIntro";
+import { imageOmissionDisclaimer } from "./summitIntro";
 
 export async function injectImages(
   assistantResponse: Message,
   allMessages: Message[],
 ) {
   // nothing to do if there are no images to inject
-  if (!allMessages.some((m) => m.content.includes(omissionDisclaimer))) {
+  if (!allMessages.some((m) => m.content.includes(imageOmissionDisclaimer))) {
     return;
   }
 
