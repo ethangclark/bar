@@ -1,5 +1,6 @@
 // app/api/upload/route.ts
 
+import { eq, notInArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { Readable } from "stream";
 import { assertError, assertOne } from "~/common/assertions";
@@ -8,10 +9,38 @@ import { db } from "~/server/db";
 // Cloudinary will auto-configure using process.env.CLOUDINARY_URL
 import { v2 as cloudinary } from "cloudinary";
 import { z } from "zod";
+import { infoVideos, videos } from "~/server/db/schema";
 
 export type VideoUploadResponse = {
   videoId: string;
 };
+
+// Function to clean up orphaned videos
+async function cleanupOrphanedVideos() {
+  // Find videos that aren't referenced by any infoVideo
+  const orphanedVideos = await db.query.videos.findMany({
+    where: notInArray(
+      videos.id,
+      db.select({ id: infoVideos.videoId }).from(infoVideos),
+    ),
+  });
+
+  // Delete each orphaned video from Cloudinary and the database
+  for (const video of orphanedVideos) {
+    try {
+      await cloudinary.uploader.destroy(video.cloudinaryPublicExId, {
+        resource_type: "video",
+      });
+      console.log(`Deleted Cloudinary asset: ${video.cloudinaryPublicExId}`);
+
+      // Delete from database
+      await db.delete(videos).where(eq(videos.id, video.id));
+    } catch (error) {
+      console.error(`Failed to delete orphaned video ${video.id}:`, error);
+      // Continue with other deletions even if one fails
+    }
+  }
+}
 
 // TODO: this is insecure; anyone could overwrite any video using the ID.
 // Need to grab the session token and verify that the user has access to the infoVideoId
@@ -66,9 +95,8 @@ export async function POST(req: Request): Promise<Response> {
         `Failed to fetch audio data: ${audioResponse.status} ${audioResponse.statusText}. Error details: ${errorText}`,
       );
     }
-    const audioBuffer = Buffer.from(await audioResponse.arrayBuffer());
-
-    console.log("buffer length", audioBuffer.length); // TODO: transcription
+    // const audioBuffer = Buffer.from(await audioResponse.arrayBuffer());
+    // console.log("buffer length", audioBuffer.length); // TODO: transcription
 
     const videos = await db
       .insert(db.x.videos)
@@ -79,6 +107,10 @@ export async function POST(req: Request): Promise<Response> {
       })
       .returning();
     const video = assertOne(videos);
+
+    // Trigger orphaned video cleanup as a side effect without awaiting it
+    // This won't block the response
+    void cleanupOrphanedVideos();
 
     return NextResponse.json({
       videoId: video.id,

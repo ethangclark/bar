@@ -51,32 +51,14 @@ class AsyncQueue<T extends SuperJSONValue> {
   }
 }
 
-/**
- * Cache the subscribers in development. This avoids creating a new subscriber on every HMR
- * update.
- */
-const globalForSubscribers = globalThis as unknown as {
-  subscribers?: {
-    [key: string]: ReturnType<typeof createSubscriber> | undefined;
-  };
-};
-
 export class PubSub<T extends SuperJSONValue> {
   private subscriber: ReturnType<typeof createSubscriber>;
   private subscribers = new Set<Subscriber<T>>();
 
   constructor(private channel: string) {
-    globalForSubscribers.subscribers ??= {};
-    this.subscriber =
-      globalForSubscribers.subscribers?.[channel] ??
-      createSubscriber({
-        connectionString: env.DATABASE_URL,
-      });
-    if (env.NODE_ENV !== "production" && env.TEST_TYPE !== "prompt_test") {
-      globalForSubscribers.subscribers[`${env.DATABASE_URL}-${channel}`] =
-        this.subscriber;
-    }
-
+    this.subscriber = createSubscriber({
+      connectionString: env.DATABASE_URL,
+    });
     // When a notification comes in on our channel, broadcast it.
     this.subscriber.notifications.on(channel, (payload: string) => {
       this.broadcast(superjson.parse<T>(payload));
