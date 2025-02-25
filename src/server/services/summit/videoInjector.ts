@@ -1,3 +1,4 @@
+// src/server/services/summit/videoInjector.ts
 import { eq, inArray } from "drizzle-orm";
 import { assertTypesExhausted } from "~/common/assertions";
 import { createEmptyDescendents } from "~/common/descendentUtils";
@@ -5,44 +6,44 @@ import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import {
   type Message,
-  type ViewPieceImage,
   type ViewPieceText,
+  type ViewPieceVideo,
 } from "~/server/db/schema";
-import { getImageInjectionData } from "./imageInjectionDataGetter";
-import { imageOmissionDisclaimer } from "./summitIntro";
+import { videoOmissionDisclaimer } from "./summitIntro";
+import { getVideoInjectionData } from "./videoInjectionDataGetter";
 
-export async function injectImages(
+export async function injectVideos(
   assistantResponse: Message,
   allMessages: Message[],
 ) {
-  // nothing to do if there are no images to inject
-  if (!allMessages.some((m) => m.content.includes(imageOmissionDisclaimer))) {
+  // nothing to do if there are no videos to inject
+  if (!allMessages.some((m) => m.content.includes(videoOmissionDisclaimer))) {
     return;
   }
 
   const { userId, activityId } = assistantResponse;
 
   const possibleNumericIds = (
-    await db.query.infoImages.findMany({
-      where: eq(schema.infoImages.activityId, activityId),
+    await db.query.infoVideos.findMany({
+      where: eq(schema.infoVideos.activityId, activityId),
     })
-  ).map((i) => i.numericId);
+  ).map((v) => v.numericId);
 
-  const data = await getImageInjectionData(
+  const data = await getVideoInjectionData(
     userId,
     allMessages,
     possibleNumericIds,
   );
 
   const numericIds = data
-    .map((d) => (d.type === "image" ? d.numericId : null))
+    .map((d) => (d.type === "video" ? d.numericId : null))
     .filter((d): d is number => d !== null);
 
   if (data.length === 0) {
     return;
   }
 
-  const [viewPieces, infoImages] = await Promise.all([
+  const [viewPieces, infoVideos] = await Promise.all([
     db
       .insert(schema.viewPieces)
       .values(
@@ -54,22 +55,22 @@ export async function injectImages(
         })),
       )
       .returning(),
-    db.query.infoImages.findMany({
-      where: inArray(schema.infoImages.numericId, numericIds),
+    db.query.infoVideos.findMany({
+      where: inArray(schema.infoVideos.numericId, numericIds),
     }),
   ]);
   if (
     !data.every((datum) => {
-      if (datum.type === "image") {
-        return infoImages.some((i) => i.numericId === datum.numericId);
+      if (datum.type === "video") {
+        return infoVideos.some((v) => v.numericId === datum.numericId);
       }
       return true;
     })
   ) {
-    throw new Error("Failed to find all info images");
+    throw new Error("Failed to find all info videos");
   }
 
-  const imagePieceDrafts = Array<ViewPieceImage>();
+  const videoPieceDrafts = Array<ViewPieceVideo>();
   const textPieceDrafts = Array<ViewPieceText>();
 
   data.forEach((datum, idx) => {
@@ -89,17 +90,17 @@ export async function injectImages(
         });
         break;
       }
-      case "image": {
-        const infoImage = infoImages.find(
-          (i) => i.numericId === datum.numericId,
+      case "video": {
+        const infoVideo = infoVideos.find(
+          (v) => v.numericId === datum.numericId,
         );
-        if (!infoImage) {
-          throw new Error("Failed to find info image");
+        if (!infoVideo) {
+          throw new Error("Failed to find info video");
         }
-        imagePieceDrafts.push({
+        videoPieceDrafts.push({
           id: crypto.randomUUID(),
           viewPieceId: viewPiece.id,
-          infoImageId: infoImage.id,
+          infoVideoId: infoVideo.id,
           activityId,
           userId,
         });
@@ -111,15 +112,15 @@ export async function injectImages(
     }
   });
 
-  const [viewPieceImages, viewPieceTexts] = await Promise.all([
-    db.insert(schema.viewPieceImages).values(imagePieceDrafts).returning(),
+  const [viewPieceVideos, viewPieceTexts] = await Promise.all([
+    db.insert(schema.viewPieceVideos).values(videoPieceDrafts).returning(),
     db.insert(schema.viewPieceTexts).values(textPieceDrafts).returning(),
   ]);
 
   const descendents = {
     ...createEmptyDescendents(),
     viewPieces,
-    viewPieceImages,
+    viewPieceVideos,
     viewPieceTexts,
   };
   await descendentPubSub.publish(descendents);

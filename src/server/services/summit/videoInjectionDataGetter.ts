@@ -1,19 +1,19 @@
-// src/server/services/summit/imageInjectionDataGetter.ts
+// src/server/services/summit/videoInjectionDataGetter.ts
 import { getLlmResponse } from "~/server/ai/llm";
 import { db } from "~/server/db";
 import { type Message } from "~/server/db/schema";
 import {
-  type ImageInjectionResponse,
-  parseImageInjectionResponse,
-} from "./imageInjectionParser";
-import { imageInjectorPrompt } from "./imageInjectorPrompt";
+  type VideoInjectionResponse,
+  parseVideoInjectionResponse,
+} from "./videoInjectionParser";
+import { videoInjectorPrompt } from "./videoInjectorPrompt";
 
-async function getImageInjectionResponse(
+async function getVideoInjectionResponse(
   userId: string,
   messages: Message[],
   possibleNumericIds: number[],
-): Promise<ImageInjectionResponse> {
-  const prompt = imageInjectorPrompt(messages);
+): Promise<VideoInjectionResponse> {
+  const prompt = videoInjectorPrompt(messages);
 
   const response = await getLlmResponse(
     userId,
@@ -27,10 +27,10 @@ async function getImageInjectionResponse(
     throw response;
   }
 
-  const parsed = parseImageInjectionResponse(response, possibleNumericIds);
+  const parsed = parseVideoInjectionResponse(response, possibleNumericIds);
   if (!parsed.success) {
     console.error(
-      `LLM response in getImageInjectionResponse that could not be parsed:`,
+      `LLM response in getVideoInjectionResponse that could not be parsed:`,
       response,
     );
   }
@@ -38,14 +38,14 @@ async function getImageInjectionResponse(
   return parsed;
 }
 
-export async function getImageInjectionData(
+export async function getVideoInjectionData(
   userId: string,
   messages: Message[],
   possibleNumericIds: number[],
 ) {
-  let response: ImageInjectionResponse | null = null;
+  let response: VideoInjectionResponse | null = null;
   for (let i = 0; i < 3; i++) {
-    response = await getImageInjectionResponse(
+    response = await getVideoInjectionResponse(
       userId,
       messages,
       possibleNumericIds,
@@ -55,11 +55,11 @@ export async function getImageInjectionData(
     }
   }
   if (response === null) {
-    throw new Error("Failed to get image injection response");
+    throw new Error("Failed to get video injection response");
   }
   if (!response.success) {
     throw new Error(
-      `Failed to parse image injection response: ${response.reason}`,
+      `Failed to parse video injection response: ${response.reason}`,
     );
   }
 

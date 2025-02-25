@@ -703,6 +703,46 @@ export const viewPieceImagesRelations = relations(
 );
 export const viewPieceImagesSchema = createSelectSchema(viewPieceImages);
 
+export const viewPieceVideos = pgTable(
+  "view_piece_video",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    viewPieceId: uuid("view_piece_id")
+      .notNull()
+      .references(() => viewPieces.id, { onDelete: "cascade" }),
+    infoVideoId: uuid("info_video_id")
+      .notNull()
+      .references(() => infoVideos.id, { onDelete: "cascade" }),
+  },
+  (vpt) => [
+    index("view_piece_video_activity_id_idx").on(vpt.activityId),
+    index("view_piece_video_user_id_idx").on(vpt.userId),
+    index("view_piece_video_view_piece_id_idx").on(vpt.viewPieceId),
+    index("view_piece_video_info_video_id_idx").on(vpt.infoVideoId),
+  ],
+);
+export type ViewPieceVideo = InferSelectModel<typeof viewPieceVideos>;
+export const viewPieceVideosRelations = relations(
+  viewPieceVideos,
+  ({ one }) => ({
+    viewPiece: one(viewPieces, {
+      fields: [viewPieceVideos.viewPieceId],
+      references: [viewPieces.id],
+    }),
+    infoVideo: one(infoVideos, {
+      fields: [viewPieceVideos.infoVideoId],
+      references: [infoVideos.id],
+    }),
+  }),
+);
+export const viewPieceVideoSchema = createSelectSchema(viewPieceVideos);
+
 export const viewPieceTexts = pgTable(
   "view_piece_text",
   {

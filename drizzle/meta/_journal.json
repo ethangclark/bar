@@ -190,6 +190,13 @@
       "when": 1740455709299,
       "tag": "0026_gifted_rictor",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1740527624527,
+      "tag": "0027_bizarre_natasha_romanoff",
+      "breakpoints": true
     }
   ]
 }
