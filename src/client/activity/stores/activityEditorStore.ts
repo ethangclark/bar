@@ -11,8 +11,8 @@ import {
   isInfoVideoDraftReady,
   isQuestionDraftReady,
 } from "../Item/itemValidator";
-import { type UploadStore } from "../Item/uploadStore";
 import { type DraftStore } from "./draftStore";
+import { type UploadStore } from "./uploadStore";
 
 export class ActivityEditorStore {
   private savingChanges = false;

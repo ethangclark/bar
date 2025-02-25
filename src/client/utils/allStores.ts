@@ -1,5 +1,4 @@
 import { trpc } from "~/trpc/proxy";
-import { UploadStore } from "../activity/Item/uploadStore";
 import { ActivityEditorStore } from "../activity/stores/activityEditorStore";
 import { DescendentStore } from "../activity/stores/descendentStore";
 import { DraftStore } from "../activity/stores/draftStore";
@@ -8,6 +7,7 @@ import { ItemStore } from "../activity/stores/itemStore";
 import { QuestionStore } from "../activity/stores/questionStore";
 import { StudentModeStore } from "../activity/stores/studentModeStore";
 import { ThreadStore } from "../activity/stores/threadStore";
+import { UploadStore } from "../activity/stores/uploadStore";
 import { ViewPieceStore } from "../activity/stores/viewPieceStore";
 import { QueryStore } from "./queryStore";
 
