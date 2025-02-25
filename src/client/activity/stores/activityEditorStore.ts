@@ -11,12 +11,16 @@ import {
   isInfoVideoDraftReady,
   isQuestionDraftReady,
 } from "../Item/itemValidator";
+import { type VideoUploadStore } from "../Item/videoUploadStore";
 import { type DescendentDraftStore } from "./descendentDraftStore";
 
 export class ActivityEditorStore {
   private savingChanges = false;
 
-  constructor(private descendentDraftStore: DescendentDraftStore) {
+  constructor(
+    private descendentDraftStore: DescendentDraftStore,
+    private videoUploadStore: VideoUploadStore,
+  ) {
     makeAutoObservable(this);
   }
 
@@ -67,6 +71,9 @@ export class ActivityEditorStore {
     if (draftStatus.hasProblem) {
       return false;
     }
+    if (this.videoUploadStore.isVideoUploading) {
+      return false;
+    }
     return draftStatus.includesSaveable;
   }
   get canDemo() {
@@ -77,7 +84,9 @@ export class ActivityEditorStore {
     if (draftStatus.hasProblem) {
       return false;
     }
-
+    if (this.videoUploadStore.isVideoUploading) {
+      return false;
+    }
     return !draftStatus.includesSaveable;
   }
 

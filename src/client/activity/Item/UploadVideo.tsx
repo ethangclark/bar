@@ -3,20 +3,23 @@ import { useCallback } from "react";
 import { z } from "zod";
 import { type VideoUploadResponse } from "~/app/api/video/upload/route";
 import { storeObserver } from "~/client/utils/storeObserver";
+import { noop } from "~/common/fnUtils";
 
 export const UploadVideo = storeObserver<{
   children: React.ReactNode;
-  onUploadStarted: () => void;
+  onUploadStarted?: () => void;
   onUploadComplete: (params: { videoId: string }) => void;
   className?: string;
 }>(function UploadVideo({
   children,
-  onUploadStarted,
+  onUploadStarted = noop,
   onUploadComplete,
   className,
+  videoUploadStore,
 }) {
   const doUpload = useCallback(
     async (file: File) => {
+      const { uploadId } = videoUploadStore.noteVideoUploading();
       const formData = new FormData();
       formData.append("video", file);
       try {
@@ -39,9 +42,11 @@ export const UploadVideo = storeObserver<{
         // Could get fancy and include the item number in the error message
         // TODO: show descriptive error state on the failed video items
         void message.error("Video upload failed.");
+      } finally {
+        videoUploadStore.noteVideoUploadComplete({ uploadId });
       }
     },
-    [onUploadStarted, onUploadComplete],
+    [videoUploadStore, onUploadStarted, onUploadComplete],
   );
 
   const actuallyJustDoItManually = useCallback(

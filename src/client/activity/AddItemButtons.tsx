@@ -1,19 +1,18 @@
-import { useState } from "react";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { draftNumericId } from "~/common/draftData";
-import { LoadingCentered } from "../components/Loading";
 import { ControlButton } from "./ControlButton";
 import { UploadVideo } from "./Item/UploadVideo";
 
 export const AddItemButtons = storeObserver(function AddItemButtons({
   descendentDraftStore,
   itemStore,
+  videoUploadStore,
 }) {
-  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const { isVideoUploading } = videoUploadStore;
   return (
     <div className="flex justify-center gap-2">
       <ControlButton
-        disabled={isUploadingVideo}
+        disabled={isVideoUploading}
         onClick={() => {
           descendentDraftStore.createDraft("infoTexts", {
             itemId: itemStore.createItem().id,
@@ -24,7 +23,7 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
         + Add text
       </ControlButton>
       <ControlButton
-        disabled={isUploadingVideo}
+        disabled={isVideoUploading}
         onClick={() => {
           descendentDraftStore.createDraft("infoImages", {
             itemId: itemStore.createItem().id,
@@ -37,7 +36,6 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
         + Add image
       </ControlButton>
       <UploadVideo
-        onUploadStarted={() => setIsUploadingVideo(true)}
         onUploadComplete={({ videoId }) => {
           descendentDraftStore.createDraft("infoVideos", {
             itemId: itemStore.createItem().id,
@@ -45,22 +43,12 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
             textAlternative: "",
             videoId,
           });
-          setIsUploadingVideo(false);
         }}
       >
-        <ControlButton disabled={isUploadingVideo}>
-          <div className="relative">
-            + Add video
-            {isUploadingVideo && (
-              <div className="absolute inset-0">
-                <LoadingCentered />
-              </div>
-            )}
-          </div>
-        </ControlButton>
+        <ControlButton disabled={isVideoUploading}>+ Add video</ControlButton>
       </UploadVideo>
       <ControlButton
-        disabled={isUploadingVideo}
+        disabled={isVideoUploading}
         onClick={() => {
           const q = descendentDraftStore.createDraft("questions", {
             itemId: itemStore.createItem().id,
