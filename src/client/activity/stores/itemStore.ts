@@ -9,7 +9,7 @@ import {
   type ItemWithDescendents,
   type Question,
 } from "~/server/db/schema";
-import { type DescendentDraftStore } from "./descendentDraftStore";
+import { type DraftStore } from "./draftStore";
 import { type QuestionStore } from "./questionStore";
 
 export class ItemStore {
@@ -19,15 +19,15 @@ export class ItemStore {
   private itemIdToInfoVideo: { [key: string]: InfoVideo } = {};
 
   constructor(
-    private descendentDraftStore: DescendentDraftStore,
+    private draftStore: DraftStore,
     private questionStore: QuestionStore,
   ) {
     makeAutoObservable(this);
     autorun(() => {
-      const infoTexts = this.descendentDraftStore.getDrafts("infoTexts");
-      const questions = this.descendentDraftStore.getDrafts("questions");
-      const infoImages = this.descendentDraftStore.getDrafts("infoImages");
-      const infoVideos = this.descendentDraftStore.getDrafts("infoVideos");
+      const infoTexts = this.draftStore.getDrafts("infoTexts");
+      const questions = this.draftStore.getDrafts("questions");
+      const infoImages = this.draftStore.getDrafts("infoImages");
+      const infoVideos = this.draftStore.getDrafts("infoVideos");
       runInAction(() => {
         if (
           infoTexts instanceof Status ||
@@ -58,7 +58,7 @@ export class ItemStore {
   }
 
   get sortedItems() {
-    const items = this.descendentDraftStore.getDrafts("items");
+    const items = this.draftStore.getDrafts("items");
     if (items instanceof Status) {
       return items;
     }
@@ -72,7 +72,7 @@ export class ItemStore {
     if (items instanceof Status) {
       throw new Error("Items are not loaded");
     }
-    const item = this.descendentDraftStore.createDraft("items", {
+    const item = this.draftStore.createDraft("items", {
       orderFracIdx: generateKeyBetween(
         items.slice(-1)[0]?.orderFracIdx ?? null,
         null,

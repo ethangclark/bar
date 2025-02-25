@@ -4,7 +4,7 @@ import { ControlButton } from "./ControlButton";
 import { UploadVideo } from "./Item/UploadVideo";
 
 export const AddItemButtons = storeObserver(function AddItemButtons({
-  descendentDraftStore,
+  draftStore,
   itemStore,
   uploadStore,
 }) {
@@ -14,7 +14,7 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
       <ControlButton
         disabled={isVideoUploading}
         onClick={() => {
-          descendentDraftStore.createDraft("infoTexts", {
+          draftStore.createDraft("infoTexts", {
             itemId: itemStore.createItem().id,
             content: "",
           });
@@ -25,7 +25,7 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
       <ControlButton
         disabled={isVideoUploading}
         onClick={() => {
-          descendentDraftStore.createDraft("infoImages", {
+          draftStore.createDraft("infoImages", {
             itemId: itemStore.createItem().id,
             url: "",
             textAlternative: "",
@@ -37,7 +37,7 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
       </ControlButton>
       <UploadVideo
         onUploadComplete={({ videoId }) => {
-          descendentDraftStore.createDraft("infoVideos", {
+          draftStore.createDraft("infoVideos", {
             itemId: itemStore.createItem().id,
             numericId: draftNumericId,
             textAlternative: "",
@@ -50,13 +50,13 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
       <ControlButton
         disabled={isVideoUploading}
         onClick={() => {
-          const q = descendentDraftStore.createDraft("questions", {
+          const q = draftStore.createDraft("questions", {
             itemId: itemStore.createItem().id,
             content: "",
           });
 
           // we could generate suggestions for this
-          descendentDraftStore.createDraft("evalKeys", {
+          draftStore.createDraft("evalKeys", {
             questionId: q.id,
             content: "",
           });

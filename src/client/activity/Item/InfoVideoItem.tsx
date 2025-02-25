@@ -13,7 +13,7 @@ import { isInfoVideoDraftReady } from "./itemValidator";
 
 export const InfoVideoItem = storeObserver<{
   infoVideoDraft: InfoVideo;
-}>(function InfoVideoItem({ infoVideoDraft, descendentDraftStore }) {
+}>(function InfoVideoItem({ infoVideoDraft, draftStore }) {
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const isOk = isInfoVideoDraftReady(infoVideoDraft);
   return (
@@ -23,7 +23,7 @@ export const InfoVideoItem = storeObserver<{
           className="mr-2"
           onUploadStarted={() => setIsUploadingVideo(true)}
           onUploadComplete={({ videoId }) => {
-            descendentDraftStore.updateDraft("infoVideos", {
+            draftStore.updateDraft("infoVideos", {
               id: infoVideoDraft.id,
               videoId,
             });
@@ -64,7 +64,7 @@ export const InfoVideoItem = storeObserver<{
       <Editor
         value={infoVideoDraft.textAlternative}
         setValue={(value) => {
-          descendentDraftStore.updateDraft("infoVideos", {
+          draftStore.updateDraft("infoVideos", {
             id: infoVideoDraft.id,
             textAlternative: value,
           });

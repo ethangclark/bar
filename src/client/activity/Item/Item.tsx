@@ -56,7 +56,7 @@ function getItemTitle(item: ItemWithDescendents): string {
 }
 
 export const Item = storeObserver<CustomProps>(function Item(props) {
-  const { item, itemNumber, deleted, descendentDraftStore } = props;
+  const { item, itemNumber, deleted, draftStore } = props;
 
   return (
     <div className="mb-12 flex w-full flex-col items-center">
@@ -66,10 +66,10 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
           <TypeTitle>{getItemTitle(item)}</TypeTitle>
         </div>
         <Typography.Link
-          onClick={() => descendentDraftStore.toggleDeletion(item.id)}
+          onClick={() => draftStore.toggleDeletion(item.id)}
           className="text-xs"
         >
-          {descendentDraftStore.isDeletedDraft(item.id) ? (
+          {draftStore.isDeletedDraft(item.id) ? (
             "Restore"
           ) : (
             <span className="text-gray-500 hover:text-red-500">Delete</span>

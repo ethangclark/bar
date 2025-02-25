@@ -5,7 +5,7 @@ import { isEvalKeyDraftReady, isQuestionDraftReady } from "./itemValidator";
 
 export const QuestionItem = storeObserver<{
   question: Question;
-}>(function Question({ question, questionStore, descendentDraftStore }) {
+}>(function Question({ question, questionStore, draftStore }) {
   const evalKey = questionStore.getEvalKey(question.id);
   const questionOk = isQuestionDraftReady(question);
   const evalKeyOk = isEvalKeyDraftReady(evalKey);
@@ -17,7 +17,7 @@ export const QuestionItem = storeObserver<{
           placeholder="Insert question here..."
           value={question.content}
           setValue={(v) => {
-            descendentDraftStore.updateDraft("questions", {
+            draftStore.updateDraft("questions", {
               id: question.id,
               content: v,
             });
@@ -32,7 +32,7 @@ export const QuestionItem = storeObserver<{
             placeholder="Insert answer here..."
             value={evalKey.content}
             setValue={(v) => {
-              descendentDraftStore.updateDraft("evalKeys", {
+              draftStore.updateDraft("evalKeys", {
                 id: evalKey.id,
                 content: v,
               });

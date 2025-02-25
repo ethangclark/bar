@@ -13,7 +13,7 @@ import {
 
 export const InfoImageItem = storeObserver<{
   infoImage: InfoImage;
-}>(function InfoImage({ infoImage, descendentDraftStore }) {
+}>(function InfoImage({ infoImage, draftStore }) {
   const imageOk = isInfoImageDraftImageReady(infoImage);
   const textOk = isInfoImageDraftTextReady(infoImage);
   return (
@@ -28,7 +28,7 @@ export const InfoImageItem = storeObserver<{
           className={infoImage.url ? "" : "text-red-500"}
           label={imageOk ? "Replace image" : "Click here to upload image"}
           onFileSelect={({ imageDataUrl }) => {
-            descendentDraftStore.updateDraft("infoImages", {
+            draftStore.updateDraft("infoImages", {
               id: infoImage.id,
               url: imageDataUrl,
             });
@@ -49,7 +49,7 @@ export const InfoImageItem = storeObserver<{
       <Editor
         value={infoImage.textAlternative}
         setValue={(v) => {
-          descendentDraftStore.updateDraft("infoImages", {
+          draftStore.updateDraft("infoImages", {
             id: infoImage.id,
             textAlternative: v,
           });

@@ -5,14 +5,14 @@ import { isInfoTextDraftReady } from "./itemValidator";
 
 export const InfoTextItem = storeObserver<{
   infoText: InfoText;
-}>(function InfoText({ infoText, descendentDraftStore }) {
+}>(function InfoText({ infoText, draftStore }) {
   const isOk = isInfoTextDraftReady(infoText);
   return (
     <div key={infoText.id} className="w-full">
       <Editor
         value={infoText.content}
         setValue={(v) => {
-          descendentDraftStore.updateDraft("infoTexts", {
+          draftStore.updateDraft("infoTexts", {
             id: infoText.id,
             content: v,
           });

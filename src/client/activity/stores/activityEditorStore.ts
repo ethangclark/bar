@@ -12,13 +12,13 @@ import {
   isQuestionDraftReady,
 } from "../Item/itemValidator";
 import { type UploadStore } from "../Item/uploadStore";
-import { type DescendentDraftStore } from "./descendentDraftStore";
+import { type DraftStore } from "./draftStore";
 
 export class ActivityEditorStore {
   private savingChanges = false;
 
   constructor(
-    private descendentDraftStore: DescendentDraftStore,
+    private draftStore: DraftStore,
     private uploadStore: UploadStore,
   ) {
     makeAutoObservable(this);
@@ -28,7 +28,7 @@ export class ActivityEditorStore {
     descendentName: T,
     isReady: (item: DescendentRows[T]) => boolean,
   ) {
-    const drafts = this.descendentDraftStore.getChangedItems(descendentName);
+    const drafts = this.draftStore.getChangedItems(descendentName);
     if (drafts instanceof Status) {
       return { isLoading: true, hasProblem: false, includesSaveable: false };
     }
@@ -40,7 +40,7 @@ export class ActivityEditorStore {
   }
 
   get draftStatus() {
-    const items = this.descendentDraftStore.getChangedItems("items");
+    const items = this.draftStore.getChangedItems("items");
     const itemsStatus = {
       isLoading: items instanceof Status,
       hasProblem: false,
@@ -92,7 +92,7 @@ export class ActivityEditorStore {
 
   async save() {
     this.savingChanges = true;
-    await this.descendentDraftStore.saveChanges();
+    await this.draftStore.saveChanges();
     this.savingChanges = false;
   }
 
