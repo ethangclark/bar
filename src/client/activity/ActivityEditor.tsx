@@ -15,7 +15,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
   descendentDraftStore,
   itemStore,
   activityEditorStore,
-  videoUploadStore,
+  uploadStore,
 }) {
   const { data } = focusedActivityStore;
   const { sortedItems } = itemStore;
@@ -45,7 +45,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
             saving={
               titleSaving ||
               activityEditorStore.isSaving ||
-              videoUploadStore.isVideoUploading
+              uploadStore.isVideoUploading
             }
           />
         </div>

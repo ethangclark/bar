@@ -1,23 +1,23 @@
 import { makeAutoObservable, observable } from "mobx";
 
-export class VideoUploadStore {
+export class UploadStore {
   private uploadIds = observable.set<string>();
 
   constructor() {
     makeAutoObservable(this);
   }
 
-  get isVideoUploading() {
+  get isSomethingUploading() {
     return this.uploadIds.size > 0;
   }
 
-  noteVideoUploading() {
+  noteUploadStarted() {
     const uploadId = crypto.randomUUID();
     this.uploadIds.add(uploadId);
     return { uploadId };
   }
 
-  noteVideoUploadComplete({ uploadId }: { uploadId: string }) {
+  noteUploadComplete({ uploadId }: { uploadId: string }) {
     this.uploadIds.delete(uploadId);
   }
 }

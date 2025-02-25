@@ -6,9 +6,9 @@ import { UploadVideo } from "./Item/UploadVideo";
 export const AddItemButtons = storeObserver(function AddItemButtons({
   descendentDraftStore,
   itemStore,
-  videoUploadStore,
+  uploadStore,
 }) {
-  const { isVideoUploading } = videoUploadStore;
+  const { isVideoUploading } = uploadStore;
   return (
     <div className="flex justify-center gap-2">
       <ControlButton
