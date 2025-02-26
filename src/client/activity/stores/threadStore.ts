@@ -45,9 +45,10 @@ export class ThreadStore {
     if (messages instanceof Status) {
       return messages;
     }
-    return messages
+    const v = messages
       .filter((m) => m.threadId === this.selectedThreadId)
       .sort((m1, m2) => m1.createdAt.getTime() - m2.createdAt.getTime());
+    return v;
   }
 
   get lastMessageComplete() {

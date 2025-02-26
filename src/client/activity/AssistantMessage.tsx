@@ -16,6 +16,7 @@ export const AssistantMessage = storeObserver<{
   viewPieceStore,
 }) {
   const children = viewPieceStore.viewPieceChildren(message.id);
+
   if (children) {
     return (
       <>

@@ -48,9 +48,18 @@ export async function injectMedia(
       .then((videos) => videos.map((v) => v.numericId)),
   ]);
 
+  const lastAssistantMessage = allMessages
+    .slice()
+    .reverse()
+    .find((m) => m.senderRole === "assistant")?.content;
+
+  if (!lastAssistantMessage) {
+    return;
+  }
+
   const data = await getMediaInjectionData(
     userId,
-    allMessages,
+    lastAssistantMessage,
     possibleImageIds,
     possibleVideoIds,
   );
