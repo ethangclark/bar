@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
 import { Status } from "~/client/utils/status";
 import {
   type DescendentName,
@@ -93,7 +93,9 @@ export class EditorStore {
   async save() {
     this.savingChanges = true;
     await this.draftStore.saveChanges();
-    this.savingChanges = false;
+    runInAction(() => {
+      this.savingChanges = false;
+    });
   }
 
   get isSaving() {

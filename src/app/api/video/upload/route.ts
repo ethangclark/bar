@@ -1,6 +1,6 @@
 // app/api/upload/route.ts
 
-import { eq, notInArray } from "drizzle-orm";
+import { and, eq, lt, notInArray, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { Readable } from "stream";
 import { assertError, assertOne } from "~/common/assertions";
@@ -18,10 +18,16 @@ export type VideoUploadResponse = {
 // Function to clean up orphaned videos
 async function cleanupOrphanedVideos() {
   // Find videos that aren't referenced by any infoVideo
+  // and that were created more than 7 days ago
+  // (newer ones might have a draft waiting to be saved that references them)
+  const oneWeekAgo = sql`NOW() - INTERVAL '7 days'`;
   const orphanedVideos = await db.query.videos.findMany({
-    where: notInArray(
-      videos.id,
-      db.select({ id: infoVideos.videoId }).from(infoVideos),
+    where: and(
+      notInArray(
+        videos.id,
+        db.select({ id: infoVideos.videoId }).from(infoVideos),
+      ),
+      lt(videos.createdAt, oneWeekAgo),
     ),
   });
 

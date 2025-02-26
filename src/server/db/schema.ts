@@ -501,6 +501,9 @@ export const videos = pgTable(
   "video",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     cloudinaryPublicExId: text("cloudinary_public_ex_id").notNull(),
     cloudinarySecureUrl: text("cloudinary_secure_url").notNull(),
     cloudinaryAudioUrl: text("cloudinary_audio_url"), // null if no audio track
