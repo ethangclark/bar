@@ -12,6 +12,7 @@ import {
   viewPieceImagesSchema,
   viewPieceSchema,
   viewPieceTextSchema,
+  viewPieceVideoSchema,
 } from "~/server/db/schema";
 import { clone } from "./cloneUtils";
 import type { EnrollmentType } from "./enrollmentTypeUtils";
@@ -35,6 +36,7 @@ export const descendentNames = [
   "viewPieces",
   "viewPieceImages",
   "viewPieceTexts",
+  "viewPieceVideos",
 ] as const;
 
 export const descendentNamesSchema = z.enum(descendentNames);
@@ -52,6 +54,7 @@ export const descendentsSchema = z.object({
   viewPieces: z.array(viewPieceSchema),
   viewPieceImages: z.array(viewPieceImagesSchema),
   viewPieceTexts: z.array(viewPieceTextSchema),
+  viewPieceVideos: z.array(viewPieceVideoSchema),
 }) satisfies z.ZodType<{
   [K in DescendentName]: unknown;
 }>;

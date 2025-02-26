@@ -10,6 +10,12 @@ type ViewPieceChildren = Array<
       key: string;
     }
   | {
+      type: "video";
+      videoId: string;
+      textAlternative: string;
+      key: string;
+    }
+  | {
       type: "text";
       content: string;
       key: string;
@@ -28,16 +34,20 @@ export class ViewPieceStore {
   // all in descendentStore)
   viewPieceChildren(messageId: string): ViewPieceChildren | null {
     const viewPieces = this.descendentStore.get("viewPieces");
-    const vpis = this.descendentStore.get("viewPieceImages");
-    const vpts = this.descendentStore.get("viewPieceTexts");
+    const vpImages = this.descendentStore.get("viewPieceImages");
+    const vpTexts = this.descendentStore.get("viewPieceTexts");
+    const vpVideos = this.descendentStore.get("viewPieceVideos");
     const infoImages = this.descendentStore.get("infoImages");
+    const infoVideos = this.descendentStore.get("infoVideos");
     const infoTexts = this.descendentStore.get("infoTexts");
 
     if (
       viewPieces instanceof Status ||
-      vpis instanceof Status ||
-      vpts instanceof Status ||
+      vpImages instanceof Status ||
+      vpTexts instanceof Status ||
+      vpVideos instanceof Status ||
       infoImages instanceof Status ||
+      infoVideos instanceof Status ||
       infoTexts instanceof Status
     ) {
       return null;
@@ -47,7 +57,7 @@ export class ViewPieceStore {
       .filter((vp) => vp.messageId === messageId)
       .sort((a, b) => a.order - b.order);
     for (const vp of matchingVps) {
-      vpis
+      vpImages
         .filter((vpi) => vpi.viewPieceId === vp.id)
         .forEach((vpi) => {
           const ii = infoImages.find((ii) => ii.id === vpi.infoImageId);
@@ -61,7 +71,21 @@ export class ViewPieceStore {
             key: vp.id,
           });
         });
-      vpts
+      vpVideos
+        .filter((vpv) => vpv.viewPieceId === vp.id)
+        .forEach((vpv) => {
+          const iv = infoVideos.find((iv) => iv.id === vpv.infoVideoId);
+          if (!iv) {
+            return;
+          }
+          children.push({
+            type: "video",
+            videoId: iv.videoId,
+            textAlternative: iv.textAlternative,
+            key: vp.id,
+          });
+        });
+      vpTexts
         .filter((vpt) => vpt.viewPieceId === vp.id)
         .forEach((vpt) => {
           children.push({

@@ -23,6 +23,7 @@ import { threadController } from "./threadController";
 import { viewPieceController } from "./viewPieceController";
 import { viewPieceImageController } from "./viewPieceImageController";
 import { viewPieceTextController } from "./viewPieceTextController";
+import { viewPieceVideoController } from "./viewPieceVideoController";
 
 type Controllers = {
   [K in DescendentName]: DescendentController<DescendentRows[K]>;
@@ -40,6 +41,7 @@ export const controllers: Controllers = {
   viewPieces: viewPieceController,
   viewPieceImages: viewPieceImageController,
   viewPieceTexts: viewPieceTextController,
+  viewPieceVideos: viewPieceVideoController,
 };
 
 export async function createDescendents({

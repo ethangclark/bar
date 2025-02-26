@@ -2,6 +2,7 @@ import { assertTypesExhausted } from "~/common/assertions";
 import { type Message } from "~/server/db/schema";
 import { Image } from "../components/Image";
 import { PreformattedText } from "../components/PreformattedText";
+import { Video } from "../components/Video";
 import { storeObserver } from "../utils/storeObserver";
 import { MessageView } from "./MessageView";
 
@@ -31,6 +32,17 @@ export const AssistantMessage = storeObserver<{
                   scrollToBottom={scrollToBottom}
                 >
                   <Image alt={child.textAlternative} url={child.url} />
+                </MessageView>
+              );
+            case "video":
+              return (
+                <MessageView
+                  key={child.key}
+                  isLastMessage={isLastMessage && i === children.length - 1}
+                  messageLength={child.textAlternative.length}
+                  scrollToBottom={scrollToBottom}
+                >
+                  <Video videoId={child.videoId} />
                 </MessageView>
               );
             case "text":

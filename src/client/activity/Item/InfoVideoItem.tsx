@@ -2,9 +2,9 @@ import { UploadOutlined } from "@ant-design/icons";
 import { Button, Tooltip } from "antd";
 import { CircleHelp } from "lucide-react";
 import { useState } from "react";
-import { type VideoIdParam } from "~/app/api/video/stream/route";
 import { Editor } from "~/client/components/Editor";
 import { LoadingCentered } from "~/client/components/Loading";
+import { Video } from "~/client/components/Video";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { type InfoVideo } from "~/server/db/schema";
 import { TypeTitle } from "./Layout";
@@ -35,12 +35,9 @@ export const InfoVideoItem = storeObserver<{
       </div>
 
       <div className="relative mb-2">
-        <video
+        <Video
+          videoId={infoVideoDraft.videoId}
           className={isUploadingVideo ? "invisible" : "visible"}
-          width="640"
-          height="360"
-          controls
-          src={`/api/video/stream?${"videoId" satisfies VideoIdParam}=${infoVideoDraft.videoId}`}
         />
 
         {isUploadingVideo && (
