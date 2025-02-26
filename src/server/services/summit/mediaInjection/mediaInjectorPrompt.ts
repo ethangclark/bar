@@ -17,7 +17,7 @@ Please do the following:
 
 1. Identify whether the message describes specific images or videos
 2. If it does not, reply with "<no-media></no-media>"
-3. If it does, rewrite the message using the format described below. This format will allow the system to render the media so the student can see it.
+3. If it does, rewrite it, adding <image> and <video> tags strategically to show where in the message the image or video should be rendered.
 
 Here's the format to use:
 
@@ -32,7 +32,7 @@ Here's an example of what a response should look like:
 <text>
 Great job! Let's move on to the next items.
 
-To start with: The mitochondria are the powerhouse of the cell. They live in the cell's cytoplasm.
+To start with: The mitochondria are the powerhouse of the cell. They live in the cell's cytoplasm, as shown in image ${numericIdToImageNumber(exampleImageNumericId)} below:
 </text>
 
 <image>${numericIdToImageNumber(exampleImageNumericId)}</image>
