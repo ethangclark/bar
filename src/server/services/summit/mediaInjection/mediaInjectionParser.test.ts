@@ -2,23 +2,38 @@
 import { parseMediaInjectionResponse } from "./mediaInjectionParser";
 
 describe("parseMediaInjectionResponse", () => {
+  it("returns empty array when input contains <no-media> tag", () => {
+    const input =
+      "This text has <image>1042</image> but also has <no-media> so it should return empty array";
+    const result = parseMediaInjectionResponse(input, [42], [7]);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual([]);
+    }
+  });
+
   it("parses valid string with text, image, and video tags", () => {
     const input =
-      "Some preamble <text>Hello, world!</text> in-between <image>1042</image> and <video>2007</video> postamble.";
+      "Some preamble Hello, world! in-between <image>1042</image> and <video>2007</video> postamble.";
     const result = parseMediaInjectionResponse(input, [42], [7]);
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data).toEqual([
-        { type: "text", textContent: "Hello, world!" },
+        {
+          type: "text",
+          textContent: "Some preamble Hello, world! in-between ",
+        },
         { type: "image", numericId: 42 },
+        { type: "text", textContent: " and " },
         { type: "video", numericId: 7 },
+        { type: "text", textContent: " postamble." },
       ]);
     }
   });
 
-  it("parses valid string with multiple tags of each type", () => {
+  it("parses valid string with multiple tags", () => {
     const input =
-      "<text>First</text><image>1007</image><text>Second</text><video>2003</video><text>Third</text><image>1008</image><video>2004</video>";
+      "First<image>1007</image>Second<video>2003</video>Third<image>1008</image><video>2004</video>";
     const result = parseMediaInjectionResponse(input, [7, 8], [3, 4]);
     expect(result.success).toBe(true);
     if (result.success) {
@@ -36,38 +51,31 @@ describe("parseMediaInjectionResponse", () => {
 
   it("handles whitespace in tag content", () => {
     const input =
-      "<text>\n  Spaced content  \n</text><image>  1007  </image><video>\n2003\n</video>";
+      "Spaced content<image>  1007  </image><video>\n2003\n</video>";
     const result = parseMediaInjectionResponse(input, [7], [3]);
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data).toEqual([
-        { type: "text", textContent: "\n  Spaced content  \n" },
+        { type: "text", textContent: "Spaced content" },
         { type: "image", numericId: 7 },
         { type: "video", numericId: 3 },
       ]);
     }
   });
 
-  it("ignores content outside of tags", () => {
+  it("treats content outside of tags as text", () => {
     const input =
-      "Random text <text>Inside</text> more random <image>1003</image> extra text <video>2005</video> final text.";
+      "Random text before <image>1003</image> text in the middle <video>2005</video> final text.";
     const result = parseMediaInjectionResponse(input, [3], [5]);
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data).toEqual([
-        { type: "text", textContent: "Inside" },
+        { type: "text", textContent: "Random text before " },
         { type: "image", numericId: 3 },
+        { type: "text", textContent: " text in the middle " },
         { type: "video", numericId: 5 },
+        { type: "text", textContent: " final text." },
       ]);
-    }
-  });
-
-  it("returns error when <text> tags are mismatched", () => {
-    const input = "Some content <text>Missing closing tag";
-    const result = parseMediaInjectionResponse(input, [], []);
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.reason).toBe("Mismatched <text> tags");
     }
   });
 
@@ -90,7 +98,7 @@ describe("parseMediaInjectionResponse", () => {
   });
 
   it("returns error when image content is not a valid number", () => {
-    const input = "<image>not-a-number</image>";
+    const input = "Text before <image>not-a-number</image> text after";
     const result = parseMediaInjectionResponse(input, [], []);
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -99,7 +107,7 @@ describe("parseMediaInjectionResponse", () => {
   });
 
   it("returns error when video content is not a valid number", () => {
-    const input = "<video>not-a-number</video>";
+    const input = "Text before <video>not-a-number</video> text after";
     const result = parseMediaInjectionResponse(input, [], []);
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -108,7 +116,7 @@ describe("parseMediaInjectionResponse", () => {
   });
 
   it("returns an error when an image number is not in the list of possible image ids", () => {
-    const input = "<image>1123</image>";
+    const input = "Text before <image>1123</image> text after";
     const result = parseMediaInjectionResponse(input, [456], []);
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -117,7 +125,7 @@ describe("parseMediaInjectionResponse", () => {
   });
 
   it("returns an error when a video number is not in the list of possible video ids", () => {
-    const input = "<video>2123</video>";
+    const input = "Text before <video>2123</video> text after";
     const result = parseMediaInjectionResponse(input, [], [456]);
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -125,30 +133,54 @@ describe("parseMediaInjectionResponse", () => {
     }
   });
 
-  it("correctly handles nested content within text tags", () => {
-    const input = "<text>This is <b>bold</b> and <i>italic</i> text</text>";
+  it("correctly handles HTML-like content in text", () => {
+    const input =
+      "This is <b>bold</b> and <i>italic</i> text <image>1042</image>";
+    const result = parseMediaInjectionResponse(input, [42], []);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual([
+        {
+          type: "text",
+          textContent: "This is <b>bold</b> and <i>italic</i> text ",
+        },
+        { type: "image", numericId: 42 },
+      ]);
+    }
+  });
+
+  it("handles input with only media tags and no text", () => {
+    const input = "<image>1042</image><video>2007</video>";
+    const result = parseMediaInjectionResponse(input, [42], [7]);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual([
+        { type: "image", numericId: 42 },
+        { type: "video", numericId: 7 },
+      ]);
+    }
+  });
+
+  it("handles input with only text and no media tags", () => {
+    const input = "This is just plain text with no media tags.";
     const result = parseMediaInjectionResponse(input, [], []);
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data).toEqual([
         {
           type: "text",
-          textContent: "This is <b>bold</b> and <i>italic</i> text",
+          textContent: "This is just plain text with no media tags.",
         },
       ]);
     }
   });
 
-  it("handles empty tags", () => {
-    const input = "<text></text><image>1042</image><video>2007</video>";
-    const result = parseMediaInjectionResponse(input, [42], [7]);
+  it("handles empty input", () => {
+    const input = "";
+    const result = parseMediaInjectionResponse(input, [], []);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data).toEqual([
-        { type: "text", textContent: "" },
-        { type: "image", numericId: 42 },
-        { type: "video", numericId: 7 },
-      ]);
+      expect(result.data).toEqual([]);
     }
   });
 });

@@ -1,11 +1,4 @@
 // src/server/services/summit/mediaInjectorPrompt.ts
-import {
-  numericIdToImageNumber,
-  numericIdToVideoNumber,
-} from "~/common/idUtils";
-
-const exampleImageNumericId = 5789;
-const exampleVideoNumericId = 3;
 
 export const mediaInjectorPrompt = ({
   lastAssistantMessage,
@@ -19,37 +12,61 @@ Please do the following:
 2. If it does not, reply with "<no-media></no-media>"
 3. If it does, rewrite it, adding <image> and <video> tags strategically to show where in the message the image or video should be rendered.
 
-Here's the format to use:
+You can show images and videos to the student by wrapping image and video numbers in <image> and <video> tags. Here's an example of how you might do that:
 
-<text>All the message content that goes before the media</text>
-<image>The image number, such as ${numericIdToImageNumber(exampleImageNumericId)}</image>
-<text>All the message content that goes between media elements</text>
-<video>The video number, such as ${numericIdToVideoNumber(exampleVideoNumericId)}</video>
-<text>All the message content that goes after the media</text>
+\`\`\`
+Following is image 1000, which is a picture of a mitochondrion:
 
-Here's an example of what a response should look like:
+<image>1000</image>
 
-<text>
-Great job! Let's move on to the next items.
+This image shows details of the mitochondrial membrane and mitochondrial DNA.
+\`\`\`
 
-To start with: The mitochondria are the powerhouse of the cell. They live in the cell's cytoplasm, as shown in image ${numericIdToImageNumber(exampleImageNumericId)} below:
-</text>
+Notice how the sentence "Following is image 1000, which is a picture of a mitochondrion:" does NOT include the <image> tag, and the "<image>1000</image>" tag is on its own line. This is very important! Do NOT include XML tags in sentences -- they should be on their own lines.
 
-<image>${numericIdToImageNumber(exampleImageNumericId)}</image>
+Here are some more examples:
 
-<text>
-In image ${numericIdToImageNumber(exampleImageNumericId)} above, you can see the mitochondria shown in purple, floating in the cytoplasm.
+\`\`\`
+Following is image 42, which is a picture of a volcanic eruption:
 
-Now let's watch a video about cell division:
-</text>
+<image>42</image>
 
-<video>${numericIdToVideoNumber(exampleVideoNumericId)}</video>
+This image shows the dramatic lava flow and ash cloud from Mount Etna's recent activity.
+\`\`\`
 
-<text>
-As you can see in video ${numericIdToVideoNumber(exampleVideoNumericId)} above, the cell divides into two daughter cells.
+\`\`\`
+Following is video 7893, which is footage of an Olympic gymnastics routine:
 
-Let's continue with our discussion...
-</text>
+<video>7893</video>
+
+This video captures the gold medal floor exercise with impressive aerial maneuvers and perfect landings.
+\`\`\`
+
+\`\`\`
+Following is image 361, which is a picture of a rare astronomical event:
+
+<image>361</image>
+
+This image shows the transit of Venus across the sun, captured with specialized solar filtering equipment.
+\`\`\`
+
+\`\`\`
+Following is video 12458, which is footage of wildlife in the Serengeti:
+
+<video>12458</video>
+
+This video documents a cheetah hunt, showcasing the predator's remarkable speed and hunting strategy.
+\`\`\`
+
+\`\`\`
+Following is image 9001, which is a picture of ancient hieroglyphics:
+
+<image>9001</image>
+
+This image displays recently discovered inscriptions from the Temple of Karnak with detailed cartouches of Ramses II.
+\`\`\`
+
+ALWAYS put <image> and <video> tags on their own line! Do NOT mix them in with regular sentences -- there should be a paragraph break between regular text and these tags.
 
 Here's the message you're analyzing:
 

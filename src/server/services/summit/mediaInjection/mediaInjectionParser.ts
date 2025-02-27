@@ -1,4 +1,4 @@
-// src/server/services/summit/mediaInjectionParser.ts
+// src/server/services/summit/mediaInjection/mediaInjectionParser.ts
 import {
   imageNumberToNumericId,
   videoNumberToNumericId,
@@ -22,10 +22,9 @@ export function parseMediaInjectionResponse(
   possibleImageIds: number[],
   possibleVideoIds: number[],
 ): MediaInjectionResponse {
-  const textOpenCount = (input.match(/<text>/g) ?? []).length;
-  const textCloseCount = (input.match(/<\/text>/g) ?? []).length;
-  if (textOpenCount !== textCloseCount) {
-    return { success: false, reason: "Mismatched <text> tags" };
+  // Check for <no-media> tag and return empty array if found
+  if (input.includes("<no-media>")) {
+    return { success: true, data: [] };
   }
 
   const imageOpenCount = (input.match(/<image>/g) ?? []).length;
@@ -40,20 +39,31 @@ export function parseMediaInjectionResponse(
     return { success: false, reason: "Mismatched <video> tags" };
   }
 
-  const tagRegex = /<(text|image|video)>([\s\S]*?)<\/\1>/g;
-  let match: RegExpExecArray | null;
+  // Match both image and video tags
+  const tagRegex = /<(image|video)>([\s\S]*?)<\/\1>/g;
   const results: MediaInjectionData = [];
 
-  while ((match = tagRegex.exec(input)) !== null) {
-    const tagType = match[1] as MediaType;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const content = match[2]!;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
 
-    if (tagType === "text") {
-      results.push({ type: "text", textContent: content });
-    } else if (tagType === "image") {
-      const trimmed = content.trim();
-      const imageNumber = Number(trimmed);
+  // Process the input string sequentially
+  while ((match = tagRegex.exec(input)) !== null) {
+    // If there's text before this tag, add it as a text item
+    if (match.index > lastIndex) {
+      const textContent = input.substring(lastIndex, match.index);
+      if (textContent) {
+        results.push({ type: "text", textContent });
+      }
+    }
+
+    const tagType = match[1] as "image" | "video";
+    if (!match[2]) {
+      return { success: false, reason: "No content found for tag" };
+    }
+    const content = match[2].trim();
+
+    if (tagType === "image") {
+      const imageNumber = Number(content);
       if (Number.isNaN(imageNumber)) {
         return { success: false, reason: `Invalid image number: "${content}"` };
       }
@@ -63,8 +73,7 @@ export function parseMediaInjectionResponse(
       }
       results.push({ type: "image", numericId });
     } else if (tagType === "video") {
-      const trimmed = content.trim();
-      const videoNumber = Number(trimmed);
+      const videoNumber = Number(content);
       if (Number.isNaN(videoNumber)) {
         return { success: false, reason: `Invalid video number: "${content}"` };
       }
@@ -73,6 +82,17 @@ export function parseMediaInjectionResponse(
         return { success: false, reason: `Invalid video number: "${content}"` };
       }
       results.push({ type: "video", numericId });
+    }
+
+    // Update lastIndex to after this tag
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add any remaining text after the last tag
+  if (lastIndex < input.length) {
+    const textContent = input.substring(lastIndex);
+    if (textContent) {
+      results.push({ type: "text", textContent });
     }
   }
 
