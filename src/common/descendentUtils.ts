@@ -5,6 +5,7 @@ import {
   infoImageSchema,
   infoTextSchema,
   infoVideoSchema,
+  itemCompletionSchema,
   itemSchema,
   messageSchema,
   questionSchema,
@@ -37,6 +38,7 @@ export const descendentNames = [
   "viewPieceImages",
   "viewPieceTexts",
   "viewPieceVideos",
+  "itemCompletions",
 ] as const;
 
 export const descendentNamesSchema = z.enum(descendentNames);
@@ -55,6 +57,7 @@ export const descendentsSchema = z.object({
   viewPieceImages: z.array(viewPieceImagesSchema),
   viewPieceTexts: z.array(viewPieceTextSchema),
   viewPieceVideos: z.array(viewPieceVideoSchema),
+  itemCompletions: z.array(itemCompletionSchema),
 }) satisfies z.ZodType<{
   [K in DescendentName]: unknown;
 }>;

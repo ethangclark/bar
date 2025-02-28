@@ -248,7 +248,7 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
   infoVideos: many(infoVideos),
   threads: many(threads),
   messages: many(messages),
-
+  itemCompletions: many(itemCompletions),
   // should be exactly one of these
   adHocActivity: one(adHocActivities),
   integrationActivity: one(integrationActivities),
@@ -585,6 +585,54 @@ export const threadsRelations = relations(threads, ({ one, many }) => ({
   messages: many(messages),
 }));
 export const threadSchema = createSelectSchema(threads);
+
+export const itemCompletions = pgTable(
+  "item_completion",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    threadId: uuid("thread_id")
+      .notNull()
+      .references(() => threads.id, { onDelete: "cascade" }),
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => items.id, { onDelete: "cascade" }),
+  },
+  (ic) => [
+    index("item_completion_activity_id_idx").on(ic.activityId),
+    index("item_completion_user_id_idx").on(ic.userId),
+    index("item_completion_thread_id_idx").on(ic.threadId),
+    index("item_completion_item_id_idx").on(ic.itemId),
+  ],
+);
+export type ItemCompletion = InferSelectModel<typeof itemCompletions>;
+export const itemCompletionsRelations = relations(
+  itemCompletions,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [itemCompletions.activityId],
+      references: [activities.id],
+    }),
+    user: one(users, {
+      fields: [itemCompletions.userId],
+      references: [users.id],
+    }),
+    thread: one(threads, {
+      fields: [itemCompletions.threadId],
+      references: [threads.id],
+    }),
+    item: one(items, {
+      fields: [itemCompletions.itemId],
+      references: [items.id],
+    }),
+  }),
+);
+export const itemCompletionSchema = createSelectSchema(itemCompletions);
 
 export const senderRoleEnum = pgEnum("sender_role", [
   "user",

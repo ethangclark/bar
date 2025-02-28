@@ -16,6 +16,7 @@ import { evalKeyController } from "./evalKeyController";
 import { infoImageController } from "./infoImageController";
 import { infoTextController } from "./infoTextController";
 import { infoVideoController } from "./infoVideoController";
+import { itemCompletionController } from "./itemCompletionController";
 import { itemController } from "./itemController";
 import { messageController } from "./messageController";
 import { questionController } from "./questionController";
@@ -42,6 +43,7 @@ export const controllers: Controllers = {
   viewPieceImages: viewPieceImageController,
   viewPieceTexts: viewPieceTextController,
   viewPieceVideos: viewPieceVideoController,
+  itemCompletions: itemCompletionController,
 };
 
 export async function createDescendents({
