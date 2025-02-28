@@ -1,5 +1,5 @@
 import superjson from "superjson";
-import { SuperJSONValue } from "~/common/types";
+import { type SuperJSONValue } from "~/common/types";
 import { sendEmail } from "./sendEmail";
 
 export async function notifyAdmin(subject: string, detail: SuperJSONValue) {
