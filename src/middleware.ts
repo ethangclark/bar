@@ -17,3 +17,8 @@ export async function middleware(request: NextRequest) {
   }
   return NextResponse.next();
 }
+
+// see login/README.md for more details
+export const config = {
+  matcher: "/((?!login$).*)",
+};

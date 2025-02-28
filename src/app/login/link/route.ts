@@ -9,6 +9,8 @@ import { db, schema } from "~/server/db";
 import { loginUser } from "~/server/services/authService";
 import { getIpAddress, sessionCookieName } from "~/server/utils";
 
+// see login/README.md for more details
+
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const loginToken = url.searchParams.get(loginTokenQueryParam);
