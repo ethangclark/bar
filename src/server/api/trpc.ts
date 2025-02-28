@@ -11,9 +11,10 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { eq } from "drizzle-orm";
-import { assertOneOrNone } from "~/common/assertions";
+import { assertOne } from "~/common/assertions";
 import { db, schema } from "~/server/db";
 import { queryUser } from "~/server/services/userService";
+import { type Session, type User } from "../db/schema";
 import { notifyAdmin } from "../services/email/notifyAdmin";
 import { getIpAddress } from "../utils";
 
@@ -32,13 +33,27 @@ import { getIpAddress } from "../utils";
 export const createTRPCContext = async (opts: {
   headers: Headers;
   sessionCookieValue: string | null;
-}) => {
+}): Promise<
+  { ipAddress: string } & (
+    | { session: null; user: null; userId: null }
+    | { session: Session; user: null; userId: null }
+    | { session: Session; user: User; userId: string }
+  )
+> => {
   const ipAddress = getIpAddress((headerName) => opts.headers.get(headerName));
 
+  if (!opts.sessionCookieValue) {
+    return {
+      ipAddress,
+      session: null,
+      user: null,
+      userId: null,
+    };
+  }
   const sessions = await db
     .insert(schema.sessions)
     .values({
-      sessionCookieValue: opts.sessionCookieValue ?? crypto.randomUUID(),
+      sessionCookieValue: opts.sessionCookieValue,
       lastIpAddress: ipAddress,
     })
     .onConflictDoUpdate({
@@ -50,19 +65,28 @@ export const createTRPCContext = async (opts: {
       },
     })
     .returning();
-  const session = assertOneOrNone(sessions);
+  const session = assertOne(sessions);
 
   const user =
     (await db.query.users.findFirst({
-      where: eq(schema.users.id, session?.userId ?? crypto.randomUUID()),
+      where: eq(schema.users.id, session.userId ?? crypto.randomUUID()),
     })) ?? null;
 
-  return {
-    ipAddress,
-    session,
-    user,
-    userId: user?.id ?? null,
-  };
+  if (user) {
+    return {
+      ipAddress,
+      session,
+      user,
+      userId: user.id,
+    };
+  } else {
+    return {
+      ipAddress,
+      session,
+      user: null,
+      userId: null,
+    };
+  }
 };
 
 /**

@@ -7,7 +7,7 @@ import {
 } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { executeUserInitiation } from "~/server/integrations/canvas/canvasApiService";
-import { logoutUser } from "~/server/services/authService";
+import { loginUser, logoutUser } from "~/server/services/authService";
 import { sendLoginEmail } from "~/server/services/email/loginEmail";
 
 export const authRouter = createTRPCRouter({
@@ -20,6 +20,15 @@ export const authRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const { email } = input;
       await sendLoginEmail({ email });
+    }),
+
+  login: publicProcedure
+    .input(z.object({ loginToken: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { session } = ctx;
+      if (!session) throw new Error("Session not found");
+      const { loginToken } = input;
+      await loginUser(loginToken, session, db);
     }),
 
   logout: protectedProcedure.mutation(async ({ ctx }) => {
