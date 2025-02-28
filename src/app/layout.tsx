@@ -3,6 +3,7 @@ import "~/styles/globals.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider } from "antd";
 import { GeistSans } from "geist/font/sans";
+import { ErrorDisplayProvider } from "~/client/components/ErrorDisplayProvider";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata = {
@@ -24,9 +25,11 @@ export default function RootLayout({
             <ConfigProvider
               theme={/*{ token: { colorPrimary: "#2a9d8f" } }*/ undefined}
             >
-              <main className="flex min-h-screen flex-col items-center overflow-auto">
-                {children}
-              </main>
+              <ErrorDisplayProvider>
+                <main className="flex min-h-screen flex-col items-center overflow-auto">
+                  {children}
+                </main>
+              </ErrorDisplayProvider>
             </ConfigProvider>
           </TRPCReactProvider>
         </AntdRegistry>

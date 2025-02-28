@@ -1,10 +1,13 @@
 import {
   loggerLink,
   splitLink,
-  unstable_httpSubscriptionLink,
   unstable_httpBatchStreamLink,
-  // httpLink,
+  unstable_httpSubscriptionLink,
 } from "@trpc/client";
+// httpLink,
+import { type TRPCLink } from "@trpc/client";
+import { type AnyRouter } from "@trpc/server";
+import { observable } from "@trpc/server/observable";
 import SuperJSON from "superjson";
 import { getTrpcUrl } from "~/common/urlUtils";
 
@@ -18,6 +21,42 @@ const linkOpts = {
   },
 } as const;
 
+const errorSubscribers = new Set<{
+  onError: (error: Error) => void;
+}>();
+export function subscribeToErrors(subscriber: {
+  onError: (error: Error) => void;
+}) {
+  errorSubscribers.add(subscriber);
+  return () => {
+    errorSubscribers.delete(subscriber);
+  };
+}
+
+// Custom error alert link
+const errorAlertLink: TRPCLink<AnyRouter> = () => {
+  return ({ next, op }) => {
+    return observable((observer) => {
+      const unsubscribe = next(op).subscribe({
+        next(result) {
+          observer.next(result);
+        },
+        error(err) {
+          errorSubscribers.forEach((subscriber) => {
+            subscriber.onError(err);
+          });
+          observer.error(err);
+        },
+        complete() {
+          observer.complete();
+        },
+      });
+
+      return unsubscribe;
+    });
+  };
+};
+
 export const links = [
   loggerLink({
     // enabled: () => false,
@@ -25,6 +64,7 @@ export const links = [
       process.env.NODE_ENV === "development" ||
       (op.direction === "down" && op.result instanceof Error),
   }),
+  errorAlertLink,
   splitLink({
     // uses the httpSubscriptionLink for subscriptions
     condition: (op) => op.type === "subscription",

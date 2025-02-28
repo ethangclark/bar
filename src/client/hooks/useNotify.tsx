@@ -1,17 +1,33 @@
 import { notification } from "antd";
 import { useCallback } from "react";
+import { invoke } from "~/common/fnUtils";
 
-export type Notify = (params: { title: string; description: string }) => void;
+export type Notify = (params: {
+  title: React.ReactNode;
+  description: React.ReactNode;
+  type?: "info" | "success" | "warning" | "error";
+}) => void;
 
 export function useNotify(): [Notify, React.ReactNode] {
   const [api, contextHolder] = notification.useNotification();
 
-  const notify: Notify = useCallback(
-    ({ title, description }: { title: string; description: string }) => {
+  const notify: Notify = useCallback<Notify>(
+    ({ title, description, type = "info" }) => {
       api.info({
-        message: title,
+        message: invoke(() => {
+          switch (type) {
+            case "info":
+            case "success":
+              return title;
+            case "warning":
+              return <span className="text-yellow-500">{title}</span>;
+            case "error":
+              return <span className="text-red-500">{title}</span>;
+          }
+        }),
         description,
         icon: <div></div>,
+        type,
       });
     },
     [api],
