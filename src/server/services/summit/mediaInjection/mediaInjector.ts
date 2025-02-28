@@ -5,8 +5,8 @@ import { createEmptyDescendents } from "~/common/descendentUtils";
 import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import {
-  MessageWithDescendents,
   type Message,
+  type MessageWithDescendents,
   type ViewPieceImage,
   type ViewPieceText,
   type ViewPieceVideo,

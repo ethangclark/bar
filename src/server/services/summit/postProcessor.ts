@@ -1,4 +1,4 @@
-import { MessageWithDescendents, type Message } from "~/server/db/schema";
+import { type Message, type MessageWithDescendents } from "~/server/db/schema";
 import { injectMedia } from "./mediaInjection/mediaInjector";
 
 export async function postProcessAssistantResponse(

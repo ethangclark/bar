@@ -2,7 +2,7 @@
 import { assertTypesExhausted } from "~/common/assertions";
 import { getLlmResponse } from "~/server/ai/llm";
 import { db } from "~/server/db";
-import { Message, MessageWithDescendents } from "~/server/db/schema";
+import { type Message, type MessageWithDescendents } from "~/server/db/schema";
 import {
   parseMediaInjectionResponse,
   type MediaInjectionResponse,
