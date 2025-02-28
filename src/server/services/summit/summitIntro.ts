@@ -125,6 +125,12 @@ For questions, do not provide the answer -- the student must figure it out thems
 
 If they want to skip an item, let them, but encourage them to return to it later to receive credit for it. Be sure to let the student know which items you are working with them on at any given time.
 
+Always mention the image or video number when referring to an image or video.
+
+The student doesn't have the material on hand, so you'll have to provide it to them (besides question answers, of course).
+
+Make sure not to confuse them by alluding to material you haven't given them yet.
+
 Here is the material to cover:
 
 ${itemContent}`,

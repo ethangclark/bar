@@ -33,8 +33,9 @@ async function getMediaInjectionResponse(
     possibleVideoIds,
   );
   if (!parsed.success) {
+    console.error(`Prompt that led to response with failed parsing:\n`, prompt);
     console.error(
-      `LLM response in getMediaInjectionResponse that could not be parsed:`,
+      `LLM response in getMediaInjectionResponse that could not be parsed:\n`,
       response,
     );
   }
