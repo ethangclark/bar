@@ -1,6 +1,6 @@
 // app/login/link/route.ts
 import { eq } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { loginTokenQueryParam } from "~/common/constants";
 import { invoke } from "~/common/fnUtils";
 import { db, schema } from "~/server/db";

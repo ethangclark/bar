@@ -66,7 +66,7 @@ export class PubSub<T extends SuperJSONValue> {
   private subscribers = new Set<Subscriber<T>>();
 
   constructor(private channel: string) {
-    globalForPubSub.channelToPglSubscriber[channel]?.close();
+    void globalForPubSub.channelToPglSubscriber[channel]?.close();
     this.pglSubscriber = createSubscriber({
       connectionString: env.DATABASE_URL,
     });
