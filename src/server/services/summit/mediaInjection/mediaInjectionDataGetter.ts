@@ -56,7 +56,7 @@ async function getMediaInjectionResponse({
 export async function getMediaInjectionData(
   userId: string,
   assistantMessage: Message,
-  allMessages: MessageWithDescendents[],
+  prevMesssages: MessageWithDescendents[],
   possibleImageIds: number[],
   possibleVideoIds: number[],
 ) {
@@ -84,7 +84,7 @@ export async function getMediaInjectionData(
   // if all media has been previously injected, return empty array
   const previouslyMentionedImageNumericIds = new Set<number>();
   const previouslyMentionedVideoNumericIds = new Set<number>();
-  for (const message of allMessages) {
+  for (const message of prevMesssages) {
     for (const viewPiece of message.viewPieces) {
       for (const image of viewPiece.images) {
         previouslyMentionedImageNumericIds.add(image.infoImage.numericId);

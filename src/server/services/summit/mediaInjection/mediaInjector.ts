@@ -19,13 +19,13 @@ import { getMediaInjectionData } from "./mediaInjectionDataGetter";
 
 export async function injectMedia(
   assistantResponse: Message,
-  allMessages: MessageWithDescendents[],
+  prevMessages: MessageWithDescendents[],
 ) {
   // nothing to do if there are no media to inject
-  const hasImages = allMessages.some((m) =>
+  const hasImages = prevMessages.some((m) =>
     m.content.includes(imageOmissionDisclaimer),
   );
-  const hasVideos = allMessages.some((m) =>
+  const hasVideos = prevMessages.some((m) =>
     m.content.includes(videoOmissionDisclaimer),
   );
 
@@ -52,7 +52,7 @@ export async function injectMedia(
   const data = await getMediaInjectionData(
     userId,
     assistantResponse,
-    allMessages,
+    prevMessages,
     possibleImageIds,
     possibleVideoIds,
   );

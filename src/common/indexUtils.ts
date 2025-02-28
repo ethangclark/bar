@@ -7,3 +7,11 @@ export function indexById<T extends { id: string }>(arr: T[]) {
     {} as { [key: string]: T },
   );
 }
+
+export function indexToItemNumber(index: number) {
+  return index + 1;
+}
+
+export function itemNumberToIndex(itemNumber: number) {
+  return itemNumber - 1;
+}

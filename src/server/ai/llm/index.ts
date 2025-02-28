@@ -1,7 +1,7 @@
 import { type DbOrTx } from "~/server/db";
-import { type OpenRouterRequest } from "./types";
 import { getOpenRouterResponse, streamOpenRouterResponse } from "./openRouter";
 import { parseResponseText, parseStreamingResponseText } from "./responseText";
+import { type OpenRouterRequest } from "./types";
 
 export async function getLlmResponse(
   userId: string,

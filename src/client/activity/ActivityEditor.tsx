@@ -5,6 +5,7 @@ import {
 } from "~/client/components/Loading";
 import { Status } from "~/client/utils/status";
 import { storeObserver } from "~/client/utils/storeObserver";
+import { indexToItemNumber } from "~/common/indexUtils";
 import { LogoutButton } from "../components/LogoutButton";
 import { AddItemButtons } from "./AddItemButtons";
 import { EditorControls } from "./EditorControls";
@@ -69,7 +70,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
             <Item
               key={item.id}
               item={itemStore.getItemWithChildren(item)}
-              itemNumber={idx + 1}
+              itemNumber={indexToItemNumber(idx)}
               deleted={draftStore.isDeletedDraft(item.id)}
               enrolledAs={enrolledAs}
             />
