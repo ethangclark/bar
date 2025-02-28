@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
   if (!loginToken || !session) {
     console.log("redirecting to home page", {
       loginToken,
+      sessionCookieValue,
       session,
       url,
     });
