@@ -6,6 +6,10 @@ import { getBaseUrl } from "~/common/urlUtils";
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const loginToken = url.searchParams.get(loginTokenQueryParam);
+  console.log("redirecting to login link", {
+    loginToken,
+    url,
+  });
   return NextResponse.redirect(
     `${getBaseUrl()}/login/link?${loginTokenQueryParam}=${loginToken}`,
   );
