@@ -204,6 +204,13 @@
       "when": 1740540500789,
       "tag": "0028_rich_warhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1740782141514,
+      "tag": "0029_fine_annihilus",
+      "breakpoints": true
     }
   ]
 }
