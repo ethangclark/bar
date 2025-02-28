@@ -1,5 +1,6 @@
 import { Status } from "~/client/utils/status";
 import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
+import { LogoutButton } from "../components/LogoutButton";
 import { scrollbarHeight } from "../utils/scrollbarWidth";
 import { storeObserver } from "../utils/storeObserver";
 import { ChatInput } from "./ChatInput";
@@ -22,6 +23,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
       >
         <div className="md:text-md mb-4 flex w-full items-center justify-between">
           <div className="text-lg md:text-2xl">{assignmentTitle}</div>
+          <LogoutButton />
         </div>
         {igod && <ThreadSelection />}
         <Messages />

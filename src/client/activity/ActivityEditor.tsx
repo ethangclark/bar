@@ -1,10 +1,11 @@
-import { Input } from "antd";
+import { Input, Typography } from "antd";
 import {
   FancySavingIndicator,
   LoadingCentered,
 } from "~/client/components/Loading";
 import { Status } from "~/client/utils/status";
 import { storeObserver } from "~/client/utils/storeObserver";
+import { LogoutButton } from "../components/LogoutButton";
 import { AddItemButtons } from "./AddItemButtons";
 import { EditorControls } from "./EditorControls";
 import { Item } from "./Item/Item";
@@ -30,6 +31,10 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
 
   return (
     <div className="mx-4 flex h-full w-[672px] flex-col justify-between pb-2">
+      <div className="flex w-full justify-between">
+        <Typography.Link href="/overview">← Return to overview</Typography.Link>
+        <LogoutButton />
+      </div>
       <div className="mb-5 flex items-center justify-between gap-2">
         <div className="mr-2 flex grow items-center gap-4">
           <Input
