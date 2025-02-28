@@ -56,7 +56,7 @@ export const EditorControls = storeObserver<EditorControlsProps>(
           onClick={() => studentModeStore.setIsStudentMode(true)}
           disabled={!editorStore.canDemo}
         >
-          See demo
+          Student view
         </ControlButton>
       </div>
     );

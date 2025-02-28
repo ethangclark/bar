@@ -68,22 +68,26 @@ export function ImageUploader({
 
 export function ImageUploadLink({
   onFileSelect,
-  label = <span className="text-sm">Upload image</span>,
+  children,
+  label,
   className,
 }: {
   onFileSelect: OnFileSelect;
-  label?: React.ReactNode;
-  className?: string;
-}) {
+} & (
+  | { children?: undefined; label?: React.ReactNode; className?: string }
+  | { children: React.ReactNode; label?: undefined; className?: undefined }
+)) {
   const [notify, contextHolder] = useNotify();
   const props = useProps({ notify, onFileSelect });
   return (
     <Upload {...props}>
       {contextHolder}
-      <Typography.Link className={className}>
-        <FileImageOutlined className="mr-1" />
-        {label}
-      </Typography.Link>
+      {children ?? (
+        <Typography.Link className={className}>
+          <FileImageOutlined className="mr-1" />
+          {label}
+        </Typography.Link>
+      )}
     </Upload>
   );
 }
