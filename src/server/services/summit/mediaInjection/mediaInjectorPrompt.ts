@@ -1,14 +1,16 @@
 // src/server/services/summit/mediaInjectorPrompt.ts
 
+import { type Message } from "~/server/db/schema";
+
 export const mediaInjectorPrompt = ({
-  lastAssistantMessage,
+  messages,
 }: {
-  lastAssistantMessage: string;
-}) => `Following is a message sent by an AI learning assistant to a student. The AI learning assistant is only capable of interacting with the student via text, but there are images and videos in the activity it's helping with, so the message may include descriptions of specific images or videos (which have numbers associated with them, like "Image 1001" or "Video 537").
+  messages: Message[];
+}) => `Following is a series of messages between an AI learning assistant and a student. The AI learning assistant is only capable of interacting with the student via text, but there are images and videos in the activity it's helping with, so messages may include descriptions of specific images or videos (which have numbers associated with them, like "Image 1001" or "Video 537").
 
 Please do the following:
 
-1. Identify whether the message describes specific images or videos
+1. Identify whether the LAST message describes specific images or videos
 2. If it does not, reply with "<no-media></no-media>"
 3. If it does, rewrite it, adding <image> and <video> tags strategically to show where in the message the image or video should be rendered.
 
@@ -79,6 +81,10 @@ END EXAMPLE 6
 
 ALWAYS put <image> and <video> tags on their own line! Do NOT mix them in with regular sentences -- there should be a paragraph break between regular text and these tags.
 
-Here's the message you're analyzing:
+Here are the messages you're analyzing. Remember: the last message is the one you're analyzing:
 
-${lastAssistantMessage}`;
+${messages
+  .map((message) => {
+    return `# ${message.senderRole} message\n${message.content}\n\n`;
+  })
+  .join("")}`;

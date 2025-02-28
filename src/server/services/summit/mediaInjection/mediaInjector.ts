@@ -59,7 +59,7 @@ export async function injectMedia(
 
   const data = await getMediaInjectionData(
     userId,
-    lastAssistantMessage,
+    allMessages,
     possibleImageIds,
     possibleVideoIds,
   );

@@ -1,19 +1,20 @@
 // src/server/services/summit/mediaInjectionDataGetter.ts
 import { getLlmResponse } from "~/server/ai/llm";
 import { db } from "~/server/db";
+import { type Message } from "~/server/db/schema";
 import {
-  type MediaInjectionResponse,
   parseMediaInjectionResponse,
+  type MediaInjectionResponse,
 } from "./mediaInjectionParser";
 import { mediaInjectorPrompt } from "./mediaInjectorPrompt";
 
 async function getMediaInjectionResponse(
   userId: string,
-  lastAssistantMessage: string,
+  messages: Message[],
   possibleImageIds: number[],
   possibleVideoIds: number[],
 ): Promise<MediaInjectionResponse> {
-  const prompt = mediaInjectorPrompt({ lastAssistantMessage });
+  const prompt = mediaInjectorPrompt({ messages });
 
   const response = await getLlmResponse(
     userId,
@@ -26,6 +27,9 @@ async function getMediaInjectionResponse(
   if (response instanceof Error) {
     throw response;
   }
+
+  // console.log(`Prompt:\n`, prompt);
+  // console.log(`Media injection response:\n`, response);
 
   const parsed = parseMediaInjectionResponse(
     response,
@@ -45,7 +49,7 @@ async function getMediaInjectionResponse(
 
 export async function getMediaInjectionData(
   userId: string,
-  lastAssistantMessage: string,
+  messages: Message[],
   possibleImageIds: number[],
   possibleVideoIds: number[],
 ) {
@@ -53,7 +57,7 @@ export async function getMediaInjectionData(
   for (let i = 0; i < 3; i++) {
     response = await getMediaInjectionResponse(
       userId,
-      lastAssistantMessage,
+      messages,
       possibleImageIds,
       possibleVideoIds,
     );
