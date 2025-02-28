@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { loginTokenQueryParam } from "~/common/constants";
 import { invoke } from "~/common/fnUtils";
+import { getBaseUrl } from "~/common/urlUtils";
 import { db, schema } from "~/server/db";
 import { loginUser } from "~/server/services/authService";
 import { sessionCookieName } from "~/server/utils";
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
   // If sessionId or login token is missing, redirect to the home page
   // (No session means they haven't visited the app before on their own, e.g. they're an email scanner.)
   if (!loginToken || !session) {
-    return NextResponse.redirect(new URL("/", url));
+    return NextResponse.redirect(getBaseUrl());
   }
 
   const loginSuccess = await invoke(async () => {
@@ -32,5 +33,7 @@ export async function GET(request: NextRequest) {
     }
   });
 
-  return NextResponse.redirect(new URL(loginSuccess ? "/overview" : "/", url));
+  return NextResponse.redirect(
+    `${getBaseUrl()}${loginSuccess ? "/overview" : ""}`,
+  );
 }
