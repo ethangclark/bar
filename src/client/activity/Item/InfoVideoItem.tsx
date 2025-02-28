@@ -36,22 +36,6 @@ export const InfoVideoItem = storeObserver<{
         </UploadVideo>
       </div>
 
-      {newTranscript && (
-        <div className="mb-2">
-          <Button
-            onClick={() => {
-              draftStore.updateDraft("infoVideos", {
-                id: infoVideoDraft.id,
-                textAlternative: newTranscript,
-              });
-              setNewTranscript(null);
-            }}
-          >
-            Update transcript
-          </Button>
-        </div>
-      )}
-
       <div className="relative mb-2">
         <Video
           videoId={infoVideoDraft.videoId}
@@ -75,6 +59,23 @@ export const InfoVideoItem = storeObserver<{
         >
           <CircleHelp size={16} />
         </Tooltip>
+        {newTranscript && (
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              draftStore.updateDraft("infoVideos", {
+                id: infoVideoDraft.id,
+                textAlternative: newTranscript,
+              });
+              setNewTranscript(null);
+            }}
+          >
+            <span className="font-bold text-orange-500 underline">
+              Update transcript
+            </span>
+          </Button>
+        )}
       </div>
       <Editor
         value={infoVideoDraft.textAlternative}
