@@ -36,11 +36,11 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
         + Add image
       </ControlButton>
       <UploadVideo
-        onUploadComplete={({ videoId }) => {
+        onUploadComplete={({ videoId, transcript }) => {
           draftStore.createDraft("infoVideos", {
             itemId: itemStore.createItem().id,
             numericId: draftNumericId,
-            textAlternative: "",
+            textAlternative: transcript,
             videoId,
           });
         }}

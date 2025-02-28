@@ -16,23 +16,41 @@ export const InfoVideoItem = storeObserver<{
 }>(function InfoVideoItem({ infoVideoDraft, draftStore }) {
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const isOk = isInfoVideoDraftReady(infoVideoDraft);
+  const [newTranscript, setNewTranscript] = useState<string | null>(null);
   return (
     <div className="relative w-full">
       <div className="mb-4 flex w-full">
         <UploadVideo
           className="mr-2"
           onUploadStarted={() => setIsUploadingVideo(true)}
-          onUploadComplete={({ videoId }) => {
+          onUploadComplete={({ videoId, transcript }) => {
             draftStore.updateDraft("infoVideos", {
               id: infoVideoDraft.id,
               videoId,
             });
+            setNewTranscript(transcript);
             setIsUploadingVideo(false);
           }}
         >
           <Button icon={<UploadOutlined />}>Select video</Button>
         </UploadVideo>
       </div>
+
+      {newTranscript && (
+        <div className="mb-2">
+          <Button
+            onClick={() => {
+              draftStore.updateDraft("infoVideos", {
+                id: infoVideoDraft.id,
+                textAlternative: newTranscript,
+              });
+              setNewTranscript(null);
+            }}
+          >
+            Update transcript
+          </Button>
+        </div>
+      )}
 
       <div className="relative mb-2">
         <Video

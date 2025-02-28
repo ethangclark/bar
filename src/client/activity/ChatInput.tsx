@@ -13,8 +13,8 @@ export const ChatInput = storeObserver(function ChatInput({
   const [v, setV] = useState("");
   const [isMessageSending, setIsMessageSending] = useState(false);
 
-  const onTranscription = useCallback((text: string) => {
-    setV((v) => (v ? v + " " + text : text));
+  const onTranscription = useCallback((transcript: string) => {
+    setV((v) => (v ? v + " " + transcript : transcript));
     if (editorRef.current) {
       editorRef.current.focus();
     }

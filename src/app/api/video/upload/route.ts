@@ -9,10 +9,12 @@ import { db } from "~/server/db";
 // Cloudinary will auto-configure using process.env.CLOUDINARY_URL
 import { v2 as cloudinary } from "cloudinary";
 import { z } from "zod";
+import { transcribeAudioBuffer } from "~/server/ai/stt";
 import { infoVideos, videos } from "~/server/db/schema";
 
 export type VideoUploadResponse = {
   videoId: string;
+  transcript: string;
 };
 
 // Function to clean up orphaned videos
@@ -86,9 +88,12 @@ export async function POST(req: Request): Promise<Response> {
       })
       .parse(uploadResultRaw);
 
+    const audioFormat = "mp3";
+    const audioMimeType = `audio/mpeg`; // weird, but ChatGPT says so
+
     const audioUrl = cloudinary.url(uploadResult.public_id, {
       resource_type: "video",
-      format: "mp3", // Specify the desired audio format
+      format: audioFormat, // Specify the desired audio format
     });
 
     // Fetch the audio file and convert to a Buffer
@@ -101,8 +106,11 @@ export async function POST(req: Request): Promise<Response> {
         `Failed to fetch audio data: ${audioResponse.status} ${audioResponse.statusText}. Error details: ${errorText}`,
       );
     }
-    // const audioBuffer = Buffer.from(await audioResponse.arrayBuffer());
-    // console.log("buffer length", audioBuffer.length); // TODO: transcription
+    const audioBuffer = Buffer.from(await audioResponse.arrayBuffer());
+    const { transcript } = await transcribeAudioBuffer(
+      audioBuffer,
+      audioMimeType,
+    );
 
     const videos = await db
       .insert(db.x.videos)
@@ -120,6 +128,7 @@ export async function POST(req: Request): Promise<Response> {
 
     return NextResponse.json({
       videoId: video.id,
+      transcript,
     } satisfies VideoUploadResponse);
   } catch (error: unknown) {
     assertError(error);

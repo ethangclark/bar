@@ -1,5 +1,5 @@
 import { audioDataXSchema } from "~/common/types";
-import { transcribeAudio } from "~/server/ai/stt";
+import { transcribeAudioData } from "~/server/ai/stt";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const transcriptionRouter = createTRPCRouter({
@@ -11,7 +11,7 @@ export const transcriptionRouter = createTRPCRouter({
         throw new Error("Audio data exceeds max supported length");
       }
       // TODO: convert to token equivalent
-      const result = await transcribeAudio(input);
+      const result = await transcribeAudioData(input);
       return result;
     }),
 });

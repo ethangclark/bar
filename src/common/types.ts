@@ -23,7 +23,6 @@ export type JsonPlus =
 
 export const audioDataXSchema = z.object({
   data: z.string(), // base64 encoded audio
-  timestamp: z.string(), // ISO string timestamp
   mimeType: z.string(), // audio MIME type
 });
 // Types for the audio data structure

@@ -1,6 +1,6 @@
-import React, { useState, useRef } from "react";
-import { Mic, MicOff, Loader2 } from "lucide-react";
 import { Button } from "antd";
+import { Loader2, Mic, MicOff } from "lucide-react";
+import React, { useRef, useState } from "react";
 import { type AudioDataX } from "~/common/types";
 
 // Props interface (empty for now but extensible)
@@ -45,7 +45,6 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
             const base64Audio = reader.result as string;
             const audioDataX: AudioDataX = {
               data: base64Audio,
-              timestamp: new Date().toISOString(),
               mimeType: "audio/webm",
             };
 

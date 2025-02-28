@@ -8,7 +8,7 @@ import { noop } from "~/common/fnUtils";
 export const UploadVideo = storeObserver<{
   children: React.ReactNode;
   onUploadStarted?: () => void;
-  onUploadComplete: (params: { videoId: string }) => void;
+  onUploadComplete: (params: { videoId: string; transcript: string }) => void;
   className?: string;
 }>(function UploadVideo({
   children,
@@ -31,13 +31,14 @@ export const UploadVideo = storeObserver<{
 
         // Nothing to actually do with this lol.
         // Just keeping so the control flow is consistent and errors flow as expected
-        const { videoId } = (
+        const { videoId, transcript } = (
           z.object({
             videoId: z.string(),
+            transcript: z.string(),
           }) satisfies z.ZodType<VideoUploadResponse>
         ).parse(await res.json());
 
-        onUploadComplete({ videoId });
+        onUploadComplete({ videoId, transcript });
       } catch (error) {
         // Could get fancy and include the item number in the error message
         // TODO: show descriptive error state on the failed video items

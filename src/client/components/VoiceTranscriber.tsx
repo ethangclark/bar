@@ -6,7 +6,7 @@ import { VoiceRecorder } from "../components/VoiceRecorder";
 export function VoiceTranscriber({
   onTranscription,
 }: {
-  onTranscription: (text: string) => void;
+  onTranscription: (transcript: string) => void;
 }) {
   const { mutateAsync: transcribe, isPending: isTranscribing } =
     api.transcription.transcribe.useMutation();
@@ -18,8 +18,8 @@ export function VoiceTranscriber({
         throw new Error("Audio data exceeds max supported length");
       }
 
-      const { text } = await transcribe(audioDataX);
-      onTranscription(text);
+      const { transcript } = await transcribe(audioDataX);
+      onTranscription(transcript);
     },
     [transcribe, onTranscription],
   );

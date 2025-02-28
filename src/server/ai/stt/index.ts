@@ -2,14 +2,12 @@ import OpenAI from "openai";
 import { type AudioDataX } from "~/common/types";
 import { env } from "~/env";
 
-interface TranscriptionResult {
-  text: string;
-  timestamp: string;
+type TranscriptionResult = {
+  transcript: string;
   metadata: {
     processingTimeMs: number;
-    originalTimestamp: string;
   };
-}
+};
 
 class TranscriptionError extends Error {
   constructor(
@@ -45,23 +43,15 @@ class WhisperTranscriptionService {
     return new File([blob], filename, { type: mimeType });
   }
 
-  async transcribe(audioData: AudioDataX): Promise<TranscriptionResult> {
+  async transcribeAudioBuffer(
+    audioBuffer: Buffer,
+    mimeType: string,
+  ): Promise<TranscriptionResult> {
     const startTime = Date.now();
 
     try {
-      // Validate input
-      if (!audioData.data) {
-        throw new TranscriptionError("No audio data provided", "INVALID_INPUT");
-      }
-
-      // Convert base64 to buffer
-      const audioBuffer = this.base64ToBuffer(audioData.data);
-
       // Convert buffer to file
-      const audioFile = await this.bufferToFile(
-        audioBuffer,
-        audioData.mimeType,
-      );
+      const audioFile = await this.bufferToFile(audioBuffer, mimeType);
 
       // Call Whisper API
       const transcription = await this.openai.audio.transcriptions.create({
@@ -73,11 +63,9 @@ class WhisperTranscriptionService {
 
       // Prepare result
       const result: TranscriptionResult = {
-        text: transcription.text,
-        timestamp: new Date().toISOString(),
+        transcript: transcription.text,
         metadata: {
           processingTimeMs: Date.now() - startTime,
-          originalTimestamp: audioData.timestamp,
         },
       };
 
@@ -99,13 +87,40 @@ class WhisperTranscriptionService {
       throw new TranscriptionError("Unknown error occurred", "UNKNOWN_ERROR");
     }
   }
+
+  async transcribeAudioData(
+    audioDataX: AudioDataX,
+  ): Promise<TranscriptionResult> {
+    // Validate input
+    if (!audioDataX.data) {
+      throw new TranscriptionError("No audio data provided", "INVALID_INPUT");
+    }
+
+    // Convert base64 to buffer
+    const audioBuffer = this.base64ToBuffer(audioDataX.data);
+
+    return this.transcribeAudioBuffer(audioBuffer, audioDataX.mimeType);
+  }
 }
 
-export async function transcribeAudio(
+export async function transcribeAudioBuffer(
+  audioBuffer: Buffer,
+  mimeType: string,
+): Promise<TranscriptionResult> {
+  const transcriptionService = new WhisperTranscriptionService(
+    env.OPENAI_API_KEY,
+  );
+  return await transcriptionService.transcribeAudioBuffer(
+    audioBuffer,
+    mimeType,
+  );
+}
+
+export async function transcribeAudioData(
   audioDataX: AudioDataX,
 ): Promise<TranscriptionResult> {
   const transcriptionService = new WhisperTranscriptionService(
     env.OPENAI_API_KEY,
   );
-  return await transcriptionService.transcribe(audioDataX);
+  return await transcriptionService.transcribeAudioData(audioDataX);
 }
