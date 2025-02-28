@@ -1,5 +1,7 @@
 import { storeObserver } from "~/client/utils/storeObserver";
 import { draftNumericId } from "~/common/draftData";
+import { trpc } from "~/trpc/proxy";
+import { ImageUploadLink } from "../components/ImageUploader";
 import { ControlButton } from "./ControlButton";
 import { UploadVideo } from "./Item/UploadVideo";
 
@@ -22,19 +24,28 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
       >
         + Add text
       </ControlButton>
-      <ControlButton
-        disabled={isSomethingUploading}
-        onClick={() => {
-          draftStore.createDraft("infoImages", {
-            itemId: itemStore.createItem().id,
-            url: "",
-            textAlternative: "",
-            numericId: draftNumericId,
-          });
+      <ImageUploadLink
+        onFileSelect={async ({ imageDataUrl }) => {
+          const { uploadId } = uploadStore.noteUploadStarted();
+          try {
+            const description = await trpc.imageDescription.describe.mutate({
+              imageDataUrl,
+            });
+            draftStore.createDraft("infoImages", {
+              itemId: itemStore.createItem().id,
+              url: imageDataUrl,
+              textAlternative: description,
+              numericId: draftNumericId,
+            });
+          } finally {
+            uploadStore.noteUploadComplete({ uploadId });
+          }
         }}
       >
-        + Add image
-      </ControlButton>
+        <ControlButton disabled={isSomethingUploading}>
+          + Add image
+        </ControlButton>
+      </ImageUploadLink>
       <UploadVideo
         onUploadComplete={({ videoId, transcript }) => {
           draftStore.createDraft("infoVideos", {

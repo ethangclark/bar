@@ -14,7 +14,7 @@ import {
 
 export const InfoImageItem = storeObserver<{
   infoImage: InfoImage;
-}>(function InfoImage({ infoImage, draftStore }) {
+}>(function InfoImage({ infoImage, draftStore, uploadStore }) {
   const imageOk = isInfoImageDraftImageReady(infoImage);
   const textOk = isInfoImageDraftTextReady(infoImage);
   return (
@@ -29,14 +29,19 @@ export const InfoImageItem = storeObserver<{
           className={infoImage.url ? "" : "text-red-500"}
           label={imageOk ? "Replace image" : "Click here to upload image"}
           onFileSelect={async ({ imageDataUrl }) => {
-            const description = await trpc.imageDescription.describe.mutate({
-              imageDataUrl,
-            });
-            draftStore.updateDraft("infoImages", {
-              id: infoImage.id,
-              url: imageDataUrl,
-              textAlternative: description,
-            });
+            const { uploadId } = uploadStore.noteUploadStarted();
+            try {
+              const description = await trpc.imageDescription.describe.mutate({
+                imageDataUrl,
+              });
+              draftStore.updateDraft("infoImages", {
+                id: infoImage.id,
+                url: imageDataUrl,
+                textAlternative: description,
+              });
+            } finally {
+              uploadStore.noteUploadComplete({ uploadId });
+            }
           }}
         />
       </div>
