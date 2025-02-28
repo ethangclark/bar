@@ -4,6 +4,7 @@ import { authRouter } from "./routers/authRouter";
 import { canvasRouter } from "./routers/canvasRouter";
 import { coursesRouter } from "./routers/coursesRouter";
 import { descendentRouter } from "./routers/descendentRouter";
+import { imageDescriptionRouter } from "./routers/imageDescriptionRouter";
 import { integrationRouter } from "./routers/integrationRouter";
 import { messageRouter } from "./routers/messageRouter";
 import { transcriptionRouter } from "./routers/transcriptionRouter";
@@ -15,10 +16,11 @@ import { transcriptionRouter } from "./routers/transcriptionRouter";
  */
 export const appRouter = createTRPCRouter({
   activity: activityRouter,
-  descendent: descendentRouter,
   auth: authRouter,
   canvas: canvasRouter,
   courses: coursesRouter,
+  descendent: descendentRouter,
+  imageDescription: imageDescriptionRouter,
   integration: integrationRouter,
   message: messageRouter,
   transcription: transcriptionRouter,

@@ -1,6 +1,7 @@
 import { Tooltip } from "antd";
 import { CircleHelp } from "lucide-react";
 import { type InfoImage } from "~/server/db/schema";
+import { trpc } from "~/trpc/proxy";
 import { Editor } from "../../components/Editor";
 import { Image } from "../../components/Image";
 import { ImageUploadLink } from "../../components/ImageUploader";
@@ -27,10 +28,14 @@ export const InfoImageItem = storeObserver<{
         <ImageUploadLink
           className={infoImage.url ? "" : "text-red-500"}
           label={imageOk ? "Replace image" : "Click here to upload image"}
-          onFileSelect={({ imageDataUrl }) => {
+          onFileSelect={async ({ imageDataUrl }) => {
+            const description = await trpc.imageDescription.describe.mutate({
+              imageDataUrl,
+            });
             draftStore.updateDraft("infoImages", {
               id: infoImage.id,
               url: imageDataUrl,
+              textAlternative: description,
             });
           }}
         />

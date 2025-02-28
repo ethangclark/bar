@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { PubSub } from "./pubsub";
 import createSubscriber from "pg-listen";
 import superjson from "superjson";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { PubSub } from "./pubsub";
 vi.mock("~/env");
 
 type FakeSubscriber = {
@@ -9,6 +9,7 @@ type FakeSubscriber = {
   connect: ReturnType<typeof vi.fn>;
   listenTo: ReturnType<typeof vi.fn>;
   notify: ReturnType<typeof vi.fn>;
+  close: ReturnType<typeof vi.fn>;
 };
 
 // The vi.mock factory returns a new fake subscriber on each call.
@@ -18,6 +19,7 @@ vi.mock("pg-listen", () => {
     connect: vi.fn(() => Promise.resolve()),
     listenTo: vi.fn(() => Promise.resolve()),
     notify: vi.fn(() => Promise.resolve()),
+    close: vi.fn(() => Promise.resolve()),
   });
   return {
     default: vi.fn(() => createFakeSubscriber()),
