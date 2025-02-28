@@ -101,7 +101,6 @@ class WhisperTranscriptionService {
   }
 }
 
-// Usage example:
 export async function transcribeAudio(
   audioDataX: AudioDataX,
 ): Promise<TranscriptionResult> {
