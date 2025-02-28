@@ -25,7 +25,7 @@ export async function sendLoginEmail({ email }: { email: string }) {
     .set({ loginTokenHash })
     .where(eq(schema.users.id, user.id));
 
-  const urlWithLoginToken = `${getBaseUrl()}/login?${loginTokenQueryParam}=${loginToken}`;
+  const urlWithLoginToken = `${getBaseUrl()}/login/link?${loginTokenQueryParam}=${loginToken}`;
 
   await sendEmail({
     to: email,
