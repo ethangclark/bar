@@ -5,6 +5,7 @@ import { createEmptyDescendents } from "~/common/descendentUtils";
 import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import {
+  MessageWithDescendents,
   type Message,
   type ViewPieceImage,
   type ViewPieceText,
@@ -18,7 +19,7 @@ import { getMediaInjectionData } from "./mediaInjectionDataGetter";
 
 export async function injectMedia(
   assistantResponse: Message,
-  allMessages: Message[],
+  allMessages: MessageWithDescendents[],
 ) {
   // nothing to do if there are no media to inject
   const hasImages = allMessages.some((m) =>
@@ -48,17 +49,9 @@ export async function injectMedia(
       .then((videos) => videos.map((v) => v.numericId)),
   ]);
 
-  const lastAssistantMessage = allMessages
-    .slice()
-    .reverse()
-    .find((m) => m.senderRole === "assistant")?.content;
-
-  if (!lastAssistantMessage) {
-    return;
-  }
-
   const data = await getMediaInjectionData(
     userId,
+    assistantResponse,
     allMessages,
     possibleImageIds,
     possibleVideoIds,

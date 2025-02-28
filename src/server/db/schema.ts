@@ -622,7 +622,7 @@ export const messages = pgTable(
   ],
 );
 export type Message = InferSelectModel<typeof messages>;
-export const messagesRelations = relations(messages, ({ one }) => ({
+export const messagesRelations = relations(messages, ({ one, many }) => ({
   user: one(users, {
     fields: [messages.userId],
     references: [users.id],
@@ -631,8 +631,19 @@ export const messagesRelations = relations(messages, ({ one }) => ({
     fields: [messages.threadId],
     references: [threads.id],
   }),
+  viewPieces: many(viewPieces),
 }));
 export const messageSchema = createSelectSchema(messages);
+
+export type MessageWithDescendents = Message & {
+  viewPieces: Array<
+    ViewPiece & {
+      images: Array<ViewPieceImage & { infoImage: InfoImage }>;
+      videos: Array<ViewPieceVideo & { infoVideo: InfoVideo }>;
+      texts: ViewPieceText[];
+    }
+  >;
+};
 
 export const viewPieces = pgTable(
   "view_piece",
@@ -662,6 +673,7 @@ export const viewPiecesRelations = relations(viewPieces, ({ one, many }) => ({
     references: [messages.id],
   }),
   images: many(viewPieceImages),
+  videos: many(viewPieceVideos),
   texts: many(viewPieceTexts),
 }));
 export const viewPieceSchema = createSelectSchema(viewPieces);

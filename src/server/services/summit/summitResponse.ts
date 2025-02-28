@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { createEmptyDescendents } from "~/common/descendentUtils";
+import { invoke } from "~/common/fnUtils";
 import { streamLlmResponse } from "~/server/ai/llm";
 import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
@@ -74,18 +75,42 @@ async function respondToThread({
       content: streamed,
     };
 
-    const messages = [...oldMessages, streamedIncompleteMessage];
+    await db
+      .update(schema.messages)
+      .set({
+        content: streamed,
+      })
+      .where(eq(schema.messages.id, emptyIncompleteMessage.id));
 
     await Promise.all([
-      db
-        .update(schema.messages)
-        .set({
-          content: streamed,
-        })
-        .where(eq(schema.messages.id, emptyIncompleteMessage.id)),
-      postProcessAssistantResponse(streamedIncompleteMessage, messages),
+      invoke(async () => {
+        const messagesWithDescendents = await db.query.messages.findMany({
+          where: eq(schema.messages.threadId, threadId),
+          with: {
+            viewPieces: {
+              with: {
+                images: {
+                  with: {
+                    infoImage: true,
+                  },
+                },
+                videos: {
+                  with: {
+                    infoVideo: true,
+                  },
+                },
+                texts: true,
+              },
+            },
+          },
+        });
+        await postProcessAssistantResponse(
+          streamedIncompleteMessage,
+          messagesWithDescendents,
+        );
+      }),
+      updateAndPublishCompletion(streamedIncompleteMessage),
     ]);
-    await updateAndPublishCompletion(streamedIncompleteMessage);
   } catch (error) {
     await updateAndPublishCompletion(emptyIncompleteMessage);
     throw error;

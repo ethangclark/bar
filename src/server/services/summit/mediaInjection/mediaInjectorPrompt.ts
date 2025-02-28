@@ -1,18 +1,16 @@
 // src/server/services/summit/mediaInjectorPrompt.ts
 
-import { type Message } from "~/server/db/schema";
-
 export const mediaInjectorPrompt = ({
-  messages,
+  assistantMessageContent,
 }: {
-  messages: Message[];
-}) => `Following is a series of messages between an AI learning assistant and a student. The AI learning assistant is only capable of interacting with the student via text, but there are images and videos in the activity it's helping with, so messages may include descriptions of specific images or videos (which have numbers associated with them, like "Image 1001" or "Video 537").
+  assistantMessageContent: string;
+}) => `Following is message from an AI learning assistant to a student. The AI learning assistant is only capable of interacting with the student via text, but there are images and videos in the activity it's assisting with, so messages may reference specific images or videos (which have numbers associated with them, like "Image 1001" or "Video 537").
 
 Please do the following:
 
-1. Identify whether the LAST message describes specific images or videos
+1. Identify whether the last message references specific images or videos.
 2. If it does not, reply with "<no-media></no-media>"
-3. If it does, rewrite it, adding <image> and <video> tags strategically to show where in the message the image or video should be rendered.
+3. If it does, rewrite it, adding <image> or <video> tags strategically to show where in the message it would make sense to render the image or video for a student to see.
 
 You can show images and videos to the student by wrapping image and video numbers in <image> and <video> tags. Here's an example of how you might do that:
 
@@ -59,32 +57,8 @@ This image shows the transit of Venus across the sun, captured with specialized 
 
 END EXAMPLE 4
 
-EXAMPLE 5:
-
-Following is video 12458, which is footage of wildlife in the Serengeti:
-
-<video>12458</video>
-
-This video documents a cheetah hunt, showcasing the predator's remarkable speed and hunting strategy.
-
-END EXAMPLE 5
-
-EXAMPLE 6:
-
-Following is image 9001, which is a picture of ancient hieroglyphics:
-
-<image>9001</image>
-
-This image displays recently discovered inscriptions from the Temple of Karnak with detailed cartouches of Ramses II.
-
-END EXAMPLE 6
-
 ALWAYS put <image> and <video> tags on their own line! Do NOT mix them in with regular sentences -- there should be a paragraph break between regular text and these tags.
 
-Here are the messages you're analyzing. Remember: the last message is the one you're analyzing:
+Here is the message you're analyzing:
 
-${messages
-  .map((message) => {
-    return `# ${message.senderRole} message\n${message.content}\n\n`;
-  })
-  .join("")}`;
+${assistantMessageContent}`;

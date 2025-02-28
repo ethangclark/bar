@@ -1,20 +1,26 @@
 // src/server/services/summit/mediaInjectionDataGetter.ts
+import { assertTypesExhausted } from "~/common/assertions";
 import { getLlmResponse } from "~/server/ai/llm";
 import { db } from "~/server/db";
-import { type Message } from "~/server/db/schema";
+import { Message, MessageWithDescendents } from "~/server/db/schema";
 import {
   parseMediaInjectionResponse,
   type MediaInjectionResponse,
 } from "./mediaInjectionParser";
 import { mediaInjectorPrompt } from "./mediaInjectorPrompt";
 
-async function getMediaInjectionResponse(
-  userId: string,
-  messages: Message[],
-  possibleImageIds: number[],
-  possibleVideoIds: number[],
-): Promise<MediaInjectionResponse> {
-  const prompt = mediaInjectorPrompt({ messages });
+async function getMediaInjectionResponse({
+  userId,
+  assistantMessageContent,
+  possibleImageIds,
+  possibleVideoIds,
+}: {
+  userId: string;
+  assistantMessageContent: string;
+  possibleImageIds: number[];
+  possibleVideoIds: number[];
+}): Promise<MediaInjectionResponse> {
+  const prompt = mediaInjectorPrompt({ assistantMessageContent });
 
   const response = await getLlmResponse(
     userId,
@@ -49,18 +55,19 @@ async function getMediaInjectionResponse(
 
 export async function getMediaInjectionData(
   userId: string,
-  messages: Message[],
+  assistantMessage: Message,
+  allMessages: MessageWithDescendents[],
   possibleImageIds: number[],
   possibleVideoIds: number[],
 ) {
   let response: MediaInjectionResponse | null = null;
   for (let i = 0; i < 3; i++) {
-    response = await getMediaInjectionResponse(
+    response = await getMediaInjectionResponse({
       userId,
-      messages,
+      assistantMessageContent: assistantMessage.content,
       possibleImageIds,
       possibleVideoIds,
-    );
+    });
     if (response.success) {
       break;
     }
@@ -72,6 +79,39 @@ export async function getMediaInjectionData(
     throw new Error(
       `Failed to parse media injection response: ${response.reason}`,
     );
+  }
+
+  // if all media has been previously injected, return empty array
+  const previouslyMentionedImageNumericIds = new Set<number>();
+  const previouslyMentionedVideoNumericIds = new Set<number>();
+  for (const message of allMessages) {
+    for (const viewPiece of message.viewPieces) {
+      for (const image of viewPiece.images) {
+        previouslyMentionedImageNumericIds.add(image.infoImage.numericId);
+      }
+      for (const video of viewPiece.videos) {
+        previouslyMentionedVideoNumericIds.add(video.infoVideo.numericId);
+      }
+    }
+  }
+
+  // if all media has been previously injected, return empty array
+  // (we don't want to re-inject media that has already been injected)
+  if (
+    response.data.every((d) => {
+      switch (d.type) {
+        case "image":
+          return previouslyMentionedImageNumericIds.has(d.numericId);
+        case "video":
+          return previouslyMentionedVideoNumericIds.has(d.numericId);
+        case "text":
+          return true; // text is not a media type
+        default:
+          assertTypesExhausted(d);
+      }
+    })
+  ) {
+    return [];
   }
 
   return response.data;
