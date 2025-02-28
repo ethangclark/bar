@@ -14,6 +14,7 @@ import { eq } from "drizzle-orm";
 import { assertOneOrNone } from "~/common/assertions";
 import { db, schema } from "~/server/db";
 import { queryUser } from "~/server/services/userService";
+import { notifyAdmin } from "../services/email/notifyAdmin";
 import { getIpAddress } from "../utils";
 
 /**
@@ -115,10 +116,25 @@ export const createTRPCRouter = t.router;
  */
 export const publicProcedure = t.procedure;
 
+type QueryCb = Parameters<typeof publicProcedure.query>[0];
+type QueryArgCtx = Parameters<QueryCb>[0]["ctx"];
+
+export function isLoggedIn(ctx: QueryArgCtx) {
+  return !!ctx.session?.userId;
+}
+
 // Throws if user is not logged in
 export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   const { session, user, userId } = ctx;
   if (!session || !user || !userId) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  if (!isLoggedIn(ctx)) {
+    await notifyAdmin("isLoggedIn logic is not working as expected", {
+      session,
+      user,
+      userId,
+    });
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({

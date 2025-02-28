@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   createTRPCRouter,
+  isLoggedIn,
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
@@ -10,6 +11,10 @@ import { logoutUser } from "~/server/services/authService";
 import { sendLoginEmail } from "~/server/services/email/loginEmail";
 
 export const authRouter = createTRPCRouter({
+  isLoggedIn: publicProcedure.query(async ({ ctx }) => {
+    return isLoggedIn(ctx);
+  }),
+
   sendLoginEmail: publicProcedure
     .input(z.object({ email: z.string().email() }))
     .mutation(async ({ input }) => {
