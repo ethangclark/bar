@@ -20,6 +20,11 @@ export async function GET(request: NextRequest) {
   // If sessionId or login token is missing, redirect to the home page
   // (No session means they haven't visited the app before on their own, e.g. they're an email scanner.)
   if (!loginToken || !session) {
+    console.log("redirecting to home page", {
+      loginToken,
+      session,
+      url,
+    });
     return NextResponse.redirect(getBaseUrl());
   }
 
@@ -31,6 +36,12 @@ export async function GET(request: NextRequest) {
       console.error("Error logging in via link route", error);
       return false;
     }
+  });
+
+  console.log("loginSuccess", loginSuccess, {
+    loginToken,
+    session,
+    url,
   });
 
   return NextResponse.redirect(
