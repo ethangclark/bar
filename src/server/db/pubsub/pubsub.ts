@@ -51,26 +51,39 @@ class AsyncQueue<T extends SuperJSONValue> {
   }
 }
 
+/**
+ * Cache the subscriber so we can clean up old ones on HMR updates
+ */
+const globalForPubSub = globalThis as unknown as {
+  channelToPglSubscriber: {
+    [key: string]: ReturnType<typeof createSubscriber>;
+  };
+};
+globalForPubSub.channelToPglSubscriber ??= {};
+
 export class PubSub<T extends SuperJSONValue> {
-  private subscriber: ReturnType<typeof createSubscriber>;
+  private pglSubscriber: ReturnType<typeof createSubscriber>;
   private subscribers = new Set<Subscriber<T>>();
 
   constructor(private channel: string) {
-    this.subscriber = createSubscriber({
+    globalForPubSub.channelToPglSubscriber[channel]?.close();
+    this.pglSubscriber = createSubscriber({
       connectionString: env.DATABASE_URL,
     });
+    globalForPubSub.channelToPglSubscriber[channel] = this.pglSubscriber;
+
     // When a notification comes in on our channel, broadcast it.
-    this.subscriber.notifications.on(channel, (payload: string) => {
+    this.pglSubscriber.notifications.on(channel, (payload: string) => {
       this.broadcast(superjson.parse<T>(payload));
     });
     // Connect and start listening.
-    void this.subscriber.connect().then(() => {
-      return this.subscriber.listenTo(channel);
+    void this.pglSubscriber.connect().then(() => {
+      return this.pglSubscriber.listenTo(channel);
     });
   }
 
   async publish(payload: T): Promise<void> {
-    await this.subscriber.notify(this.channel, superjson.stringify(payload));
+    await this.pglSubscriber.notify(this.channel, superjson.stringify(payload));
   }
 
   private broadcast(payload: T) {
