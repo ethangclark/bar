@@ -162,6 +162,9 @@ export class DescendentStore {
       },
     });
 
+    // We're relying on transactions on the BE to ensure that
+    // this doesn't result in a race condition
+
     // might be some other updates in the modifications object
     // (e.g. correct createdAt fields)
     this.handleModifications(modifications);
@@ -213,6 +216,9 @@ export class DescendentStore {
         toDelete: createEmptyDescendents(),
       },
     });
+
+    // We're relying on transactions on the BE to ensure that
+    // this doesn't result in a race condition
 
     // might be some other updates in the modifications object
     // (e.g. correct updatedAt fields)
