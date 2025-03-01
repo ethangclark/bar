@@ -1,4 +1,5 @@
 import { Input, Typography } from "antd";
+import { generateKeyBetween } from "fractional-indexing";
 import {
   FancySavingIndicator,
   LoadingCentered,
@@ -73,6 +74,34 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
               itemNumber={indexToItemNumber(idx)}
               deleted={draftStore.isDeletedDraft(item.id)}
               enrolledAs={enrolledAs}
+              moveItemUp={
+                idx > 0
+                  ? () => {
+                      const targetFracIdx = generateKeyBetween(
+                        sortedItems[idx - 2]?.orderFracIdx ?? null,
+                        sortedItems[idx - 1]?.orderFracIdx ?? null,
+                      );
+                      draftStore.updateDraft("items", {
+                        id: item.id,
+                        orderFracIdx: targetFracIdx,
+                      });
+                    }
+                  : null
+              }
+              moveItemDown={
+                idx < sortedItems.length - 1
+                  ? () => {
+                      const targetFracIdx = generateKeyBetween(
+                        sortedItems[idx + 1]?.orderFracIdx ?? null,
+                        sortedItems[idx + 2]?.orderFracIdx ?? null,
+                      );
+                      draftStore.updateDraft("items", {
+                        id: item.id,
+                        orderFracIdx: targetFracIdx,
+                      });
+                    }
+                  : null
+              }
             />
           );
         })}

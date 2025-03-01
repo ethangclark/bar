@@ -1,6 +1,7 @@
 import { Typography } from "antd";
 import { assertTypesExhausted } from "~/common/assertions";
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
+import { noop } from "~/common/fnUtils";
 import { objectKeys } from "~/common/objectUtils";
 import { type ItemWithDescendents } from "~/server/db/schema";
 import { storeObserver } from "../../utils/storeObserver";
@@ -15,6 +16,8 @@ type CustomProps = {
   itemNumber: number;
   deleted: boolean;
   enrolledAs: EnrollmentType[];
+  moveItemUp: (() => void) | null;
+  moveItemDown: (() => void) | null;
 };
 
 function getItemTitle(item: ItemWithDescendents): string {
@@ -56,12 +59,29 @@ function getItemTitle(item: ItemWithDescendents): string {
 }
 
 export const Item = storeObserver<CustomProps>(function Item(props) {
-  const { item, itemNumber, deleted, draftStore } = props;
+  const { item, itemNumber, deleted, draftStore, moveItemUp, moveItemDown } =
+    props;
 
   return (
     <div className="mb-12 flex w-full flex-col items-center">
       <div className="flex w-full items-center justify-between">
         <div className="mb-1 flex items-center gap-2">
+          <div className="flex flex-col">
+            <Typography.Link
+              className="mb-[-2px] text-xs"
+              onClick={moveItemUp ?? noop}
+              disabled={!moveItemUp}
+            >
+              ↑
+            </Typography.Link>
+            <Typography.Link
+              className="mt-[-2px] text-xs"
+              onClick={moveItemDown ?? noop}
+              disabled={!moveItemDown}
+            >
+              ↓
+            </Typography.Link>
+          </div>
           <div className="text-lg font-bold">Item {itemNumber}</div>
           <TypeTitle>{getItemTitle(item)}</TypeTitle>
         </div>
