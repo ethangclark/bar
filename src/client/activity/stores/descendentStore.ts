@@ -132,6 +132,19 @@ export class DescendentStore {
     }
   }
 
+  getById<T extends DescendentName>(descendentName: T, id: string) {
+    if (this.descendents instanceof Status) {
+      return this.descendents;
+    }
+    return this.descendents[descendentName][id] ?? notLoaded;
+  }
+  get<T extends DescendentName>(descendentName: T) {
+    if (this.descendents instanceof Status) {
+      return this.descendents;
+    }
+    return Object.values(this.descendents[descendentName]);
+  }
+
   async create<T extends DescendentName>(
     descendentName: T,
     descendent: DescendentCreateParams<T>,
@@ -172,18 +185,6 @@ export class DescendentStore {
     const allCreated = objectValues(modifications.toCreate[descendentName]);
     const created = assertOne(allCreated);
     return created as DescendentRows[T];
-  }
-  getById<T extends DescendentName>(descendentName: T, id: string) {
-    if (this.descendents instanceof Status) {
-      return this.descendents;
-    }
-    return this.descendents[descendentName][id] ?? notLoaded;
-  }
-  get<T extends DescendentName>(descendentName: T) {
-    if (this.descendents instanceof Status) {
-      return this.descendents;
-    }
-    return Object.values(this.descendents[descendentName]);
   }
   async update<T extends DescendentName>(
     descendentName: T,
