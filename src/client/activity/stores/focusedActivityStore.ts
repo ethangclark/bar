@@ -5,7 +5,6 @@ import { getEnrolledAs } from "~/common/enrollmentTypeUtils";
 import { noop } from "~/common/fnUtils";
 import { identity } from "~/common/objectUtils";
 import { type RichActivity } from "~/common/types";
-import { trpc } from "~/trpc/proxy";
 
 const baseState = () => ({
   activityId: identity<string | undefined>(undefined),
@@ -30,7 +29,7 @@ export class FocusedActivityStore {
 
   async loadActivity(activityId: string) {
     this.activityId = activityId;
-    const activity = await trpc.activity.get.query({ activityId });
+    const activity = await this.serverInterface.getActivity({ activityId });
     runInAction(() => {
       this.activity = activity;
     });
@@ -77,7 +76,7 @@ export class FocusedActivityStore {
         const oldTitle = this.activity.adHocActivity.title;
         this.activity.adHocActivity.title = title;
         try {
-          await trpc.activity.updateAdHocActivity.mutate({
+          await this.serverInterface.updateActivityTitle({
             activityId: this.activity.id,
             title,
           });

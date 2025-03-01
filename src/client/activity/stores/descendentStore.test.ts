@@ -5,14 +5,21 @@ import {
   type Modifications,
 } from "~/common/descendentUtils";
 import { type MessageDelta } from "~/common/types";
-import { type Message } from "~/server/db/schema";
+import {
+  type EvalKey,
+  type Item,
+  type Message,
+  type Question,
+} from "~/server/db/schema";
 import {
   type DescendentServerInterface,
   DescendentStore,
 } from "./descendentStore";
 import { FocusedActivityStore } from "./focusedActivityStore";
 
-function getNewStore(
+const defaultActivityId = "activityId";
+
+async function getNewStore(
   descendentLoader: () => Descendents,
   modificationResponder: () => Modifications,
 ) {
@@ -26,11 +33,11 @@ function getNewStore(
   };
   const activityStore = new FocusedActivityStore({
     getActivity: async () => ({
-      id: "activityId",
+      id: defaultActivityId,
       type: "adHoc",
       title: "activityTitle",
       adHocActivity: {
-        activityId: "activityId",
+        activityId: defaultActivityId,
         title: "activityTitle",
         creatorId: "creatorId",
       },
@@ -38,6 +45,7 @@ function getNewStore(
     }),
     updateActivityTitle: () => Promise.resolve(),
   });
+  await activityStore.loadActivity(defaultActivityId);
   const descendentServerInterface: DescendentServerInterface = {
     readDescendents: () => Promise.resolve(descendentLoader()),
     subscribeToNewDescendents: (_, cb) => {
@@ -63,22 +71,79 @@ function getNewStore(
 }
 
 describe(DescendentStore.name, () => {
-  it("should load descendents", () => {
-    const initialDescendents = createEmptyDescendents();
-    const myMessage: Message = {
+  it("should delete descendents when the root descendent is deleted", async () => {
+    // create a hierarchy of descendents
+    const item: Item = {
+      id: "itemId",
+      activityId: defaultActivityId,
+      orderFracIdx: "0",
+    };
+    const otherItem: Item = {
+      id: "otherItemId",
+      activityId: defaultActivityId,
+      orderFracIdx: "1",
+    };
+    const question: Question = {
+      id: "questionId",
+      activityId: defaultActivityId,
+      itemId: item.id,
+      content: "questionContent",
+    };
+    const otherQuestion: Question = {
+      id: "otherQuestionId",
+      activityId: defaultActivityId,
+      itemId: otherItem.id,
+      content: "otherQuestionContent",
+    };
+    const evalKey: EvalKey = {
+      id: "answerId",
+      activityId: defaultActivityId,
+      questionId: question.id,
+      content: "answerContent",
+    };
+    const otherEvalKey: EvalKey = {
+      id: "otherAnswerId",
+      activityId: defaultActivityId,
+      questionId: otherQuestion.id,
+      content: "otherAnswerContent",
+    };
+    // an unrelated descendent
+    const message: Message = {
       id: "messageId",
       content: "messageContent",
       createdAt: new Date(),
-      activityId: "activityId",
+      activityId: defaultActivityId,
       userId: "userId",
       threadId: "threadId",
       senderRole: "user",
       completed: false,
     };
-    initialDescendents.messages.push(myMessage);
-    const store = getNewStore(
+    // create the initial descendents
+    const initialDescendents = {
+      ...createEmptyDescendents(),
+      items: [item, otherItem],
+      questions: [question, otherQuestion],
+      evalKeys: [evalKey, otherEvalKey],
+      messages: [message],
+    };
+    const { store } = await getNewStore(
       () => initialDescendents,
       createEmptyModifications,
     );
+
+    // ensure all descendents are loaded
+    expect(store.get("items")).toEqual([item, otherItem]);
+    expect(store.get("questions")).toEqual([question, otherQuestion]);
+    expect(store.get("evalKeys")).toEqual([evalKey, otherEvalKey]);
+    expect(store.get("messages")).toEqual([message]);
+
+    // delete the item
+    await store.delete("items", item.id);
+
+    // ensure entire hierarchy is deleted
+    expect(store.get("items")).toEqual([otherItem]);
+    expect(store.get("questions")).toEqual([otherQuestion]);
+    expect(store.get("evalKeys")).toEqual([otherEvalKey]);
+    expect(store.get("messages")).toEqual([message]);
   });
 });
