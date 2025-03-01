@@ -4,7 +4,9 @@ Summit is a lesson administrator that drills students until they prove that they
 
 # A note on the DB schema
 
-We assume that foreign keys imply a dependence on the referenced record. This is important for our descendent management pattern (see the `rectifyModifications` function), where we skip creation and editing of instances that reference an entity that is scheduled to be deleted in the same operation, and delete them instead
+We assume that foreign keys imply a dependence on the referenced record. This is important for our descendent management pattern (see the `rectifyModifications` function), where we skip creation and editing of instances that reference an entity that is scheduled to be deleted in the same operation, and delete them instead.
+
+We also assume that rows ending with `Id` are references to other rows.
 
 As an implication of the above: All columns should be limited to null | boolean | number | string values. This lets us make nice assumptions. (Can revisit this, but if we do, want to make sure we think through it thoroughly.)
 
