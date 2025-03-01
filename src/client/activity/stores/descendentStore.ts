@@ -47,10 +47,6 @@ export type DescendentServerInterface = {
   }) => Promise<Modifications>;
 };
 
-type Deletion = {
-  descendentName: DescendentName;
-  descendent: DescendentRow;
-};
 export class DescendentStore {
   public descendents = baseState().descendents;
 
