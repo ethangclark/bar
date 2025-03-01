@@ -223,4 +223,12 @@ export class DraftStore {
       this.changes.cascadedIdDeletesToRootIds.has(id)
     );
   }
+
+  isEditedDraft(id: string) {
+    return (
+      this.changes.createdIds.has(id) ||
+      this.changes.updatedIds.has(id) ||
+      this.isDeletedDraft(id)
+    );
+  }
 }

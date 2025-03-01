@@ -35,7 +35,7 @@ export class EditorStore {
     return {
       isLoading: false,
       hasProblem: !drafts.every(isReady),
-      includesSaveable: drafts.length > 0,
+      includesSaveable: drafts.some((i) => this.draftStore.isEditedDraft(i.id)),
     };
   }
 
@@ -44,7 +44,10 @@ export class EditorStore {
     const itemsStatus = {
       isLoading: items instanceof Status,
       hasProblem: false,
-      includesSaveable: items instanceof Status ? false : items.length > 0,
+      includesSaveable:
+        items instanceof Status
+          ? false
+          : items.some((i) => this.draftStore.isEditedDraft(i.id)),
     };
 
     const statuses = [
