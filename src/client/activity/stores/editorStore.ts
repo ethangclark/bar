@@ -28,7 +28,7 @@ export class EditorStore {
     descendentName: T,
     isReady: (item: DescendentRows[T]) => boolean,
   ) {
-    const drafts = this.draftStore.getChangedItems(descendentName);
+    const drafts = this.draftStore.getDrafts(descendentName);
     if (drafts instanceof Status) {
       return { isLoading: true, hasProblem: false, includesSaveable: false };
     }
@@ -40,7 +40,7 @@ export class EditorStore {
   }
 
   get draftStatus() {
-    const items = this.draftStore.getChangedItems("items");
+    const items = this.draftStore.getDrafts("items");
     const itemsStatus = {
       isLoading: items instanceof Status,
       hasProblem: false,

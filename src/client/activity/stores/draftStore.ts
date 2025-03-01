@@ -1,4 +1,10 @@
-import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
+import {
+  autorun,
+  makeAutoObservable,
+  observable,
+  reaction,
+  runInAction,
+} from "mobx";
 import { loading, notLoaded, Status } from "~/client/utils/status";
 import { clone } from "~/common/cloneUtils";
 import {
@@ -11,7 +17,7 @@ import {
   type DescendentTables,
 } from "~/common/descendentUtils";
 import { getDraftDate, getDraftId } from "~/common/draftData";
-import { identity, objectValues } from "~/common/objectUtils";
+import { identity, objectEntries, objectValues } from "~/common/objectUtils";
 import { trpc } from "~/trpc/proxy";
 import {
   type DescendentCreateParams,
@@ -21,9 +27,10 @@ import { type FocusedActivityStore } from "./focusedActivityStore";
 const baseState = () => ({
   drafts: identity<DescendentTables | Status>(notLoaded),
   changes: {
-    createdIds: new Set<string>(),
-    updatedIds: new Set<string>(),
-    deletedIds: new Set<string>(),
+    createdIds: observable.set<string>(),
+    updatedIds: observable.set<string>(),
+    deletedIds: observable.set<string>(),
+    cascadedIdDeletesToRootIds: observable.map<string, Set<string>>();
   },
 });
 
@@ -93,7 +100,7 @@ export class DraftStore {
           toDelete: selectDescendents(drafts, this.changes.deletedIds),
         }),
       });
-      this.descendentStore.handleModifications(modifications);
+      this.descendentStore.incorporateModifications(modifications);
       runInAction(() => {
         upsertDescendents(drafts, modifications.toCreate);
         upsertDescendents(drafts, modifications.toUpdate);
@@ -146,7 +153,7 @@ export class DraftStore {
     if (this.drafts instanceof Status) {
       return this.drafts;
     }
-    return Object.values(this.drafts[descendentName]);
+    return objectValues(this.drafts[descendentName]) as Array<DescendentRows[T]>; // really the same as the above, just simplified;
   }
   updateDraft<T extends DescendentName>(
     descendentName: T,
@@ -163,35 +170,51 @@ export class DraftStore {
     };
     this.changes.updatedIds.add(updates.id);
   }
+
+  private cascadeDeletes(deletingId: string, fromRootId: string) {
+    if (this.drafts instanceof Status) {
+      return;
+    }
+    objectValues(this.drafts).forEach((descendentTable) => {
+      objectValues(descendentTable).forEach((descendent) => {
+        objectEntries(descendent).forEach(([key, value]) => {
+          if (key === "id") {
+            return;
+          }
+          if (value === deletingId) {
+            let rootIds = this.changes.cascadedIdDeletesToRootIds.get(descendent.id);
+            if (!rootIds) {
+              rootIds = new Set();
+              this.changes.cascadedIdDeletesToRootIds.set(descendent.id, rootIds);
+            }
+            rootIds.add(fromRootId);
+            this.cascadeDeletes(descendent.id, fromRootId);
+          }
+        });
+      });
+    });
+  }
   toggleDeletion(id: string) {
     if (this.drafts instanceof Status) {
       return;
     }
-    if (this.changes.deletedIds.has(id)) {
-      this.changes.deletedIds.delete(id);
-    } else {
+    const isDeleting = !this.changes.deletedIds.has(id);
+    if (isDeleting) {
       this.changes.deletedIds.add(id);
+      this.cascadeDeletes(id, id);
+    } else {
+      this.changes.deletedIds.delete(id);
+      Array.from(this.changes.cascadedIdDeletesToRootIds.entries()).forEach(([deletedId, rootIds]) => {
+        if (rootIds.has(id)) {
+          rootIds.delete(id);
+          if (rootIds.size === 0) {
+            this.changes.cascadedIdDeletesToRootIds.delete(deletedId);
+          }
+        }
+      });
     }
   }
-
   isDeletedDraft(id: string) {
-    // TODO: handle cascading deletes based off of foreign keys :/
-    return this.changes.deletedIds.has(id);
-  }
-
-  getChangedItems<T extends DescendentName>(
-    descendentName: T,
-  ): Array<DescendentRows[T]> | Status {
-    const drafts = this.drafts;
-    if (drafts instanceof Status) {
-      return drafts;
-    }
-    const changedItemRaw = objectValues(drafts[descendentName]).filter((item) =>
-      objectValues(this.changes).some((changedIdSet) =>
-        changedIdSet.has(item.id),
-      ),
-    );
-    const changedItems = changedItemRaw as Array<DescendentRows[T]>; // really the same as the above, just simplified
-    return changedItems;
+    return this.changes.deletedIds.has(id) || this.changes.cascadedIdDeletesToRootIds.has(id);
   }
 }

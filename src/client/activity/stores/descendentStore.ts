@@ -125,7 +125,7 @@ export class DescendentStore {
     Object.assign(this, baseState());
   }
 
-  handleModifications(modifications: Partial<Modifications>) {
+  private incorporateModifications(modifications: Partial<Modifications>) {
     const { descendents } = this;
     if (descendents instanceof Status) {
       return;
@@ -179,7 +179,7 @@ export class DescendentStore {
     toCreate[descendentName].push(newDescendent as any);
 
     // optimistic update
-    this.handleModifications({ toCreate });
+    this.incorporateModifications({ toCreate });
 
     const modifications = await this.serverInterface.modifyDescendents({
       activityId: this.focusedActivityStore.activityId,
@@ -195,7 +195,7 @@ export class DescendentStore {
 
     // might be some other updates in the modifications object
     // (e.g. correct createdAt fields)
-    this.handleModifications(modifications);
+    this.incorporateModifications(modifications);
 
     const allCreated = objectValues(modifications.toCreate[descendentName]);
     const created = assertOne(allCreated);
@@ -222,7 +222,7 @@ export class DescendentStore {
     toUpdate[descendentName].push(update as any);
 
     // optimistic update
-    this.handleModifications({ toUpdate });
+    this.incorporateModifications({ toUpdate });
 
     const modifications = await this.serverInterface.modifyDescendents({
       activityId: this.focusedActivityStore.activityId,
@@ -238,7 +238,7 @@ export class DescendentStore {
 
     // might be some other updates in the modifications object
     // (e.g. correct updatedAt fields)
-    this.handleModifications(modifications);
+    this.incorporateModifications(modifications);
 
     const allUpdated = objectValues(modifications.toUpdate[descendentName]);
     const updated = assertOne(allUpdated);
@@ -309,7 +309,7 @@ export class DescendentStore {
     }
 
     // optimistic update
-    this.handleModifications({ toDelete });
+    this.incorporateModifications({ toDelete });
 
     await this.serverInterface.modifyDescendents({
       activityId: this.focusedActivityStore.activityId,
