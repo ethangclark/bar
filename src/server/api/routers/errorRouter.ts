@@ -44,6 +44,7 @@ export const errorRouter = createTRPCRouter({
         });
 
         if (recentErrorsCount > 10) {
+          // prevent spamming
           return noop();
         }
 
