@@ -1,5 +1,8 @@
 import { trpc } from "~/trpc/proxy";
-import { DescendentStore } from "../activity/stores/descendentStore";
+import {
+  type DescendentServerInterface,
+  DescendentStore,
+} from "../activity/stores/descendentStore";
 import { DraftStore } from "../activity/stores/draftStore";
 import { EditorStore } from "../activity/stores/editorStore";
 import { FocusedActivityStore } from "../activity/stores/focusedActivityStore";
@@ -11,10 +14,24 @@ import { UploadStore } from "../activity/stores/uploadStore";
 import { ViewPieceStore } from "../activity/stores/viewPieceStore";
 import { QueryStore } from "./queryStore";
 
+const serverInterface: DescendentServerInterface = {
+  readDescendents: trpc.descendent.read.query,
+  subscribeToNewDescendents: (params, onData) =>
+    trpc.descendent.newDescendents.subscribe(params, { onData }),
+  subscribeToMessageDeltas: (params, onMessageDelta) =>
+    trpc.message.messageDeltas.subscribe(params, {
+      onData: onMessageDelta,
+    }),
+  modifyDescendents: trpc.descendent.modify.mutate,
+};
+
 const activitesStore = new QueryStore(trpc.activity.getAll.query);
 const uploadStore = new UploadStore();
 const focusedActivityStore = new FocusedActivityStore();
-const descendentStore = new DescendentStore(focusedActivityStore);
+const descendentStore = new DescendentStore(
+  serverInterface,
+  focusedActivityStore,
+);
 const threadStore = new ThreadStore(descendentStore);
 const draftStore = new DraftStore(focusedActivityStore, descendentStore);
 const editorStore = new EditorStore(draftStore, uploadStore);

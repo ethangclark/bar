@@ -14,7 +14,6 @@ import {
 import { getDraftDate, getDraftId } from "~/common/draftData";
 import { identity, objectEntries, objectValues } from "~/common/objectUtils";
 import { type MessageDelta } from "~/common/types";
-import { trpc } from "~/trpc/proxy";
 import { type FocusedActivityStore } from "./focusedActivityStore";
 
 const baseState = () => ({
@@ -28,11 +27,30 @@ export type DescendentCreateParams<T extends DescendentName> = Omit<
   "id" | "activityId" | "userId" | "createdAt"
 >;
 
+export type DescendentServerInterface = {
+  readDescendents: (params: { activityId: string }) => Promise<Descendents>;
+  subscribeToNewDescendents: (
+    params: { activityId: string },
+    onDescendents: (descendents: Descendents) => void,
+  ) => { unsubscribe: () => void };
+  subscribeToMessageDeltas: (
+    params: { activityId: string },
+    onMessageDelta: (messageDelta: MessageDelta) => void,
+  ) => { unsubscribe: () => void };
+  modifyDescendents: (params: {
+    activityId: string;
+    modifications: Modifications;
+  }) => Promise<Modifications>;
+};
+
 // could add optimistic updates here
 export class DescendentStore {
   public descendents = baseState().descendents;
 
-  constructor(private focusedActivityStore: FocusedActivityStore) {
+  constructor(
+    private serverInterface: DescendentServerInterface,
+    private focusedActivityStore: FocusedActivityStore,
+  ) {
     makeAutoObservable(this);
     autorun(() => {
       const { activityId } = this.focusedActivityStore;
@@ -48,7 +66,7 @@ export class DescendentStore {
   private async loadDescendents(activityId: string) {
     this.reset();
     this.descendents = loading;
-    const descendents = await trpc.descendent.read.query({
+    const descendents = await this.serverInterface.readDescendents({
       activityId,
     });
     runInAction(() => {
@@ -56,18 +74,16 @@ export class DescendentStore {
     });
   }
   private subscribeToDescendents(activityId: string) {
-    const subscription = trpc.descendent.newDescendents.subscribe(
+    const subscription = this.serverInterface.subscribeToNewDescendents(
       { activityId },
-      {
-        onData: (descendents: Descendents) => {
-          const existing = this.descendents;
-          if (existing instanceof Status) {
-            return;
-          }
-          runInAction(() => {
-            upsertDescendents(existing, descendents);
-          });
-        },
+      (descendents: Descendents) => {
+        const existing = this.descendents;
+        if (existing instanceof Status) {
+          return;
+        }
+        runInAction(() => {
+          upsertDescendents(existing, descendents);
+        });
       },
     );
     reaction(
@@ -81,21 +97,19 @@ export class DescendentStore {
     );
   }
   private subscribeToMessageDeltas(activityId: string) {
-    const subscription = trpc.message.messageDeltas.subscribe(
+    const subscription = this.serverInterface.subscribeToMessageDeltas(
       { activityId },
-      {
-        onData: (messageDelta: MessageDelta) => {
-          const { descendents } = this;
-          if (descendents instanceof Status) {
-            return;
+      (messageDelta: MessageDelta) => {
+        const { descendents } = this;
+        if (descendents instanceof Status) {
+          return;
+        }
+        runInAction(() => {
+          const descendent = descendents.messages[messageDelta.messageId];
+          if (descendent !== undefined) {
+            descendent.content += messageDelta.contentDelta;
           }
-          runInAction(() => {
-            const descendent = descendents.messages[messageDelta.messageId];
-            if (descendent !== undefined) {
-              descendent.content += messageDelta.contentDelta;
-            }
-          });
-        },
+        });
       },
     );
     reaction(
@@ -166,7 +180,7 @@ export class DescendentStore {
     // optimistic update
     this.handleModifications({ toCreate });
 
-    const modifications = await trpc.descendent.modify.mutate({
+    const modifications = await this.serverInterface.modifyDescendents({
       activityId: this.focusedActivityStore.activityId,
       modifications: {
         toCreate,
@@ -209,7 +223,7 @@ export class DescendentStore {
     // optimistic update
     this.handleModifications({ toUpdate });
 
-    const modifications = await trpc.descendent.modify.mutate({
+    const modifications = await this.serverInterface.modifyDescendents({
       activityId: this.focusedActivityStore.activityId,
       modifications: {
         toCreate: createEmptyDescendents(),
@@ -245,7 +259,7 @@ export class DescendentStore {
     // optimistic update
     this.handleModifications({ toDelete });
 
-    await trpc.descendent.modify.mutate({
+    await this.serverInterface.modifyDescendents({
       activityId: this.focusedActivityStore.activityId,
       modifications: {
         toCreate: createEmptyDescendents(),
