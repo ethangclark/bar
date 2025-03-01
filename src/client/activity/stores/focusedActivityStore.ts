@@ -12,11 +12,19 @@ const baseState = () => ({
   activity: identity<RichActivity | Status>(notLoaded),
 });
 
+export type ActivityServerInterface = {
+  getActivity: (params: { activityId: string }) => Promise<RichActivity>;
+  updateActivityTitle: (params: {
+    activityId: string;
+    title: string;
+  }) => Promise<void>;
+};
+
 export class FocusedActivityStore {
   public activityId = baseState().activityId;
   public activity = baseState().activity;
 
-  constructor() {
+  constructor(private serverInterface: ActivityServerInterface) {
     makeAutoObservable(this);
   }
 

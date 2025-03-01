@@ -88,6 +88,14 @@ export function createEmptyDescendents(): Descendents {
   }, {} as Descendents);
 }
 
+export function createEmptyModifications(): Modifications {
+  return {
+    toCreate: createEmptyDescendents(),
+    toUpdate: createEmptyDescendents(),
+    toDelete: createEmptyDescendents(),
+  };
+}
+
 export function indexDescendents(descendents: Descendents): DescendentTables {
   return descendentNames.reduce((acc, name) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
