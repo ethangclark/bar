@@ -71,6 +71,30 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 export const userSchema = createSelectSchema(users);
 
+export const errors = pgTable(
+  "error",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ipAddress: text("ip_address").notNull(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+    message: text("message").notNull(),
+    detailsSuperJsonString: text("details_super_json_string").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (e) => [
+    index("error_ip_address_idx").on(e.ipAddress),
+    index("error_user_id_idx").on(e.userId),
+    index("error_created_at_idx").on(e.createdAt),
+  ],
+);
+export type Error = InferSelectModel<typeof errors>;
+export const errorsRelations = relations(errors, ({ one }) => ({
+  user: one(users, { fields: [errors.userId], references: [users.id] }),
+}));
+export const errorsSchema = createSelectSchema(errors);
+
 export const sessions = pgTable(
   "session",
   {

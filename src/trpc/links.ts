@@ -9,6 +9,7 @@ import { type TRPCLink } from "@trpc/client";
 import { type AnyRouter } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
 import SuperJSON from "superjson";
+import { reportClientError } from "~/client/utils/errorUtils";
 import { getTrpcUrl } from "~/common/urlUtils";
 
 const linkOpts = {
@@ -34,7 +35,7 @@ export function subscribeToErrors(subscriber: {
 }
 
 // Custom error alert link
-const errorAlertLink: TRPCLink<AnyRouter> = () => {
+const globalTrpcErrorLink: TRPCLink<AnyRouter> = () => {
   return ({ next, op }) => {
     return observable((observer) => {
       const unsubscribe = next(op).subscribe({
@@ -42,6 +43,9 @@ const errorAlertLink: TRPCLink<AnyRouter> = () => {
           observer.next(result);
         },
         error(err) {
+          reportClientError(err, {
+            trpcInfo: "caught via globalTrpcErrorLink",
+          });
           errorSubscribers.forEach((subscriber) => {
             subscriber.onError(err);
           });
@@ -64,7 +68,7 @@ export const links = [
       process.env.NODE_ENV === "development" ||
       (op.direction === "down" && op.result instanceof Error),
   }),
-  errorAlertLink,
+  globalTrpcErrorLink,
   splitLink({
     // uses the httpSubscriptionLink for subscriptions
     condition: (op) => op.type === "subscription",

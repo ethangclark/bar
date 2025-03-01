@@ -1,9 +1,6 @@
-import type superjson from "superjson";
 import { z } from "zod";
 
 export { type RichActivity } from "~/server/services/activity/activityService";
-
-export type SuperJSONValue = Parameters<typeof superjson.serialize>[0];
 
 export type MaybePromise<T = void> = T | Promise<T>;
 
@@ -14,12 +11,19 @@ export const jsonSchema: z.ZodType<Json> = z.lazy(() =>
   z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)]),
 );
 
-export type JsonPlus =
+type JsonPlus =
   | Literal
   | undefined
   | Date
   | JsonPlus[]
-  | { [key: string]: JsonPlus };
+  | { [key: string]: JsonPlus }
+  | Set<JsonPlus>
+  | Map<string, JsonPlus>;
+
+// I'd prefer to use Parameters<typeof superjson.serialize>[0], but that resolves to `any`
+export type SuperJSONValue = JsonPlus;
+
+export type SuperJsonObject = { [key: string]: SuperJSONValue };
 
 export const audioDataXSchema = z.object({
   data: z.string(), // base64 encoded audio
