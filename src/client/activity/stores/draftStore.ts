@@ -9,7 +9,6 @@ import { loading, notLoaded, Status } from "~/client/utils/status";
 import { clone } from "~/common/cloneUtils";
 import {
   descendentNames,
-  rectifyModifications,
   selectDescendents,
   upsertDescendents,
   type DescendentName,
@@ -18,7 +17,6 @@ import {
 } from "~/common/descendentUtils";
 import { getDraftDate, getDraftId } from "~/common/draftData";
 import { identity, objectEntries, objectValues } from "~/common/objectUtils";
-import { trpc } from "~/trpc/proxy";
 import {
   type DescendentCreateParams,
   type DescendentStore,
@@ -30,7 +28,7 @@ const baseState = () => ({
     createdIds: observable.set<string>(),
     updatedIds: observable.set<string>(),
     deletedIds: observable.set<string>(),
-    cascadedIdDeletesToRootIds: observable.map<string, Set<string>>();
+    cascadedIdDeletesToRootIds: observable.map<string, Set<string>>(),
   },
 });
 
@@ -92,15 +90,11 @@ export class DraftStore {
     const { drafts } = this;
     this.drafts = loading;
     try {
-      const modifications = await trpc.descendent.modify.mutate({
-        activityId: this.focusedActivityStore.activityId,
-        modifications: rectifyModifications({
-          toCreate: selectDescendents(drafts, this.changes.createdIds),
-          toUpdate: selectDescendents(drafts, this.changes.updatedIds),
-          toDelete: selectDescendents(drafts, this.changes.deletedIds),
-        }),
+      const modifications = await this.descendentStore.modify({
+        toCreate: selectDescendents(drafts, this.changes.createdIds),
+        toUpdate: selectDescendents(drafts, this.changes.updatedIds),
+        toDelete: selectDescendents(drafts, this.changes.deletedIds),
       });
-      this.descendentStore.incorporateModifications(modifications);
       runInAction(() => {
         upsertDescendents(drafts, modifications.toCreate);
         upsertDescendents(drafts, modifications.toUpdate);
@@ -153,7 +147,9 @@ export class DraftStore {
     if (this.drafts instanceof Status) {
       return this.drafts;
     }
-    return objectValues(this.drafts[descendentName]) as Array<DescendentRows[T]>; // really the same as the above, just simplified;
+    return objectValues(this.drafts[descendentName]) as Array<
+      DescendentRows[T]
+    >; // really the same as the above, just simplified;
   }
   updateDraft<T extends DescendentName>(
     descendentName: T,
@@ -182,10 +178,15 @@ export class DraftStore {
             return;
           }
           if (value === deletingId) {
-            let rootIds = this.changes.cascadedIdDeletesToRootIds.get(descendent.id);
+            let rootIds = this.changes.cascadedIdDeletesToRootIds.get(
+              descendent.id,
+            );
             if (!rootIds) {
               rootIds = new Set();
-              this.changes.cascadedIdDeletesToRootIds.set(descendent.id, rootIds);
+              this.changes.cascadedIdDeletesToRootIds.set(
+                descendent.id,
+                rootIds,
+              );
             }
             rootIds.add(fromRootId);
             this.cascadeDeletes(descendent.id, fromRootId);
@@ -204,17 +205,22 @@ export class DraftStore {
       this.cascadeDeletes(id, id);
     } else {
       this.changes.deletedIds.delete(id);
-      Array.from(this.changes.cascadedIdDeletesToRootIds.entries()).forEach(([deletedId, rootIds]) => {
-        if (rootIds.has(id)) {
-          rootIds.delete(id);
-          if (rootIds.size === 0) {
-            this.changes.cascadedIdDeletesToRootIds.delete(deletedId);
+      [...this.changes.cascadedIdDeletesToRootIds.entries()].forEach(
+        ([deletedId, rootIds]: [string, Set<string>]) => {
+          if (rootIds.has(id)) {
+            rootIds.delete(id);
+            if (rootIds.size === 0) {
+              this.changes.cascadedIdDeletesToRootIds.delete(deletedId);
+            }
           }
-        }
-      });
+        },
+      );
     }
   }
   isDeletedDraft(id: string) {
-    return this.changes.deletedIds.has(id) || this.changes.cascadedIdDeletesToRootIds.has(id);
+    return (
+      this.changes.deletedIds.has(id) ||
+      this.changes.cascadedIdDeletesToRootIds.has(id)
+    );
   }
 }

@@ -1,9 +1,12 @@
 import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
 import { loading, notLoaded, Status } from "~/client/utils/status";
 import { assertOne } from "~/common/assertions";
+import { clone } from "~/common/cloneUtils";
 import {
   createEmptyDescendents,
+  createEmptyModifications,
   indexDescendents,
+  rectifyModifications,
   upsertDescendents,
   type DescendentName,
   type DescendentRow,
@@ -13,6 +16,7 @@ import {
   type Modifications,
 } from "~/common/descendentUtils";
 import { getDraftDate, getDraftId } from "~/common/draftData";
+import { noop } from "~/common/fnUtils";
 import { identity, objectEntries, objectValues } from "~/common/objectUtils";
 import { type MessageDelta } from "~/common/types";
 import { type FocusedActivityStore } from "./focusedActivityStore";
@@ -44,7 +48,10 @@ export type DescendentServerInterface = {
   }) => Promise<Modifications>;
 };
 
-// could add optimistic updates here
+type Deletion = {
+  descendentName: DescendentName;
+  descendent: DescendentRow;
+};
 export class DescendentStore {
   public descendents = baseState().descendents;
 
@@ -160,97 +167,11 @@ export class DescendentStore {
     return Object.values(this.descendents[descendentName]);
   }
 
-  async create<T extends DescendentName>(
-    descendentName: T,
-    descendent: DescendentCreateParams<T>,
-  ): Promise<DescendentRows[T]> {
-    if (!this.focusedActivityStore.activityId) {
-      throw new Error("Activity ID is not set");
-    }
-    const newDescendent = {
-      ...descendent,
-      id: getDraftId(),
-      activityId: this.focusedActivityStore.activityId,
-      userId: getDraftId(),
-      createdAt: getDraftDate(),
-    };
-    const toCreate = createEmptyDescendents();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toCreate[descendentName].push(newDescendent as any);
-
-    // optimistic update
-    this.incorporateModifications({ toCreate });
-
-    const modifications = await this.serverInterface.modifyDescendents({
-      activityId: this.focusedActivityStore.activityId,
-      modifications: {
-        toCreate,
-        toUpdate: createEmptyDescendents(),
-        toDelete: createEmptyDescendents(),
-      },
-    });
-
-    // We're relying on transactions on the BE to ensure that
-    // this doesn't result in a race condition
-
-    // might be some other updates in the modifications object
-    // (e.g. correct createdAt fields)
-    this.incorporateModifications(modifications);
-
-    const allCreated = objectValues(modifications.toCreate[descendentName]);
-    const created = assertOne(allCreated);
-    return created as DescendentRows[T];
-  }
-  async update<T extends DescendentName>(
-    descendentName: T,
-    updatePartial: { id: string } & Partial<DescendentRows[T]>,
-  ): Promise<DescendentRows[T]> {
-    if (!this.focusedActivityStore.activityId) {
-      throw new Error("Activity ID is not set");
-    }
-    const descendent = this.getById(descendentName, updatePartial.id);
-    if (descendent instanceof Status) {
-      throw new Error("Descendent to update is not loaded");
-    }
-
-    const update = {
-      ...descendent,
-      ...updatePartial,
-    };
-    const toUpdate = createEmptyDescendents();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toUpdate[descendentName].push(update as any);
-
-    // optimistic update
-    this.incorporateModifications({ toUpdate });
-
-    const modifications = await this.serverInterface.modifyDescendents({
-      activityId: this.focusedActivityStore.activityId,
-      modifications: {
-        toCreate: createEmptyDescendents(),
-        toUpdate,
-        toDelete: createEmptyDescendents(),
-      },
-    });
-
-    // We're relying on transactions on the BE to ensure that
-    // this doesn't result in a race condition
-
-    // might be some other updates in the modifications object
-    // (e.g. correct updatedAt fields)
-    this.incorporateModifications(modifications);
-
-    const allUpdated = objectValues(modifications.toUpdate[descendentName]);
-    const updated = assertOne(allUpdated);
-    return updated as DescendentRows[T];
-  }
-
   // recursively finds all descendents that need to be deleted
   // as a result of wanting to delete the given descendent
-  private getAllDescendentsToDelete(rootDeletion: {
-    descendentName: DescendentName;
-    descendent: DescendentRow;
-  }): Descendents | Status {
+  private getAllDescendentsToDelete(
+    rootDeletions: Deletion[],
+  ): Descendents | Status {
     if (this.descendents instanceof Status) {
       return this.descendents;
     }
@@ -260,7 +181,12 @@ export class DescendentStore {
         descendentName: DescendentName;
         descendent: DescendentRow;
       }
-    >([[rootDeletion.descendent.id, rootDeletion]]);
+    >(
+      rootDeletions.map((rootDeletion) => [
+        rootDeletion.descendent.id,
+        rootDeletion,
+      ]),
+    );
 
     let newChildrenRecognized = false;
     do {
@@ -291,32 +217,135 @@ export class DescendentStore {
     }
     return descendents;
   }
-  async delete(descendentName: DescendentName, id: string) {
+
+  async modify(
+    modificationsPartial: Partial<Modifications>,
+  ): Promise<Modifications> {
+    const modifications = {
+      ...createEmptyModifications(),
+      ...modificationsPartial,
+    };
     if (!this.focusedActivityStore.activityId) {
       throw new Error("Activity ID is not set");
     }
-    const descendent = this.getById(descendentName, id);
-    if (descendent instanceof Status) {
-      return;
-    }
-
-    const toDelete = this.getAllDescendentsToDelete({
-      descendentName,
-      descendent,
+    const idsBeingDeleted = new Set<string>();
+    objectValues(modifications.toDelete).forEach((descendents) => {
+      descendents.forEach((descendent) => {
+        idsBeingDeleted.add(descendent.id);
+      });
     });
-    if (toDelete instanceof Status) {
-      return;
+
+    const withCascadedDeletions = clone(modifications);
+    const additionalToDelete = this.getAllDescendentsToDelete(
+      objectEntries(modifications.toDelete)
+        .map(([descendentName, descendents]) => {
+          return descendents.map((descendent) => {
+            const deletion: Deletion = { descendentName, descendent };
+            return deletion;
+          });
+        })
+        .flat(1),
+    );
+    if (additionalToDelete instanceof Status) {
+      throw new Error("Cannot delete while loading descendents");
     }
+    objectEntries(additionalToDelete).forEach(
+      ([descendentName, descendents]) => {
+        descendents.forEach((descendent) => {
+          if (idsBeingDeleted.has(descendent.id)) {
+            noop();
+          } else {
+            withCascadedDeletions.toDelete[descendentName].push(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              descendent as any,
+            );
+          }
+        });
+      },
+    );
+
+    const rectified = rectifyModifications(withCascadedDeletions);
 
     // optimistic update
-    this.incorporateModifications({ toDelete });
+    this.incorporateModifications(rectified);
 
-    await this.serverInterface.modifyDescendents({
+    const result = await this.serverInterface.modifyDescendents({
       activityId: this.focusedActivityStore.activityId,
-      modifications: {
-        toCreate: createEmptyDescendents(),
-        toUpdate: createEmptyDescendents(),
-        toDelete,
+      modifications: rectified,
+    });
+
+    // We're relying on transactions on the BE to ensure that
+    // this doesn't result in a race condition
+
+    // might be some other updates in the modifications object
+    // (e.g. correct createdAt fields)
+    this.incorporateModifications(result);
+
+    return result;
+  }
+
+  async create<T extends DescendentName>(
+    descendentName: T,
+    descendent: DescendentCreateParams<T>,
+  ): Promise<DescendentRows[T]> {
+    const newDescendent = {
+      ...descendent,
+      id: getDraftId(),
+      activityId: this.focusedActivityStore.activityId,
+      userId: getDraftId(),
+      createdAt: getDraftDate(),
+    };
+
+    const modifications = await this.modify({
+      toCreate: {
+        ...createEmptyDescendents(),
+        [descendentName]: [newDescendent],
+      },
+    });
+
+    this.incorporateModifications(modifications);
+
+    const allCreated = objectValues(modifications.toCreate[descendentName]);
+    const created = assertOne(allCreated);
+    return created as DescendentRows[T];
+  }
+
+  async update<T extends DescendentName>(
+    descendentName: T,
+    updatePartial: { id: string } & Partial<DescendentRows[T]>,
+  ): Promise<DescendentRows[T]> {
+    const descendent = this.getById(descendentName, updatePartial.id);
+    if (descendent instanceof Status) {
+      throw new Error("Descendent to update is not loaded");
+    }
+
+    const unverifiedUpdated = {
+      ...descendent,
+      ...updatePartial,
+    };
+
+    const modifications = await this.modify({
+      toUpdate: {
+        ...createEmptyDescendents(),
+        [descendentName]: [unverifiedUpdated],
+      },
+    });
+
+    const allUpdated = objectValues(modifications.toUpdate[descendentName]);
+    const updated = assertOne(allUpdated);
+    return updated as DescendentRows[T];
+  }
+
+  async delete(descendentName: DescendentName, id: string) {
+    const descendent = this.getById(descendentName, id);
+    if (descendent instanceof Status) {
+      throw new Error("Descendent to delete is not loaded");
+    }
+
+    await this.modify({
+      toDelete: {
+        ...createEmptyDescendents(),
+        [descendentName]: [descendent],
       },
     });
 
