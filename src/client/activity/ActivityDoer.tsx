@@ -5,6 +5,7 @@ import { scrollbarHeight } from "../utils/scrollbarWidth";
 import { storeObserver } from "../utils/storeObserver";
 import { ChatInput } from "./ChatInput";
 import { Messages } from "./Messages";
+import { Progress } from "./Progress";
 import { ThreadSelection } from "./ThreadSelection";
 
 export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
@@ -23,7 +24,8 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
       >
         {igod && <ThreadSelection />}
         <div className="md:text-md mb-4 flex w-full items-center justify-between">
-          <div className="px-2 text-lg md:text-2xl">{assignmentTitle}</div>
+          <Progress />
+          <div className="pl-7 text-lg md:text-2xl">{assignmentTitle}</div>
           <LogoutButton />
         </div>
         <Messages />
