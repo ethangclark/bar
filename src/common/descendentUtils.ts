@@ -185,8 +185,8 @@ export function rectifyModifications(mods: Modifications): Modifications {
       });
     });
 
-    // if objects have been both created and updated, update the update op
-    // to be a create op (overwriting the original create op)
+    // if objects have been both created and updated, incorporate the update op
+    // into the create op and then remove the update op
     const idxdRowsToUpdate = toUpdate[name];
     objectKeys(idxdRowsToUpdate).forEach((id) => {
       if (toCreate[name][id]) {
