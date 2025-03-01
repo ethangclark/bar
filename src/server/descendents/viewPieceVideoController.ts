@@ -14,10 +14,7 @@ const canRead: DescendentController<ViewPieceVideo>["canRead"] = (
 export const viewPieceVideoController: DescendentController<ViewPieceVideo> = {
   canRead,
 
-  async create({ rows }) {
-    if (rows.length === 0) {
-      return [];
-    }
+  async create() {
     throw new Error("Users may not create view piece videos");
   },
   // anyone can read a view piece video for themselves
@@ -38,11 +35,8 @@ export const viewPieceVideoController: DescendentController<ViewPieceVideo> = {
       );
   },
   // view piece videos are immutable
-  async update({ rows }) {
-    if (rows.length > 0) {
-      throw new Error("View piece video update not supported");
-    }
-    return [];
+  async update() {
+    throw new Error("View piece video update not supported");
   },
   // anyone can delete a view piece video for themselves
   async delete({ activityId, tx, ids, userId }) {

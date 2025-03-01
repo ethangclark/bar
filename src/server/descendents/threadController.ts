@@ -50,11 +50,8 @@ export const threadController: DescendentController<Thread> = {
       );
   },
   // threads are immutable
-  async update({ rows }) {
-    if (rows.length > 0) {
-      throw new Error("Thread update not supported");
-    }
-    return [];
+  async update() {
+    throw new Error("Thread update not supported");
   },
   // anyone can delete a thread for themselves
   async delete({ activityId, tx, ids, userId }) {

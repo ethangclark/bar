@@ -14,10 +14,7 @@ const canRead: DescendentController<ViewPieceImage>["canRead"] = (
 export const viewPieceImageController: DescendentController<ViewPieceImage> = {
   canRead,
 
-  async create({ rows }) {
-    if (rows.length === 0) {
-      return [];
-    }
+  async create() {
     throw new Error("Users may not create view piece images");
   },
   // anyone can read a view piece image for themselves
@@ -38,11 +35,8 @@ export const viewPieceImageController: DescendentController<ViewPieceImage> = {
       );
   },
   // view piece images are immutable
-  async update({ rows }) {
-    if (rows.length > 0) {
-      throw new Error("View piece image update not supported");
-    }
-    return [];
+  async update() {
+    throw new Error("View piece image update not supported");
   },
   // anyone can delete a view piece image for themselves
   async delete({ activityId, tx, ids, userId }) {

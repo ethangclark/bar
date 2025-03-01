@@ -14,10 +14,7 @@ const canRead: DescendentController<ViewPieceText>["canRead"] = (
 export const viewPieceTextController: DescendentController<ViewPieceText> = {
   canRead,
 
-  async create({ rows }) {
-    if (rows.length === 0) {
-      return [];
-    }
+  async create() {
     throw new Error("Users may not create view piece texts");
   },
   // anyone can read a view piece text for themselves
@@ -38,11 +35,8 @@ export const viewPieceTextController: DescendentController<ViewPieceText> = {
       );
   },
   // view piece texts are immutable
-  async update({ rows }) {
-    if (rows.length > 0) {
-      throw new Error("View piece text update not supported");
-    }
-    return [];
+  async update() {
+    throw new Error("View piece text update not supported");
   },
   // anyone can delete a view piece text for themselves
   async delete({ activityId, tx, ids, userId }) {

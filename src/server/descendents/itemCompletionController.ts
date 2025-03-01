@@ -14,11 +14,24 @@ const canRead: DescendentController<ItemCompletion>["canRead"] = (
 export const itemCompletionController: DescendentController<ItemCompletion> = {
   canRead,
 
-  async create({ rows }) {
-    if (rows.length === 0) {
-      return [];
+  async create({ rows, enrolledAs, activityId, tx }) {
+    if (!isGrader(enrolledAs)) {
+      throw new Error("Only graders may create item completions");
     }
-    throw new Error("Users may not create item completions");
+
+    const itemCompletions = await tx
+      .insert(schema.itemCompletions)
+      .values(
+        rows.map((row) => ({
+          ...row,
+          // IMPORTANT: allowing any userId (assuming it's a grader)
+          // -- only overriding the passed activityId with the one
+          // determined by the controller
+          activityId,
+        })),
+      )
+      .returning();
+    return itemCompletions;
   },
   // anyone can read an item completion for themselves
   async read({ activityId, tx, userId, enrolledAs, includeUserIds }) {
@@ -38,22 +51,21 @@ export const itemCompletionController: DescendentController<ItemCompletion> = {
       );
   },
   // item completions are immutable
-  async update({ rows }) {
-    if (rows.length > 0) {
-      throw new Error("Item completion update not supported");
-    }
-    return [];
+  async update() {
+    throw new Error("Item completion update not supported");
   },
   // anyone can delete an item completion for themselves
-  async delete({ activityId, tx, ids, userId }) {
-    await tx
-      .delete(schema.itemCompletions)
-      .where(
-        and(
-          inArray(schema.itemCompletions.id, ids),
-          eq(schema.itemCompletions.activityId, activityId),
-          eq(schema.itemCompletions.userId, userId),
-        ),
-      );
+  async delete({ activityId, tx, ids, userId, enrolledAs }) {
+    const andArgs = [
+      inArray(schema.itemCompletions.id, ids),
+      eq(schema.itemCompletions.activityId, activityId),
+    ];
+
+    // graders can delete any item completion in the activity
+    if (!isGrader(enrolledAs)) {
+      andArgs.push(eq(schema.itemCompletions.userId, userId));
+    }
+
+    await tx.delete(schema.itemCompletions).where(and(...andArgs));
   },
 };
