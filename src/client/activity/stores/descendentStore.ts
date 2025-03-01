@@ -16,7 +16,6 @@ import {
   type Modifications,
 } from "~/common/descendentUtils";
 import { getDraftDate, getDraftId } from "~/common/draftData";
-import { noop } from "~/common/fnUtils";
 import { identity, objectEntries, objectValues } from "~/common/objectUtils";
 import { type MessageDelta } from "~/common/types";
 import { type FocusedActivityStore } from "./focusedActivityStore";
@@ -167,25 +166,33 @@ export class DescendentStore {
     return Object.values(this.descendents[descendentName]);
   }
 
-  // recursively finds all descendents that need to be deleted
-  // as a result of wanting to delete the given descendent
-  private getAllDescendentsToDelete(
-    rootDeletions: Deletion[],
-  ): Descendents | Status {
-    if (this.descendents instanceof Status) {
-      return this.descendents;
+  async modify(
+    modificationsPartial: Partial<Modifications>,
+  ): Promise<Modifications> {
+    if (
+      !this.focusedActivityStore.activityId ||
+      this.descendents instanceof Status
+    ) {
+      throw new Error("Cannot modify descendents while loading");
     }
+    const ogToDelete =
+      modificationsPartial.toDelete ?? createEmptyDescendents();
+    const withCascadedDeletions = clone({
+      ...createEmptyModifications(),
+      ...modificationsPartial,
+    });
+
     const deletionsById = new Map<
       string,
       {
         descendentName: DescendentName;
         descendent: DescendentRow;
       }
-    >(
-      rootDeletions.map((rootDeletion) => [
-        rootDeletion.descendent.id,
-        rootDeletion,
-      ]),
+    >();
+    objectEntries(ogToDelete).forEach(([descendentName, descendents]) =>
+      descendents.forEach((descendent) => {
+        deletionsById.set(descendent.id, { descendentName, descendent });
+      }),
     );
 
     let newChildrenRecognized = false;
@@ -201,6 +208,10 @@ export class DescendentStore {
               // if some descendent we hadn't planned on deleting references a descendent we are deleting,
               // delete it as well (because descendents all have onUpdate: 'cascade' behavior)
               if (deletionsById.has(fieldValue)) {
+                withCascadedDeletions.toDelete[descendentName].push(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  descendent as any,
+                );
                 deletionsById.set(id, { descendentName, descendent });
                 newChildrenRecognized = true;
               }
@@ -209,60 +220,6 @@ export class DescendentStore {
         },
       );
     } while (newChildrenRecognized);
-
-    const descendents = createEmptyDescendents();
-    for (const deletion of deletionsById.values()) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      descendents[deletion.descendentName].push(deletion.descendent as any);
-    }
-    return descendents;
-  }
-
-  async modify(
-    modificationsPartial: Partial<Modifications>,
-  ): Promise<Modifications> {
-    const modifications = {
-      ...createEmptyModifications(),
-      ...modificationsPartial,
-    };
-    if (!this.focusedActivityStore.activityId) {
-      throw new Error("Activity ID is not set");
-    }
-    const idsBeingDeleted = new Set<string>();
-    objectValues(modifications.toDelete).forEach((descendents) => {
-      descendents.forEach((descendent) => {
-        idsBeingDeleted.add(descendent.id);
-      });
-    });
-
-    const withCascadedDeletions = clone(modifications);
-    const additionalToDelete = this.getAllDescendentsToDelete(
-      objectEntries(modifications.toDelete)
-        .map(([descendentName, descendents]) => {
-          return descendents.map((descendent) => {
-            const deletion: Deletion = { descendentName, descendent };
-            return deletion;
-          });
-        })
-        .flat(1),
-    );
-    if (additionalToDelete instanceof Status) {
-      throw new Error("Cannot delete while loading descendents");
-    }
-    objectEntries(additionalToDelete).forEach(
-      ([descendentName, descendents]) => {
-        descendents.forEach((descendent) => {
-          if (idsBeingDeleted.has(descendent.id)) {
-            noop();
-          } else {
-            withCascadedDeletions.toDelete[descendentName].push(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              descendent as any,
-            );
-          }
-        });
-      },
-    );
 
     const rectified = rectifyModifications(withCascadedDeletions);
 
