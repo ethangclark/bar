@@ -1,4 +1,5 @@
 import { Progress as AtndProgress } from "antd";
+import { sortByOrderFracIdx } from "~/common/indexUtils";
 import { Status } from "../utils/status";
 import { storeObserver } from "../utils/storeObserver";
 
@@ -10,12 +11,7 @@ export const Progress = storeObserver(function Progress({
   const completions = descendentStore.get("itemCompletions");
   const itemsRaw = descendentStore.get("items");
 
-  const items =
-    itemsRaw instanceof Status
-      ? []
-      : itemsRaw
-          .slice()
-          .sort((a, b) => (a.orderFracIdx < b.orderFracIdx ? -1 : 1));
+  const items = itemsRaw instanceof Status ? [] : sortByOrderFracIdx(itemsRaw);
 
   const completedItemIds = new Set(
     completions instanceof Status

@@ -5,6 +5,7 @@ import {
   numericIdToImageNumber,
   numericIdToVideoNumber,
 } from "~/common/idUtils";
+import { sortByOrderFracIdx } from "~/common/indexUtils";
 import { objectKeys } from "~/common/objectUtils";
 import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
@@ -105,7 +106,7 @@ async function beginThread(thread: Thread) {
     },
     orderBy: (items, { asc }) => [asc(items.orderFracIdx)],
   });
-  const itemContent = items
+  const itemContent = sortByOrderFracIdx(items)
     .map((item, index) => itemToString(index + 1, item))
     .join("");
 

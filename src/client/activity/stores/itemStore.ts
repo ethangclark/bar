@@ -1,6 +1,7 @@
 import { generateKeyBetween } from "fractional-indexing";
 import { autorun, makeAutoObservable, runInAction } from "mobx";
 import { Status } from "~/client/utils/status";
+import { sortByOrderFracIdx } from "~/common/indexUtils";
 import {
   type InfoImage,
   type InfoText,
@@ -62,9 +63,7 @@ export class ItemStore {
     if (items instanceof Status) {
       return items;
     }
-    return items
-      .slice()
-      .sort((a, b) => (a.orderFracIdx < b.orderFracIdx ? -1 : 1));
+    return sortByOrderFracIdx(items);
   }
 
   createItem() {

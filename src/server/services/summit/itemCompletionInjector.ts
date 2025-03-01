@@ -3,7 +3,11 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { createEmptyDescendents } from "~/common/descendentUtils";
 import { filter, noop } from "~/common/fnUtils";
-import { indexToItemNumber, itemNumberToIndex } from "~/common/indexUtils";
+import {
+  indexToItemNumber,
+  itemNumberToIndex,
+  sortByOrderFracIdx,
+} from "~/common/indexUtils";
 import { getLlmResponse } from "~/server/ai/llm";
 import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
@@ -25,11 +29,10 @@ export async function injectItemCompletions(
   });
 
   // Get all items for this activity
-  const items = await db.query.items.findMany({
+  let items = await db.query.items.findMany({
     where: eq(schema.items.activityId, activityId),
   });
-  // order by item.orderFracIdx
-  items.sort((a, b) => (a.orderFracIdx < b.orderFracIdx ? -1 : 1));
+  items = sortByOrderFracIdx(items);
 
   const incompleteItemNumbers = filter(
     items.map((item, idx) => {

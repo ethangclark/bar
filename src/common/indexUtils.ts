@@ -15,3 +15,9 @@ export function indexToItemNumber(index: number) {
 export function itemNumberToIndex(itemNumber: number) {
   return itemNumber - 1;
 }
+
+export function sortByOrderFracIdx<T extends { orderFracIdx: string }>(
+  arr: T[],
+) {
+  return arr.slice().sort((a, b) => (a.orderFracIdx < b.orderFracIdx ? -1 : 1));
+}
