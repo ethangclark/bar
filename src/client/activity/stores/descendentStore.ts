@@ -6,6 +6,7 @@ import {
   indexDescendents,
   upsertDescendents,
   type DescendentName,
+  type DescendentRow,
   type DescendentRows,
   type Descendents,
   type DescendentTables,
@@ -243,6 +244,53 @@ export class DescendentStore {
     const updated = assertOne(allUpdated);
     return updated as DescendentRows[T];
   }
+
+  // recursively finds all descendents that need to be deleted
+  // as a result of wanting to delete the given descendent
+  private getAllDescendentsToDelete(rootDeletion: {
+    descendentName: DescendentName;
+    descendent: DescendentRow;
+  }): Descendents | Status {
+    if (this.descendents instanceof Status) {
+      return this.descendents;
+    }
+    const deletionsById = new Map<
+      string,
+      {
+        descendentName: DescendentName;
+        descendent: DescendentRow;
+      }
+    >([[rootDeletion.descendent.id, rootDeletion]]);
+
+    let newChildrenRecognized = false;
+    do {
+      newChildrenRecognized = false;
+      objectEntries(this.descendents).forEach(
+        ([descendentName, idToDescendent]) => {
+          objectEntries(idToDescendent).forEach(([id, descendent]) => {
+            if (deletionsById.has(id)) {
+              return;
+            }
+            objectValues(descendent).forEach((fieldValue) => {
+              // if some descendent we hadn't planned on deleting references a descendent we are deleting,
+              // delete it as well (because descendents all have onUpdate: 'cascade' behavior)
+              if (deletionsById.has(fieldValue)) {
+                deletionsById.set(id, { descendentName, descendent });
+                newChildrenRecognized = true;
+              }
+            });
+          });
+        },
+      );
+    } while (newChildrenRecognized);
+
+    const descendents = createEmptyDescendents();
+    for (const deletion of deletionsById.values()) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      descendents[deletion.descendentName].push(deletion.descendent as any);
+    }
+    return descendents;
+  }
   async delete(descendentName: DescendentName, id: string) {
     if (!this.focusedActivityStore.activityId) {
       throw new Error("Activity ID is not set");
@@ -252,9 +300,13 @@ export class DescendentStore {
       return;
     }
 
-    const toDelete = createEmptyDescendents();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toDelete[descendentName].push(descendent as any);
+    const toDelete = this.getAllDescendentsToDelete({
+      descendentName,
+      descendent,
+    });
+    if (toDelete instanceof Status) {
+      return;
+    }
 
     // optimistic update
     this.handleModifications({ toDelete });

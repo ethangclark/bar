@@ -72,7 +72,7 @@ export type DescendentRows = {
   [K in DescendentName]: Descendents[K][number];
 };
 
-type DescendentRow = {
+export type DescendentRow = {
   id: string;
   activityId: string;
 };
