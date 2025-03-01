@@ -71,6 +71,7 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
               className="mb-[-2px] text-xs"
               onClick={moveItemUp ?? noop}
               disabled={!moveItemUp}
+              title={moveItemUp ? "Move up" : "No item above"}
             >
               ↑
             </Typography.Link>
@@ -78,6 +79,7 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
               className="mt-[-2px] text-xs"
               onClick={moveItemDown ?? noop}
               disabled={!moveItemDown}
+              title={moveItemDown ? "Move down" : "No item below"}
             >
               ↓
             </Typography.Link>
