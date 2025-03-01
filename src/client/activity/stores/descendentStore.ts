@@ -13,7 +13,7 @@ import {
 } from "~/common/descendentUtils";
 import { getDraftDate, getDraftId } from "~/common/draftData";
 import { identity, objectEntries, objectValues } from "~/common/objectUtils";
-import { type MessageDeltaSchema } from "~/common/types";
+import { type MessageDelta } from "~/common/types";
 import { trpc } from "~/trpc/proxy";
 import { type FocusedActivityStore } from "./focusedActivityStore";
 
@@ -84,7 +84,7 @@ export class DescendentStore {
     const subscription = trpc.message.messageDeltas.subscribe(
       { activityId },
       {
-        onData: (messageDelta: MessageDeltaSchema) => {
+        onData: (messageDelta: MessageDelta) => {
           const { descendents } = this;
           if (descendents instanceof Status) {
             return;
