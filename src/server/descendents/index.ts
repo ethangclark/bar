@@ -113,6 +113,9 @@ export async function readDescendents({
 
   const result: Partial<Descendents> = {};
 
+  // TODO: this is sketchy due to tx considerations --
+  // is it better or worse that we're doing this in serial?
+  // Would it be better to force no-tx reading?
   for (const name of descendentNames) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     result[name] = (await controllers[name].read(params)) as any;
