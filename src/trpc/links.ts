@@ -9,8 +9,8 @@ import { type TRPCLink } from "@trpc/client";
 import { type AnyRouter } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
 import SuperJSON from "superjson";
-import { reportClientError } from "~/client/utils/errorUtils";
 import { getTrpcUrl } from "~/common/urlUtils";
+import { reportTrpcError } from "./trpcErrorBridge";
 
 const linkOpts = {
   transformer: SuperJSON,
@@ -43,9 +43,7 @@ const globalTrpcErrorLink: TRPCLink<AnyRouter> = () => {
           observer.next(result);
         },
         error(err) {
-          reportClientError(err, {
-            trpcInfo: "caught via globalTrpcErrorLink",
-          });
+          reportTrpcError(err);
           errorSubscribers.forEach((subscriber) => {
             subscriber.onError(err);
           });

@@ -3,11 +3,6 @@ import superjson from "superjson";
 import type { SuperJSONValue } from "~/common/types";
 import { env } from "~/env";
 
-type Subscriber<T> = {
-  push: (data: T) => void;
-  close: () => void;
-};
-
 /**
  * A simple async queue that lets you push items and later await them.
  */
@@ -61,6 +56,11 @@ const globalForPubSub = globalThis as unknown as {
 };
 globalForPubSub.channelToPglSubscriber ??= {};
 
+type Subscriber<T> = {
+  push: (data: T) => void;
+  close: () => void;
+};
+
 export class PubSub<T extends SuperJSONValue> {
   private pglSubscriber: ReturnType<typeof createSubscriber>;
   private subscribers = new Set<Subscriber<T>>();
@@ -96,7 +96,7 @@ export class PubSub<T extends SuperJSONValue> {
     // Create an async queue for this subscription.
     const queue = new AsyncQueue<T>();
 
-    const mySub: Subscriber<T> = {
+    const mySub = {
       push: (data: T) => queue.push(data),
       close: () => queue.close(),
     };

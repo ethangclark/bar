@@ -1,6 +1,7 @@
 import superjson from "superjson";
 import { type SuperJsonObject } from "~/common/types";
 import { trpc } from "~/trpc/proxy";
+import { subscribeToTrpcErrors } from "~/trpc/trpcErrorBridge";
 
 export class ReportableError extends Error {
   name = "ReportableError";
@@ -58,3 +59,7 @@ if (typeof window !== "undefined") {
     reportClientError(event.reason);
   });
 }
+
+subscribeToTrpcErrors((error) => {
+  reportClientError(error);
+});
