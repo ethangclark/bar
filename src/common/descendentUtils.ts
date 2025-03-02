@@ -1,29 +1,53 @@
 import { z } from "zod";
 import type { DbOrTx } from "~/server/db";
-import {
-  evalKeySchema,
-  infoImageSchema,
-  infoTextSchema,
-  infoVideoSchema,
-  itemCompletionSchema,
-  itemSchema,
-  messageSchema,
-  questionSchema,
-  threadSchema,
-  viewPieceImagesSchema,
-  viewPieceSchema,
-  viewPieceTextSchema,
-  viewPieceVideoSchema,
-} from "~/server/db/schema";
+import * as schema from "~/server/db/schema";
+import { assertTypesExhausted } from "./assertions";
 import { clone } from "./cloneUtils";
 import type { EnrollmentType } from "./enrollmentTypeUtils";
 import { indexById } from "./indexUtils";
-import { objectEntries, objectKeys, objectValues } from "./objectUtils";
+import {
+  objectEntries,
+  objectKeys,
+  objectValues,
+  safeIncludes,
+} from "./objectUtils";
 import type { MaybePromise } from "./types";
 
 // =============================================================================
 // Descendent Names, Schemas & Types
 // =============================================================================
+
+function isPgTableKey(key: string): key is "pgTable" {
+  return key === "pgTable";
+}
+
+function isRelationsKey(key: string): key is `${string}Relations` {
+  return key.endsWith("Relations");
+}
+
+function isZodSchemaKey(key: string): key is `${string}Schema` {
+  return key.endsWith("Schema");
+}
+
+export const nonDescendents = [
+  "activityStatusEnum",
+  "activities",
+  "adHocActivities",
+  "canvasIntegrations",
+  "canvasUsers",
+  "errors",
+  "integrationActivities",
+  "integrationTypeEnum",
+  "integrations",
+  "locks",
+  "posts",
+  "senderRoleEnum",
+  "sessions",
+  "userIntegrations",
+  "users",
+  "verificationTokens",
+  "videos",
+] as const satisfies Array<keyof typeof schema>;
 
 export const descendentNames = [
   "items",
@@ -39,37 +63,60 @@ export const descendentNames = [
   "viewPieceTexts",
   "viewPieceVideos",
   "itemCompletions",
-] as const;
+] as const satisfies Array<keyof typeof schema>;
 
 export const descendentNamesSchema = z.enum(descendentNames);
 export type DescendentName = z.infer<typeof descendentNamesSchema>;
 
+// not used -- just here to throw a type error if a new schema is added
+// without adding it to either the `descendentNames` or `nonDescendents` arrays
+export function typeCheckSchemaSubtypes() {
+  objectKeys(schema).forEach((key) => {
+    if (isPgTableKey(key)) {
+      return;
+    }
+    if (isRelationsKey(key)) {
+      return;
+    }
+    if (isZodSchemaKey(key)) {
+      return;
+    }
+    if (safeIncludes(nonDescendents, key)) {
+      return;
+    }
+    if (safeIncludes(descendentNames, key)) {
+      return;
+    }
+    assertTypesExhausted(key);
+  });
+}
+
 export const descendentsSchema = z.object({
-  items: z.array(itemSchema),
-  evalKeys: z.array(evalKeySchema),
-  questions: z.array(questionSchema),
-  infoTexts: z.array(infoTextSchema),
-  infoImages: z.array(infoImageSchema),
-  infoVideos: z.array(infoVideoSchema),
-  threads: z.array(threadSchema),
-  messages: z.array(messageSchema),
-  viewPieces: z.array(viewPieceSchema),
-  viewPieceImages: z.array(viewPieceImagesSchema),
-  viewPieceTexts: z.array(viewPieceTextSchema),
-  viewPieceVideos: z.array(viewPieceVideoSchema),
-  itemCompletions: z.array(itemCompletionSchema),
+  items: z.array(schema.itemSchema),
+  evalKeys: z.array(schema.evalKeySchema),
+  questions: z.array(schema.questionSchema),
+  infoTexts: z.array(schema.infoTextSchema),
+  infoImages: z.array(schema.infoImageSchema),
+  infoVideos: z.array(schema.infoVideoSchema),
+  threads: z.array(schema.threadSchema),
+  messages: z.array(schema.messageSchema),
+  viewPieces: z.array(schema.viewPieceSchema),
+  viewPieceImages: z.array(schema.viewPieceImageSchema),
+  viewPieceTexts: z.array(schema.viewPieceTextSchema),
+  viewPieceVideos: z.array(schema.viewPieceVideoSchema),
+  itemCompletions: z.array(schema.itemCompletionSchema),
 }) satisfies z.ZodType<{
   [K in DescendentName]: unknown;
 }>;
 
 export type Descendents = z.infer<typeof descendentsSchema>;
 
-export type DescendentTables = {
-  [K in DescendentName]: { [key: string]: Descendents[K][number] };
-};
-
 export type DescendentRows = {
   [K in DescendentName]: Descendents[K][number];
+};
+
+export type DescendentTables = {
+  [K in DescendentName]: { [key: string]: DescendentRows[K] };
 };
 
 export type DescendentRow = {

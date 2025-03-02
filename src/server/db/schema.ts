@@ -93,7 +93,7 @@ export type Error = InferSelectModel<typeof errors>;
 export const errorsRelations = relations(errors, ({ one }) => ({
   user: one(users, { fields: [errors.userId], references: [users.id] }),
 }));
-export const errorsSchema = createSelectSchema(errors);
+export const errorSchema = createSelectSchema(errors);
 
 export const sessions = pgTable(
   "session",
@@ -130,7 +130,7 @@ export const verificationTokensRelations = relations(
   verificationTokens,
   ({}) => ({}),
 );
-export const verificationTokensSchema = createSelectSchema(verificationTokens);
+export const verificationTokenSchema = createSelectSchema(verificationTokens);
 
 export const locks = pgTable("lock", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -788,7 +788,7 @@ export const viewPieceImagesRelations = relations(
     }),
   }),
 );
-export const viewPieceImagesSchema = createSelectSchema(viewPieceImages);
+export const viewPieceImageSchema = createSelectSchema(viewPieceImages);
 
 export const viewPieceVideos = pgTable(
   "view_piece_video",
