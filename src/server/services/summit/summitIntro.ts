@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { assertTypesExhausted } from "~/common/assertions";
 import { createEmptyDescendents } from "~/common/descendentUtils";
 import {
@@ -138,6 +138,7 @@ ${itemContent}`,
         senderRole: "system" as const,
         activityId: thread.activityId,
         completed: true,
+        createdAt: sql`now() - interval '1 second'`,
       },
       {
         threadId: thread.id,

@@ -1,6 +1,7 @@
 import { useCallback, useRef } from "react";
 import { Status } from "~/client/utils/status";
 import { assertTypesExhausted } from "~/common/assertions";
+import { api } from "~/trpc/react";
 import { LoadingCentered } from "../components/Loading";
 import { PreformattedText } from "../components/PreformattedText";
 import { storeObserver } from "../utils/storeObserver";
@@ -20,6 +21,8 @@ export const Messages = storeObserver(function Messages({ threadStore }) {
     });
   }, []);
 
+  const { data: isAdmin } = api.auth.isAdmin.useQuery();
+
   if (messages instanceof Status) {
     return <LoadingCentered />;
   }
@@ -33,7 +36,11 @@ export const Messages = storeObserver(function Messages({ threadStore }) {
         {messages.map((m, i) => {
           switch (m.senderRole) {
             case "system":
-              return null;
+              return isAdmin ? (
+                <div className="mb-4 rounded-2xl border border-red-500 bg-gray-100 px-4 py-2">
+                  <PreformattedText>{m.content}</PreformattedText>
+                </div>
+              ) : null;
             case "user":
               return (
                 <MessageView

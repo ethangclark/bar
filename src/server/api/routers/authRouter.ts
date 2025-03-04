@@ -52,6 +52,12 @@ export const authRouter = createTRPCRouter({
     await logoutUser(session, db);
   }),
 
+  isAdmin: publicProcedure.query(async ({ ctx }) => {
+    const { user } = ctx;
+    if (!user) return false;
+    return user.email === "ethangclark@gmail.com";
+  }),
+
   processCanvasCode: publicProcedure
     .input(z.object({ code: z.string(), canvasIntegrationId: z.string() }))
     .mutation(async ({ ctx, input }) => {

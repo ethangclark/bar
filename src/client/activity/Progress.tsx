@@ -27,7 +27,7 @@ export const Progress = storeObserver(function Progress({
       percent={(completedItemIds.size / items.length) * 100}
       format={() => (
         <span className="font-bold">
-          {completedItemIds.size + 10} / {items.length + 10}
+          {completedItemIds.size} / {items.length}
         </span>
       )}
       trailColor="rgba(0, 0, 0, 0.10)"
