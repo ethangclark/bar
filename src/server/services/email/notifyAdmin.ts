@@ -5,7 +5,7 @@ import { sendEmail } from "./sendEmail";
 export async function notifyAdmin(subject: string, detail: SuperJSONValue) {
   const content = `json:\n\n${JSON.stringify(detail, null, 2)}\n\nsuperjson:\n\n${superjson.stringify(detail)}`;
   await sendEmail({
-    to: "ethangclark@gmail.com",
+    to: ["ethangclark@gmail.com", "hello@summited.ai"],
     from: "hello@summited.ai",
     subject,
     text: content,
