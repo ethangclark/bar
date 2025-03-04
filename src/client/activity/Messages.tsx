@@ -37,7 +37,10 @@ export const Messages = storeObserver(function Messages({ threadStore }) {
           switch (m.senderRole) {
             case "system":
               return isAdmin ? (
-                <div className="mb-4 rounded-2xl border border-red-500 bg-gray-100 px-4 py-2">
+                <div
+                  key={m.id}
+                  className="mb-4 rounded-2xl border border-red-500 bg-gray-100 px-4 py-2"
+                >
                   <PreformattedText>{m.content}</PreformattedText>
                 </div>
               ) : null;
