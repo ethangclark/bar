@@ -53,6 +53,16 @@ class AsyncQueue<T extends SuperJSONValue> {
   }
 }
 
+/**
+ * Cache the subscriber so we can clean up old ones on HMR updates
+ */
+const globalForPubSub = globalThis as unknown as {
+  channelToPglSubscriber: {
+    [key: string]: ReturnType<typeof createSubscriber>;
+  };
+};
+globalForPubSub.channelToPglSubscriber ??= {};
+
 type Subscriber<T> = {
   push: (data: T) => void;
   close: () => void;
@@ -84,9 +94,11 @@ export class PubSub<T extends SuperJSONValue> {
       );
     }
 
+    void globalForPubSub.channelToPglSubscriber[channel]?.close();
     this.pglSubscriber = createSubscriber({
       connectionString: env.DATABASE_URL,
     });
+    globalForPubSub.channelToPglSubscriber[channel] = this.pglSubscriber;
 
     // When a notification comes in on our channel, handle it
     this.pglSubscriber.notifications.on(channel, (payload: string) => {
