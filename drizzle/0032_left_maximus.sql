@@ -1,0 +1,1 @@
+ALTER TABLE "user" ALTER COLUMN "login_token_created_at" DROP DEFAULT;

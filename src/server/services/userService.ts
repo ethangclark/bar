@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
 import { assertOne } from "~/common/assertions";
 import { env } from "~/env";
@@ -14,7 +15,12 @@ export const queryUser = async (userId: string | null, tx: DbOrTx) => {
 };
 
 export const createUser = async (tx: DbOrTx) => {
-  const user = await tx.insert(users).values({}).returning();
+  const user = await tx
+    .insert(users)
+    .values({
+      loginTokenCreatedAt: dayjs().add(1000, "year").toDate(),
+    })
+    .returning();
   return assertOne(user);
 };
 

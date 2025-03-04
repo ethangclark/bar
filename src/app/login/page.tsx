@@ -2,12 +2,13 @@
 
 import { Button, Typography } from "antd";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { LoadingNotCentered, LoadingPage } from "~/client/components/Loading";
 import { FrontPageLogo } from "~/client/components/Logo";
 import { NoScrollPage } from "~/client/components/Page";
 import { Redirect } from "~/client/components/Redirect";
 import { loginTokenQueryParam } from "~/common/constants";
+import { invoke } from "~/common/fnUtils";
 import { trpc } from "~/trpc/proxy";
 
 function LoginPageInner() {
@@ -15,9 +16,22 @@ function LoginPageInner() {
   const loginToken = searchParams.get(loginTokenQueryParam);
   const router = useRouter();
 
-  const [loggingIn, setLoggingIn] = useState(false);
+  const [loggingIn, setLoggingIn] = useState(true);
 
   const [showBailOut, setShowBailOut] = useState(false);
+
+  useEffect(() => {
+    if (loginToken) {
+      void invoke(async () => {
+        const { succeeded } = await trpc.auth.autoLogin.mutate({ loginToken });
+        if (succeeded) {
+          router.push("/overview");
+        } else {
+          setLoggingIn(false);
+        }
+      });
+    }
+  }, [loginToken, router]);
 
   if (!loginToken) {
     return <Redirect to="/" />;

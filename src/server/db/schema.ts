@@ -55,6 +55,9 @@ export const users = pgTable(
     passwordSalt: uuid("password_salt").notNull().defaultRandom(),
     passwordHash: text("password_hash"),
     loginTokenHash: text("login_token_hash"),
+    loginTokenCreatedAt: timestamp("login_token_created_at", {
+      withTimezone: true,
+    }).notNull(),
     llmTokensUsed: integer("tokens_used").default(0).notNull(),
   },
   (u) => [

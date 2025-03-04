@@ -1,4 +1,4 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { loginTokenQueryParam } from "~/common/constants";
 import { getBaseUrl } from "~/common/urlUtils";
 import { env } from "~/env";
@@ -22,7 +22,10 @@ export async function sendLoginEmail({ email }: { email: string }) {
 
   await db
     .update(schema.users)
-    .set({ loginTokenHash })
+    .set({
+      loginTokenHash,
+      loginTokenCreatedAt: sql`now()`,
+    })
     .where(eq(schema.users.id, user.id));
 
   const urlWithLoginToken = `${getBaseUrl()}/login?${loginTokenQueryParam}=${loginToken}`;

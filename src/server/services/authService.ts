@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
 import { assertOne } from "~/common/assertions";
 import { db, schema, type DbOrTx } from "~/server/db";
@@ -25,9 +26,33 @@ export async function getOrCreateVerifiedEmailUser({
 
   const users = await tx
     .insert(schema.users)
-    .values({ unverifiedEmail: email })
+    .values({
+      unverifiedEmail: email,
+      loginTokenCreatedAt: dayjs().add(1000, "year").toDate(),
+    })
     .returning();
   return assertOne(users);
+}
+
+export async function attemptAutoLogin(
+  loginToken: string,
+  session: Session,
+  tx: DbOrTx,
+) {
+  const loginTokenHash = hashLoginToken(loginToken);
+  const user = await tx.query.users.findFirst({
+    where: eq(schema.users.loginTokenHash, loginTokenHash),
+  });
+  if (!user) return { succeeded: false };
+
+  // if the login token was created after the session was created,
+  // then we can login the user (because they're not an email scanner)
+  if (user.loginTokenCreatedAt > session.createdAt) {
+    await loginUser(loginToken, session, tx);
+    return { succeeded: true };
+  } else {
+    return { succeeded: false };
+  }
 }
 
 export async function loginUser(

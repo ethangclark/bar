@@ -33,6 +33,7 @@ export const nonDescendents = [
   "activityStatusEnum",
   "activities",
   "adHocActivities",
+  "cacheValues",
   "canvasIntegrations",
   "canvasUsers",
   "errors",
