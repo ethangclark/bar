@@ -49,72 +49,67 @@ async function respondToThread({
       threadId,
     });
 
-  try {
-    const gen = streamLlmResponse(
-      emptyIncompleteMessage.userId,
-      {
-        model: "google/gemini-2.0-flash-001",
-        messages: oldMessages.map((m) => ({
-          role: m.senderRole,
-          content: m.content,
-        })),
-      },
-      db,
-    );
+  const gen = streamLlmResponse(
+    emptyIncompleteMessage.userId,
+    {
+      model: "google/gemini-2.0-flash-001",
+      messages: oldMessages.map((m) => ({
+        role: m.senderRole,
+        content: m.content,
+      })),
+    },
+    db,
+  );
 
-    const { streamed } = await debouncePublish(gen, 200, (delta) =>
-      messageDeltaPubSub.publish({
-        activityId,
-        messageId: emptyIncompleteMessage.id,
-        contentDelta: delta,
-      }),
-    );
+  const { streamed } = await debouncePublish(gen, 200, (delta) =>
+    messageDeltaPubSub.publish({
+      activityId,
+      messageId: emptyIncompleteMessage.id,
+      contentDelta: delta,
+    }),
+  );
 
-    const streamedIncompleteMessage = {
-      ...emptyIncompleteMessage,
+  const streamedIncompleteMessage = {
+    ...emptyIncompleteMessage,
+    content: streamed,
+  };
+
+  await db
+    .update(schema.messages)
+    .set({
       content: streamed,
-    };
+    })
+    .where(eq(schema.messages.id, emptyIncompleteMessage.id));
 
-    await db
-      .update(schema.messages)
-      .set({
-        content: streamed,
-      })
-      .where(eq(schema.messages.id, emptyIncompleteMessage.id));
-
-    await Promise.all([
-      invoke(async () => {
-        const messagesWithDescendents = await db.query.messages.findMany({
-          where: eq(schema.messages.threadId, threadId),
-          with: {
-            viewPieces: {
-              with: {
-                images: {
-                  with: {
-                    infoImage: true,
-                  },
+  await Promise.all([
+    invoke(async () => {
+      const messagesWithDescendents = await db.query.messages.findMany({
+        where: eq(schema.messages.threadId, threadId),
+        with: {
+          viewPieces: {
+            with: {
+              images: {
+                with: {
+                  infoImage: true,
                 },
-                videos: {
-                  with: {
-                    infoVideo: true,
-                  },
-                },
-                texts: true,
               },
+              videos: {
+                with: {
+                  infoVideo: true,
+                },
+              },
+              texts: true,
             },
           },
-        });
-        await postProcessAssistantResponse(
-          streamedIncompleteMessage,
-          messagesWithDescendents,
-        );
-      }),
-      updateAndPublishCompletion(streamedIncompleteMessage),
-    ]);
-  } catch (error) {
-    await updateAndPublishCompletion(emptyIncompleteMessage);
-    throw error;
-  }
+        },
+      });
+      await postProcessAssistantResponse(
+        streamedIncompleteMessage,
+        messagesWithDescendents,
+      );
+    }),
+    updateAndPublishCompletion(streamedIncompleteMessage),
+  ]);
 }
 
 export async function respondToUserMessages(userMessages: Message[]) {

@@ -2,7 +2,7 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { createEmptyDescendents } from "~/common/descendentUtils";
-import { filter, noop } from "~/common/fnUtils";
+import { filter } from "~/common/fnUtils";
 import {
   indexToItemNumber,
   itemNumberToIndex,
@@ -117,39 +117,39 @@ Here is the conversation history:
 ${sortedMessages.map((msg, idx) => `${idx === sortedMessages.length - 1 ? "(BEGIN LAST MESSAGE)\n" : ""}${msg.senderRole}: ${msg.content}`).join("\n\n")}
 `;
 
-  const tries = 3;
-  for (let i = 0; i < tries; i++) {
-    try {
-      // Use the LLM to analyze the conversation
-      const llmResponse = await getLlmResponse(
-        userId,
-        {
-          model: "google/gemini-2.0-flash-001",
-          messages: [{ role: "user", content: prompt }],
-        },
-        db,
-      );
-      if (llmResponse instanceof Error) {
-        console.error("Error analyzing completions:", {
-          prompt,
-          llmResponse,
-        });
-        throw llmResponse;
-      }
-
-      // Extract completed item IDs from the LLM response
-      const completedItemNumbers = extractCompletedItemNumbers(
-        llmResponse,
-        incompleteItemNumbers,
-      );
-
-      return { completedItemNumbers };
-    } catch (e) {
-      noop(e);
-    }
-    continue;
+  // const tries = 3;
+  // for (let i = 0; i < tries; i++) {
+  //   try {
+  // Use the LLM to analyze the conversation
+  const llmResponse = await getLlmResponse(
+    userId,
+    {
+      model: "google/gemini-2.0-flash-001",
+      messages: [{ role: "user", content: prompt }],
+    },
+    db,
+  );
+  if (llmResponse instanceof Error) {
+    console.error("Error analyzing completions:", {
+      prompt,
+      llmResponse,
+    });
+    throw llmResponse;
   }
-  throw new Error("Failed to analyze completions");
+
+  // Extract completed item IDs from the LLM response
+  const completedItemNumbers = extractCompletedItemNumbers(
+    llmResponse,
+    incompleteItemNumbers,
+  );
+
+  return { completedItemNumbers };
+  //   } catch (e) {
+  //     noop(e);
+  //   }
+  //   continue;
+  // }
+  // throw new Error("Failed to analyze completions");
 }
 
 /**

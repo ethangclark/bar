@@ -12,48 +12,61 @@ Please do the following:
 2. If it does not, reply with "<no-media></no-media>"
 3. If it does, rewrite it, adding <image> or <video> tags strategically to show where in the message it would make sense to render the image or video for a student to see.
 
-You can show images and videos to the student by wrapping image and video numbers in <image> and <video> tags. Here's an example of how you might do that:
+You can show images and videos to the student by wrapping image and video numbers in <image> and <video> tags. Here are examples of how you should transform messages:
 
 EXAMPLE 1:
 
-Following is image 1000, which is a picture of a mitochondrion:
+INPUT:
+Let's look at image 1000. This image shows a mitochondrion with details of the mitochondrial membrane and mitochondrial DNA. Notice the folded inner membrane that creates the cristae structures.
+
+OUTPUT:
+Let's look at image 1000.
 
 <image>1000</image>
 
-This image shows details of the mitochondrial membrane and mitochondrial DNA.
+This image shows a mitochondrion with details of the mitochondrial membrane and mitochondrial DNA. Notice the folded inner membrane that creates the cristae structures.
 
 END EXAMPLE 1
 
-Notice how the sentence "Following is image 1000, which is a picture of a mitochondrion:" does NOT include the <image> tag, and the "<image>1000</image>" tag is on its own line. This is very important! Do NOT include XML tags in sentences -- they should be on their own lines.
-
-Here are some more examples:
-
 EXAMPLE 2:
-Following is image 42, which is a picture of a volcanic eruption:
 
-<image>42</image>
+INPUT:
+To understand this concept better, I recommend watching video 7893. In this Olympic gymnastics routine, you'll see how momentum is conserved throughout the athlete's movements, especially during the aerial maneuvers and landings.
 
-This image shows the dramatic lava flow and ash cloud from Mount Etna's recent activity.
+OUTPUT:
+To understand this concept better, I recommend watching video 7893.
+
+<video>7893</video>
+
+In this Olympic gymnastics routine, you'll see how momentum is conserved throughout the athlete's movements, especially during the aerial maneuvers and landings.
 
 END EXAMPLE 2
 
 EXAMPLE 3:
 
-Following is video 7893, which is footage of an Olympic gymnastics routine:
+INPUT:
+The quadratic formula is x = (-b ± √(b² - 4ac)) / 2a, which allows us to solve any quadratic equation in the form ax² + bx + c = 0. Let's practice with a few examples to make sure you understand how to apply it.
 
-<video>7893</video>
-
-This video captures the gold medal floor exercise with impressive aerial maneuvers and perfect landings.
+OUTPUT:
+<no-media></no-media>
 
 END EXAMPLE 3
 
 EXAMPLE 4:
 
-Following is image 361, which is a picture of a rare astronomical event:
+INPUT:
+Let me show you two different volcanic formations. Image 361 shows a shield volcano with its gently sloping sides, while image 362 displays a stratovolcano with steeper sides. The difference in shape is due to the viscosity of the lava that formed them.
+
+OUTPUT:
+Let me show you two different volcanic formations. Image 361 shows a shield volcano with its gently sloping sides:
 
 <image>361</image>
 
-This image shows the transit of Venus across the sun, captured with specialized solar filtering equipment.
+While image 362 displays a stratovolcano with steeper sides:
+
+<image>362</image>
+
+The difference in shape is due to the viscosity of the lava that formed them.
 
 END EXAMPLE 4
 
@@ -61,4 +74,8 @@ ALWAYS put <image> and <video> tags on their own line! Do NOT mix them in with r
 
 Here is the message you're analyzing:
 
-${assistantMessageContent}`;
+BEGIN MESSAGE
+
+${assistantMessageContent}
+
+END MESSAGE`;

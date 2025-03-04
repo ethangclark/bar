@@ -46,13 +46,13 @@ export async function getImageDescription({
   userId: string;
   imageDataUrl: string;
 }) {
-  const tries = 3;
-  for (let i = 0; i < tries; i++) {
-    const response = await getAiResponse({ userId, imageDataUrl });
-    const parseResult = parseDescription(response);
-    if (parseResult.success) {
-      return parseResult.description;
-    }
+  // const tries = 3;
+  // for (let i = 0; i < tries; i++) {
+  const response = await getAiResponse({ userId, imageDataUrl });
+  const parseResult = parseDescription(response);
+  if (parseResult.success) {
+    return parseResult.description;
   }
+  // }
   throw new Error("Failed to get image description");
 }
