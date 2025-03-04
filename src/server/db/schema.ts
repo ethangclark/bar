@@ -859,3 +859,12 @@ export const viewPieceTextsRelations = relations(viewPieceTexts, ({ one }) => ({
   }),
 }));
 export const viewPieceTextSchema = createSelectSchema(viewPieceTexts);
+
+export const cacheValues = pgTable("cache_values", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+export type CacheValue = InferSelectModel<typeof cacheValues>;
+export const cacheValuesRelations = relations(cacheValues, () => ({}));
+export const cacheValueSchema = createSelectSchema(cacheValues);

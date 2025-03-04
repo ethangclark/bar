@@ -1,7 +1,14 @@
 import createSubscriber from "pg-listen";
 import superjson from "superjson";
+import { invoke } from "~/common/fnUtils";
 import type { SuperJSONValue } from "~/common/types";
 import { env } from "~/env";
+import { cache, getCache } from "~/server/services/cacheService";
+
+// PostgreSQL NOTIFY has a payload size limit of 8000 bytes
+// We reserve some space for the channel name (max 63 bytes) and overhead
+const MAX_DIRECT_PAYLOAD_SIZE = 7900;
+const MAX_CHANNEL_NAME_LENGTH = 63;
 
 /**
  * A simple async queue that lets you push items and later await them.
@@ -61,21 +68,61 @@ type Subscriber<T> = {
   close: () => void;
 };
 
+// Type for cache reference payload
+type CacheRefPayload = {
+  __cacheRef: string;
+};
+
+// Helper to check if a payload is a cache reference
+function isCacheRef(payload: unknown): payload is CacheRefPayload {
+  return (
+    typeof payload === "object" &&
+    payload !== null &&
+    "__cacheRef" in payload &&
+    typeof (payload as CacheRefPayload).__cacheRef === "string"
+  );
+}
+
 export class PubSub<T extends SuperJSONValue> {
   private pglSubscriber: ReturnType<typeof createSubscriber>;
   private subscribers = new Set<Subscriber<T>>();
 
   constructor(private channel: string) {
+    if (channel.length > MAX_CHANNEL_NAME_LENGTH) {
+      throw new Error(
+        `Channel name exceeds maximum length of ${MAX_CHANNEL_NAME_LENGTH} bytes`,
+      );
+    }
+
     void globalForPubSub.channelToPglSubscriber[channel]?.close();
     this.pglSubscriber = createSubscriber({
       connectionString: env.DATABASE_URL,
     });
     globalForPubSub.channelToPglSubscriber[channel] = this.pglSubscriber;
 
-    // When a notification comes in on our channel, broadcast it.
+    // When a notification comes in on our channel, handle it
     this.pglSubscriber.notifications.on(channel, (payload: string) => {
-      this.broadcast(superjson.parse<T>(payload));
+      void invoke(async () => {
+        try {
+          const parsedPayload = superjson.parse(payload);
+
+          // Check if this is a cache reference
+          if (isCacheRef(parsedPayload)) {
+            // Retrieve the actual payload from cache
+            const actualPayload = await getCache({
+              id: parsedPayload.__cacheRef,
+            });
+            this.broadcast(actualPayload as T);
+          } else {
+            // Direct payload
+            this.broadcast(parsedPayload as T);
+          }
+        } catch (error) {
+          console.error("Error processing pubsub notification:", error);
+        }
+      });
     });
+
     // Connect and start listening.
     void this.pglSubscriber.connect().then(() => {
       return this.pglSubscriber.listenTo(channel);
@@ -83,7 +130,25 @@ export class PubSub<T extends SuperJSONValue> {
   }
 
   async publish(payload: T): Promise<void> {
-    await this.pglSubscriber.notify(this.channel, superjson.stringify(payload));
+    const stringified = superjson.stringify(payload);
+
+    // If payload is small enough, send directly
+    if (stringified.length <= MAX_DIRECT_PAYLOAD_SIZE) {
+      await this.pglSubscriber.notify(this.channel, stringified);
+      return;
+    }
+
+    // For large payloads, store in cache and send a reference
+    const cacheEntry = await cache({
+      value: payload,
+      durationSeconds: 3600, // Cache for 1 hour
+    });
+
+    const cacheRef: CacheRefPayload = { __cacheRef: cacheEntry.id };
+    await this.pglSubscriber.notify(
+      this.channel,
+      superjson.stringify(cacheRef),
+    );
   }
 
   private broadcast(payload: T) {

@@ -8,12 +8,12 @@ import {
 import { type TRPCLink } from "@trpc/client";
 import { type AnyRouter } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
-import SuperJSON from "superjson";
+import superjson from "superjson";
 import { getTrpcUrl } from "~/common/urlUtils";
 import { reportTrpcError } from "./trpcErrorBridge";
 
 const linkOpts = {
-  transformer: SuperJSON,
+  transformer: superjson,
   url: getTrpcUrl(),
   headers: () => {
     const headers = new Headers();
