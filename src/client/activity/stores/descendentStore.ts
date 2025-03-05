@@ -1,4 +1,5 @@
 import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
+import { registerHmrCb } from "~/client/utils/hmrUtils";
 import { loading, notLoaded, Status } from "~/client/utils/status";
 import { assertOne } from "~/common/assertions";
 import { clone } from "~/common/cloneUtils";
@@ -77,27 +78,38 @@ export class DescendentStore {
     });
   }
   private subscribeToDescendents(activityId: string) {
-    const subscription = this.serverInterface.subscribeToNewDescendents(
-      { activityId },
-      (descendents: Descendents) => {
-        const existing = this.descendents;
-        if (existing instanceof Status) {
-          return;
-        }
-        runInAction(() => {
-          upsertDescendents(existing, descendents);
-        });
-      },
-    );
-    reaction(
-      () => this.focusedActivityStore.activityId,
-      () => {
+    const setup = () => {
+      const subscription = this.serverInterface.subscribeToNewDescendents(
+        { activityId },
+        (descendents: Descendents) => {
+          const existing = this.descendents;
+          if (existing instanceof Status) {
+            return;
+          }
+          runInAction(() => {
+            upsertDescendents(existing, descendents);
+          });
+        },
+      );
+      const disposeReaction = reaction(
+        () => this.focusedActivityStore.activityId,
+        () => {
+          subscription.unsubscribe();
+        },
+        {
+          fireImmediately: false,
+        },
+      );
+      return () => {
+        disposeReaction();
         subscription.unsubscribe();
-      },
-      {
-        fireImmediately: false,
-      },
-    );
+      };
+    };
+    const dispose = setup();
+    registerHmrCb(() => {
+      dispose();
+      setup();
+    });
   }
   private subscribeToMessageDeltas(activityId: string) {
     const subscription = this.serverInterface.subscribeToMessageDeltas(
