@@ -12,6 +12,7 @@ import { getLlmResponse } from "~/server/ai/llm";
 import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import { type Message, type MessageWithDescendents } from "~/server/db/schema";
+import { notifyAdmin } from "../email/notifyAdmin";
 
 /**
  * Analyzes the assistant response to determine if any items have been completed
@@ -117,10 +118,6 @@ Here is the conversation history:
 ${sortedMessages.map((msg, idx) => `${idx === sortedMessages.length - 1 ? "(BEGIN LAST MESSAGE)\n" : ""}${msg.senderRole}: ${msg.content}`).join("\n\n")}
 `;
 
-  // const tries = 3;
-  // for (let i = 0; i < tries; i++) {
-  //   try {
-  // Use the LLM to analyze the conversation
   const llmResponse = await getLlmResponse(
     userId,
     {
@@ -130,26 +127,32 @@ ${sortedMessages.map((msg, idx) => `${idx === sortedMessages.length - 1 ? "(BEGI
     db,
   );
   if (llmResponse instanceof Error) {
-    console.error("Error analyzing completions:", {
+    notifyAdmin("error determining completions or lack thereof (in prompt)", {
       prompt,
-      llmResponse,
+      llmResponse: {
+        message: llmResponse.message,
+        stack: llmResponse.stack,
+      },
     });
     throw llmResponse;
   }
+  try {
+    // Use the LLM to analyze the conversation
 
-  // Extract completed item IDs from the LLM response
-  const completedItemNumbers = extractCompletedItemNumbers(
-    llmResponse,
-    incompleteItemNumbers,
-  );
+    // Extract completed item IDs from the LLM response
+    const completedItemNumbers = extractCompletedItemNumbers(
+      llmResponse,
+      incompleteItemNumbers,
+    );
 
-  return { completedItemNumbers };
-  //   } catch (e) {
-  //     noop(e);
-  //   }
-  //   continue;
-  // }
-  // throw new Error("Failed to analyze completions");
+    return { completedItemNumbers };
+  } catch (e) {
+    notifyAdmin("error determining completions or lack thereof (in parsing)", {
+      prompt,
+      llmResponse,
+    });
+    throw e;
+  }
 }
 
 /**
