@@ -1,4 +1,4 @@
-// src/server/services/summit/itemCompletionInjection/itemCompletionInjector.ts
+// src/server/services/summit/completionInjection/completionInjector.ts
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { createEmptyDescendents } from "~/common/descendentUtils";
@@ -15,17 +15,17 @@ import { type Message, type MessageWithDescendents } from "~/server/db/schema";
 
 /**
  * Analyzes the assistant response to determine if any items have been completed
- * and creates the corresponding itemCompletion records in the database.
+ * and creates the corresponding completion records in the database.
  */
-export async function injectItemCompletions(
+export async function injectCompletions(
   assistantResponse: Message,
   prevMessages: MessageWithDescendents[],
 ): Promise<void> {
   const { userId, activityId, threadId } = assistantResponse;
 
   // Get existing item completions for this thread
-  const existingCompletions = await db.query.itemCompletions.findMany({
-    where: eq(schema.itemCompletions.threadId, threadId),
+  const existingCompletions = await db.query.completions.findMany({
+    where: eq(schema.completions.threadId, threadId),
   });
 
   // Get all items for this activity
@@ -75,14 +75,14 @@ export async function injectItemCompletions(
 
   // Insert the new completions into the database
   const insertedCompletions = await db
-    .insert(schema.itemCompletions)
+    .insert(schema.completions)
     .values(newCompletions)
     .returning();
 
   // Publish the new completions to subscribers
   await descendentPubSub.publish({
     ...createEmptyDescendents(),
-    itemCompletions: insertedCompletions,
+    completions: insertedCompletions,
   });
 }
 

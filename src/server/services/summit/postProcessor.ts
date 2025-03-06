@@ -1,5 +1,5 @@
 import { type Message, type MessageWithDescendents } from "~/server/db/schema";
-import { injectItemCompletions } from "./itemCompletionInjector";
+import { injectCompletions } from "./completionInjector";
 import { injectMedia } from "./mediaInjection/mediaInjector";
 
 export async function postProcessAssistantResponse(
@@ -8,6 +8,6 @@ export async function postProcessAssistantResponse(
 ) {
   await Promise.all([
     injectMedia(assistantResponse, prevMessages),
-    injectItemCompletions(assistantResponse, prevMessages),
+    injectCompletions(assistantResponse, prevMessages),
   ]);
 }

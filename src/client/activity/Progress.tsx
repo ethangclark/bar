@@ -8,7 +8,7 @@ export const Progress = storeObserver(function Progress({
   descendentStore,
 }) {
   const threadId = threadStore.selectedThreadId;
-  const completions = descendentStore.get("itemCompletions");
+  const completions = descendentStore.get("completions");
   const itemsRaw = descendentStore.get("items");
 
   const items = itemsRaw instanceof Status ? [] : sortByOrderFracIdx(itemsRaw);

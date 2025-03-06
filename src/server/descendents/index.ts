@@ -12,11 +12,11 @@ import {
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
 import { objectEntries, objectValues } from "~/common/objectUtils";
 import { type DbOrTx } from "~/server/db";
+import { completionController } from "./completionController";
 import { evalKeyController } from "./evalKeyController";
 import { infoImageController } from "./infoImageController";
 import { infoTextController } from "./infoTextController";
 import { infoVideoController } from "./infoVideoController";
-import { itemCompletionController } from "./itemCompletionController";
 import { itemController } from "./itemController";
 import { messageController } from "./messageController";
 import { questionController } from "./questionController";
@@ -43,7 +43,7 @@ export const controllers: Controllers = {
   viewPieceImages: viewPieceImageController,
   viewPieceTexts: viewPieceTextController,
   viewPieceVideos: viewPieceVideoController,
-  itemCompletions: itemCompletionController,
+  completions: completionController,
 };
 
 export async function createDescendents({

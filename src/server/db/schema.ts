@@ -275,7 +275,7 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
   infoVideos: many(infoVideos),
   threads: many(threads),
   messages: many(messages),
-  itemCompletions: many(itemCompletions),
+  completions: many(completions),
   // should be exactly one of these
   adHocActivity: one(adHocActivities),
   integrationActivity: one(integrationActivities),
@@ -613,8 +613,8 @@ export const threadsRelations = relations(threads, ({ one, many }) => ({
 }));
 export const threadSchema = createSelectSchema(threads);
 
-export const itemCompletions = pgTable(
-  "item_completion",
+export const completions = pgTable(
+  "completion",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     activityId: uuid("activity_id")
@@ -631,35 +631,32 @@ export const itemCompletions = pgTable(
       .references(() => items.id, { onDelete: "cascade" }),
   },
   (ic) => [
-    index("item_completion_activity_id_idx").on(ic.activityId),
-    index("item_completion_user_id_idx").on(ic.userId),
-    index("item_completion_thread_id_idx").on(ic.threadId),
-    index("item_completion_item_id_idx").on(ic.itemId),
+    index("completion_activity_id_idx").on(ic.activityId),
+    index("completion_user_id_idx").on(ic.userId),
+    index("completion_thread_id_idx").on(ic.threadId),
+    index("completion_item_id_idx").on(ic.itemId),
   ],
 );
-export type ItemCompletion = InferSelectModel<typeof itemCompletions>;
-export const itemCompletionsRelations = relations(
-  itemCompletions,
-  ({ one }) => ({
-    activity: one(activities, {
-      fields: [itemCompletions.activityId],
-      references: [activities.id],
-    }),
-    user: one(users, {
-      fields: [itemCompletions.userId],
-      references: [users.id],
-    }),
-    thread: one(threads, {
-      fields: [itemCompletions.threadId],
-      references: [threads.id],
-    }),
-    item: one(items, {
-      fields: [itemCompletions.itemId],
-      references: [items.id],
-    }),
+export type Completion = InferSelectModel<typeof completions>;
+export const completionsRelations = relations(completions, ({ one }) => ({
+  activity: one(activities, {
+    fields: [completions.activityId],
+    references: [activities.id],
   }),
-);
-export const itemCompletionSchema = createSelectSchema(itemCompletions);
+  user: one(users, {
+    fields: [completions.userId],
+    references: [users.id],
+  }),
+  thread: one(threads, {
+    fields: [completions.threadId],
+    references: [threads.id],
+  }),
+  item: one(items, {
+    fields: [completions.itemId],
+    references: [items.id],
+  }),
+}));
+export const completionSchema = createSelectSchema(completions);
 
 export const senderRoleEnum = pgEnum("sender_role", [
   "user",
