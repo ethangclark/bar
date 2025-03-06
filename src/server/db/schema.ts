@@ -623,9 +623,10 @@ export const completions = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    threadId: uuid("thread_id")
+    messageId: uuid("message_id")
       .notNull()
-      .references(() => threads.id, { onDelete: "cascade" }),
+      .references(() => messages.id, { onDelete: "cascade" })
+      .unique(),
     itemId: uuid("item_id")
       .notNull()
       .references(() => items.id, { onDelete: "cascade" }),
@@ -633,7 +634,7 @@ export const completions = pgTable(
   (ic) => [
     index("completion_activity_id_idx").on(ic.activityId),
     index("completion_user_id_idx").on(ic.userId),
-    index("completion_thread_id_idx").on(ic.threadId),
+    // index("completion_message_id_idx").on(ic.messageId), // no need because it's unique()
     index("completion_item_id_idx").on(ic.itemId),
   ],
 );
@@ -647,9 +648,9 @@ export const completionsRelations = relations(completions, ({ one }) => ({
     fields: [completions.userId],
     references: [users.id],
   }),
-  thread: one(threads, {
-    fields: [completions.threadId],
-    references: [threads.id],
+  message: one(messages, {
+    fields: [completions.messageId],
+    references: [messages.id],
   }),
   item: one(items, {
     fields: [completions.itemId],
@@ -704,6 +705,7 @@ export const messagesRelations = relations(messages, ({ one, many }) => ({
     references: [threads.id],
   }),
   viewPieces: many(viewPieces),
+  completion: one(completions),
 }));
 export const messageSchema = createSelectSchema(messages);
 

@@ -21,11 +21,11 @@ export async function injectCompletions(
   assistantResponse: Message,
   prevMessages: MessageWithDescendents[],
 ): Promise<void> {
-  const { userId, activityId, threadId } = assistantResponse;
+  const { userId, activityId } = assistantResponse;
 
-  // Get existing item completions for this thread
+  // Get existing item completions for this activity
   const existingCompletions = await db.query.completions.findMany({
-    where: eq(schema.completions.threadId, threadId),
+    where: eq(schema.completions.activityId, activityId),
   });
 
   // Get all items for this activity
@@ -68,7 +68,7 @@ export async function injectCompletions(
       id: crypto.randomUUID(),
       activityId,
       userId,
-      threadId,
+      messageId: assistantResponse.id,
       itemId,
     };
   });

@@ -3,31 +3,24 @@ import { sortByOrderFracIdx } from "~/common/indexUtils";
 import { Status } from "../utils/status";
 import { storeObserver } from "../utils/storeObserver";
 
-export const Progress = storeObserver(function Progress({
-  threadStore,
-  descendentStore,
-}) {
-  const threadId = threadStore.selectedThreadId;
+export const Progress = storeObserver(function Progress({ descendentStore }) {
   const completions = descendentStore.get("completions");
   const itemsRaw = descendentStore.get("items");
 
   const items = itemsRaw instanceof Status ? [] : sortByOrderFracIdx(itemsRaw);
 
-  const completedItemIds = new Set(
-    completions instanceof Status
-      ? []
-      : completions.filter((c) => c.threadId === threadId).map((c) => c.itemId),
-  );
+  const completionCount =
+    completions instanceof Status ? 0 : completions.length;
 
   return (
     <AtndProgress
       type="circle"
       size={50}
       steps={{ count: items.length, gap: 8 }}
-      percent={(completedItemIds.size / items.length) * 100}
+      percent={(completionCount / items.length) * 100}
       format={() => (
         <span className="font-bold">
-          {completedItemIds.size} / {items.length}
+          {completionCount} / {items.length}
         </span>
       )}
       trailColor="rgba(0, 0, 0, 0.10)"
