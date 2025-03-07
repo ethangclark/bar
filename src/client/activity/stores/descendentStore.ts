@@ -164,6 +164,21 @@ export class DescendentStore {
     }
     return Object.values(this.descendents[descendentName]);
   }
+  getManyByIds<T extends DescendentName>(descendentName: T, ids: string[]) {
+    if (this.descendents instanceof Status) {
+      return this.descendents;
+    }
+    return ids.map((id) => {
+      if (this.descendents instanceof Status) {
+        throw new Error("Descendents not loaded");
+      }
+      const descendent = this.descendents[descendentName][id];
+      if (descendent === undefined) {
+        throw new Error(`Descendent ${descendentName} with id ${id} not found`);
+      }
+      return descendent;
+    });
+  }
 
   async modify(
     modificationsPartial: Partial<Modifications>,
@@ -304,7 +319,18 @@ export class DescendentStore {
         [descendentName]: [descendent],
       },
     });
+  }
 
-    // deletes already handled; we're done
+  async deleteByIds(descendentName: DescendentName, ids: string[]) {
+    const descendents = this.getManyByIds(descendentName, ids);
+    if (descendents instanceof Status) {
+      throw new Error("Descendents not loaded");
+    }
+    await this.modify({
+      toDelete: {
+        ...createEmptyDescendents(),
+        [descendentName]: descendents,
+      },
+    });
   }
 }

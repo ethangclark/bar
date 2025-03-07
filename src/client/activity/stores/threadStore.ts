@@ -127,6 +127,19 @@ export class ThreadStore {
     });
   }
 
+  async removeCompletions() {
+    const completions = this.descendentStore.get("completions");
+    if (completions instanceof Status) {
+      throw new Error(
+        "Completions not loaded -- cannot reset activity progress.",
+      );
+    }
+    await this.descendentStore.deleteByIds(
+      "completions",
+      completions.map((c) => c.id),
+    );
+  }
+
   selectThread(threadId: string) {
     this.selectedThreadId = threadId;
   }
