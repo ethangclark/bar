@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import {
-  ThreadWrap,
+  type ThreadWrap,
   threadWrapPubSub,
 } from "~/server/db/pubsub/threadWrapPubSub";
 import { getActivity } from "~/server/services/activity/activityService";

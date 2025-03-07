@@ -4,6 +4,7 @@ import { z } from "zod";
 import { assertOne } from "~/common/assertions";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db, schema } from "~/server/db";
+import { activityStatusSchema } from "~/server/db/schema";
 import {
   getActivity,
   getAllActivities,
@@ -42,6 +43,32 @@ export const activityRouter = createTRPCRouter({
         .returning();
       const adHocActivity = assertOne(adHocActivities);
       return { activity, adHocActivity };
+    }),
+  updateStatus: protectedProcedure
+    .input(z.object({ activityId: z.string(), status: activityStatusSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const activity = await getActivity({
+        assertAccess: true,
+        userId: ctx.userId,
+        activityId: input.activityId,
+      });
+
+      if (activity.type === "adHoc") {
+        if (activity.adHocActivity.creatorId !== ctx.userId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You are not allowed to update this ad hoc activity",
+          });
+        }
+        await db
+          .update(schema.activities)
+          .set({ status: input.status })
+          .where(eq(schema.activities.id, input.activityId));
+      } else {
+        throw new Error(
+          "Not yet implemented: non-ad-hoc activity status updates",
+        );
+      }
     }),
   deleteAdHocActivity: protectedProcedure
     .input(z.object({ activityId: z.string() }))

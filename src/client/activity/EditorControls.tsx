@@ -1,12 +1,14 @@
 import { Button, Modal, type ButtonProps } from "antd";
 import { useState } from "react";
 import { storeObserver } from "~/client/utils/storeObserver";
+import { assertTypesExhausted } from "~/common/assertions";
 import { invoke } from "~/common/fnUtils";
-import { type ActivityStatus } from "~/server/db/schema";
+import { type Activity } from "~/server/db/schema";
 import { InfoModalPadding } from "../components/InfoModalPadding";
+import { LoadingCentered } from "../components/Loading";
 
 type EditorControlsProps = {
-  activityStatus: ActivityStatus;
+  activity: Activity;
 };
 
 function ControlButton(props: ButtonProps) {
@@ -14,13 +16,20 @@ function ControlButton(props: ButtonProps) {
 }
 
 export const EditorControls = storeObserver<EditorControlsProps>(
-  function EditorControls({ activityStatus, editorStore, studentModeStore }) {
-    const [confirmOpen, setConfirmOpen] = useState(false);
+  function EditorControls({
+    activity,
+    editorStore,
+    studentModeStore,
+    focusedActivityStore,
+  }) {
+    const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
+    const [confirmPublishOpen, setConfirmPublishOpen] = useState(false);
+    const [publishing, setPublishing] = useState(false);
     return (
       <div className="flex justify-center gap-2">
         <Modal
-          open={confirmOpen}
-          onCancel={() => setConfirmOpen(false)}
+          open={confirmSaveOpen}
+          onCancel={() => setConfirmSaveOpen(false)}
           onOk={() => {
             void editorStore.save();
           }}
@@ -31,19 +40,41 @@ export const EditorControls = storeObserver<EditorControlsProps>(
             visible to students.
           </InfoModalPadding>
         </Modal>
+        <Modal
+          open={confirmPublishOpen}
+          onCancel={() => setConfirmPublishOpen(false)}
+          onOk={async () => {
+            setPublishing(true);
+            try {
+              await focusedActivityStore.publish();
+            } finally {
+              setPublishing(false);
+              setConfirmPublishOpen(false);
+            }
+          }}
+          okText="Publish"
+        >
+          <InfoModalPadding>
+            Are you sure you want to publish this activity? This will make it
+            visible to students.
+          </InfoModalPadding>
+          <div className={publishing ? "" : "invisible"}>
+            <LoadingCentered />
+          </div>
+        </Modal>
         <ControlButton
           type="primary"
           disabled={!editorStore.canSave}
           onClick={() => {
-            if (activityStatus === "published") {
-              setConfirmOpen(true);
+            if (activity.status === "published") {
+              setConfirmSaveOpen(true);
             } else {
               void editorStore.save();
             }
           }}
         >
           {invoke((): string => {
-            switch (activityStatus) {
+            switch (activity.status) {
               case "draft":
                 return "Save";
               case "published":
@@ -51,6 +82,24 @@ export const EditorControls = storeObserver<EditorControlsProps>(
             }
           })}
         </ControlButton>
+        {invoke(() => {
+          switch (activity.status) {
+            case "draft":
+              return (
+                <ControlButton
+                  type="primary"
+                  onClick={() => setConfirmPublishOpen(true)}
+                  disabled={!editorStore.canPublish}
+                >
+                  Publish
+                </ControlButton>
+              );
+            case "published":
+              return null;
+            default:
+              assertTypesExhausted(activity.status);
+          }
+        })}
         <ControlButton
           type="primary"
           onClick={() => studentModeStore.setIsStudentMode(true)}

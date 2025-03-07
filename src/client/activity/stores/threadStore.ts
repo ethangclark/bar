@@ -7,10 +7,13 @@ import {
   notLoaded,
 } from "~/client/utils/status";
 import { assertTypesExhausted } from "~/common/assertions";
-import { ThreadWrapReason } from "~/server/db/pubsub/threadWrapPubSub";
+import {
+  type ThreadWrap,
+  type ThreadWrapReason,
+} from "~/server/db/pubsub/threadWrapPubSub";
 import { trpc } from "~/trpc/proxy";
 import { type DescendentStore } from "./descendentStore";
-import { FocusedActivityStore } from "./focusedActivityStore";
+import { type FocusedActivityStore } from "./focusedActivityStore";
 
 function threadWrapReasonToMessage(reason: ThreadWrapReason) {
   switch (reason) {
@@ -48,7 +51,7 @@ export class ThreadStore {
     const subscription = trpc.threadWrap.threadWraps.subscribe(
       { activityId },
       {
-        onData: (threadWrap) => {
+        onData: (threadWrap: ThreadWrap) => {
           Modal.info({
             title: "Starting a new thread",
             content: threadWrapReasonToMessage(threadWrap.reason),

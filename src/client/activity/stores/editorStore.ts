@@ -12,6 +12,7 @@ import {
   isQuestionDraftReady,
 } from "../Item/itemValidator";
 import { type DraftStore } from "./draftStore";
+import { type FocusedActivityStore } from "./focusedActivityStore";
 import { type UploadStore } from "./uploadStore";
 
 export class EditorStore {
@@ -20,6 +21,7 @@ export class EditorStore {
   constructor(
     private draftStore: DraftStore,
     private uploadStore: UploadStore,
+    private focusedActivityStore: FocusedActivityStore,
   ) {
     makeAutoObservable(this);
   }
@@ -91,6 +93,14 @@ export class EditorStore {
       return false;
     }
     return !draftStatus.includesSaveable;
+  }
+  get canPublish() {
+    if (this.focusedActivityStore.activity instanceof Status) {
+      return false;
+    }
+    return (
+      this.canDemo && this.focusedActivityStore.activity.status === "draft"
+    );
   }
 
   async save() {

@@ -44,6 +44,7 @@ async function getNewStore(
       status: "published",
     }),
     updateActivityTitle: () => Promise.resolve(),
+    updateActivityStatus: () => Promise.resolve(),
   });
   await activityStore.loadActivity(defaultActivityId);
   const descendentServerInterface: DescendentServerInterface = {

@@ -20,6 +20,7 @@ import { QueryStore } from "./queryStore";
 const activityServerInterface: ActivityServerInterface = {
   getActivity: trpc.activity.get.query,
   updateActivityTitle: trpc.activity.updateAdHocActivity.mutate,
+  updateActivityStatus: trpc.activity.updateStatus.mutate,
 };
 
 const descendentServerInterface: DescendentServerInterface = {
@@ -42,7 +43,11 @@ const descendentStore = new DescendentStore(
 );
 const threadStore = new ThreadStore(descendentStore, focusedActivityStore);
 const draftStore = new DraftStore(focusedActivityStore, descendentStore);
-const editorStore = new EditorStore(draftStore, uploadStore);
+const editorStore = new EditorStore(
+  draftStore,
+  uploadStore,
+  focusedActivityStore,
+);
 const questionStore = new QuestionStore(draftStore);
 const itemStore = new ItemStore(draftStore, questionStore);
 const studentModeStore = new StudentModeStore(focusedActivityStore);

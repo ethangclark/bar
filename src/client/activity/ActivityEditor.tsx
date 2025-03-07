@@ -56,7 +56,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
             }
           />
         </div>
-        <EditorControls activityStatus={activity.status} />
+        <EditorControls activity={activity} />
       </div>
       <ScrollyContentBox className="mb-5 p-6 pb-24">
         {sortedItems.length === 0 && (

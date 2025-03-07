@@ -5,6 +5,7 @@ import { getEnrolledAs } from "~/common/enrollmentTypeUtils";
 import { noop } from "~/common/fnUtils";
 import { identity } from "~/common/objectUtils";
 import { type RichActivity } from "~/common/types";
+import { type ActivityStatus } from "~/server/db/schema";
 
 const baseState = () => ({
   activityId: identity<string | undefined>(undefined),
@@ -16,6 +17,10 @@ export type ActivityServerInterface = {
   updateActivityTitle: (params: {
     activityId: string;
     title: string;
+  }) => Promise<void>;
+  updateActivityStatus: (params: {
+    activityId: string;
+    status: ActivityStatus;
   }) => Promise<void>;
 };
 
@@ -91,6 +96,23 @@ export class FocusedActivityStore {
         break;
       default:
         assertTypesExhausted(this.activity);
+    }
+  }
+
+  async publish() {
+    if (this.activity instanceof Status) {
+      throw new Error("Can't publish -- activity not loaded");
+    }
+    const oldStatus = this.activity.status;
+    this.activity.status = "published";
+    try {
+      await this.serverInterface.updateActivityStatus({
+        activityId: this.activity.id,
+        status: "published",
+      });
+    } catch (e) {
+      this.activity.status = oldStatus;
+      throw e;
     }
   }
 

@@ -31,7 +31,7 @@ async function wrapThreadOnTokenLimit({
       messages,
     });
 
-    threadWrapPubSub.publish({
+    await threadWrapPubSub.publish({
       threadId: thread.id,
       userId,
       activityId,
