@@ -67,6 +67,7 @@ export async function* streamOpenRouterResponse(
 
   const decoder = new TextDecoder();
   let buffer = "";
+  let totalTokens = 0; // Track total tokens used
 
   while (true) {
     const { done, value } = await reader.read();
@@ -83,12 +84,22 @@ export async function* streamOpenRouterResponse(
       if (line.startsWith("data: ")) {
         const jsonStr = line.slice(6);
         if (jsonStr === "[DONE]") {
+          // Increment usage with the total tokens before finishing
+          if (totalTokens > 0) {
+            await incrementUsage(userId, totalTokens, tx);
+          }
           return;
         }
 
         const json = JSON.parse(jsonStr);
         try {
           const result = streamingOpenRouterResponseSchema.parse(json);
+
+          // If this chunk contains usage information, update our total
+          if (result.usage) {
+            totalTokens = result.usage.total_tokens;
+          }
+
           yield result;
         } catch (error) {
           console.error(error);
@@ -106,11 +117,22 @@ export async function* streamOpenRouterResponse(
     const json = JSON.parse(buffer);
     try {
       const result = streamingOpenRouterResponseSchema.parse(json);
+
+      // Update token count if this final chunk has usage info
+      if (result.usage) {
+        totalTokens = result.usage.total_tokens;
+      }
+
       yield result;
     } catch (error) {
       console.error(error);
       console.error("raw json:", json);
       throw new Error("Failed to parse streaming OpenRouter response (code 2)");
     }
+  }
+
+  // Increment usage with the final total tokens count
+  if (totalTokens > 0) {
+    await incrementUsage(userId, totalTokens, tx);
   }
 }
