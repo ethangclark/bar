@@ -15,7 +15,6 @@ import {
   type DescendentServerInterface,
   DescendentStore,
 } from "./descendentStore";
-import { FocusedActivityStore } from "./focusedActivityStore";
 
 const defaultActivityId = "activityId";
 
@@ -31,22 +30,6 @@ async function getNewStore(
   const publishMessageDelta = (messageDelta: MessageDelta) => {
     onMessageDeltas?.(messageDelta);
   };
-  const activityStore = new FocusedActivityStore({
-    getActivity: async () => ({
-      id: defaultActivityId,
-      type: "adHoc",
-      title: "activityTitle",
-      adHocActivity: {
-        activityId: defaultActivityId,
-        title: "activityTitle",
-        creatorId: "creatorId",
-      },
-      status: "published",
-    }),
-    updateActivityTitle: () => Promise.resolve(),
-    updateActivityStatus: () => Promise.resolve(),
-  });
-  await activityStore.loadActivity(defaultActivityId);
   const descendentServerInterface: DescendentServerInterface = {
     readDescendents: () => Promise.resolve(descendentLoader()),
     subscribeToNewDescendents: (_, cb) => {
@@ -67,7 +50,9 @@ async function getNewStore(
     },
     modifyDescendents: () => Promise.resolve(modificationResponder()),
   };
-  const store = new DescendentStore(descendentServerInterface, activityStore);
+  const store = new DescendentStore(descendentServerInterface, {
+    activityId: defaultActivityId,
+  });
   return { store, publishDescendents, publishMessageDelta };
 }
 

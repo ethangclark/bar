@@ -52,7 +52,9 @@ export class DescendentStore {
 
   constructor(
     private serverInterface: DescendentServerInterface,
-    private focusedActivityStore: FocusedActivityStore,
+    private focusedActivityStore: {
+      activityId: FocusedActivityStore["activityId"];
+    },
   ) {
     makeAutoObservable(this);
     autorun(() => {
