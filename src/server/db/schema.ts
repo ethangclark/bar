@@ -625,8 +625,7 @@ export const completions = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     messageId: uuid("message_id")
       .notNull()
-      .references(() => messages.id, { onDelete: "cascade" })
-      .unique(),
+      .references(() => messages.id, { onDelete: "cascade" }),
     itemId: uuid("item_id")
       .notNull()
       .references(() => items.id, { onDelete: "cascade" }),
@@ -637,7 +636,7 @@ export const completions = pgTable(
   (ic) => [
     index("completion_activity_id_idx").on(ic.activityId),
     index("completion_user_id_idx").on(ic.userId),
-    // index("completion_message_id_idx").on(ic.messageId), // no need because it's unique()
+    index("completion_message_id_idx").on(ic.messageId), // can't be unique because we want to support multiple completions per message
     index("completion_item_id_idx").on(ic.itemId),
   ],
 );

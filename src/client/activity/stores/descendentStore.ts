@@ -120,6 +120,9 @@ export class DescendentStore {
       () => {
         subscription.unsubscribe();
       },
+      {
+        fireImmediately: false,
+      },
     );
   }
 

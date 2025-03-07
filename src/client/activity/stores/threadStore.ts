@@ -1,17 +1,71 @@
-import { autorun, makeAutoObservable, runInAction } from "mobx";
+import { Modal } from "antd";
+import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
 import {
   type NotLoaded,
   Status,
   loading,
   notLoaded,
 } from "~/client/utils/status";
+import { assertTypesExhausted } from "~/common/assertions";
+import { ThreadWrapReason } from "~/server/db/pubsub/threadWrapPubSub";
+import { trpc } from "~/trpc/proxy";
 import { type DescendentStore } from "./descendentStore";
+import { FocusedActivityStore } from "./focusedActivityStore";
+
+function threadWrapReasonToMessage(reason: ThreadWrapReason) {
+  switch (reason) {
+    case "token-limit":
+      return "This conversation has gotten a bit long for me to keep track of. I'm going to start a new one and we can pick up where we left off.";
+    default:
+      assertTypesExhausted(reason);
+  }
+}
 
 export class ThreadStore {
   public selectedThreadId: string | NotLoaded = notLoaded;
 
-  constructor(private descendentStore: DescendentStore) {
+  constructor(
+    private descendentStore: DescendentStore,
+    private focusedActivityStore: FocusedActivityStore,
+  ) {
     makeAutoObservable(this);
+    autorun(() => {
+      const { activityId } = this.focusedActivityStore;
+      if (!activityId) {
+        return;
+      }
+      this.subscribeToThreadWraps(activityId);
+    });
+  }
+
+  private setSelectedThreadId(threadId: string) {
+    this.selectedThreadId = threadId;
+  }
+
+  private subscribeToThreadWraps(activityId: string) {
+    const subscription = trpc.threadWrap.threadWraps.subscribe(
+      { activityId },
+      {
+        onData: (threadWrap) => {
+          Modal.info({
+            title: "Starting a new thread",
+            content: threadWrapReasonToMessage(threadWrap.reason),
+            onOk: () => {
+              this.setSelectedThreadId(threadWrap.threadId);
+            },
+          });
+        },
+      },
+    );
+    reaction(
+      () => this.focusedActivityStore.activityId,
+      () => {
+        subscription.unsubscribe();
+      },
+      {
+        fireImmediately: false,
+      },
+    );
   }
 
   get thread() {

@@ -40,7 +40,7 @@ const descendentStore = new DescendentStore(
   descendentServerInterface,
   focusedActivityStore,
 );
-const threadStore = new ThreadStore(descendentStore);
+const threadStore = new ThreadStore(descendentStore, focusedActivityStore);
 const draftStore = new DraftStore(focusedActivityStore, descendentStore);
 const editorStore = new EditorStore(draftStore, uploadStore);
 const questionStore = new QuestionStore(draftStore);

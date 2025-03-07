@@ -8,6 +8,7 @@ import { errorRouter } from "./routers/errorRouter";
 import { imageDescriptionRouter } from "./routers/imageDescriptionRouter";
 import { integrationRouter } from "./routers/integrationRouter";
 import { messageRouter } from "./routers/messageRouter";
+import { threadWrapRouter } from "./routers/threadWrapRouter";
 import { transcriptionRouter } from "./routers/transcriptionRouter";
 
 /**
@@ -26,6 +27,7 @@ export const appRouter = createTRPCRouter({
   integration: integrationRouter,
   message: messageRouter,
   transcription: transcriptionRouter,
+  threadWrap: threadWrapRouter,
 });
 
 // export type definition of API

@@ -91,7 +91,7 @@ function itemToString(itemNumber: number, item: ItemWithDescendents) {
   return result;
 }
 
-async function beginThread(thread: Thread) {
+export async function insertIntroMessages(thread: Thread) {
   const items = await db.query.items.findMany({
     where: eq(schema.items.activityId, thread.activityId),
     with: {
@@ -151,6 +151,12 @@ ${itemContent}`,
       },
     ])
     .returning();
+
+  return messages;
+}
+
+async function beginThread(thread: Thread) {
+  const messages = await insertIntroMessages(thread);
 
   const descendents = {
     ...createEmptyDescendents(),
