@@ -49,6 +49,7 @@ async function respondToThread({
       threadId,
     });
 
+  let totalTokens = 0;
   const gen = streamLlmResponse(
     emptyIncompleteMessage.userId,
     {
@@ -59,6 +60,9 @@ async function respondToThread({
       })),
     },
     db,
+    (tt) => {
+      totalTokens = tt;
+    },
   );
 
   const { streamed } = await debouncePublish(gen, 200, (delta) =>
@@ -106,6 +110,7 @@ async function respondToThread({
       await postProcessAssistantResponse(
         streamedIncompleteMessage,
         messagesWithDescendents,
+        { totalTokens },
       );
     }),
     updateAndPublishCompletion(streamedIncompleteMessage),

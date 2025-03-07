@@ -16,10 +16,16 @@ export async function* streamLlmResponse(
   userId: string,
   request: OpenRouterRequest,
   tx: DbOrTx,
+  onTotalTokens: (totalTokens: number) => void,
 ): AsyncGenerator<string | null> {
   const gen = streamOpenRouterResponse(userId, request, tx);
   let next = await gen.next();
+  let totalTokens = 0;
   while (!next.done) {
+    const tt = next.value.usage?.total_tokens;
+    if (tt) {
+      totalTokens = tt;
+    }
     const parsed = parseStreamingResponseText(next.value);
     if (parsed instanceof Error) {
       return parsed;
@@ -27,4 +33,5 @@ export async function* streamLlmResponse(
     yield parsed;
     next = await gen.next();
   }
+  onTotalTokens(totalTokens);
 }
