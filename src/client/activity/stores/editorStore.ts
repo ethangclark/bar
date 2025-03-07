@@ -102,6 +102,12 @@ export class EditorStore {
       this.canDemo && this.focusedActivityStore.activity.status === "draft"
     );
   }
+  get canUnpublish() {
+    if (this.focusedActivityStore.activity instanceof Status) {
+      return false;
+    }
+    return this.focusedActivityStore.activity.status === "published";
+  }
 
   async save() {
     this.savingChanges = true;

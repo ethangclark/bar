@@ -115,6 +115,22 @@ export class FocusedActivityStore {
       throw e;
     }
   }
+  async unpublish() {
+    if (this.activity instanceof Status) {
+      throw new Error("Can't unpublish -- activity not loaded");
+    }
+    const oldStatus = this.activity.status;
+    this.activity.status = "draft";
+    try {
+      await this.serverInterface.updateActivityStatus({
+        activityId: this.activity.id,
+        status: "draft",
+      });
+    } catch (e) {
+      this.activity.status = oldStatus;
+      throw e;
+    }
+  }
 
   get data() {
     const { activity, enrolledAs, title, isTitleEditable } = this;
