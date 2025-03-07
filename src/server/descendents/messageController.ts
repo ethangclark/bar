@@ -70,23 +70,10 @@ export const messageController: DescendentController<Message> = {
     });
     return messages;
   },
-  // messages are immutable
-  async update({ rows }) {
-    if (rows.length > 0) {
-      throw new Error("Thread update not supported");
-    }
-    return [];
+  async update() {
+    throw new Error("Message update not supported");
   },
-  // anyone can delete a message for themselves
-  async delete({ activityId, tx, ids, userId }) {
-    await tx
-      .delete(schema.messages)
-      .where(
-        and(
-          inArray(schema.messages.id, ids),
-          eq(schema.messages.activityId, activityId),
-          eq(schema.messages.userId, userId),
-        ),
-      );
+  async delete() {
+    throw new Error("Message deletion not supported");
   },
 };

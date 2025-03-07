@@ -69,7 +69,7 @@ export const ChatInput = storeObserver(function ChatInput({
                 content: v,
                 senderRole: "user",
                 threadId: selectedThreadId,
-                completed: true,
+                doneGenerating: true,
               });
             } finally {
               setIsMessageSending(false);

@@ -127,13 +127,16 @@ ${sortedMessages.map((msg, idx) => `${idx === sortedMessages.length - 1 ? "(BEGI
     db,
   );
   if (llmResponse instanceof Error) {
-    notifyAdmin("error determining completions or lack thereof (in prompt)", {
-      prompt,
-      llmResponse: {
-        message: llmResponse.message,
-        stack: llmResponse.stack,
+    void notifyAdmin(
+      "error determining completions or lack thereof (in prompt)",
+      {
+        prompt,
+        llmResponse: {
+          message: llmResponse.message,
+          stack: llmResponse.stack,
+        },
       },
-    });
+    );
     throw llmResponse;
   }
   try {
@@ -147,10 +150,13 @@ ${sortedMessages.map((msg, idx) => `${idx === sortedMessages.length - 1 ? "(BEGI
 
     return { completedItemNumbers };
   } catch (e) {
-    notifyAdmin("error determining completions or lack thereof (in parsing)", {
-      prompt,
-      llmResponse,
-    });
+    void notifyAdmin(
+      "error determining completions or lack thereof (in parsing)",
+      {
+        prompt,
+        llmResponse,
+      },
+    );
     throw e;
   }
 }

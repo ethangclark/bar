@@ -25,7 +25,7 @@ export async function publishNextIncompleteMessage({
         threadId,
         senderRole: "assistant" as const,
         content: "",
-        completed: false, // needs post-processing
+        doneGenerating: false, // needs post-processing
       })
       .returning(),
   ]);

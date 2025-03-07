@@ -137,7 +137,7 @@ Here is the material to cover:
 ${itemContent}`,
         senderRole: "system" as const,
         activityId: thread.activityId,
-        completed: true,
+        doneGenerating: true,
         createdAt: sql`now() - interval '1 second'`,
       },
       {
@@ -147,7 +147,7 @@ ${itemContent}`,
           "Hi! My name is Summit. My goal is to help you master the material in this activity. Are you ready to begin?",
         senderRole: "assistant" as const,
         activityId: thread.activityId,
-        completed: true,
+        doneGenerating: true,
       },
     ])
     .returning();

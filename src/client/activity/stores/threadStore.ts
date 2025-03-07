@@ -60,7 +60,7 @@ export class ThreadStore {
     if (!lastMessage) {
       return true;
     }
-    return lastMessage.completed;
+    return lastMessage.doneGenerating;
   }
 
   async createThread() {

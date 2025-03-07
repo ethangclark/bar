@@ -630,6 +630,9 @@ export const completions = pgTable(
     itemId: uuid("item_id")
       .notNull()
       .references(() => items.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (ic) => [
     index("completion_activity_id_idx").on(ic.activityId),
@@ -686,7 +689,7 @@ export const messages = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    completed: boolean("completed").notNull(),
+    doneGenerating: boolean("done_generating").notNull(),
   },
   (x) => [
     index("message_user_id_idx").on(x.userId),

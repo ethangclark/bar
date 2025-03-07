@@ -12,7 +12,7 @@ import { debouncePublish } from "./utils";
 
 export async function updateAndPublishCompletion(assistantResponse: Message) {
   const updates = {
-    completed: true,
+    doneGenerating: true,
   };
 
   const updatedMessage = {
