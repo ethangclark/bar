@@ -15,12 +15,12 @@ import {
   type Thread,
 } from "~/server/db/schema";
 
-function fmtSection(header: string, content: string) {
-  return `### ${header}\n${content}\n\n`;
+function fmtSection(header: string, content: string, completed: boolean) {
+  return `### ${header}${completed ? " (complete -- skip unless something builds on it, in which case re-present the material without tutoring them through it)" : ""}\n${content}\n\n`;
 }
 
-export function fmtInfoText(content: string) {
-  return fmtSection("Information", content);
+export function fmtInfoText(content: string, completed: boolean) {
+  return fmtSection("Information", content, completed);
 }
 
 export const imageOmissionDisclaimer = `image omitted; description follows`;
@@ -32,25 +32,39 @@ export const imageHeaderWithOmissionDisclaimer = (numericId: number) =>
 export const videoHeaderWithOmissionDisclaimer = (numericId: number) =>
   `Video ${numericIdToVideoNumber(numericId)} (${videoOmissionDisclaimer})`;
 
-export function fmtInfoImage(numericId: number, textAlternative: string) {
+export function fmtInfoImage(
+  numericId: number,
+  textAlternative: string,
+  completed: boolean,
+) {
   return fmtSection(
     imageHeaderWithOmissionDisclaimer(numericId),
     textAlternative,
+    completed,
   );
 }
 
-function fmtInfoVideo(numericId: number, textAlternative: string) {
+function fmtInfoVideo(
+  numericId: number,
+  textAlternative: string,
+  completed: boolean,
+) {
   return fmtSection(
     videoHeaderWithOmissionDisclaimer(numericId),
     textAlternative,
+    completed,
   );
 }
 
-function fmtQuestion(question: Question) {
-  return fmtSection("Question", question.content);
+function fmtQuestion(question: Question, completed: boolean) {
+  return fmtSection("Question", question.content, completed);
 }
 
-function itemToString(itemNumber: number, item: ItemWithDescendents) {
+function itemToString(
+  itemNumber: number,
+  item: ItemWithDescendents,
+  isCompleted: boolean,
+) {
   let result = `## Item ${itemNumber}.\n`;
   for (const key of objectKeys(item)) {
     switch (key) {
@@ -60,7 +74,7 @@ function itemToString(itemNumber: number, item: ItemWithDescendents) {
         break;
       case "infoText":
         if (item.infoText) {
-          result += fmtInfoText(item.infoText.content);
+          result += fmtInfoText(item.infoText.content, isCompleted);
         }
         break;
       case "infoImage":
@@ -68,6 +82,7 @@ function itemToString(itemNumber: number, item: ItemWithDescendents) {
           result += fmtInfoImage(
             item.infoImage.numericId,
             item.infoImage.textAlternative,
+            isCompleted,
           );
         }
         break;
@@ -76,12 +91,13 @@ function itemToString(itemNumber: number, item: ItemWithDescendents) {
           result += fmtInfoVideo(
             item.infoVideo.numericId,
             item.infoVideo.textAlternative,
+            isCompleted,
           );
         }
         break;
       case "question":
         if (item.question) {
-          result += fmtQuestion(item.question);
+          result += fmtQuestion(item.question, isCompleted);
         }
         break;
       default:
@@ -103,11 +119,16 @@ export async function insertIntroMessages(thread: Thread) {
           evalKey: true,
         },
       },
+      completions: {
+        where: eq(schema.completions.userId, thread.userId),
+      },
     },
     orderBy: (items, { asc }) => [asc(items.orderFracIdx)],
   });
   const itemContent = sortByOrderFracIdx(items)
-    .map((item, index) => itemToString(index + 1, item))
+    .map((item, index) =>
+      itemToString(index + 1, item, item.completions.length > 0),
+    )
     .join("");
 
   const messages = await db

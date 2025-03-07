@@ -373,7 +373,7 @@ export const items = pgTable(
   (ai) => [index("item_activity_id_idx").on(ai.activityId)],
 );
 export type Item = InferSelectModel<typeof items>;
-export const itemRelations = relations(items, ({ one }) => ({
+export const itemRelations = relations(items, ({ one, many }) => ({
   activity: one(activities, {
     fields: [items.activityId],
     references: [activities.id],
@@ -384,6 +384,9 @@ export const itemRelations = relations(items, ({ one }) => ({
   infoText: one(infoTexts),
   infoImage: one(infoImages),
   infoVideo: one(infoVideos),
+
+  // should be many of these
+  completions: many(completions),
 }));
 export const itemSchema = createSelectSchema(items);
 
