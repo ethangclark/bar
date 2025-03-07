@@ -1,6 +1,6 @@
 import { PubSub } from "./pubsub";
 
-export type ThreadWrapReason = "token-limit";
+export type ThreadWrapReason = "token-limit" | "activity-completed";
 // not sure if we want these below
 // | "activity-updates"
 // | "app-updates";

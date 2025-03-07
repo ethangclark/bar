@@ -45,14 +45,22 @@ export async function postProcessAssistantResponse(
   prevMessages: MessageWithDescendents[],
   { totalTokens }: { totalTokens: number },
 ) {
-  await Promise.all([
-    injectMedia(assistantResponse, prevMessages),
+  const [completionResponse] = await Promise.all([
     injectCompletions(assistantResponse, prevMessages),
+    injectMedia(assistantResponse, prevMessages),
   ]);
+  const { completedActivityThisTurn } = completionResponse;
 
-  await wrapThreadOnTokenLimit({
-    userId: assistantResponse.userId,
-    activityId: assistantResponse.activityId,
-    totalTokens,
-  });
+  const { threadId, userId, activityId } = assistantResponse;
+
+  if (completedActivityThisTurn) {
+    await threadWrapPubSub.publish({
+      threadId,
+      userId,
+      activityId,
+      reason: "activity-completed",
+    });
+  } else {
+    await wrapThreadOnTokenLimit({ userId, activityId, totalTokens });
+  }
 }

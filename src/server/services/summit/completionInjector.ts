@@ -21,7 +21,7 @@ import { notifyAdmin } from "../email/notifyAdmin";
 export async function injectCompletions(
   assistantResponse: Message,
   prevMessages: MessageWithDescendents[],
-): Promise<void> {
+): Promise<{ completedActivityThisTurn: boolean }> {
   const { userId, activityId } = assistantResponse;
 
   // Get existing item completions for this activity
@@ -55,7 +55,7 @@ export async function injectCompletions(
   );
 
   if (completedItemNumbers.length === 0) {
-    return; // No new completions
+    return { completedActivityThisTurn: false }; // No new completions
   }
 
   // Create new item completion records
@@ -85,6 +85,17 @@ export async function injectCompletions(
     ...createEmptyDescendents(),
     completions: insertedCompletions,
   });
+
+  const completedItemIds = new Set([
+    ...existingCompletions.map((completion) => completion.itemId),
+    ...insertedCompletions.map((completion) => completion.itemId),
+  ]);
+
+  const completedActivityThisTurn =
+    items.every((item) => completedItemIds.has(item.id)) &&
+    insertedCompletions.length > 0;
+
+  return { completedActivityThisTurn };
 }
 
 /**

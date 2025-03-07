@@ -165,7 +165,7 @@ ${itemContent}`,
         threadId: thread.id,
         userId: thread.userId,
         content:
-          "Hi! My name is Summit. My goal is to help you master the material in this activity. Are you ready to begin?",
+          "Hey — this is Summit, your learning assistant. I'm here to help you master the material in this activity. Ready to jump in?",
         senderRole: "assistant" as const,
         activityId: thread.activityId,
         doneGenerating: true,

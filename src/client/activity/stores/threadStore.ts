@@ -16,6 +16,8 @@ function threadWrapReasonToMessage(reason: ThreadWrapReason) {
   switch (reason) {
     case "token-limit":
       return "This conversation has gotten a bit long for me to keep track of. I'm going to start a new one and we can pick up where we left off.";
+    case "activity-completed":
+      return "This activity is complete! I'm going to start a new conversation in case you want to keep discussing the material.";
     default:
       assertTypesExhausted(reason);
   }
