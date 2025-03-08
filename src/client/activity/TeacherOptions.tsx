@@ -30,7 +30,7 @@ export const TeacherOptions = storeObserver(function TeacherOptions({
         Reset progress
       </Button>
       <Tooltip
-        title="These options only visible to teachers and developers. It starts a new chat and resets activity progress."
+        title="These options only visible to teachers and developers."
         className="text-gray-500"
       >
         <CircleHelp size={16} />

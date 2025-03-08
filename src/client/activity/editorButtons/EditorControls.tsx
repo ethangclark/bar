@@ -1,4 +1,4 @@
-import { Button } from "antd";
+import { Dropdown } from "antd";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { type Activity } from "~/server/db/schema";
 import { SharingOptions } from "../SharingOptions";
@@ -13,12 +13,20 @@ export const EditorControls = storeObserver<EditorControlsProps>(
     return (
       <div className="flex justify-center gap-2">
         <SaveButton activity={activity} />
-        <Button
-          onClick={() => studentModeStore.setIsStudentMode(true)}
-          disabled={!editorStore.canDemo}
+        <Dropdown.Button
+          menu={{
+            items: [
+              {
+                key: "student-view",
+                label: "Student view",
+                onClick: () => studentModeStore.setIsStudentMode(true),
+                disabled: !editorStore.canDemo,
+              },
+            ],
+          }}
         >
-          Student view
-        </Button>
+          View
+        </Dropdown.Button>
         <SharingOptions activity={activity} />
       </div>
     );

@@ -31,7 +31,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
             <LogoutButton />
           </div>
           {igod && (
-            <div className={`mb-[18px] w-full`}>
+            <div className={`mb-[18px] mt-4 w-full`}>
               <ThreadSelection />
             </div>
           )}
