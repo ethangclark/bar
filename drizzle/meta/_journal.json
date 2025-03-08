@@ -253,6 +253,13 @@
       "when": 1741320016397,
       "tag": "0035_large_grey_gargoyle",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1741472127204,
+      "tag": "0036_even_elektra",
+      "breakpoints": true
     }
   ]
 }
