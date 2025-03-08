@@ -32,20 +32,11 @@ export const ActivityLink = storeObserver(function ActivityLink({
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <div>Student link:</div>
+    <Button onClick={copyToClipboard}>
       <span className="flex items-center gap-2">
-        <Button
-          onClick={copyToClipboard}
-          type="link"
-          className="rounded-md border border-gray-300 px-2 py-1"
-        >
-          {activityUrl}
-        </Button>
-        <Button onClick={copyToClipboard} type="link" className="px-0">
-          {copied ? <Check size={16} /> : <Copy size={16} />}
-        </Button>
+        <span>Student link</span>
+        <span>{copied ? <Check size={16} /> : <Copy size={16} />}</span>
       </span>
-    </div>
+    </Button>
   );
 });

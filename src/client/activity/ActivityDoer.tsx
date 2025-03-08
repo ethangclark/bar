@@ -25,7 +25,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
             maxHeight: `calc(100vh - ${scrollbarHeight}px)`,
           }}
         >
-          <div className="md:text-md mb-4 flex w-full items-center justify-between">
+          <div className="md:text-md flex w-full items-center justify-between">
             <Progress />
             <div className="pl-7 text-lg md:text-2xl">{assignmentTitle}</div>
             <LogoutButton />

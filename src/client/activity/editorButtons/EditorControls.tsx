@@ -2,6 +2,7 @@ import { Button } from "antd";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { type Activity } from "~/server/db/schema";
 import { PublishButton } from "../PublishButton";
+import { ActivityLink } from "./ActivityLink";
 import { SaveButton } from "./SaveButton";
 
 type EditorControlsProps = {
@@ -20,6 +21,7 @@ export const EditorControls = storeObserver<EditorControlsProps>(
         >
           Student view
         </Button>
+        <ActivityLink />
       </div>
     );
   },

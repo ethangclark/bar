@@ -9,7 +9,6 @@ import { storeObserver } from "~/client/utils/storeObserver";
 import { indexToItemNumber } from "~/common/indexUtils";
 import { LogoutButton } from "../components/LogoutButton";
 import { AddItemButtons } from "./AddItemButtons";
-import { ActivityLink } from "./editorButtons/ActivityLink";
 import { EditorControls } from "./editorButtons/EditorControls";
 import { Item } from "./Item/Item";
 import { ScrollyContentBox } from "./ScrollyContentBox";
@@ -35,7 +34,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
   return (
     <div className="mx-4 flex h-full w-[672px] flex-col justify-between pb-2">
       <div className="flex w-full items-center justify-between">
-        <Typography.Link href="/overview">← Return to overview</Typography.Link>
+        <Typography.Link href="/overview">← All activities</Typography.Link>
         <LogoutButton />
       </div>
       <div className="mb-4 flex items-center justify-between gap-2">
@@ -58,9 +57,6 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
           />
         </div>
         <EditorControls activity={activity} />
-      </div>
-      <div className="mb-4 flex w-full justify-center">
-        <ActivityLink />
       </div>
       <ScrollyContentBox className="mb-5 p-6 pb-24">
         {sortedItems.length === 0 && (
