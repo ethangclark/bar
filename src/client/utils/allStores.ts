@@ -5,10 +5,7 @@ import {
 } from "../activity/stores/descendentStore";
 import { DraftStore } from "../activity/stores/draftStore";
 import { EditorStore } from "../activity/stores/editorStore";
-import {
-  type ActivityServerInterface,
-  FocusedActivityStore,
-} from "../activity/stores/focusedActivityStore";
+import { FocusedActivityStore } from "../activity/stores/focusedActivityStore";
 import { ItemStore } from "../activity/stores/itemStore";
 import { QuestionStore } from "../activity/stores/questionStore";
 import { StudentModeStore } from "../activity/stores/studentModeStore";
@@ -16,12 +13,6 @@ import { ThreadStore } from "../activity/stores/threadStore";
 import { UploadStore } from "../activity/stores/uploadStore";
 import { ViewPieceStore } from "../activity/stores/viewPieceStore";
 import { QueryStore } from "./queryStore";
-
-const activityServerInterface: ActivityServerInterface = {
-  getActivity: trpc.activity.get.query,
-  updateActivityTitle: trpc.activity.updateAdHocActivity.mutate,
-  updateActivityStatus: trpc.activity.updateStatus.mutate,
-};
 
 const descendentServerInterface: DescendentServerInterface = {
   readDescendents: trpc.descendent.read.query,
@@ -36,7 +27,7 @@ const descendentServerInterface: DescendentServerInterface = {
 
 const activitesStore = new QueryStore(trpc.activity.getAll.query);
 const uploadStore = new UploadStore();
-const focusedActivityStore = new FocusedActivityStore(activityServerInterface);
+const focusedActivityStore = new FocusedActivityStore();
 const descendentStore = new DescendentStore(
   descendentServerInterface,
   focusedActivityStore,

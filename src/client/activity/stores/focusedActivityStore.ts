@@ -5,36 +5,24 @@ import { getEnrolledAs } from "~/common/enrollmentTypeUtils";
 import { noop } from "~/common/fnUtils";
 import { identity } from "~/common/objectUtils";
 import { type RichActivity } from "~/common/types";
-import { type ActivityStatus } from "~/server/db/schema";
+import { trpc } from "~/trpc/proxy";
 
 const baseState = () => ({
   activityId: identity<string | undefined>(undefined),
   activity: identity<RichActivity | Status>(notLoaded),
 });
 
-export type ActivityServerInterface = {
-  getActivity: (params: { activityId: string }) => Promise<RichActivity>;
-  updateActivityTitle: (params: {
-    activityId: string;
-    title: string;
-  }) => Promise<void>;
-  updateActivityStatus: (params: {
-    activityId: string;
-    status: ActivityStatus;
-  }) => Promise<void>;
-};
-
 export class FocusedActivityStore {
   public activityId = baseState().activityId;
   public activity = baseState().activity;
 
-  constructor(private serverInterface: ActivityServerInterface) {
+  constructor() {
     makeAutoObservable(this);
   }
 
   async loadActivity(activityId: string) {
     this.activityId = activityId;
-    const activity = await this.serverInterface.getActivity({ activityId });
+    const activity = await trpc.activity.get.query({ activityId });
     runInAction(() => {
       this.activity = activity;
     });
@@ -81,7 +69,7 @@ export class FocusedActivityStore {
         const oldTitle = this.activity.adHocActivity.title;
         this.activity.adHocActivity.title = title;
         try {
-          await this.serverInterface.updateActivityTitle({
+          await trpc.activity.updateAdHocActivity.mutate({
             activityId: this.activity.id,
             title,
           });
@@ -106,7 +94,7 @@ export class FocusedActivityStore {
     const oldStatus = this.activity.status;
     this.activity.status = "published";
     try {
-      await this.serverInterface.updateActivityStatus({
+      await trpc.activity.updateStatus.mutate({
         activityId: this.activity.id,
         status: "published",
       });
@@ -122,7 +110,7 @@ export class FocusedActivityStore {
     const oldStatus = this.activity.status;
     this.activity.status = "draft";
     try {
-      await this.serverInterface.updateActivityStatus({
+      await trpc.activity.updateStatus.mutate({
         activityId: this.activity.id,
         status: "draft",
       });
