@@ -1,5 +1,5 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { loginTokenQueryParam } from "~/common/constants";
+import { loginTokenQueryParam, redirectQueryParam } from "~/common/constants";
 import { getBaseUrl } from "~/common/urlUtils";
 import { env } from "~/env";
 import { db, schema } from "~/server/db";
@@ -8,7 +8,13 @@ import { getOrCreateVerifiedEmailUser } from "../authService";
 import { loginEmailHtml, loginEmailText } from "./loginEmailUtils";
 import { sendEmail } from "./sendEmail";
 
-export async function sendLoginEmail({ email }: { email: string }) {
+export async function sendLoginEmail({
+  email,
+  encodedRedirect,
+}: {
+  email: string;
+  encodedRedirect: string | null | undefined;
+}) {
   await db
     .delete(schema.users)
     .where(
@@ -28,7 +34,10 @@ export async function sendLoginEmail({ email }: { email: string }) {
     })
     .where(eq(schema.users.id, user.id));
 
-  const urlWithLoginToken = `${getBaseUrl()}/login?${loginTokenQueryParam}=${loginToken}`;
+  let urlWithLoginToken = `${getBaseUrl()}/login?${loginTokenQueryParam}=${loginToken}`;
+  if (encodedRedirect) {
+    urlWithLoginToken += `&${redirectQueryParam}=${encodedRedirect}`;
+  }
 
   await sendEmail({
     to: email,

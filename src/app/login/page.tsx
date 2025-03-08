@@ -4,16 +4,17 @@ import { Button, Typography } from "antd";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { LoadingNotCentered, LoadingPage } from "~/client/components/Loading";
+import { LoginPage } from "~/client/components/LoginPage";
 import { FrontPageLogo } from "~/client/components/Logo";
 import { NoScrollPage } from "~/client/components/Page";
-import { Redirect } from "~/client/components/Redirect";
-import { loginTokenQueryParam } from "~/common/constants";
+import { loginTokenQueryParam, redirectQueryParam } from "~/common/constants";
 import { invoke } from "~/common/fnUtils";
 import { trpc } from "~/trpc/proxy";
 
-function LoginPageInner() {
+function RootLoginPageInner() {
   const searchParams = useSearchParams();
   const loginToken = searchParams.get(loginTokenQueryParam);
+  const rawRedirect = searchParams.get(redirectQueryParam);
   const router = useRouter();
 
   const [loggingIn, setLoggingIn] = useState(true);
@@ -25,16 +26,20 @@ function LoginPageInner() {
       void invoke(async () => {
         const { succeeded } = await trpc.auth.autoLogin.mutate({ loginToken });
         if (succeeded) {
-          router.push("/overview");
+          if (rawRedirect) {
+            router.push(decodeURIComponent(rawRedirect));
+          } else {
+            router.push("/overview");
+          }
         } else {
           setLoggingIn(false);
         }
       });
     }
-  }, [loginToken, router]);
+  }, [loginToken, rawRedirect, router]);
 
   if (!loginToken) {
-    return <Redirect to="/" />;
+    return <LoginPage />;
   }
 
   return (
@@ -51,7 +56,11 @@ function LoginPageInner() {
                   setShowBailOut(true);
                 }, 10000);
                 await trpc.auth.login.mutate({ loginToken });
-                router.push("/overview");
+                if (rawRedirect) {
+                  router.push(decodeURIComponent(rawRedirect));
+                } else {
+                  router.push("/overview");
+                }
               }}
               className={loggingIn ? "invisible" : ""}
             >
@@ -75,10 +84,10 @@ function LoginPageInner() {
   );
 }
 
-export default function LoginPage() {
+export default function RootLoginPage() {
   return (
     <Suspense fallback={<LoadingPage />}>
-      <LoginPageInner />
+      <RootLoginPageInner />
     </Suspense>
   );
 }

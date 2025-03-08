@@ -20,10 +20,15 @@ export const authRouter = createTRPCRouter({
   }),
 
   sendLoginEmail: publicProcedure
-    .input(z.object({ email: z.string().email() }))
+    .input(
+      z.object({
+        email: z.string().email(),
+        encodedRedirect: z.string().nullable().optional(),
+      }),
+    )
     .mutation(async ({ input }) => {
-      const { email } = input;
-      await sendLoginEmail({ email });
+      const { email, encodedRedirect } = input;
+      await sendLoginEmail({ email, encodedRedirect });
     }),
 
   login: publicProcedure
