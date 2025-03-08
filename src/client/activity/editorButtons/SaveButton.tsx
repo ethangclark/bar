@@ -45,7 +45,7 @@ export const SaveButton = storeObserver<SaveButtonProps>(function SaveButton({
             case "draft":
               return "Save";
             case "published":
-              return "Save and publish";
+              return "Save + publish";
           }
         })}
       </Button>

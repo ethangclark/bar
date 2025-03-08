@@ -1,4 +1,5 @@
-import { Button, Modal } from "antd";
+import { EllipsisOutlined } from "@ant-design/icons";
+import { Button, Dropdown, Modal } from "antd";
 import { useState } from "react";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { assertTypesExhausted } from "~/common/assertions";
@@ -11,55 +12,54 @@ type PublishButtonProps = {
   activity: Activity;
 };
 
-const UnpublishButton = storeObserver<PublishButtonProps>(
-  function UnpublishButton({ activity, editorStore, focusedActivityStore }) {
-    const [confirmUnpublishOpen, setConfirmUnpublishOpen] = useState(false);
-    const [unpublishing, setUnpublishing] = useState(false);
-    return (
-      <>
-        <Modal
-          open={confirmUnpublishOpen}
-          onCancel={() => setConfirmUnpublishOpen(false)}
-          onOk={async () => {
-            setUnpublishing(true);
-            try {
-              await focusedActivityStore.unpublish();
-            } finally {
-              setUnpublishing(false);
-              setConfirmUnpublishOpen(false);
-            }
-          }}
-          okText="Unpublish"
-        >
-          <InfoModalPadding>
-            Are you sure you want to unpublish this activity? This will make it
-            invisible to students.
-          </InfoModalPadding>
-          <div className={unpublishing ? "" : "invisible"}>
-            <LoadingCentered />
-          </div>
-        </Modal>
-        {invoke(() => {
-          switch (activity.status) {
-            case "published":
-              return (
-                <Button
-                  onClick={() => setConfirmUnpublishOpen(true)}
-                  disabled={!editorStore.canUnpublish}
-                >
-                  Unpublish
-                </Button>
-              );
-            case "draft":
-              return null;
-            default:
-              assertTypesExhausted(activity.status);
-          }
-        })}
-      </>
-    );
-  },
-);
+const WrappedUnpublishButton = storeObserver(function WrappedUnpublishButton({
+  editorStore,
+  focusedActivityStore,
+}) {
+  const [confirmUnpublishOpen, setConfirmUnpublishOpen] = useState(false);
+  const [unpublishing, setUnpublishing] = useState(false);
+
+  const handleUnpublish = async () => {
+    setUnpublishing(true);
+    try {
+      await focusedActivityStore.unpublish();
+    } finally {
+      setUnpublishing(false);
+      setConfirmUnpublishOpen(false);
+    }
+  };
+
+  const items = [
+    {
+      key: "unpublish",
+      label: "Unpublish",
+      disabled: !editorStore.canUnpublish,
+      onClick: () => setConfirmUnpublishOpen(true),
+    },
+  ];
+
+  return (
+    <>
+      <Modal
+        open={confirmUnpublishOpen}
+        onCancel={() => setConfirmUnpublishOpen(false)}
+        onOk={handleUnpublish}
+        okText="Unpublish"
+      >
+        <InfoModalPadding>
+          Are you sure you want to unpublish this activity? This will make it
+          invisible to students.
+        </InfoModalPadding>
+        <div className={unpublishing ? "" : "invisible"}>
+          <LoadingCentered />
+        </div>
+      </Modal>
+      <Dropdown menu={{ items }} placement="bottomRight">
+        <Button icon={<EllipsisOutlined />} />
+      </Dropdown>
+    </>
+  );
+});
 
 export const PublishButton = storeObserver<PublishButtonProps>(
   function PublishButton({ activity, editorStore, focusedActivityStore }) {
@@ -102,7 +102,7 @@ export const PublishButton = storeObserver<PublishButtonProps>(
                 </Button>
               );
             case "published":
-              return <UnpublishButton activity={activity} />;
+              return <WrappedUnpublishButton />;
             default:
               assertTypesExhausted(activity.status);
           }
