@@ -8,9 +8,10 @@ import { api } from "~/trpc/react";
 
 export function LoginPage() {
   const [notify, contextHolder] = useNotify();
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const { data: isLoggedIn } = api.auth.isLoggedIn.useQuery();
+  const { data: isLoggedIn, isLoading: isLoggedInLoading } =
+    api.auth.isLoggedIn.useQuery();
   const router = useRouter();
   useEffect(() => {
     if (isLoggedIn) {
@@ -20,9 +21,9 @@ export function LoginPage() {
 
   const handleSubmit = useCallback(
     async (email: string) => {
-      setLoading(true);
+      setSubmitting(true);
       await trpc.auth.sendLoginEmail.mutate({ email });
-      setLoading(false);
+      setSubmitting(false);
       notify({
         title: "Email sent",
         description: "Please check your email for a link to sign in.",
@@ -30,6 +31,8 @@ export function LoginPage() {
     },
     [notify],
   );
+
+  const loading = isLoggedInLoading || submitting;
 
   return (
     <NoScrollPage>

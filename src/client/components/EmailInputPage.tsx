@@ -38,6 +38,7 @@ export function EmailInputPage({
       <Form onFinish={handleSubmit} layout="inline" className="mb-8">
         <Form.Item name="email" label="Email">
           <Input
+            disabled={loading}
             type="email"
             placeholder="Email"
             value={email}

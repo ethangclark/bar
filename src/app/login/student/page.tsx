@@ -2,6 +2,6 @@
 
 import { LoginPage } from "~/client/components/LoginPage";
 
-export default function LogInInstructor() {
+export default function LogInStudent() {
   return <LoginPage />;
 }
