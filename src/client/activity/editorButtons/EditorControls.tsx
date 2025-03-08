@@ -1,8 +1,7 @@
 import { Button } from "antd";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { type Activity } from "~/server/db/schema";
-import { PublishButton } from "../PublishButton";
-import { ActivityLink } from "./ActivityLink";
+import { SharingOptions } from "../SharingOptions";
 import { SaveButton } from "./SaveButton";
 
 type EditorControlsProps = {
@@ -14,14 +13,13 @@ export const EditorControls = storeObserver<EditorControlsProps>(
     return (
       <div className="flex justify-center gap-2">
         <SaveButton activity={activity} />
-        <PublishButton activity={activity} />
         <Button
           onClick={() => studentModeStore.setIsStudentMode(true)}
           disabled={!editorStore.canDemo}
         >
           Student view
         </Button>
-        <ActivityLink />
+        <SharingOptions activity={activity} />
       </div>
     );
   },
