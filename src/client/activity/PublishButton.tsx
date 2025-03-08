@@ -1,4 +1,4 @@
-import { Button, Modal, type ButtonProps } from "antd";
+import { Button, Modal } from "antd";
 import { useState } from "react";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { assertTypesExhausted } from "~/common/assertions";
@@ -10,10 +10,6 @@ import { LoadingCentered } from "../components/Loading";
 type PublishButtonProps = {
   activity: Activity;
 };
-
-function ControlButton(props: ButtonProps) {
-  return <Button {...props} className={`w-full ${props.className ?? ""}`} />;
-}
 
 const UnpublishButton = storeObserver<PublishButtonProps>(
   function UnpublishButton({ activity, editorStore, focusedActivityStore }) {
@@ -47,12 +43,12 @@ const UnpublishButton = storeObserver<PublishButtonProps>(
           switch (activity.status) {
             case "published":
               return (
-                <ControlButton
+                <Button
                   onClick={() => setConfirmUnpublishOpen(true)}
                   disabled={!editorStore.canUnpublish}
                 >
                   Unpublish
-                </ControlButton>
+                </Button>
               );
             case "draft":
               return null;
@@ -97,13 +93,13 @@ export const PublishButton = storeObserver<PublishButtonProps>(
           switch (activity.status) {
             case "draft":
               return (
-                <ControlButton
+                <Button
                   type="primary"
                   onClick={() => setConfirmPublishOpen(true)}
                   disabled={!editorStore.canPublish}
                 >
                   Publish
-                </ControlButton>
+                </Button>
               );
             case "published":
               return <UnpublishButton activity={activity} />;

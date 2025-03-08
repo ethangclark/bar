@@ -1,8 +1,8 @@
+import { Button } from "antd";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { draftNumericId } from "~/common/draftData";
 import { trpc } from "~/trpc/proxy";
 import { ImageUploadLink } from "../components/ImageUploader";
-import { ControlButton } from "./ControlButton";
 import { UploadVideo } from "./Item/UploadVideo";
 
 export const AddItemButtons = storeObserver(function AddItemButtons({
@@ -13,7 +13,7 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
   const { isSomethingUploading } = uploadStore;
   return (
     <div className="flex justify-center gap-2">
-      <ControlButton
+      <Button
         disabled={isSomethingUploading}
         onClick={() => {
           draftStore.createDraft("infoTexts", {
@@ -23,7 +23,7 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
         }}
       >
         + Add text
-      </ControlButton>
+      </Button>
       <ImageUploadLink
         onFileSelect={async ({ imageDataUrl }) => {
           const { uploadId } = uploadStore.noteUploadStarted();
@@ -42,9 +42,7 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
           }
         }}
       >
-        <ControlButton disabled={isSomethingUploading}>
-          + Add image
-        </ControlButton>
+        <Button disabled={isSomethingUploading}>+ Add image</Button>
       </ImageUploadLink>
       <UploadVideo
         onUploadComplete={({ videoId, transcript }) => {
@@ -56,11 +54,9 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
           });
         }}
       >
-        <ControlButton disabled={isSomethingUploading}>
-          + Add video
-        </ControlButton>
+        <Button disabled={isSomethingUploading}>+ Add video</Button>
       </UploadVideo>
-      <ControlButton
+      <Button
         disabled={isSomethingUploading}
         onClick={() => {
           const q = draftStore.createDraft("questions", {
@@ -76,7 +72,7 @@ export const AddItemButtons = storeObserver(function AddItemButtons({
         }}
       >
         + Add question
-      </ControlButton>
+      </Button>
     </div>
   );
 });
