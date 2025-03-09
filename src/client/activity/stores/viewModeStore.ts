@@ -2,6 +2,10 @@ import { makeAutoObservable, reaction } from "mobx";
 import { z } from "zod";
 import { notLoaded, Status } from "~/client/utils/status";
 import { viewModeQueryParam } from "~/common/constants";
+import {
+  type EnrollmentType,
+  isGraderOrDeveloper,
+} from "~/common/enrollmentTypeUtils";
 import { type FocusedActivityStore } from "./focusedActivityStore";
 
 const viewModes = ["editor", "doer", "submissions"] as const;
@@ -9,12 +13,18 @@ const viewModeSchema = z.enum(viewModes);
 type ViewMode = z.infer<typeof viewModeSchema>;
 
 const defaultMode: ViewMode = "doer";
+function getDefaultMode(enrolledAs: EnrollmentType[]) {
+  if (isGraderOrDeveloper(enrolledAs)) {
+    return "editor";
+  }
+  return "doer";
+}
 
 export class ViewModeStore {
   public viewMode: ViewMode | Status = notLoaded;
   private lastOverride: ViewMode | null = null;
 
-  constructor(focusedActivityStore: FocusedActivityStore) {
+  constructor(private focusedActivityStore: FocusedActivityStore) {
     makeAutoObservable(this);
 
     // Initialize lastOverride from URL search params if available
@@ -37,21 +47,34 @@ export class ViewModeStore {
         if (data.igod && this.lastOverride) {
           this.viewMode = this.lastOverride;
         } else {
-          this.viewMode = defaultMode;
+          this.viewMode = getDefaultMode(data.activity.enrolledAs);
         }
       },
     );
   }
 
+  private setViewModeState(mode: ViewMode | null) {
+    this.lastOverride = mode;
+    if (mode && !(this.viewMode instanceof Status)) {
+      this.viewMode = mode;
+    }
+  }
+
+  private get defaultMode() {
+    if (this.focusedActivityStore.activity instanceof Status) {
+      return this.focusedActivityStore.activity;
+    }
+    return getDefaultMode(this.focusedActivityStore.activity.enrolledAs);
+  }
+
   private updateViewModeFromURL() {
     const searchParams = new URLSearchParams(window.location.search);
     const viewParam = searchParams.get(viewModeQueryParam);
-    const result = viewModeSchema.safeParse(viewParam);
-    const mode = result.success ? result.data : defaultMode;
-    this.lastOverride = mode;
-    if (!(this.viewMode instanceof Status)) {
-      this.viewMode = mode;
+    if (!viewParam && !(this.defaultMode instanceof Status)) {
+      this.setViewModeState(this.defaultMode);
     }
+    const result = viewModeSchema.safeParse(viewParam);
+    this.setViewModeState(result.success ? result.data : null);
   }
 
   setViewMode(mode: ViewMode) {
@@ -62,7 +85,7 @@ export class ViewModeStore {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
 
-      if (mode === defaultMode) {
+      if (mode === this.defaultMode) {
         // Clear the view query param when setting to default mode
         url.searchParams.delete(viewModeQueryParam);
       } else {
