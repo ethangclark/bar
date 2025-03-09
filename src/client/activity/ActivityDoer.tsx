@@ -24,13 +24,13 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
             maxHeight: `calc(100vh - ${scrollbarHeight}px)`,
           }}
         >
-          <div className="md:text-md flex w-full items-center justify-between">
+          <div className="md:text-md mb-2 flex w-full items-center justify-between">
             <Progress />
             <div className="pl-7 text-lg md:text-2xl">{assignmentTitle}</div>
             <LogoutButton />
           </div>
           {igod && (
-            <div className={`mb-[18px] mt-4 w-full`}>
+            <div className={`mb-[18px] mt-2 w-full`}>
               <ThreadSelection />
             </div>
           )}
