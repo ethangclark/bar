@@ -7,6 +7,7 @@ import { type FocusedActivityStore } from "./focusedActivityStore";
 const viewModes = ["editor", "doer", "submissions"] as const;
 const viewModeSchema = z.enum(viewModes);
 type ViewMode = z.infer<typeof viewModeSchema>;
+
 const defaultMode: ViewMode = "doer";
 
 export class ViewModeStore {

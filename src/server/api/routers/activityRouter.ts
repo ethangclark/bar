@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { assertOne } from "~/common/assertions";
+import { allEnrollmentTypes } from "~/common/enrollmentTypeUtils";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db, schema } from "~/server/db";
 import { activityStatusSchema } from "~/server/db/schema";
@@ -42,7 +43,11 @@ export const activityRouter = createTRPCRouter({
         })
         .returning();
       const adHocActivity = assertOne(adHocActivities);
-      return { activity, adHocActivity };
+      return {
+        activity,
+        adHocActivity,
+        enrolledAs: allEnrollmentTypes, // this is a bit, uh, messy
+      };
     }),
   updateStatus: protectedProcedure
     .input(z.object({ activityId: z.string(), status: activityStatusSchema }))

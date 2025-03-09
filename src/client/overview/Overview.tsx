@@ -41,13 +41,15 @@ export const Overview = storeObserver(function Overview({ activitesStore }) {
   const router = useRouter();
 
   const onCreate = useCallback(async () => {
-    const { activity, adHocActivity } = await trpc.activity.create.mutate({
-      title,
-    });
+    const { activity, adHocActivity, enrolledAs } =
+      await trpc.activity.create.mutate({
+        title,
+      });
     const richActivity: RichActivity = {
       type: "adHoc" as const,
       ...activity,
       adHocActivity,
+      enrolledAs,
     };
     activitesStore.setCache((activities) => {
       if (activities instanceof Status) {

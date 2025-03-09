@@ -27,7 +27,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
     return <LoadingCentered />;
   }
 
-  const { activity, enrolledAs, title, isTitleEditable } = data;
+  const { activity, title, isTitleEditable } = data;
 
   const { titleSaving } = focusedActivityStore;
 
@@ -73,7 +73,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
               item={itemStore.getItemWithChildren(item)}
               itemNumber={indexToItemNumber(idx)}
               deleted={draftStore.isDeletedDraft(item.id)}
-              enrolledAs={enrolledAs}
+              enrolledAs={activity.enrolledAs}
               moveItemUp={
                 idx > 0
                   ? () => {

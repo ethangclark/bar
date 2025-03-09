@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { type RichActivity } from "~/server/services/activity/activityService";
 
 export const enrollmentTypes = [
   "student",
@@ -25,13 +24,4 @@ export function isGrader(enrollmentTypes: EnrollmentType[]) {
 const gradersAndDevelopers = new Set([...graders, ...developers]);
 export function isGraderOrDeveloper(enrollmentTypes: EnrollmentType[]) {
   return enrollmentTypes.some((et) => gradersAndDevelopers.has(et));
-}
-
-export function getEnrolledAs(activity: RichActivity): EnrollmentType[] {
-  switch (activity.type) {
-    case "integration":
-      return activity.course.enrolledAs;
-    case "adHoc":
-      return allEnrollmentTypes;
-  }
 }

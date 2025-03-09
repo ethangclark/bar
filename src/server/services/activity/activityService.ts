@@ -1,10 +1,25 @@
 import { eq } from "drizzle-orm";
+import {
+  allEnrollmentTypes,
+  type EnrollmentType,
+} from "~/common/enrollmentTypeUtils";
 import { noop } from "~/common/fnUtils";
 import { db, schema } from "~/server/db";
 import {
   getAssignmentActivities,
   getCourseAndAssignment,
 } from "./activityCourses";
+
+function getEnrolledAs({
+  creatorId,
+  userId,
+}: {
+  for: "adhoc";
+  creatorId: string;
+  userId: string;
+}): EnrollmentType[] {
+  return creatorId === userId ? allEnrollmentTypes : ["student"];
+}
 
 export async function getActivity({
   userId,
@@ -44,16 +59,23 @@ export async function getActivity({
       course,
       assignment,
       integrationActivity, // infers as non-nullable
+      enrolledAs: course.enrolledAs,
     };
   }
 
   if (adHocActivity) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { integrationActivity, ...rest } = activity;
+    const enrolledAs = getEnrolledAs({
+      for: "adhoc",
+      creatorId: adHocActivity.creatorId,
+      userId,
+    });
     return {
       ...rest,
       type: "adHoc" as const,
       adHocActivity, // infers as non-nullable
+      enrolledAs,
     };
   }
 
@@ -89,6 +111,7 @@ export async function getAllActivities({
       course: assignmentActivity.course,
       assignment: assignmentActivity.assignment,
       integrationActivity: assignmentActivity.integrationActivity,
+      enrolledAs: assignmentActivity.course.enrolledAs,
     });
   }
 
@@ -99,10 +122,16 @@ export async function getAllActivities({
     },
   });
   for (const adHocActivity of adHocActivities) {
+    const enrolledAs = getEnrolledAs({
+      for: "adhoc",
+      creatorId: adHocActivity.creatorId,
+      userId,
+    });
     result.push({
       ...adHocActivity.activity,
       type: "adHoc" as const,
       adHocActivity,
+      enrolledAs,
     });
   }
 
