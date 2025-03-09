@@ -60,7 +60,15 @@ export class ViewModeStore {
     // Update URL search params when viewMode changes
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
-      url.searchParams.set(viewModeQueryParam, mode);
+
+      if (mode === defaultMode) {
+        // Clear the view query param when setting to default mode
+        url.searchParams.delete(viewModeQueryParam);
+      } else {
+        // Set the query param for non-default modes
+        url.searchParams.set(viewModeQueryParam, mode);
+      }
+
       window.history.pushState({}, "", url.toString());
     }
   }
