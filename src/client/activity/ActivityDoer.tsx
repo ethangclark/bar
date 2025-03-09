@@ -1,4 +1,3 @@
-import { isGraderOrDeveloper } from "~/common/enrollmentTypeUtils";
 import { LogoutButton } from "../components/LogoutButton";
 import { scrollbarHeight } from "../utils/scrollbarWidth";
 import { Status } from "../utils/status";
@@ -12,9 +11,9 @@ import { ThreadSelection } from "./ThreadSelection";
 export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
   function ActivityDoer({ assignmentTitle, focusedActivityStore }) {
     const igod =
-      focusedActivityStore.enrolledAs instanceof Status
+      focusedActivityStore.igod instanceof Status
         ? false
-        : isGraderOrDeveloper(focusedActivityStore.enrolledAs);
+        : focusedActivityStore.igod;
 
     return (
       <div className="flex h-full w-full items-center justify-center gap-8">

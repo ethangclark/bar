@@ -1,7 +1,10 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { notLoaded, Status } from "~/client/utils/status";
 import { assertTypesExhausted } from "~/common/assertions";
-import { getEnrolledAs } from "~/common/enrollmentTypeUtils";
+import {
+  getEnrolledAs,
+  isGraderOrDeveloper,
+} from "~/common/enrollmentTypeUtils";
 import { noop } from "~/common/fnUtils";
 import { identity } from "~/common/objectUtils";
 import { type RichActivity } from "~/common/types";
@@ -37,6 +40,13 @@ export class FocusedActivityStore {
       return this.activity;
     }
     return getEnrolledAs(this.activity);
+  }
+
+  get igod() {
+    if (this.enrolledAs instanceof Status) {
+      return this.enrolledAs;
+    }
+    return isGraderOrDeveloper(this.enrolledAs);
   }
 
   get title(): string | Status {
@@ -121,15 +131,17 @@ export class FocusedActivityStore {
   }
 
   get data() {
-    const { activity, enrolledAs, title, isTitleEditable } = this;
+    const { activity, enrolledAs, igod, title, isTitleEditable } = this;
     if (activity instanceof Status) return activity;
     if (enrolledAs instanceof Status) return enrolledAs;
+    if (igod instanceof Status) return igod;
     if (title instanceof Status) return title;
     if (isTitleEditable instanceof Status) return isTitleEditable;
 
     return {
       activity,
       enrolledAs,
+      igod,
       title,
       isTitleEditable,
     };

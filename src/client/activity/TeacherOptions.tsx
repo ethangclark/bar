@@ -4,13 +4,13 @@ import { storeObserver } from "../utils/storeObserver";
 
 export const TeacherOptions = storeObserver(function TeacherOptions({
   threadStore,
-  studentModeStore,
+  viewModeStore,
 }) {
   return (
     <div
       className={`flex flex-col items-center justify-between gap-2 rounded-lg border-2 border-dotted border-blue-500 p-2`}
     >
-      <Typography.Link onClick={() => studentModeStore.setIsStudentMode(false)}>
+      <Typography.Link onClick={() => viewModeStore.setViewMode("editor")}>
         ← Back to design
       </Typography.Link>
       <Button

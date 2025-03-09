@@ -8,9 +8,9 @@ import { EditorStore } from "../activity/stores/editorStore";
 import { FocusedActivityStore } from "../activity/stores/focusedActivityStore";
 import { ItemStore } from "../activity/stores/itemStore";
 import { QuestionStore } from "../activity/stores/questionStore";
-import { StudentModeStore } from "../activity/stores/studentModeStore";
 import { ThreadStore } from "../activity/stores/threadStore";
 import { UploadStore } from "../activity/stores/uploadStore";
+import { ViewModeStore } from "../activity/stores/viewModeStore";
 import { ViewPieceStore } from "../activity/stores/viewPieceStore";
 import { QueryStore } from "./queryStore";
 
@@ -41,7 +41,7 @@ const editorStore = new EditorStore(
 );
 const questionStore = new QuestionStore(draftStore);
 const itemStore = new ItemStore(draftStore, questionStore);
-const studentModeStore = new StudentModeStore(focusedActivityStore);
+const viewModeStore = new ViewModeStore(focusedActivityStore);
 const viewPieceStore = new ViewPieceStore(descendentStore);
 
 export const stores = {
@@ -52,7 +52,7 @@ export const stores = {
   focusedActivityStore,
   itemStore,
   questionStore,
-  studentModeStore,
+  viewModeStore,
   threadStore,
   uploadStore,
   viewPieceStore,

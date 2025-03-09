@@ -9,7 +9,7 @@ type EditorControlsProps = {
 };
 
 export const EditorControls = storeObserver<EditorControlsProps>(
-  function EditorControls({ activity, editorStore, studentModeStore }) {
+  function EditorControls({ activity, editorStore, viewModeStore }) {
     return (
       <div className="flex justify-center gap-2">
         <SaveButton activity={activity} />
@@ -19,8 +19,13 @@ export const EditorControls = storeObserver<EditorControlsProps>(
               {
                 key: "student-view",
                 label: "Student view",
-                onClick: () => studentModeStore.setIsStudentMode(true),
+                onClick: () => viewModeStore.setViewMode("doer"),
                 disabled: !editorStore.canDemo,
+              },
+              {
+                key: "submissions",
+                label: "Submissions",
+                onClick: () => viewModeStore.setViewMode("submissions"),
               },
             ],
           }}
