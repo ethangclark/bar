@@ -7,6 +7,7 @@ import { type FocusedActivityStore } from "./focusedActivityStore";
 const viewModes = ["editor", "doer", "submissions"] as const;
 const viewModeSchema = z.enum(viewModes);
 type ViewMode = z.infer<typeof viewModeSchema>;
+const defaultMode: ViewMode = "doer";
 
 export class ViewModeStore {
   public viewMode: ViewMode | Status = notLoaded;
@@ -17,12 +18,12 @@ export class ViewModeStore {
 
     // Initialize lastOverride from URL search params if available
     if (typeof window !== "undefined") {
-      const searchParams = new URLSearchParams(window.location.search);
-      const viewParam = searchParams.get(viewModeQueryParam);
-      const result = viewModeSchema.safeParse(viewParam);
-      if (result.success) {
-        this.lastOverride = result.data;
-      }
+      this.updateViewModeFromURL();
+
+      // Listen for popstate events (browser back/forward navigation)
+      window.addEventListener("popstate", () => {
+        this.updateViewModeFromURL();
+      });
     }
 
     reaction(
@@ -35,21 +36,32 @@ export class ViewModeStore {
         if (data.igod && this.lastOverride) {
           this.viewMode = this.lastOverride;
         } else {
-          this.viewMode = "doer";
+          this.viewMode = defaultMode;
         }
       },
     );
   }
 
-  setViewMode(viewMode: ViewMode) {
-    this.viewMode = viewMode;
-    this.lastOverride = viewMode;
+  private updateViewModeFromURL() {
+    const searchParams = new URLSearchParams(window.location.search);
+    const viewParam = searchParams.get(viewModeQueryParam);
+    const result = viewModeSchema.safeParse(viewParam);
+    const mode = result.success ? result.data : defaultMode;
+    this.lastOverride = mode;
+    if (!(this.viewMode instanceof Status)) {
+      this.viewMode = mode;
+    }
+  }
+
+  setViewMode(mode: ViewMode) {
+    this.viewMode = mode;
+    this.lastOverride = mode;
 
     // Update URL search params when viewMode changes
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
-      url.searchParams.set(viewModeQueryParam, viewMode);
-      window.history.replaceState({}, "", url.toString());
+      url.searchParams.set(viewModeQueryParam, mode);
+      window.history.pushState({}, "", url.toString());
     }
   }
 }
