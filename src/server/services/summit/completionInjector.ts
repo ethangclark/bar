@@ -124,6 +124,18 @@ Respond with XML tags indicating which items have been completed. For example:
 If no new items have been completed, respond with:
 <no-new-completions></no-new-completions>
 
+Here are some examples:
+
+EXAMPLE 1:
+user: I've finished the first exercise. What's next?
+assistant: Great job completing item 1! Let's move on to item 2 now.
+RESULT: <completed>1</completed>
+
+EXAMPLE 2:
+user: I'm stuck on problem 3. Can you help?
+assistant: Let me explain how to approach problem 3. First, you need to...
+RESULT: <no-new-completions></no-new-completions>
+
 Here is the conversation history:
 
 ${sortedMessages.map((msg, idx) => `${idx === sortedMessages.length - 1 ? "(BEGIN LAST MESSAGE)\n" : ""}${msg.senderRole}: ${msg.content}`).join("\n\n")}
