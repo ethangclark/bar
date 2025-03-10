@@ -5,10 +5,10 @@ import { storeObserver } from "~/client/utils/storeObserver";
 import { assertTypesExhausted } from "~/common/assertions";
 import { invoke } from "~/common/fnUtils";
 import { type Activity } from "~/server/db/schema";
-import { InfoModalPadding } from "../components/InfoModalPadding";
-import { LoadingCentered } from "../components/Loading";
-import { Status } from "../utils/status";
-import { type FocusedActivityStore } from "./stores/focusedActivityStore";
+import { InfoModalPadding } from "../../components/InfoModalPadding";
+import { LoadingCentered } from "../../components/Loading";
+import { Status } from "../../utils/status";
+import { type FocusedActivityStore } from "../stores/focusedActivityStore";
 
 const useCopyStudentLink = (focusedActivityStore: FocusedActivityStore) => {
   const { activity } = focusedActivityStore;
