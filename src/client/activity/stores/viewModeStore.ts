@@ -10,9 +10,8 @@ import { type FocusedActivityStore } from "./focusedActivityStore";
 
 const viewModes = ["editor", "doer", "submissions"] as const;
 const viewModeSchema = z.enum(viewModes);
-type ViewMode = z.infer<typeof viewModeSchema>;
+export type ViewMode = z.infer<typeof viewModeSchema>;
 
-const defaultMode: ViewMode = "doer";
 function getDefaultMode(enrolledAs: EnrollmentType[]) {
   if (isGraderOrDeveloper(enrolledAs)) {
     return "editor";
