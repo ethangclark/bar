@@ -1,5 +1,4 @@
 import { Select } from "antd";
-import { useEffect } from "react";
 import { z } from "zod";
 import { Status } from "~/client/utils/status";
 import { formatDateTime } from "~/common/timeUtils";
@@ -10,10 +9,6 @@ export const ThreadSelection = storeObserver(function ThreadSelection({
   threadStore,
 }) {
   const { sortedThreads, selectedThreadId } = threadStore;
-
-  useEffect(() => {
-    threadStore.ensureThreadSelection();
-  }, [threadStore]);
 
   if (sortedThreads instanceof Status) {
     return <LoadingCentered />;

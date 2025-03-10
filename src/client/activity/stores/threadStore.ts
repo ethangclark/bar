@@ -41,6 +41,15 @@ export class ThreadStore {
       }
       this.subscribeToThreadWraps(activityId);
     });
+    reaction(
+      () => this.focusedActivityStore.activityId,
+      () => {
+        this.ensureActivityThreadSelection();
+      },
+      {
+        fireImmediately: true,
+      },
+    );
   }
 
   private setSelectedThreadId(threadId: string) {
@@ -149,7 +158,7 @@ export class ThreadStore {
     this.selectedThreadId = threadId;
   }
 
-  ensureThreadSelection() {
+  ensureActivityThreadSelection() {
     const stop = autorun(() => {
       const threads = this.descendentStore.get("threads");
       if (threads instanceof Status) {
