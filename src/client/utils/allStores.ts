@@ -8,6 +8,7 @@ import { EditorStore } from "../activity/stores/editorStore";
 import { FocusedActivityStore } from "../activity/stores/focusedActivityStore";
 import { ItemStore } from "../activity/stores/itemStore";
 import { QuestionStore } from "../activity/stores/questionStore";
+import { SubmissionStore } from "../activity/stores/submissionStore";
 import { ThreadStore } from "../activity/stores/threadStore";
 import { UploadStore } from "../activity/stores/uploadStore";
 import { ViewModeStore } from "../activity/stores/viewModeStore";
@@ -43,6 +44,10 @@ const questionStore = new QuestionStore(draftStore);
 const itemStore = new ItemStore(draftStore, questionStore);
 const viewModeStore = new ViewModeStore(focusedActivityStore);
 const viewPieceStore = new ViewPieceStore(descendentStore);
+const submissionStore = new SubmissionStore(
+  focusedActivityStore,
+  trpc.submission.allCompletions.query,
+);
 
 export const stores = {
   activitesStore,
@@ -56,6 +61,7 @@ export const stores = {
   threadStore,
   uploadStore,
   viewPieceStore,
+  submissionStore,
 };
 
 export function isStoreName(name: string): name is keyof typeof stores {
