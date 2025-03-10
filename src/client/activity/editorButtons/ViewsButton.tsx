@@ -31,7 +31,7 @@ export const ViewsButton = storeObserver(function ViewsButton({
               ? [
                   {
                     key: "submissions",
-                    label: "Submissions",
+                    label: `Submissions (${submittedUsers})`,
                     onClick: () => viewModeStore.setViewMode("submissions"),
                   },
                 ]
