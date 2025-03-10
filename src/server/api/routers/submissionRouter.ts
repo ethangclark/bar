@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { isGrader } from "~/common/enrollmentTypeUtils";
@@ -16,11 +15,7 @@ export const submissionRouter = createTRPCRouter({
         activityId: input.activityId,
       });
       if (!isGrader(activity.enrolledAs)) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message:
-            "You are not authorized to view completions for this activity",
-        });
+        return [];
       }
       const completions = await db.query.completions.findMany({
         where: eq(schema.completions.activityId, input.activityId),

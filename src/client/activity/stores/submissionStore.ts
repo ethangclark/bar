@@ -5,9 +5,7 @@ import { groupBy } from "~/common/indexUtils";
 import { type Completion } from "~/server/db/schema";
 import { type FocusedActivityStore } from "./focusedActivityStore";
 
-type CompletionGetter = (params: {
-  activityId: string;
-}) => Promise<
+type CompletionGetter = (params: { activityId: string }) => Promise<
   Array<
     Completion & {
       user: { id: string; name: string | null; email: string | null };
@@ -48,5 +46,13 @@ export class SubmissionStore {
         completions,
       };
     });
+  }
+
+  submittedUsers(_: { statusMeansZero: true }) {
+    const { data } = this.completionsQueryStore;
+    if (data instanceof Status) {
+      return 0;
+    }
+    return data.length;
   }
 }
