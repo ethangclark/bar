@@ -85,7 +85,7 @@ const PublishedSharingOptions = storeObserver(function PublishedSharingOptions({
           <LoadingCentered />
         </div>
       </Modal>
-      <Dropdown.Button menu={{ items }}>Sharing</Dropdown.Button>
+      <Dropdown.Button menu={{ items }}>Share</Dropdown.Button>
     </>
   );
 });
