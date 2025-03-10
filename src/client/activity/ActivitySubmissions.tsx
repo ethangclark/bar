@@ -34,6 +34,7 @@ export const ActivitySubmissions = storeObserver(function ActivitySubmissions({
         <div>Email</div>
         <div>Items complete</div>
         <div>Questions complete</div>
+        {submissions.length === 0 && <div>(No submissions yet)</div>}
         {submissions.map((submission) => (
           <Fragment key={submission.user.id}>
             <div>{submission.user.email ?? "<no email on record>"}</div>
