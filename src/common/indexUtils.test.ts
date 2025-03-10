@@ -38,20 +38,16 @@ describe("groupBy", () => {
     });
   });
 
-  it("should handle objects with missing keys", () => {
+  it("should throw an error when objects have missing keys", () => {
     const items = [
       { id: "1", category: "fruit" },
       { id: "2" }, // missing category
       { id: "3", category: "vegetable" },
     ];
 
-    const result = groupBy(items, "category");
-
-    expect(result).toEqual({
-      fruit: [{ id: "1", category: "fruit" }],
-      undefined: [{ id: "2" }],
-      vegetable: [{ id: "3", category: "vegetable" }],
-    });
+    expect(() => {
+      groupBy(items, "category");
+    }).toThrow("Item value for key category is undefined");
   });
 
   it("should group by numeric keys", () => {
