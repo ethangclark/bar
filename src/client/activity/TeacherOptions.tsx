@@ -1,4 +1,4 @@
-import { Button, Tooltip, Typography } from "antd";
+import { Tooltip, Typography } from "antd";
 import { CircleHelp } from "lucide-react";
 import { storeObserver } from "../utils/storeObserver";
 
@@ -8,33 +8,27 @@ export const TeacherOptions = storeObserver(function TeacherOptions({
 }) {
   return (
     <div
-      className={`flex flex-col items-center justify-between gap-2 rounded-lg border-2 border-dotted border-blue-500 p-2`}
+      className={`flex items-center justify-center gap-4 rounded-lg border-2 border-dotted border-blue-500 px-4 py-1`}
     >
       <Typography.Link onClick={() => viewModeStore.setViewMode("editor")}>
         ← Back to design
       </Typography.Link>
-      <Button
-        className="w-full"
-        onClick={async () => {
-          await threadStore.createThread();
-        }}
-      >
-        New chat
-      </Button>
-      <Button
-        className="w-full"
-        onClick={async () => {
-          await threadStore.removeCompletions();
-        }}
-      >
-        Reset progress
-      </Button>
       <Tooltip
         title="These options only visible to teachers and developers."
         className="text-gray-500"
       >
         <CircleHelp size={16} />
       </Tooltip>
+      <Typography.Link
+        onClick={async () => {
+          await Promise.all([
+            threadStore.removeCompletions(),
+            threadStore.createThread(),
+          ]);
+        }}
+      >
+        Reset + new chat
+      </Typography.Link>
     </div>
   );
 });

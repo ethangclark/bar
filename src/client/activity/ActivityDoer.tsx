@@ -16,35 +16,33 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
         : focusedActivityStore.igod;
 
     return (
-      <div className="flex h-full w-full items-center justify-center gap-8">
+      <div
+        className="flex h-full w-[350px] flex-col items-center justify-between md:w-[672px] lg:w-[894px]"
+        style={{
+          maxHeight: `calc(100vh - ${scrollbarHeight}px)`,
+        }}
+      >
         {igod && <TeacherOptions />}
+        <div className="md:text-md mb-2 flex w-full items-center justify-between">
+          <Progress />
+          <div className="pl-7 text-lg md:text-2xl">{assignmentTitle}</div>
+          <LogoutButton />
+        </div>
+        {igod && (
+          <div className={`mb-[18px] mt-2 w-full`}>
+            <ThreadSelection />
+          </div>
+        )}
+        <Messages />
         <div
-          className="flex h-full w-[350px] flex-col items-center justify-between md:w-[672px] lg:w-[894px]"
+          className="flex w-full justify-center"
           style={{
-            maxHeight: `calc(100vh - ${scrollbarHeight}px)`,
+            position: "relative",
+            bottom: 0,
+            marginTop: 20,
           }}
         >
-          <div className="md:text-md mb-2 flex w-full items-center justify-between">
-            <Progress />
-            <div className="pl-7 text-lg md:text-2xl">{assignmentTitle}</div>
-            <LogoutButton />
-          </div>
-          {igod && (
-            <div className={`mb-[18px] mt-2 w-full`}>
-              <ThreadSelection />
-            </div>
-          )}
-          <Messages />
-          <div
-            className="flex w-full justify-center"
-            style={{
-              position: "relative",
-              bottom: 0,
-              marginTop: 20,
-            }}
-          >
-            <ChatInput />
-          </div>
+          <ChatInput />
         </div>
       </div>
     );
