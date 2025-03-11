@@ -183,6 +183,14 @@ export class ThreadStore {
     this.selectedThreadId = threadId;
   }
 
+  selectLatestThread() {
+    const { timeOrderedThreads } = this;
+    if (timeOrderedThreads instanceof Status) {
+      throw new Error("Threads not loaded");
+    }
+    this.selectedThreadId = timeOrderedThreads[0]?.id ?? notLoaded;
+  }
+
   ensureActivityThreadSelection() {
     const stop = autorun(() => {
       const threads = this.descendentStore.get("threads");

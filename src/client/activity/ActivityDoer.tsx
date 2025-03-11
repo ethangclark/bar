@@ -1,3 +1,4 @@
+import { Typography } from "antd";
 import { LogoutButton } from "../components/LogoutButton";
 import { scrollbarHeight } from "../utils/scrollbarWidth";
 import { Status } from "../utils/status";
@@ -9,7 +10,11 @@ import { TeacherOptions } from "./TeacherOptions";
 import { ThreadSelection } from "./ThreadSelection";
 
 export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
-  function ActivityDoer({ assignmentTitle, focusedActivityStore }) {
+  function ActivityDoer({
+    assignmentTitle,
+    focusedActivityStore,
+    threadStore,
+  }) {
     const igod =
       focusedActivityStore.igod instanceof Status
         ? false
@@ -31,6 +36,18 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
         {igod && (
           <div className={`mb-[18px] mt-2 w-full`}>
             <ThreadSelection />
+          </div>
+        )}
+        {threadStore.isOldThread && (
+          <div className="mb-5 flex w-full items-center justify-center rounded-lg bg-gray-200 py-2 text-gray-500">
+            <Typography.Text>This is an old thread.</Typography.Text>
+            <Typography.Link
+              className="mx-1"
+              onClick={() => threadStore.selectLatestThread()}
+            >
+              Click here
+            </Typography.Link>
+            <Typography.Text>to view the current conversation.</Typography.Text>
           </div>
         )}
         <Messages />
