@@ -89,23 +89,48 @@ export class ThreadStore {
     return this.descendentStore.getById("threads", this.selectedThreadId);
   }
 
-  get sortedThreads() {
+  get timeOrderedThreads() {
     const threads = this.descendentStore.get("threads");
     if (threads instanceof Status) {
       return threads;
     }
-    const sorted = threads.sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+    return threads.sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
     );
+  }
+
+  get latestThread() {
+    const { timeOrderedThreads } = this;
+    if (timeOrderedThreads instanceof Status) {
+      return timeOrderedThreads;
+    }
+    return timeOrderedThreads[0] ?? notLoaded;
+  }
+
+  get organizedThreads() {
+    const { timeOrderedThreads } = this;
+    if (timeOrderedThreads instanceof Status) {
+      return timeOrderedThreads;
+    }
     // put selected thread first
-    const selectedThread = sorted.find((t) => t.id === this.selectedThreadId);
+    const selectedThread = timeOrderedThreads.find(
+      (t) => t.id === this.selectedThreadId,
+    );
     if (selectedThread) {
       return [
         selectedThread,
-        ...sorted.filter((t) => t.id !== this.selectedThreadId),
+        ...timeOrderedThreads.filter((t) => t.id !== this.selectedThreadId),
       ];
     }
-    return sorted;
+    return timeOrderedThreads;
+  }
+
+  get isOldThread() {
+    const { thread, latestThread } = this;
+    if (thread instanceof Status || latestThread instanceof Status) {
+      return false;
+    }
+    return thread.id !== latestThread.id;
   }
 
   get messages() {

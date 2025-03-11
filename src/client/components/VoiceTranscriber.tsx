@@ -5,8 +5,10 @@ import { VoiceRecorder } from "../components/VoiceRecorder";
 
 export function VoiceTranscriber({
   onTranscription,
+  disabled = false,
 }: {
   onTranscription: (transcript: string) => void;
+  disabled?: boolean;
 }) {
   const { mutateAsync: transcribe, isPending: isTranscribing } =
     api.transcription.transcribe.useMutation();
@@ -28,6 +30,7 @@ export function VoiceTranscriber({
     <VoiceRecorder
       onRecordingComplete={handleAudioDataX}
       isProcessing={isTranscribing}
+      disabled={disabled}
     />
   );
 }

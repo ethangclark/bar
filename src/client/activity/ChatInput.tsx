@@ -4,6 +4,7 @@ import { LoadingCentered } from "../components/Loading";
 import { VoiceTranscriber } from "../components/VoiceTranscriber";
 import { Status } from "../utils/status";
 import { storeObserver } from "../utils/storeObserver";
+
 export const ChatInput = storeObserver(function ChatInput({
   descendentStore,
   threadStore,
@@ -33,6 +34,8 @@ export const ChatInput = storeObserver(function ChatInput({
     selectedThreadId instanceof Status ||
     isMessageSending ||
     !lastMessageComplete;
+
+  const inputsDisabled = loading || threadStore.isOldThread;
 
   return (
     <div
@@ -78,10 +81,13 @@ export const ChatInput = storeObserver(function ChatInput({
               }
             }
           }}
-          disabled={loading}
+          disabled={inputsDisabled}
           className="mr-4"
         />
-        <VoiceTranscriber onTranscription={onTranscription} />
+        <VoiceTranscriber
+          onTranscription={onTranscription}
+          disabled={inputsDisabled}
+        />
       </div>
       <div className="w-full text-center text-xs text-gray-400">
         Press enter to send. Response may take a few seconds. Let Summit know if

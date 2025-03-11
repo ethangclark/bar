@@ -8,13 +8,13 @@ import { storeObserver } from "../utils/storeObserver";
 export const ThreadSelection = storeObserver(function ThreadSelection({
   threadStore,
 }) {
-  const { sortedThreads, selectedThreadId } = threadStore;
+  const { organizedThreads, selectedThreadId, latestThread } = threadStore;
 
-  if (sortedThreads instanceof Status) {
+  if (organizedThreads instanceof Status || latestThread instanceof Status) {
     return <LoadingCentered />;
   }
 
-  if (sortedThreads.length < 2) {
+  if (organizedThreads.length < 2) {
     return null;
   }
 
@@ -22,8 +22,8 @@ export const ThreadSelection = storeObserver(function ThreadSelection({
     <Select
       className="w-full"
       value={selectedThreadId}
-      options={sortedThreads.map((t) => ({
-        label: `Chat created on ${formatDateTime(t.createdAt)}`,
+      options={organizedThreads.map((t) => ({
+        label: `${t.id === latestThread.id ? "(LIVE) " : ""} Chat created on ${formatDateTime(t.createdAt)}`,
         value: t.id,
       }))}
       onChange={(value) => threadStore.selectThread(z.string().parse(value))}

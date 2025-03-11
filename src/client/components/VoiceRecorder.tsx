@@ -7,11 +7,13 @@ import { type AudioDataX } from "~/common/types";
 interface VoiceRecorderProps {
   onRecordingComplete?: (audioDataX: AudioDataX) => void;
   isProcessing?: boolean;
+  disabled?: boolean;
 }
 
 export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   onRecordingComplete,
   isProcessing: isProcessingDownstream,
+  disabled = false,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessingInternally, setIsProcessingInternally] = useState(false);
@@ -92,7 +94,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   return (
     <Button
       onClick={toggleRecording}
-      disabled={isProcessingInternally}
+      disabled={isProcessingInternally || disabled}
       className="flex items-center px-5 py-8 outline-1 outline-gray-200"
     >
       {isProcessing ? (
