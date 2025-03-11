@@ -1,6 +1,8 @@
+import dayjs from "dayjs";
 import { useCallback, useRef } from "react";
 import { Status } from "~/client/utils/status";
 import { assertTypesExhausted } from "~/common/assertions";
+import { formatRelativeTime } from "~/common/timeUtils";
 import { api } from "~/trpc/react";
 import { LoadingCentered } from "../components/Loading";
 import { PreformattedText } from "../components/PreformattedText";
@@ -48,7 +50,7 @@ export const Messages = storeObserver(function Messages({ threadStore }) {
               return (
                 <MessageView
                   key={m.id}
-                  className="ml-[30%] justify-end"
+                  className="ml-[30%] flex flex-col items-end"
                   isLastMessage={i === messages.length - 1}
                   messageLength={m.content.length}
                   scrollToBottom={scrollToBottom}
@@ -56,6 +58,11 @@ export const Messages = storeObserver(function Messages({ threadStore }) {
                   <div className="rounded-2xl bg-gray-100 px-4 py-2">
                     <PreformattedText>{m.content}</PreformattedText>
                   </div>
+                  {dayjs().diff(dayjs(m.createdAt), "minute") > 10 && (
+                    <div className="text-xs text-gray-500">
+                      Sent {formatRelativeTime(m.createdAt)}
+                    </div>
+                  )}
                 </MessageView>
               );
             case "assistant":
