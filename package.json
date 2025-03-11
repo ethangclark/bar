@@ -11,9 +11,10 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/server/db/migrate.ts",
     "dev": "yarn docker && PORT=4000 next dev",
-    "lint": "npx tsc --noEmit && next lint",
+    "type-check": "npx tsc --noEmit",
+    "lint": "yarn type-check && next lint",
     "test": "vitest",
-    "release": "npm-run-all --parallel lint \"test -- --run\" build && git push origin main",
+    "release": "npm-run-all --parallel type-check \"test -- --run\" build && git push origin main",
     "test:prompts": "TEST_TIMEOUT=99999999 TEST_TYPE=prompt_test tsx promptTest.ts",
     "test:coverage": "vitest --run --coverage.reporter=text",
     "start": "yarn db:migrate && next start"
