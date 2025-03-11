@@ -25,7 +25,13 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       const stream: MediaStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
-      mediaRecorderRef.current = new MediaRecorder(stream);
+
+      // Determine the appropriate MIME type based on browser support
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm")
+        ? "audio/webm"
+        : "audio/mp4";
+
+      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType });
       chunksRef.current = [];
 
       mediaRecorderRef.current.ondataavailable = (event: BlobEvent): void => {
@@ -37,7 +43,8 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       mediaRecorderRef.current.onstop = async (): Promise<void> => {
         setIsProcessingInternally(true);
         try {
-          const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" });
+          const mimeType = mediaRecorderRef.current?.mimeType ?? "audio/webm";
+          const audioBlob = new Blob(chunksRef.current, { type: mimeType });
 
           // Convert blob to base64 string for SuperJSON serialization
           const reader = new FileReader();
@@ -47,7 +54,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
             const base64Audio = reader.result as string;
             const audioDataX: AudioDataX = {
               data: base64Audio,
-              mimeType: "audio/webm",
+              mimeType,
             };
 
             // Call the callback if provided
