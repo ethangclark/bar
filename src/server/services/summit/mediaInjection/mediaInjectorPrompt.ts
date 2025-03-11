@@ -10,35 +10,35 @@ Please do the following:
 
 1. Identify whether the last message references specific images or videos.
 2. If it does not, reply with "<no-media></no-media>"
-3. If it does, rewrite it, adding <image> or <video> tags strategically to show where in the message it would make sense to render the image or video for a student to see.
+3. If it does, rewrite it, replacing image or video descriptions with <image> or <video> tags in positions where it would make sense to render the image or video for a student to see, and updating the message to reflect that the image or video has been shown (versus a description of the image or video).
 
 You can show images and videos to the student by wrapping image and video numbers in <image> and <video> tags. Here are examples of how you should transform messages:
 
 EXAMPLE 1:
 
 INPUT:
-Let's look at image 1000. This image shows a mitochondrion with details of the mitochondrial membrane and mitochondrial DNA. Notice the folded inner membrane that creates the cristae structures.
+Let's look at image 1000. The description of this image is: a mitochondrion with details of the mitochondrial membrane and mitochondrial DNA, its folded inner membrane forming the cristae structures. Do you have any questions about it?
 
 OUTPUT:
-Let's look at image 1000.
+Let's look at image 1000. Here's what it looks like:
 
 <image>1000</image>
 
-This image shows a mitochondrion with details of the mitochondrial membrane and mitochondrial DNA. Notice the folded inner membrane that creates the cristae structures.
+Do you have any questions about it?
 
 END EXAMPLE 1
 
 EXAMPLE 2:
 
 INPUT:
-To understand this concept better, I recommend watching video 7893. In this Olympic gymnastics routine, you'll see how momentum is conserved throughout the athlete's movements, especially during the aerial maneuvers and landings.
+To understand this concept better, I recommend watching video 7893. In this video, you'll see an Olympic gymnastics routine, it demonstrates how momentum is conserved throughout the athlete's movements, especially during the aerial maneuvers and landings. Let me know when you're ready to move on.
 
 OUTPUT:
 To understand this concept better, I recommend watching video 7893.
 
 <video>7893</video>
 
-In this Olympic gymnastics routine, you'll see how momentum is conserved throughout the athlete's movements, especially during the aerial maneuvers and landings.
+Let me know when you're ready to move on.
 
 END EXAMPLE 2
 
@@ -55,15 +55,12 @@ END EXAMPLE 3
 EXAMPLE 4:
 
 INPUT:
-Let me show you two different volcanic formations. Image 361 shows a shield volcano with its gently sloping sides, while image 362 displays a stratovolcano with steeper sides. The difference in shape is due to the viscosity of the lava that formed them.
+Let me show you two different volcanic formations. Image 361 can be described as a shield volcano with its gently sloping sides, while image 362 can be described as a stratovolcano with steeper sides. The difference in shape is due to the viscosity of the lava that formed them.
 
 OUTPUT:
-Let me show you two different volcanic formations. Image 361 shows a shield volcano with its gently sloping sides:
+Let me show you two different volcanic formations.
 
 <image>361</image>
-
-While image 362 displays a stratovolcano with steeper sides:
-
 <image>362</image>
 
 The difference in shape is due to the viscosity of the lava that formed them.
