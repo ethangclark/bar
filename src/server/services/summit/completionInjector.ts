@@ -113,13 +113,13 @@ You are analyzing a conversation to determine if any items have been completed.
 The conversation is about an educational activity with multiple items.
 
 Based on the assistant's most recent response, determine if any new items have been completed.
-An item is considered completed when the assistant has acknowledged that that it's complete or if they say that they're moving on (in a way that implies the item's been completed satisfactorily).
+An item is considered completed when the assistant has acknowledged that that it's complete or if they say that they're moving on to another item (in a way that doesn't imply they're "skipping" something the student is supposed to return to).
 
 The following items are still incomplete: ${incompleteItemNumbers.join(", ")}
 
 Respond with XML tags indicating which items have been completed. For example:
-<completed>23</completed>
-<completed>24</completed>
+<item-completed>23</item-completed>
+<item-completed>24</item-completed>
 
 If no new items have been completed, respond with:
 <no-new-completions></no-new-completions>
@@ -129,7 +129,7 @@ Here are some examples:
 EXAMPLE 1:
 user: I've finished the first exercise. What's next?
 assistant: Great job completing item 1! Let's move on to item 2 now.
-RESULT: <completed>1</completed>
+RESULT: <item-completed>1</item-completed>
 
 EXAMPLE 2:
 user: I'm stuck on problem 3. Can you help?
@@ -198,8 +198,8 @@ function extractCompletedItemNumbers(
     return [];
   }
 
-  // Extract item IDs from <completed> tags
-  const completedRegex = /<completed>(.*?)<\/completed>/g;
+  // Extract item IDs from <item-completed> tags
+  const completedRegex = /<item-completed>(.*?)<\/item-completed>/g;
   let match;
 
   while ((match = completedRegex.exec(llmResponse)) !== null) {

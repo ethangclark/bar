@@ -13,7 +13,7 @@
     "dev": "yarn docker && PORT=4000 next dev",
     "lint": "npx tsc --noEmit && next lint",
     "test": "vitest",
-    "lt": "yarn lint && yarn test --run",
+    "release": "yarn lint && yarn test --run && yarn build && git push origin main",
     "test:prompts": "TEST_TIMEOUT=99999999 TEST_TYPE=prompt_test tsx promptTest.ts",
     "test:coverage": "vitest --run --coverage.reporter=text",
     "start": "yarn db:migrate && next start"

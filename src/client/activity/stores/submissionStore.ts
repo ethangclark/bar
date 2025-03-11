@@ -53,6 +53,7 @@ export class SubmissionStore {
     if (data instanceof Status) {
       return 0;
     }
-    return data.length;
+    const userIds = new Set(data.map((c) => c.userId));
+    return userIds.size;
   }
 }
