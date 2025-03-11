@@ -10,7 +10,7 @@ Please do the following:
 
 1. Identify whether the last message references specific images or videos.
 2. If it does not, reply with "<no-media></no-media>"
-3. If it does, rewrite it, replacing image or video descriptions with <image> or <video> tags in positions where it would make sense to render the image or video for a student to see, and updating the message to reflect that the image or video has been shown (versus a description of the image or video).
+3. If it does, rewrite it, adding <image> or <video> tags in positions where it would make sense to render the image or video for a student to see, removing the description of the image or video (since the student will be able to see it), and updating the wording of the message to reflect that an image or video is being shown (and not just described).
 
 You can show images and videos to the student by wrapping image and video numbers in <image> and <video> tags. Here are examples of how you should transform messages:
 

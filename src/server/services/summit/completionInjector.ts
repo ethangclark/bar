@@ -46,20 +46,26 @@ export async function injectCompletions(
     }),
     z.number(),
   );
+  const validItemNumbers = items.map((_, idx) => indexToItemNumber(idx));
 
   // Analyze the response to determine completed items
-  const { completedItemNumbers } = await analyzeCompletions(
+  const { completedItemNumbers } = await analyzeCompletions({
     userId,
-    [...prevMessages, assistantResponse],
+    sortedMessages: [...prevMessages, assistantResponse],
     incompleteItemNumbers,
+    validItemNumbers,
+  });
+
+  const completedThisTurn = completedItemNumbers.filter((n) =>
+    incompleteItemNumbers.includes(n),
   );
 
-  if (completedItemNumbers.length === 0) {
+  if (completedThisTurn.length === 0) {
     return { completedActivityThisTurn: false }; // No new completions
   }
 
   // Create new item completion records
-  const newCompletions = completedItemNumbers.map((itemNumber) => {
+  const newCompletions = completedThisTurn.map((itemNumber) => {
     const itemIndex = itemNumberToIndex(itemNumber);
     const itemId = items[itemIndex]?.id;
     if (itemId === undefined) {
@@ -102,11 +108,17 @@ export async function injectCompletions(
  * Analyzes the assistant response and conversation history to determine
  * which items have been newly completed.
  */
-async function analyzeCompletions(
-  userId: string,
-  sortedMessages: Message[],
-  incompleteItemNumbers: number[],
-) {
+async function analyzeCompletions({
+  userId,
+  sortedMessages,
+  incompleteItemNumbers,
+  validItemNumbers,
+}: {
+  userId: string;
+  sortedMessages: Message[];
+  incompleteItemNumbers: number[];
+  validItemNumbers: number[];
+}) {
   // Prepare the prompt for the LLM
   const prompt = `
 You are analyzing a conversation to determine if any items have been completed.
@@ -166,10 +178,10 @@ ${sortedMessages.map((msg, idx) => `${idx === sortedMessages.length - 1 ? "(BEGI
     // Use the LLM to analyze the conversation
 
     // Extract completed item IDs from the LLM response
-    const completedItemNumbers = extractCompletedItemNumbers(
+    const completedItemNumbers = extractCompletedItemNumbers({
       llmResponse,
-      incompleteItemNumbers,
-    );
+      validItemNumbers,
+    });
 
     return { completedItemNumbers };
   } catch (e) {
@@ -187,15 +199,26 @@ ${sortedMessages.map((msg, idx) => `${idx === sortedMessages.length - 1 ? "(BEGI
 /**
  * Extracts completed item IDs from the LLM response.
  */
-function extractCompletedItemNumbers(
-  llmResponse: string,
-  validItemNumbers: number[],
-) {
+function extractCompletedItemNumbers({
+  llmResponse,
+  validItemNumbers,
+}: {
+  llmResponse: string;
+  validItemNumbers: number[];
+}) {
   const completedItemNumbers: number[] = [];
 
   // Check if the response indicates no new completions
   if (llmResponse.includes("<no-new-completions>")) {
     return [];
+  }
+
+  const asNumbers = llmResponse
+    .trim()
+    .split("\n")
+    .map((v) => Number(v.trim()));
+  if (asNumbers.every((v) => validItemNumbers.includes(v))) {
+    return asNumbers;
   }
 
   // Extract item IDs from <item-completed> tags
@@ -211,7 +234,11 @@ function extractCompletedItemNumbers(
     if (validItemNumbers.includes(itemNumber)) {
       completedItemNumbers.push(itemNumber);
     } else {
-      throw new Error("Invalid item number: " + itemNumber);
+      throw new Error(
+        `Invalid item number: ${itemNumber}. Valid numbers: ${validItemNumbers.join(
+          ", ",
+        )}`,
+      );
     }
   }
 
