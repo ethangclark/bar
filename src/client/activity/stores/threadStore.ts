@@ -1,19 +1,17 @@
 import { Modal } from "antd";
 import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
-import {
-  type NotLoaded,
-  Status,
-  loading,
-  notLoaded,
-} from "~/client/utils/status";
+import { Status, notLoaded } from "~/client/utils/status";
 import { assertTypesExhausted } from "~/common/assertions";
+import { indexById } from "~/common/indexUtils";
 import {
   type ThreadWrap,
   type ThreadWrapReason,
 } from "~/server/db/pubsub/threadWrapPubSub";
+import { type Thread } from "~/server/db/schema";
 import { trpc } from "~/trpc/proxy";
 import { type DescendentStore } from "./descendentStore";
 import { type FocusedActivityStore } from "./focusedActivityStore";
+import { type UserStore } from "./userStore";
 
 function threadWrapReasonToMessage(reason: ThreadWrapReason) {
   switch (reason) {
@@ -26,12 +24,30 @@ function threadWrapReasonToMessage(reason: ThreadWrapReason) {
   }
 }
 
+function threadsNewToOld(threads: Thread[]) {
+  return threads.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+}
+
+function getMostRecentThread(threads: Thread[]) {
+  // try to grab the latest thread
+  const [thread] = threadsNewToOld(threads);
+  if (thread) {
+    return thread;
+  }
+
+  // COMMENT_CODE_001b
+  // The threadController should ensure there's at least one thread!
+  // See COMMENT_CODE_001a
+  throw new Error("No thread found");
+}
+
 export class ThreadStore {
-  public selectedThreadId: string | NotLoaded = notLoaded;
+  private _selectedThreadId: string | null = null;
 
   constructor(
     private descendentStore: DescendentStore,
     private focusedActivityStore: FocusedActivityStore,
+    private userStore: UserStore,
   ) {
     makeAutoObservable(this);
     autorun(() => {
@@ -41,19 +57,6 @@ export class ThreadStore {
       }
       this.subscribeToThreadWraps(activityId);
     });
-    reaction(
-      () => this.focusedActivityStore.activityId,
-      () => {
-        this.ensureActivityThreadSelection();
-      },
-      {
-        fireImmediately: true,
-      },
-    );
-  }
-
-  private setSelectedThreadId(threadId: string) {
-    this.selectedThreadId = threadId;
   }
 
   private subscribeToThreadWraps(activityId: string) {
@@ -61,11 +64,14 @@ export class ThreadStore {
       { activityId },
       {
         onData: (threadWrap: ThreadWrap) => {
+          if (threadWrap.userId !== this.userStore.userId) {
+            return;
+          }
           Modal.info({
             title: "Starting a new thread",
             content: threadWrapReasonToMessage(threadWrap.reason),
             onOk: () => {
-              this.setSelectedThreadId(threadWrap.threadId);
+              this.selectThread(threadWrap.threadId);
             },
           });
         },
@@ -82,21 +88,60 @@ export class ThreadStore {
     );
   }
 
-  get thread() {
-    if (this.selectedThreadId instanceof Status) {
-      return this.selectedThreadId;
-    }
-    return this.descendentStore.getById("threads", this.selectedThreadId);
+  public selectThread(threadId: string) {
+    this._selectedThreadId = threadId;
   }
 
-  get timeOrderedThreads() {
+  private get threads() {
+    const { userId } = this.userStore;
+    if (userId instanceof Status) {
+      return userId;
+    }
     const threads = this.descendentStore.get("threads");
     if (threads instanceof Status) {
       return threads;
     }
-    return threads.sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-    );
+    return threads.filter((t) => t.userId === userId);
+  }
+
+  private get defaultThread() {
+    const { threads } = this;
+    if (threads instanceof Status) {
+      return threads;
+    }
+    return getMostRecentThread(threads);
+  }
+
+  private get threadSet() {
+    const { threads } = this;
+    if (threads instanceof Status) {
+      return threads;
+    }
+    return indexById(threads);
+  }
+
+  get thread() {
+    const { _selectedThreadId } = this;
+    if (_selectedThreadId === null) {
+      return this.defaultThread;
+    }
+    const { threadSet } = this;
+    if (threadSet instanceof Status) {
+      return threadSet;
+    }
+    const thread = threadSet[_selectedThreadId];
+    if (thread) {
+      return thread;
+    }
+    return this.defaultThread;
+  }
+
+  get timeOrderedThreads() {
+    const { threads } = this;
+    if (threads instanceof Status) {
+      return threads;
+    }
+    return threadsNewToOld(threads);
   }
 
   get latestThread() {
@@ -108,21 +153,12 @@ export class ThreadStore {
   }
 
   get organizedThreads() {
-    const { timeOrderedThreads } = this;
-    if (timeOrderedThreads instanceof Status) {
+    const { timeOrderedThreads, thread } = this;
+    if (timeOrderedThreads instanceof Status || thread instanceof Status) {
       return timeOrderedThreads;
     }
     // put selected thread first
-    const selectedThread = timeOrderedThreads.find(
-      (t) => t.id === this.selectedThreadId,
-    );
-    if (selectedThread) {
-      return [
-        selectedThread,
-        ...timeOrderedThreads.filter((t) => t.id !== this.selectedThreadId),
-      ];
-    }
-    return timeOrderedThreads;
+    return [thread, ...timeOrderedThreads.filter((t) => t.id !== thread.id)];
   }
 
   get isOldThread() {
@@ -139,7 +175,7 @@ export class ThreadStore {
       return messages;
     }
     const v = messages
-      .filter((m) => m.threadId === this.selectedThreadId)
+      .filter((m) => m.threadId === this._selectedThreadId)
       .sort((m1, m2) => m1.createdAt.getTime() - m2.createdAt.getTime());
     return v;
   }
@@ -157,12 +193,9 @@ export class ThreadStore {
   }
 
   async createThread() {
-    runInAction(() => {
-      this.selectedThreadId = loading;
-    });
     const newThread = await this.descendentStore.create("threads", {});
     runInAction(() => {
-      this.selectedThreadId = newThread.id;
+      this._selectedThreadId = newThread.id;
     });
   }
 
@@ -179,47 +212,11 @@ export class ThreadStore {
     );
   }
 
-  selectThread(threadId: string) {
-    this.selectedThreadId = threadId;
-  }
-
   selectLatestThread() {
-    const { timeOrderedThreads } = this;
-    if (timeOrderedThreads instanceof Status) {
+    const { latestThread } = this;
+    if (latestThread instanceof Status) {
       throw new Error("Threads not loaded");
     }
-    this.selectedThreadId = timeOrderedThreads[0]?.id ?? notLoaded;
-  }
-
-  ensureActivityThreadSelection() {
-    const stop = autorun(() => {
-      const threads = this.descendentStore.get("threads");
-      if (threads instanceof Status) {
-        return;
-      }
-      runInAction(() => {
-        let thread = threads.find((t) => t.id === this.selectedThreadId);
-        // we're good; a valid thread is selected
-        if (thread) {
-          this.selectedThreadId = thread.id;
-          stop();
-          return;
-        }
-
-        // try to grab the latest thread
-        [thread] = threads.sort(
-          (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-        );
-        if (thread) {
-          this.selectedThreadId = thread.id;
-          stop();
-          return;
-        }
-
-        // no thread is exists; create a new one
-        // (this autorun logic will run again when the new thread is created)
-        void this.createThread();
-      });
-    });
+    this.selectThread(latestThread.id);
   }
 }

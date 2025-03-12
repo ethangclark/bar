@@ -8,9 +8,13 @@ import { storeObserver } from "../utils/storeObserver";
 export const ThreadSelection = storeObserver(function ThreadSelection({
   threadStore,
 }) {
-  const { organizedThreads, selectedThreadId, latestThread } = threadStore;
+  const { organizedThreads, thread, latestThread } = threadStore;
 
-  if (organizedThreads instanceof Status || latestThread instanceof Status) {
+  if (
+    organizedThreads instanceof Status ||
+    thread instanceof Status ||
+    latestThread instanceof Status
+  ) {
     return <LoadingCentered />;
   }
 
@@ -21,7 +25,7 @@ export const ThreadSelection = storeObserver(function ThreadSelection({
   return (
     <Select
       className="w-full"
-      value={selectedThreadId}
+      value={thread.id}
       options={organizedThreads.map((t) => ({
         label: `${t.id === latestThread.id ? "(LIVE) " : ""} Chat created on ${formatDateTime(t.createdAt)}`,
         value: t.id,

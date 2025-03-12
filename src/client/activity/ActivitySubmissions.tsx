@@ -8,6 +8,7 @@ export const ActivitySubmissions = storeObserver(function ActivitySubmissions({
   viewModeStore,
   submissionStore,
   descendentStore,
+  userStore,
 }) {
   const { submissions } = submissionStore;
   const items = descendentStore.get("items");
@@ -34,6 +35,7 @@ export const ActivitySubmissions = storeObserver(function ActivitySubmissions({
         <div>Email</div>
         <div>Items complete</div>
         <div>Questions complete</div>
+        <div>View</div>
         {submissions.length === 0 && <div>(No submissions yet)</div>}
         {submissions.map((submission) => (
           <Fragment key={submission.user.id}>
@@ -48,6 +50,13 @@ export const ActivitySubmissions = storeObserver(function ActivitySubmissions({
                 ).length
               }{" "}
               / {questionItemIds.size}
+            </div>
+            <div>
+              <Typography.Link
+                onClick={() => userStore.setUserId(submission.user.id)}
+              >
+                View
+              </Typography.Link>
             </div>
           </Fragment>
         ))}

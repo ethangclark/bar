@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Status } from "~/client/utils/status";
 import { assertTypesExhausted } from "~/common/assertions";
 import { formatRelativeTime } from "~/common/timeUtils";
@@ -11,7 +11,10 @@ import { AssistantMessage } from "./AssistantMessage";
 import { MessageView } from "./MessageView";
 import { ScrollyContentBox } from "./ScrollyContentBox";
 
-export const Messages = storeObserver(function Messages({ threadStore }) {
+export const Messages = storeObserver(function Messages({
+  threadStore,
+  userStore,
+}) {
   const messageWrapperRef = useRef<HTMLDivElement>(null);
 
   const { messages } = threadStore;
@@ -23,7 +26,12 @@ export const Messages = storeObserver(function Messages({ threadStore }) {
     });
   }, []);
 
-  const { data: isAdmin } = api.auth.isAdmin.useQuery();
+  const { data } = api.auth.basicSessionDeets.useQuery();
+  useEffect(() => {
+    if (data) {
+      data.userId && userStore.setUserId(data.userId);
+    }
+  }, [data, userStore]);
 
   if (messages instanceof Status) {
     return <LoadingCentered />;
@@ -38,7 +46,7 @@ export const Messages = storeObserver(function Messages({ threadStore }) {
         {messages.map((m, i) => {
           switch (m.senderRole) {
             case "system":
-              return isAdmin ? (
+              return data?.isAdmin ? (
                 <div
                   key={m.id}
                   className="mb-4 rounded-2xl border border-red-500 bg-gray-100 px-4 py-2"

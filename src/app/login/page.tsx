@@ -7,11 +7,14 @@ import { LoadingNotCentered, LoadingPage } from "~/client/components/Loading";
 import { LoginPage } from "~/client/components/LoginPage";
 import { FrontPageLogo } from "~/client/components/Logo";
 import { NoScrollPage } from "~/client/components/Page";
+import { storeObserver } from "~/client/utils/storeObserver";
 import { loginTokenQueryParam, redirectQueryParam } from "~/common/constants";
 import { invoke } from "~/common/fnUtils";
 import { trpc } from "~/trpc/proxy";
 
-function RootLoginPageInner() {
+const RootLoginPageInner = storeObserver(function RootLoginPageInner({
+  userStore,
+}) {
   const searchParams = useSearchParams();
   const loginToken = searchParams.get(loginTokenQueryParam);
   const rawRedirect = searchParams.get(redirectQueryParam);
@@ -55,7 +58,8 @@ function RootLoginPageInner() {
                 setTimeout(() => {
                   setShowBailOut(true);
                 }, 10000);
-                await trpc.auth.login.mutate({ loginToken });
+                const { userId } = await trpc.auth.login.mutate({ loginToken });
+                userId && userStore.setUserId(userId);
                 if (rawRedirect) {
                   router.push(decodeURIComponent(rawRedirect));
                 } else {
@@ -82,7 +86,7 @@ function RootLoginPageInner() {
       </div>
     </NoScrollPage>
   );
-}
+});
 
 export default function RootLoginPage() {
   return (

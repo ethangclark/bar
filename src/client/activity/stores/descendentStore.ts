@@ -17,8 +17,9 @@ import {
 } from "~/common/descendentUtils";
 import { getDraftDate, getDraftId } from "~/common/draftData";
 import { identity, objectEntries, objectValues } from "~/common/objectUtils";
-import { type MessageDelta } from "~/common/types";
+import { type MessageDelta } from "~/server/db/pubsub/messageDeltaPubSub";
 import { type FocusedActivityStore } from "./focusedActivityStore";
+import { type UserStore } from "./userStore";
 
 const baseState = () => ({
   descendents: identity<DescendentTables | Status>(notLoaded),
@@ -32,7 +33,10 @@ export type DescendentCreateParams<T extends DescendentName> = Omit<
 >;
 
 export type DescendentServerInterface = {
-  readDescendents: (params: { activityId: string }) => Promise<Descendents>;
+  readDescendents: (params: {
+    activityId: string;
+    includeUserIds: string[];
+  }) => Promise<Descendents>;
   subscribeToNewDescendents: (
     params: { activityId: string },
     onDescendents: (descendents: Descendents) => void,
@@ -55,6 +59,9 @@ export class DescendentStore {
     private focusedActivityStore: {
       activityId: FocusedActivityStore["activityId"];
     },
+    private userStore: {
+      userId: UserStore["userId"];
+    },
   ) {
     makeAutoObservable(this);
     autorun(() => {
@@ -62,17 +69,23 @@ export class DescendentStore {
       if (!activityId) {
         return;
       }
-      void this.loadDescendents(activityId);
+      const { userId } = this.userStore;
+      const includeUserIds = userId instanceof Status ? [] : [userId];
+      void this.loadDescendents(activityId, includeUserIds);
+
+      // users are always streamed all activity descendent events
+      // for which they have read permissions, so no need to pass in includeUserIds
       this.subscribeToDescendents(activityId);
       this.subscribeToMessageDeltas(activityId);
     });
   }
 
-  private async loadDescendents(activityId: string) {
+  private async loadDescendents(activityId: string, includeUserIds: string[]) {
     this.reset();
     this.descendents = loading;
     const descendents = await this.serverInterface.readDescendents({
       activityId,
+      includeUserIds,
     });
     runInAction(() => {
       this.descendents = indexDescendents(descendents);
@@ -110,7 +123,7 @@ export class DescendentStore {
           return;
         }
         runInAction(() => {
-          const descendent = descendents.messages[messageDelta.messageId];
+          const descendent = descendents.messages[messageDelta.baseMessage.id];
           if (descendent !== undefined) {
             descendent.content += messageDelta.contentDelta;
           }

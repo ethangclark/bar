@@ -32,12 +32,5 @@ export const audioDataXSchema = z.object({
 // Types for the audio data structure
 export type AudioDataX = z.infer<typeof audioDataXSchema>;
 
-export const messageDeltaSchema = z.object({
-  activityId: z.string(),
-  messageId: z.string(),
-  contentDelta: z.string(),
-});
-export type MessageDelta = z.infer<typeof messageDeltaSchema>;
-
 export const integrationTypes = ["canvas"] as const;
 export const allIntegrationTypes = [...integrationTypes];

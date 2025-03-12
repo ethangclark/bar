@@ -67,8 +67,7 @@ async function respondToThread({
 
   const { streamed } = await debouncePublish(gen, 200, (delta) =>
     messageDeltaPubSub.publish({
-      activityId,
-      messageId: emptyIncompleteMessage.id,
+      baseMessage: emptyIncompleteMessage,
       contentDelta: delta,
     }),
   );

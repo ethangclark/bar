@@ -9,7 +9,7 @@ export const ChatInput = storeObserver(function ChatInput({
   descendentStore,
   threadStore,
 }) {
-  const { selectedThreadId } = threadStore;
+  const { thread } = threadStore;
 
   const [v, setV] = useState("");
   const [isMessageSending, setIsMessageSending] = useState(false);
@@ -31,9 +31,7 @@ export const ChatInput = storeObserver(function ChatInput({
   }, []);
 
   const loading =
-    selectedThreadId instanceof Status ||
-    isMessageSending ||
-    !lastMessageComplete;
+    thread instanceof Status || isMessageSending || !lastMessageComplete;
 
   const inputsDisabled = loading || threadStore.isOldThread;
 
@@ -61,7 +59,7 @@ export const ChatInput = storeObserver(function ChatInput({
             }
             e.preventDefault();
 
-            if (selectedThreadId instanceof Status) {
+            if (thread instanceof Status) {
               return;
             }
 
@@ -71,7 +69,7 @@ export const ChatInput = storeObserver(function ChatInput({
               await descendentStore.create("messages", {
                 content: v,
                 senderRole: "user",
-                threadId: selectedThreadId,
+                threadId: thread.id,
                 doneGenerating: true,
               });
             } finally {

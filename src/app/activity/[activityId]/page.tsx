@@ -10,17 +10,23 @@ import { api } from "~/trpc/react";
 
 const ActivityPage = storeObserver(function ActivityPage({
   focusedActivityStore,
+  userStore,
 }) {
   const params = useParams();
   const { activityId } = z.object({ activityId: z.string() }).parse(params);
 
   const router = useRouter();
 
-  const { data: isLoggedIn } = api.auth.isLoggedIn.useQuery();
+  const { data } = api.auth.basicSessionDeets.useQuery();
 
   useEffect(() => {
+    if (!data) {
+      return;
+    }
+    const { isLoggedIn, userId } = data;
     if (isLoggedIn === true) {
       void focusedActivityStore.loadActivity(activityId);
+      userId && userStore.setUserId(userId);
     } else if (isLoggedIn === false) {
       router.push(
         `/login?${redirectQueryParam}=${encodeURIComponent(
@@ -29,7 +35,7 @@ const ActivityPage = storeObserver(function ActivityPage({
       );
     }
     return () => focusedActivityStore.reset();
-  }, [focusedActivityStore, activityId, isLoggedIn, router]);
+  }, [focusedActivityStore, activityId, data, router, userStore]);
 
   return <Activity />;
 });
