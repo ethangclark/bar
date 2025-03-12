@@ -64,7 +64,7 @@ export class ThreadStore {
       { activityId },
       {
         onData: (threadWrap: ThreadWrap) => {
-          if (threadWrap.userId !== this.userStore.userId) {
+          if (threadWrap.userId !== this.userStore.user) {
             return;
           }
           Modal.info({
@@ -93,15 +93,15 @@ export class ThreadStore {
   }
 
   private get threads() {
-    const { userId } = this.userStore;
-    if (userId instanceof Status) {
-      return userId;
+    const { user } = this.userStore;
+    if (user instanceof Status) {
+      return user;
     }
     const threads = this.descendentStore.get("threads");
     if (threads instanceof Status) {
       return threads;
     }
-    return threads.filter((t) => t.userId === userId);
+    return threads.filter((t) => t.userId === user.id);
   }
 
   private get defaultThread() {

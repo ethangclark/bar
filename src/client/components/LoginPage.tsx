@@ -20,9 +20,9 @@ export const LoginPage = storeObserver(function LoginPage({ userStore }) {
     if (!data) {
       return;
     }
-    const { isLoggedIn, userId } = data;
+    const { isLoggedIn, user } = data;
     if (isLoggedIn) {
-      userId && userStore.setUserId(userId);
+      user && userStore.setUser(user);
       router.push("/overview");
     }
   }, [data, router, userStore]);

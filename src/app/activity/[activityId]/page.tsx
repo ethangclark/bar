@@ -23,10 +23,10 @@ const ActivityPage = storeObserver(function ActivityPage({
     if (!data) {
       return;
     }
-    const { isLoggedIn, userId } = data;
+    const { isLoggedIn, user } = data;
     if (isLoggedIn === true) {
       void focusedActivityStore.loadActivity(activityId);
-      userId && userStore.setUserId(userId);
+      user && userStore.setUser(user);
     } else if (isLoggedIn === false) {
       router.push(
         `/login?${redirectQueryParam}=${encodeURIComponent(

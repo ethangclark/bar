@@ -58,7 +58,7 @@ export const ActivitySubmissions = storeObserver(function ActivitySubmissions({
                 <Typography.Link
                   disabled={activityId === null}
                   onClick={() => {
-                    userStore.impersonateUserId(submission.user.id);
+                    userStore.impersonateUser(submission.user);
                     viewModeStore.setViewMode("doer");
                   }}
                 >

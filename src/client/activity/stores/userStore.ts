@@ -1,36 +1,33 @@
 import { makeAutoObservable } from "mobx";
 import { notLoaded, type NotLoaded } from "~/client/utils/status";
+import { type UserBasic } from "~/common/types";
 
 export class UserStore {
   // this is the "for realsies" userId
-  private _userId: string | NotLoaded = notLoaded;
+  private _user: UserBasic | NotLoaded = notLoaded;
 
-  private impersonatingUserId: string | null = null;
+  public impersonating: UserBasic | null = null;
 
-  public get userId() {
-    if (this.impersonatingUserId !== null) {
-      return this.impersonatingUserId;
+  public get user() {
+    if (this.impersonating !== null) {
+      return this.impersonating;
     }
-    return this._userId;
+    return this._user;
   }
 
   constructor() {
     makeAutoObservable(this);
   }
 
-  setUserId(userId: string) {
-    this._userId = userId;
+  setUser(user: UserBasic) {
+    this._user = user;
   }
 
-  impersonateUserId(userId: string) {
-    this.impersonatingUserId = userId;
-  }
-
-  isImpersonating() {
-    return this.impersonatingUserId !== null;
+  impersonateUser(user: UserBasic) {
+    this.impersonating = user;
   }
 
   stopImpersonating() {
-    this.impersonatingUserId = null;
+    this.impersonating = null;
   }
 }

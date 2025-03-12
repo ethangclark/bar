@@ -9,16 +9,16 @@ export const Progress = storeObserver(function Progress({
 }) {
   const completions = descendentStore.get("completions");
   const itemsRaw = descendentStore.get("items");
-  const { userId } = userStore;
+  const { user } = userStore;
 
   const items = itemsRaw instanceof Status ? [] : sortByOrderFracIdx(itemsRaw);
 
   const completionCount =
     completions instanceof Status
       ? 0
-      : userId instanceof Status
+      : user instanceof Status
         ? 0
-        : completions.filter((c) => c.userId === userId).length;
+        : completions.filter((c) => c.userId === user.id).length;
 
   return (
     <AtndProgress

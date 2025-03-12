@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { type UserBasic } from "~/common/types";
 import {
   createTRPCRouter,
   type Ctx,
@@ -18,8 +19,11 @@ import { sendLoginEmail } from "~/server/services/email/loginEmail";
 function getBasicSessionDeets(ctx: Ctx) {
   const loggedIn = isLoggedIn(ctx);
   const isAdmin = ctx.user?.email === "ethangclark@gmail.com";
+  const email = ctx.user?.email ?? null;
+  const name = ctx.user?.name ?? null;
   const userId = ctx.user?.id ?? null;
-  return { isLoggedIn: loggedIn, userId, isAdmin };
+  const user: UserBasic | null = userId ? { id: userId, email, name } : null;
+  return { isLoggedIn: loggedIn, user, isAdmin };
 }
 
 export const authRouter = createTRPCRouter({

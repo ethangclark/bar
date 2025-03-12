@@ -60,7 +60,7 @@ export class DescendentStore {
       activityId: FocusedActivityStore["activityId"];
     },
     private userStore: {
-      userId: UserStore["userId"];
+      user: UserStore["user"];
     },
   ) {
     makeAutoObservable(this);
@@ -69,8 +69,8 @@ export class DescendentStore {
       if (!activityId) {
         return;
       }
-      const { userId } = this.userStore;
-      const includeUserIds = userId instanceof Status ? [] : [userId];
+      const { user } = this.userStore;
+      const includeUserIds = user instanceof Status ? [] : [user.id];
       void this.loadDescendents(activityId, includeUserIds);
 
       // users are always streamed all activity descendent events

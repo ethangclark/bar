@@ -29,7 +29,7 @@ export const Messages = storeObserver(function Messages({
   const { data } = api.auth.basicSessionDeets.useQuery();
   useEffect(() => {
     if (data) {
-      data.userId && userStore.setUserId(data.userId);
+      data.user && userStore.setUser(data.user);
     }
   }, [data, userStore]);
 

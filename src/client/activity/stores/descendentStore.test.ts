@@ -55,7 +55,7 @@ async function getNewStore(
     {
       activityId: defaultActivityId,
     },
-    { userId: "userId" },
+    { user: { id: "userId", name: null, email: null } },
   );
   return { store, publishDescendents, publishMessageDelta };
 }

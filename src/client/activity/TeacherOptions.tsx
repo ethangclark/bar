@@ -5,6 +5,7 @@ import { storeObserver } from "../utils/storeObserver";
 export const TeacherOptions = storeObserver(function TeacherOptions({
   threadStore,
   viewModeStore,
+  userStore,
 }) {
   return (
     <div
@@ -13,12 +14,19 @@ export const TeacherOptions = storeObserver(function TeacherOptions({
       <Typography.Link onClick={() => viewModeStore.setViewMode("editor")}>
         ← Back to design
       </Typography.Link>
-      <Tooltip
-        title="These options only visible to teachers and developers."
-        className="text-gray-500"
-      >
-        <CircleHelp size={16} />
-      </Tooltip>
+      {userStore.impersonating ? (
+        <Typography.Link onClick={() => userStore.stopImpersonating()}>
+          Impersonating {userStore.impersonating.email}. Click to stop
+          impersonating
+        </Typography.Link>
+      ) : (
+        <Tooltip
+          title="These options only visible to teachers and developers."
+          className="text-gray-500"
+        >
+          <CircleHelp size={16} />
+        </Tooltip>
+      )}
       <Typography.Link
         onClick={async () => {
           await Promise.all([

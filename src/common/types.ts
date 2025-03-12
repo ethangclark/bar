@@ -34,3 +34,9 @@ export type AudioDataX = z.infer<typeof audioDataXSchema>;
 
 export const integrationTypes = ["canvas"] as const;
 export const allIntegrationTypes = [...integrationTypes];
+
+export type UserBasic = {
+  id: string;
+  email: string | null;
+  name: string | null;
+};

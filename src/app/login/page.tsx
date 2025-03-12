@@ -58,8 +58,8 @@ const RootLoginPageInner = storeObserver(function RootLoginPageInner({
                 setTimeout(() => {
                   setShowBailOut(true);
                 }, 10000);
-                const { userId } = await trpc.auth.login.mutate({ loginToken });
-                userId && userStore.setUserId(userId);
+                const { user } = await trpc.auth.login.mutate({ loginToken });
+                user && userStore.setUser(user);
                 if (rawRedirect) {
                   router.push(decodeURIComponent(rawRedirect));
                 } else {
