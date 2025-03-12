@@ -15,7 +15,10 @@ export const TeacherOptions = storeObserver(function TeacherOptions({
         ← Back to design
       </Typography.Link>
       {userStore.impersonating ? (
-        <Typography.Link onClick={() => userStore.stopImpersonating()}>
+        <Typography.Link
+          onClick={() => userStore.stopImpersonating()}
+          className="background-red-900 text-red-500"
+        >
           Impersonating {userStore.impersonating.email}. Click to stop
           impersonating
         </Typography.Link>
