@@ -170,12 +170,16 @@ export class ThreadStore {
   }
 
   get messages() {
+    const { thread } = this;
+    if (thread instanceof Status) {
+      return thread;
+    }
     const messages = this.descendentStore.get("messages");
     if (messages instanceof Status) {
       return messages;
     }
     const v = messages
-      .filter((m) => m.threadId === this._selectedThreadId)
+      .filter((m) => m.threadId === thread.id)
       .sort((m1, m2) => m1.createdAt.getTime() - m2.createdAt.getTime());
     return v;
   }
