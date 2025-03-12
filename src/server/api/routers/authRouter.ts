@@ -59,7 +59,7 @@ export const authRouter = createTRPCRouter({
       const { loginToken } = input;
       const { session } = ctx;
       if (!session) {
-        return { succeeded: false };
+        return { succeeded: false, user: null };
       }
       const { succeeded } = await attemptAutoLogin(loginToken, session, db);
       return { succeeded, ...getBasicSessionDeets(ctx) };
