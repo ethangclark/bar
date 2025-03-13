@@ -1,6 +1,10 @@
 import { makeAutoObservable } from "mobx";
 import { objectEntries } from "~/common/objectUtils";
-import { searchParamsX, type SearchParamsX } from "~/common/searchParams";
+import {
+  type SearchParamName,
+  searchParamsX,
+  type SearchParamsX,
+} from "~/common/searchParams";
 
 export class LocationStore {
   // dummy observable to force MobX to re-read URL state
@@ -45,10 +49,7 @@ export class LocationStore {
   }
 
   // Sets a search parameter in the URL. The value is stringified and encoded.
-  setSearchParam(
-    name: keyof SearchParamsX,
-    value: SearchParamsX[keyof SearchParamsX],
-  ) {
+  setSearchParam<T extends SearchParamName>(name: T, value: SearchParamsX[T]) {
     if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
 
@@ -65,7 +66,7 @@ export class LocationStore {
   }
 
   // Deletes a search parameter from the URL.
-  deleteSearchParam(name: keyof SearchParamsX) {
+  deleteSearchParam(name: SearchParamName) {
     if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
     url.searchParams.delete(searchParamsX[name].key);

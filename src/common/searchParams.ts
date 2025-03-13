@@ -19,6 +19,8 @@ export const searchParamsX = {
   },
 };
 
+export type SearchParamName = keyof typeof searchParamsX;
+
 export type SearchParamsX = Partial<{
   [key in keyof typeof searchParamsX]: z.infer<
     (typeof searchParamsX)[key]["schema"]
