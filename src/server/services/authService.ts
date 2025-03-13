@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
 import { assertOne } from "~/common/assertions";
-import { UserBasic } from "~/common/types";
+import { type UserBasic } from "~/common/types";
 import { db, schema, type DbOrTx } from "~/server/db";
 import { type Session } from "../db/schema";
 import { hashLoginToken } from "../utils";

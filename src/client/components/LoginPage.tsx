@@ -11,7 +11,7 @@ import { api } from "~/trpc/react";
 export const LoginPage = storeObserver(function LoginPage({ userStore }) {
   const [notify, contextHolder] = useNotify();
   const [submitting, setSubmitting] = useState(false);
-  const rawRedirect = useSearchParams().get(searchParamsX.redirect.key);
+  const rawRedirect = useSearchParams().get(searchParamsX.redirectUrl.key);
 
   const { data, isLoading: isLoggedInLoading } =
     api.auth.basicSessionDeets.useQuery();

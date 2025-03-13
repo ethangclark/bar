@@ -7,6 +7,7 @@ import { DraftStore } from "../activity/stores/draftStore";
 import { EditorStore } from "../activity/stores/editorStore";
 import { FocusedActivityStore } from "../activity/stores/focusedActivityStore";
 import { ItemStore } from "../activity/stores/itemStore";
+import { LocationStore } from "../activity/stores/locationStore";
 import { QuestionStore } from "../activity/stores/questionStore";
 import { SubmissionStore } from "../activity/stores/submissionStore";
 import { ThreadStore } from "../activity/stores/threadStore";
@@ -49,7 +50,8 @@ const editorStore = new EditorStore(
 );
 const questionStore = new QuestionStore(draftStore);
 const itemStore = new ItemStore(draftStore, questionStore);
-const viewModeStore = new ViewModeStore(focusedActivityStore);
+const locationStore = new LocationStore();
+const viewModeStore = new ViewModeStore(focusedActivityStore, locationStore);
 const viewPieceStore = new ViewPieceStore(descendentStore);
 const submissionStore = new SubmissionStore(
   focusedActivityStore,
@@ -70,6 +72,7 @@ export const stores = {
   viewPieceStore,
   submissionStore,
   userStore,
+  locationStore,
 };
 
 export function isStoreName(name: string): name is keyof typeof stores {

@@ -36,9 +36,9 @@ export async function sendLoginEmail({
 
   // the encoding here technically isn't necessary so long as the token is a UUID,
   // but we do it anyway to be safe in case that impl changes
-  let urlWithLoginToken = `${getBaseUrl()}/login?${searchParamsX.token.key}=${encodeURIComponent(loginToken)}`;
+  let urlWithLoginToken = `${getBaseUrl()}/login?${searchParamsX.loginToken.key}=${encodeURIComponent(loginToken)}`;
   if (encodedRedirect) {
-    urlWithLoginToken += `&${searchParamsX.redirect.key}=${encodeURIComponent(encodedRedirect)}`;
+    urlWithLoginToken += `&${searchParamsX.redirectUrl.key}=${encodeURIComponent(encodedRedirect)}`;
   }
 
   if (env.NODE_ENV !== "production") {

@@ -29,7 +29,7 @@ const ActivityPage = storeObserver(function ActivityPage({
       user && userStore.setUser(user);
     } else if (isLoggedIn === false) {
       router.push(
-        `/login?${searchParamsX.redirect.key}=${encodeURIComponent(
+        `/login?${searchParamsX.redirectUrl.key}=${encodeURIComponent(
           window.location.pathname,
         )}`,
       );

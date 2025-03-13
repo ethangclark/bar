@@ -16,8 +16,8 @@ const RootLoginPageInner = storeObserver(function RootLoginPageInner({
   userStore,
 }) {
   const searchParams = useSearchParams();
-  const loginToken = searchParams.get(searchParamsX.token.key);
-  const rawRedirect = searchParams.get(searchParamsX.redirect.key);
+  const loginToken = searchParams.get(searchParamsX.loginToken.key);
+  const rawRedirect = searchParams.get(searchParamsX.redirectUrl.key);
   const router = useRouter();
 
   const [loggingIn, setLoggingIn] = useState(true);

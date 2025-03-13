@@ -5,15 +5,15 @@ const viewModeSchema = z.enum(viewModes);
 export type ViewMode = z.infer<typeof viewModeSchema>;
 
 export const searchParamsX = {
-  token: {
+  loginToken: {
     key: "token" as const,
     schema: z.string(),
   },
-  redirect: {
+  redirectUrl: {
     key: "redirect" as const,
     schema: z.string(),
   },
-  view: {
+  activityViewMode: {
     key: "view" as const,
     schema: viewModeSchema,
   },

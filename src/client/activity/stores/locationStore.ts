@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { objectValues } from "~/common/objectUtils";
+import { objectEntries } from "~/common/objectUtils";
 import { searchParamsX, type SearchParamsX } from "~/common/searchParams";
 
 export class LocationStore {
@@ -33,11 +33,11 @@ export class LocationStore {
     const url = new URL(window.location.href);
     const params: SearchParamsX = {};
 
-    objectValues(searchParamsX).forEach(({ key, schema }) => {
+    objectEntries(searchParamsX).forEach(([name, { key, schema }]) => {
       const val = url.searchParams.get(key);
       if (val !== null) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        params[key] = schema.parse(decodeURIComponent(val)) as any;
+        params[name] = schema.parse(decodeURIComponent(val)) as any;
       }
     });
 
@@ -46,17 +46,17 @@ export class LocationStore {
 
   // Sets a search parameter in the URL. The value is stringified and encoded.
   setSearchParam(
-    key: keyof SearchParamsX,
+    name: keyof SearchParamsX,
     value: SearchParamsX[keyof SearchParamsX],
   ) {
     if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
 
     if (value === undefined || value === null) {
-      url.searchParams.delete(key);
+      url.searchParams.delete(searchParamsX[name].key);
     } else {
       // Encode the value manually
-      url.searchParams.set(key, encodeURIComponent(value));
+      url.searchParams.set(searchParamsX[name].key, encodeURIComponent(value));
     }
 
     // Update URL without reloading; pushState accepts full URL as long as it's same-origin.
@@ -65,10 +65,10 @@ export class LocationStore {
   }
 
   // Deletes a search parameter from the URL.
-  deleteSearchParam(key: keyof SearchParamsX) {
+  deleteSearchParam(name: keyof SearchParamsX) {
     if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
-    url.searchParams.delete(key);
+    url.searchParams.delete(searchParamsX[name].key);
     window.history.pushState(null, "", url.toString());
     this.version++;
   }
