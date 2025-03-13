@@ -1,11 +1,11 @@
 import { makeAutoObservable, reaction } from "mobx";
 import { z } from "zod";
 import { notLoaded, Status } from "~/client/utils/status";
-import { viewModeQueryParam } from "~/common/constants";
 import {
   type EnrollmentType,
   isGraderOrDeveloper,
 } from "~/common/enrollmentTypeUtils";
+import { searchParamsX } from "~/common/searchParams";
 import { type FocusedActivityStore } from "./focusedActivityStore";
 
 const viewModes = ["editor", "doer", "submissions"] as const;
@@ -68,7 +68,7 @@ export class ViewModeStore {
 
   private updateViewModeFromURL() {
     const searchParams = new URLSearchParams(window.location.search);
-    const viewParam = searchParams.get(viewModeQueryParam);
+    const viewParam = searchParams.get(searchParamsX.view.key);
     if (!viewParam && !(this.defaultMode instanceof Status)) {
       this.setViewModeState(this.defaultMode);
     }
@@ -86,10 +86,10 @@ export class ViewModeStore {
 
       if (mode === this.defaultMode) {
         // Clear the view query param when setting to default mode
-        url.searchParams.delete(viewModeQueryParam);
+        url.searchParams.delete(searchParamsX.view.key);
       } else {
         // Set the query param for non-default modes
-        url.searchParams.set(viewModeQueryParam, mode);
+        url.searchParams.set(searchParamsX.view.key, mode);
       }
 
       window.history.pushState({}, "", url.toString());
