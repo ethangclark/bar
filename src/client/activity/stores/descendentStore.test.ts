@@ -4,7 +4,7 @@ import {
   type Descendents,
   type Modifications,
 } from "~/common/descendentUtils";
-import { type MessageDelta } from "~/common/types";
+import { type MessageDelta } from "~/server/db/pubsub/messageDeltaPubSub";
 import {
   type EvalKey,
   type Item,
@@ -50,9 +50,13 @@ async function getNewStore(
     },
     modifyDescendents: () => Promise.resolve(modificationResponder()),
   };
-  const store = new DescendentStore(descendentServerInterface, {
-    activityId: defaultActivityId,
-  });
+  const store = new DescendentStore(
+    descendentServerInterface,
+    {
+      activityId: defaultActivityId,
+    },
+    { user: { id: "userId", name: null, email: null } },
+  );
   return { store, publishDescendents, publishMessageDelta };
 }
 

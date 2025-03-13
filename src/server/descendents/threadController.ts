@@ -2,7 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { type DescendentController } from "~/common/descendentUtils";
 import { isGrader } from "~/common/enrollmentTypeUtils";
 import { type Thread } from "~/server/db/schema";
-import { schema } from "../db";
+import { db, schema } from "../db";
 import { generateIntroMessages } from "../services/summit/summitIntro";
 
 const canRead: DescendentController<Thread>["canRead"] = (
@@ -39,7 +39,8 @@ export const threadController: DescendentController<Thread> = {
       // grader can read threads for themselves and for other users
       userIds = [...new Set([userId, ...includeUserIds])];
     }
-    return tx
+
+    const threads = await tx
       .select()
       .from(schema.threads)
       .where(
@@ -48,6 +49,22 @@ export const threadController: DescendentController<Thread> = {
           inArray(schema.threads.userId, userIds),
         ),
       );
+
+    if (threads.length > 0) {
+      return threads;
+    } else {
+      // COMMENT_CODE_001a
+      // Ensure there's at least one thread!
+      // See COMMENT_CODE_001b
+      const created = await db
+        .insert(schema.threads)
+        .values({
+          activityId,
+          userId,
+        })
+        .returning();
+      return created;
+    }
   },
   // threads are immutable
   async update() {

@@ -1,7 +1,10 @@
 import { z } from "zod";
-import { type MessageDelta } from "~/common/types";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { messageDeltaPubSub } from "~/server/db/pubsub/messageDeltaPubSub";
+import {
+  messageDeltaPubSub,
+  type MessageDelta,
+} from "~/server/db/pubsub/messageDeltaPubSub";
+import { messageController } from "~/server/descendents/messageController";
 import { getActivity } from "~/server/services/activity/activityService";
 
 export const messageRouter = createTRPCRouter({
@@ -13,15 +16,23 @@ export const messageRouter = createTRPCRouter({
     }): AsyncGenerator<MessageDelta> {
       const { activityId } = input;
       const { userId } = ctx;
-      await getActivity({
+      const activity = await getActivity({
         userId,
         activityId,
         assertAccess: true,
       });
       const messageDeltaSubscription = messageDeltaPubSub.subscribe();
       for await (const messageDelta of messageDeltaSubscription) {
-        if (messageDelta.activityId === activityId) {
-          yield messageDelta;
+        if (messageDelta.baseMessage.activityId === activityId) {
+          if (
+            messageController.canRead(messageDelta.baseMessage, {
+              activityId,
+              userId,
+              enrolledAs: activity.enrolledAs,
+            })
+          ) {
+            yield messageDelta;
+          }
         }
       }
     }),

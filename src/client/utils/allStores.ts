@@ -11,6 +11,7 @@ import { QuestionStore } from "../activity/stores/questionStore";
 import { SubmissionStore } from "../activity/stores/submissionStore";
 import { ThreadStore } from "../activity/stores/threadStore";
 import { UploadStore } from "../activity/stores/uploadStore";
+import { UserStore } from "../activity/stores/userStore";
 import { ViewModeStore } from "../activity/stores/viewModeStore";
 import { ViewPieceStore } from "../activity/stores/viewPieceStore";
 import { QueryStore } from "./queryStore";
@@ -29,11 +30,17 @@ const descendentServerInterface: DescendentServerInterface = {
 const activitesStore = new QueryStore(trpc.activity.getAll.query);
 const uploadStore = new UploadStore();
 const focusedActivityStore = new FocusedActivityStore();
+const userStore = new UserStore();
 const descendentStore = new DescendentStore(
   descendentServerInterface,
   focusedActivityStore,
+  userStore,
 );
-const threadStore = new ThreadStore(descendentStore, focusedActivityStore);
+const threadStore = new ThreadStore(
+  descendentStore,
+  focusedActivityStore,
+  userStore,
+);
 const draftStore = new DraftStore(focusedActivityStore, descendentStore);
 const editorStore = new EditorStore(
   draftStore,
@@ -62,6 +69,7 @@ export const stores = {
   uploadStore,
   viewPieceStore,
   submissionStore,
+  userStore,
 };
 
 export function isStoreName(name: string): name is keyof typeof stores {

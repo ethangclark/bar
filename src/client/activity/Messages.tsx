@@ -1,6 +1,8 @@
-import { useCallback, useRef } from "react";
+import dayjs from "dayjs";
+import { useCallback, useEffect, useRef } from "react";
 import { Status } from "~/client/utils/status";
 import { assertTypesExhausted } from "~/common/assertions";
+import { formatRelativeTime } from "~/common/timeUtils";
 import { api } from "~/trpc/react";
 import { LoadingCentered } from "../components/Loading";
 import { PreformattedText } from "../components/PreformattedText";
@@ -9,7 +11,10 @@ import { AssistantMessage } from "./AssistantMessage";
 import { MessageView } from "./MessageView";
 import { ScrollyContentBox } from "./ScrollyContentBox";
 
-export const Messages = storeObserver(function Messages({ threadStore }) {
+export const Messages = storeObserver(function Messages({
+  threadStore,
+  userStore,
+}) {
   const messageWrapperRef = useRef<HTMLDivElement>(null);
 
   const { messages } = threadStore;
@@ -21,7 +26,12 @@ export const Messages = storeObserver(function Messages({ threadStore }) {
     });
   }, []);
 
-  const { data: isAdmin } = api.auth.isAdmin.useQuery();
+  const { data } = api.auth.basicSessionDeets.useQuery();
+  useEffect(() => {
+    if (data) {
+      data.user && userStore.setUser(data.user);
+    }
+  }, [data, userStore]);
 
   if (messages instanceof Status) {
     return <LoadingCentered />;
@@ -36,7 +46,7 @@ export const Messages = storeObserver(function Messages({ threadStore }) {
         {messages.map((m, i) => {
           switch (m.senderRole) {
             case "system":
-              return isAdmin ? (
+              return data?.isAdmin ? (
                 <div
                   key={m.id}
                   className="mb-4 rounded-2xl border border-red-500 bg-gray-100 px-4 py-2"
@@ -48,7 +58,7 @@ export const Messages = storeObserver(function Messages({ threadStore }) {
               return (
                 <MessageView
                   key={m.id}
-                  className="ml-[30%] justify-end"
+                  className="ml-[30%] flex flex-col items-end"
                   isLastMessage={i === messages.length - 1}
                   messageLength={m.content.length}
                   scrollToBottom={scrollToBottom}
@@ -56,6 +66,11 @@ export const Messages = storeObserver(function Messages({ threadStore }) {
                   <div className="rounded-2xl bg-gray-100 px-4 py-2">
                     <PreformattedText>{m.content}</PreformattedText>
                   </div>
+                  {dayjs().diff(dayjs(m.createdAt), "minute") > 10 && (
+                    <div className="text-xs text-gray-500">
+                      Sent {formatRelativeTime(m.createdAt)}
+                    </div>
+                  )}
                 </MessageView>
               );
             case "assistant":

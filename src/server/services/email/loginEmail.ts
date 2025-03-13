@@ -39,6 +39,10 @@ export async function sendLoginEmail({
     urlWithLoginToken += `&${redirectQueryParam}=${encodedRedirect}`;
   }
 
+  if (env.NODE_ENV !== "production") {
+    console.log("Login link: %s", urlWithLoginToken);
+  }
+
   await sendEmail({
     to: email,
     from: env.EMAIL_FROM,
@@ -46,8 +50,4 @@ export async function sendLoginEmail({
     text: loginEmailText({ urlWithLoginToken, email }),
     html: loginEmailHtml({ urlWithLoginToken, email }),
   });
-
-  if (env.NODE_ENV !== "production") {
-    console.log("Login link: %s", urlWithLoginToken);
-  }
 }

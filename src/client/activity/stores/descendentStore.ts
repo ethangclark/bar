@@ -1,4 +1,4 @@
-import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
+import { autorun, makeAutoObservable, runInAction } from "mobx";
 import { loading, notLoaded, Status } from "~/client/utils/status";
 import { assertOne } from "~/common/assertions";
 import { clone } from "~/common/cloneUtils";
@@ -16,9 +16,11 @@ import {
   type Modifications,
 } from "~/common/descendentUtils";
 import { getDraftDate, getDraftId } from "~/common/draftData";
+import { noop } from "~/common/fnUtils";
 import { identity, objectEntries, objectValues } from "~/common/objectUtils";
-import { type MessageDelta } from "~/common/types";
+import { type MessageDelta } from "~/server/db/pubsub/messageDeltaPubSub";
 import { type FocusedActivityStore } from "./focusedActivityStore";
+import { type UserStore } from "./userStore";
 
 const baseState = () => ({
   descendents: identity<DescendentTables | Status>(notLoaded),
@@ -32,7 +34,10 @@ export type DescendentCreateParams<T extends DescendentName> = Omit<
 >;
 
 export type DescendentServerInterface = {
-  readDescendents: (params: { activityId: string }) => Promise<Descendents>;
+  readDescendents: (params: {
+    activityId: string;
+    includeUserIds: string[];
+  }) => Promise<Descendents>;
   subscribeToNewDescendents: (
     params: { activityId: string },
     onDescendents: (descendents: Descendents) => void,
@@ -50,86 +55,102 @@ export type DescendentServerInterface = {
 export class DescendentStore {
   public descendents = baseState().descendents;
 
+  reset() {
+    Object.assign(this, baseState());
+  }
+
   constructor(
     private serverInterface: DescendentServerInterface,
     private focusedActivityStore: {
       activityId: FocusedActivityStore["activityId"];
     },
+    private userStore: {
+      user: UserStore["user"];
+    },
   ) {
     makeAutoObservable(this);
-    autorun(() => {
-      const { activityId } = this.focusedActivityStore;
-      if (!activityId) {
-        return;
-      }
-      void this.loadDescendents(activityId);
-      this.subscribeToDescendents(activityId);
-      this.subscribeToMessageDeltas(activityId);
-    });
+
+    this.autoRunLoadDescendents();
+    this.autoRunSubscribeToDescendents();
+    this.autoRunSubscribeToMessageDeltas();
   }
 
-  private async loadDescendents(activityId: string) {
+  private async loadDescendents(activityId: string, includeUserIds: string[]) {
     this.reset();
     this.descendents = loading;
     const descendents = await this.serverInterface.readDescendents({
       activityId,
+      includeUserIds,
     });
     runInAction(() => {
       this.descendents = indexDescendents(descendents);
     });
   }
-  private subscribeToDescendents(activityId: string) {
-    const subscription = this.serverInterface.subscribeToNewDescendents(
-      { activityId },
-      (descendents: Descendents) => {
-        const existing = this.descendents;
-        if (existing instanceof Status) {
-          return;
-        }
-        runInAction(() => {
-          upsertDescendents(existing, descendents);
-        });
-      },
-    );
-    reaction(
-      () => this.focusedActivityStore.activityId,
-      () => {
-        subscription.unsubscribe();
-      },
-      {
-        fireImmediately: false,
-      },
-    );
-  }
-  private subscribeToMessageDeltas(activityId: string) {
-    const subscription = this.serverInterface.subscribeToMessageDeltas(
-      { activityId },
-      (messageDelta: MessageDelta) => {
-        const { descendents } = this;
-        if (descendents instanceof Status) {
-          return;
-        }
-        runInAction(() => {
-          const descendent = descendents.messages[messageDelta.messageId];
-          if (descendent !== undefined) {
-            descendent.content += messageDelta.contentDelta;
-          }
-        });
-      },
-    );
-    reaction(
-      () => this.focusedActivityStore.activityId,
-      () => {
-        subscription.unsubscribe();
-      },
-      {
-        fireImmediately: false,
-      },
-    );
+
+  private autoRunLoadDescendents() {
+    autorun(() => {
+      const { activityId } = this.focusedActivityStore;
+      if (!activityId) {
+        return;
+      }
+      const { user } = this.userStore;
+      const includeUserIds = user instanceof Status ? [] : [user.id];
+      void this.loadDescendents(activityId, includeUserIds);
+    });
   }
 
-  reset() {
-    Object.assign(this, baseState());
+  private autoRunSubscribeToDescendents() {
+    let unsub: () => void = noop;
+    autorun(() => {
+      const { activityId } = this.focusedActivityStore;
+      if (!activityId) {
+        return;
+      }
+      // users are always streamed all activity descendent events
+      // for which they have read permissions, so no need to pass in includeUserIds
+      unsub();
+      unsub = this.serverInterface.subscribeToNewDescendents(
+        { activityId },
+        (descendents: Descendents) => {
+          const existing = this.descendents;
+          if (existing instanceof Status) {
+            return;
+          }
+          runInAction(() => {
+            upsertDescendents(existing, descendents);
+          });
+        },
+      ).unsubscribe;
+    });
+  }
+
+  private autoRunSubscribeToMessageDeltas() {
+    let unsub: () => void = noop;
+    autorun(() => {
+      const { activityId } = this.focusedActivityStore;
+      if (!activityId) {
+        return;
+      }
+      // users are always streamed all message delta events
+      // for which they have read permissions, so no need to pass in includeUserIds
+      unsub();
+      unsub = this.serverInterface.subscribeToMessageDeltas(
+        { activityId },
+        (messageDelta: MessageDelta) => {
+          const { descendents } = this;
+          if (descendents instanceof Status) {
+            return;
+          }
+          runInAction(() => {
+            const descendent =
+              descendents.messages[messageDelta.baseMessage.id];
+            if (descendent !== undefined) {
+              descendent.content += messageDelta.contentDelta;
+            }
+          });
+        },
+      ).unsubscribe;
+    });
   }
 
   private incorporateModifications(modifications: Partial<Modifications>) {

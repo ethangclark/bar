@@ -63,7 +63,7 @@ export const messageController: DescendentController<Message> = {
         case "assistant":
           return true;
         case "user":
-          return m.userId === userId;
+          return userIds.includes(m.userId);
         default:
           assertTypesExhausted(m.senderRole);
       }

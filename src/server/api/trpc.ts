@@ -141,9 +141,9 @@ export const createTRPCRouter = t.router;
 export const publicProcedure = t.procedure;
 
 type QueryCb = Parameters<typeof publicProcedure.query>[0];
-type QueryArgCtx = Parameters<QueryCb>[0]["ctx"];
+export type Ctx = Parameters<QueryCb>[0]["ctx"];
 
-export function isLoggedIn(ctx: QueryArgCtx) {
+export function isLoggedIn(ctx: Ctx) {
   return !!ctx.session?.userId;
 }
 
