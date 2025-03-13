@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
 import { assertOne } from "~/common/assertions";
+import { UserBasic } from "~/common/types";
 import { db, schema, type DbOrTx } from "~/server/db";
 import { type Session } from "../db/schema";
 import { hashLoginToken } from "../utils";
@@ -91,6 +92,14 @@ export async function loginUser(
       userId: user.id,
     })
     .where(eq(schema.sessions.sessionCookieValue, session.sessionCookieValue));
+
+  return {
+    user: {
+      id: user.id,
+      email,
+      name: user.name,
+    } satisfies UserBasic,
+  };
 }
 
 export async function logoutUser(session: Session, tx: DbOrTx) {

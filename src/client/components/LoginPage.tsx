@@ -30,10 +30,14 @@ export const LoginPage = storeObserver(function LoginPage({ userStore }) {
   const handleSubmit = useCallback(
     async (email: string) => {
       setSubmitting(true);
-      await trpc.auth.sendLoginEmail.mutate({
+      const loginDeets = await trpc.auth.sendLoginEmail.mutate({
         email,
         encodedRedirect: rawRedirect,
       });
+      if (loginDeets.isLoggedIn && loginDeets.user) {
+        userStore.setUser(loginDeets.user);
+        router.push("/overview");
+      }
       setSubmitting(false);
       notify({
         title: "Email sent",

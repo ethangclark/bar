@@ -50,4 +50,6 @@ export async function sendLoginEmail({
     text: loginEmailText({ urlWithLoginToken, email }),
     html: loginEmailHtml({ urlWithLoginToken, email }),
   });
+
+  return { loginToken };
 }

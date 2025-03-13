@@ -20,6 +20,7 @@ export const env = createEnv({
     HEADFUL: z.boolean(),
     OPENROUTER_API_KEY: z.string(),
     PORT: z.string().default("3000"),
+    QUICK_DEV_LOGIN: z.literal("true").optional(),
   },
 
   /**
@@ -46,6 +47,7 @@ export const env = createEnv({
     HEADFUL: process.env.HEADFUL === "true",
     OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
     PORT: process.env.PORT,
+    QUICK_DEV_LOGIN: process.env.QUICK_DEV_LOGIN,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

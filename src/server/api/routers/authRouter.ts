@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { type UserBasic } from "~/common/types";
+import { env } from "~/env";
 import {
   createTRPCRouter,
   type Ctx,
@@ -16,9 +17,13 @@ import {
 } from "~/server/services/authService";
 import { sendLoginEmail } from "~/server/services/email/loginEmail";
 
+function getIsAdmin(user: UserBasic) {
+  return user.email === "ethangclark@gmail.com";
+}
+
 function getBasicSessionDeets(ctx: Ctx) {
   const loggedIn = isLoggedIn(ctx);
-  const isAdmin = ctx.user?.email === "ethangclark@gmail.com";
+  const isAdmin = ctx.user ? getIsAdmin(ctx.user) : false;
   const email = ctx.user?.email ?? null;
   const name = ctx.user?.name ?? null;
   const userId = ctx.user?.id ?? null;
@@ -38,9 +43,21 @@ export const authRouter = createTRPCRouter({
         encodedRedirect: z.string().nullable().optional(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { email, encodedRedirect } = input;
-      await sendLoginEmail({ email, encodedRedirect });
+      const { loginToken } = await sendLoginEmail({ email, encodedRedirect });
+      if (env.NODE_ENV !== "production" && env.QUICK_DEV_LOGIN) {
+        if (!ctx.session) {
+          throw new Error("No session found for quick-dev-login mode");
+        }
+        const { user } = await loginUser(loginToken, ctx.session, db);
+        return {
+          isLoggedIn: true,
+          user,
+          isAdmin: getIsAdmin(user),
+        };
+      }
+      return getBasicSessionDeets(ctx);
     }),
 
   login: publicProcedure
@@ -49,8 +66,14 @@ export const authRouter = createTRPCRouter({
       const { session } = ctx;
       if (!session) throw new Error("Session not found");
       const { loginToken } = input;
-      await loginUser(loginToken, session, db);
-      return getBasicSessionDeets(ctx);
+      const { user } = await loginUser(loginToken, session, db);
+
+      const deets: ReturnType<typeof getBasicSessionDeets> = {
+        isLoggedIn: true,
+        user,
+        isAdmin: getIsAdmin(user),
+      };
+      return deets;
     }),
 
   autoLogin: publicProcedure
