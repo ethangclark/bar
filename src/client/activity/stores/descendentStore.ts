@@ -111,7 +111,6 @@ export class DescendentStore {
 
       // run when hmrCount changes
       void this.hmrStore.hmrCount;
-      console.log("hmrCount", this.hmrStore.hmrCount);
 
       // users are always streamed all activity descendent events
       // for which they have read permissions, so no need to pass in includeUserIds

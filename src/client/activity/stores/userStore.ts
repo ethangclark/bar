@@ -32,6 +32,8 @@ export class UserStore {
     private viewModeStore: ViewModeStore,
   ) {
     makeAutoObservable(this);
+
+    // get rid of impersonation cache if we navigate to a location that doesn't support it
     let lastWasSupported = false;
     autorun(() => {
       if (this.viewModeStore.viewMode instanceof Status) {
