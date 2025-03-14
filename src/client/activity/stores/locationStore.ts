@@ -8,23 +8,26 @@ import {
 
 export class LocationStore {
   // dummy observable to force MobX to re-read URL state
-  private version = 0;
+  private pathnameVersion = 0;
+  private searchParamVersion = 0;
 
   constructor() {
     makeAutoObservable(this);
-    if (typeof window !== "undefined") {
-      // update observable when the browser history changes
-      window.addEventListener("popstate", this.handlePopState);
-    }
   }
 
-  private handlePopState = () => {
-    this.version++;
-  };
+  _onPathnameChange() {
+    this.pathnameVersion++;
+  }
+
+  _onSearchParamChange() {
+    this.searchParamVersion++;
+  }
 
   // Returns the current pathname from the URL
   get pathname() {
     if (typeof window === "undefined") return "";
+    // Access version to trigger recomputation when it changes
+    void this.pathnameVersion;
     return new URL(window.location.href).pathname;
   }
 
@@ -33,7 +36,7 @@ export class LocationStore {
   get searchParams(): SearchParamsX {
     if (typeof window === "undefined") return {};
     // Access version to trigger recomputation when it changes
-    void this.version;
+    void this.searchParamVersion;
     const url = new URL(window.location.href);
     const params: SearchParamsX = {};
 
@@ -62,7 +65,7 @@ export class LocationStore {
 
     // Update URL without reloading; pushState accepts full URL as long as it's same-origin.
     window.history.pushState(null, "", url.toString());
-    this.version++;
+    this.searchParamVersion++;
   }
 
   // Deletes a search parameter from the URL.
@@ -71,6 +74,6 @@ export class LocationStore {
     const url = new URL(window.location.href);
     url.searchParams.delete(searchParamsX[name].key);
     window.history.pushState(null, "", url.toString());
-    this.version++;
+    this.searchParamVersion++;
   }
 }

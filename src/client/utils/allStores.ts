@@ -31,7 +31,9 @@ const descendentServerInterface: DescendentServerInterface = {
 const activitesStore = new QueryStore(trpc.activity.getAll.query);
 const uploadStore = new UploadStore();
 const focusedActivityStore = new FocusedActivityStore();
-const userStore = new UserStore();
+const locationStore = new LocationStore();
+const viewModeStore = new ViewModeStore(focusedActivityStore, locationStore);
+const userStore = new UserStore(locationStore, viewModeStore);
 const descendentStore = new DescendentStore(
   descendentServerInterface,
   focusedActivityStore,
@@ -50,8 +52,6 @@ const editorStore = new EditorStore(
 );
 const questionStore = new QuestionStore(draftStore);
 const itemStore = new ItemStore(draftStore, questionStore);
-const locationStore = new LocationStore();
-const viewModeStore = new ViewModeStore(focusedActivityStore, locationStore);
 const viewPieceStore = new ViewPieceStore(descendentStore);
 const submissionStore = new SubmissionStore(
   focusedActivityStore,

@@ -77,7 +77,9 @@ export class DescendentStore {
 
   private async loadDescendents(activityId: string, includeUserIds: string[]) {
     this.reset();
-    this.descendents = loading;
+    runInAction(() => {
+      this.descendents = loading;
+    });
     const descendents = await this.serverInterface.readDescendents({
       activityId,
       includeUserIds,
