@@ -76,7 +76,9 @@ export class DescendentStore {
   }
 
   private async loadDescendents(activityId: string, includeUserIds: string[]) {
-    this.reset();
+    runInAction(() => {
+      this.reset(); // funny that we have to wrap this -- I'd think this.reset would be an action??
+    });
     runInAction(() => {
       this.descendents = loading;
     });
