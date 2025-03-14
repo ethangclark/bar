@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
-import { storeObserver } from "../utils/storeObserver";
+import { storeObserver } from "~/client/utils/storeObserver";
 
 export const LocationProvider = storeObserver<{
   children: React.ReactNode;

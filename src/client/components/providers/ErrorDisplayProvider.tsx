@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
+import { useNotify } from "~/client/hooks/useNotify";
 import { subscribeToErrors } from "~/trpc/links";
-import { useNotify } from "../hooks/useNotify";
 
 export function ErrorDisplayProvider({
   children,

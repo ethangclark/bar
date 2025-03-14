@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { storeObserver } from "../utils/storeObserver";
+import { storeObserver } from "~/client/utils/storeObserver";
 
 export const HmrDejankProvider = storeObserver<{
   children: React.ReactNode;

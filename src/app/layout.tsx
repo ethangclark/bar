@@ -3,9 +3,7 @@ import "~/styles/globals.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider } from "antd";
 import { GeistSans } from "geist/font/sans";
-import { ErrorDisplayProvider } from "~/client/components/ErrorDisplayProvider";
-import { HmrDejankProvider } from "~/client/components/HmrDejankProvider";
-import { LocationProvider } from "~/client/components/LocationProvider";
+import { CustomProviders } from "~/client/components/providers";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata = {
@@ -22,23 +20,19 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`} id="tailwind-styled">
       <body className="text-gray-800">
-        <HmrDejankProvider>
-          <LocationProvider>
-            <AntdRegistry>
-              <TRPCReactProvider>
-                <ConfigProvider
-                  theme={/*{ token: { colorPrimary: "#2a9d8f" } }*/ undefined}
-                >
-                  <ErrorDisplayProvider>
-                    <main className="flex min-h-screen flex-col items-center overflow-auto">
-                      {children}
-                    </main>
-                  </ErrorDisplayProvider>
-                </ConfigProvider>
-              </TRPCReactProvider>
-            </AntdRegistry>
-          </LocationProvider>
-        </HmrDejankProvider>
+        <AntdRegistry>
+          <TRPCReactProvider>
+            <ConfigProvider
+              theme={/*{ token: { colorPrimary: "#2a9d8f" } }*/ undefined}
+            >
+              <CustomProviders>
+                <main className="flex min-h-screen flex-col items-center overflow-auto">
+                  {children}
+                </main>
+              </CustomProviders>
+            </ConfigProvider>
+          </TRPCReactProvider>
+        </AntdRegistry>
 
         {/* https://github.com/vercel/next.js/discussions/50772#discussioncomment-6095763 */}
         {/* Hotjar Tracking Code for summited.ai */}
