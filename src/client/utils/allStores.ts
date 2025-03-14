@@ -6,7 +6,9 @@ import {
 import { DraftStore } from "../activity/stores/draftStore";
 import { EditorStore } from "../activity/stores/editorStore";
 import { FocusedActivityStore } from "../activity/stores/focusedActivityStore";
+import { HmrStore } from "../activity/stores/hmrStore";
 import { ItemStore } from "../activity/stores/itemStore";
+import { LocationStore } from "../activity/stores/locationStore";
 import { QuestionStore } from "../activity/stores/questionStore";
 import { SubmissionStore } from "../activity/stores/submissionStore";
 import { ThreadStore } from "../activity/stores/threadStore";
@@ -27,14 +29,18 @@ const descendentServerInterface: DescendentServerInterface = {
   modifyDescendents: trpc.descendent.modify.mutate,
 };
 
+const hmrStore = new HmrStore();
 const activitesStore = new QueryStore(trpc.activity.getAll.query);
 const uploadStore = new UploadStore();
 const focusedActivityStore = new FocusedActivityStore();
-const userStore = new UserStore();
+const locationStore = new LocationStore();
+const viewModeStore = new ViewModeStore(focusedActivityStore, locationStore);
+const userStore = new UserStore(locationStore, viewModeStore);
 const descendentStore = new DescendentStore(
   descendentServerInterface,
   focusedActivityStore,
   userStore,
+  hmrStore,
 );
 const threadStore = new ThreadStore(
   descendentStore,
@@ -49,7 +55,6 @@ const editorStore = new EditorStore(
 );
 const questionStore = new QuestionStore(draftStore);
 const itemStore = new ItemStore(draftStore, questionStore);
-const viewModeStore = new ViewModeStore(focusedActivityStore);
 const viewPieceStore = new ViewPieceStore(descendentStore);
 const submissionStore = new SubmissionStore(
   focusedActivityStore,
@@ -62,14 +67,16 @@ export const stores = {
   draftStore,
   descendentStore,
   focusedActivityStore,
+  hmrStore,
   itemStore,
+  locationStore,
   questionStore,
-  viewModeStore,
+  submissionStore,
   threadStore,
   uploadStore,
-  viewPieceStore,
-  submissionStore,
   userStore,
+  viewModeStore,
+  viewPieceStore,
 };
 
 export function isStoreName(name: string): name is keyof typeof stores {

@@ -8,16 +8,16 @@ import { LoginPage } from "~/client/components/LoginPage";
 import { FrontPageLogo } from "~/client/components/Logo";
 import { NoScrollPage } from "~/client/components/Page";
 import { storeObserver } from "~/client/utils/storeObserver";
-import { loginTokenQueryParam, redirectQueryParam } from "~/common/constants";
 import { invoke } from "~/common/fnUtils";
+import { searchParamsX } from "~/common/searchParams";
 import { trpc } from "~/trpc/proxy";
 
 const RootLoginPageInner = storeObserver(function RootLoginPageInner({
   userStore,
 }) {
   const searchParams = useSearchParams();
-  const loginToken = searchParams.get(loginTokenQueryParam);
-  const rawRedirect = searchParams.get(redirectQueryParam);
+  const loginToken = searchParams.get(searchParamsX.loginToken.key);
+  const rawRedirect = searchParams.get(searchParamsX.redirectUrl.key);
   const router = useRouter();
 
   const [loggingIn, setLoggingIn] = useState(true);
@@ -42,7 +42,7 @@ const RootLoginPageInner = storeObserver(function RootLoginPageInner({
         }
       });
     }
-  }, [loginToken, rawRedirect, router]);
+  }, [loginToken, rawRedirect, router, userStore]);
 
   if (!loginToken) {
     return <LoginPage />;

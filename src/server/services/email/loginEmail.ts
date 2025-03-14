@@ -1,5 +1,5 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { loginTokenQueryParam, redirectQueryParam } from "~/common/constants";
+import { searchParamsX } from "~/common/searchParams";
 import { getBaseUrl } from "~/common/urlUtils";
 import { env } from "~/env";
 import { db, schema } from "~/server/db";
@@ -34,9 +34,11 @@ export async function sendLoginEmail({
     })
     .where(eq(schema.users.id, user.id));
 
-  let urlWithLoginToken = `${getBaseUrl()}/login?${loginTokenQueryParam}=${loginToken}`;
+  // the encoding here technically isn't necessary so long as the token is a UUID,
+  // but we do it anyway to be safe in case that impl changes
+  let urlWithLoginToken = `${getBaseUrl()}/login?${searchParamsX.loginToken.key}=${encodeURIComponent(loginToken)}`;
   if (encodedRedirect) {
-    urlWithLoginToken += `&${redirectQueryParam}=${encodedRedirect}`;
+    urlWithLoginToken += `&${searchParamsX.redirectUrl.key}=${encodeURIComponent(encodedRedirect)}`;
   }
 
   if (env.NODE_ENV !== "production") {

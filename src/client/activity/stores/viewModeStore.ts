@@ -1,12 +1,12 @@
-import { makeAutoObservable, reaction } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { z } from "zod";
-import { notLoaded, Status } from "~/client/utils/status";
-import { viewModeQueryParam } from "~/common/constants";
+import { Status } from "~/client/utils/status";
 import {
   type EnrollmentType,
   isGraderOrDeveloper,
 } from "~/common/enrollmentTypeUtils";
 import { type FocusedActivityStore } from "./focusedActivityStore";
+import { type LocationStore } from "./locationStore";
 
 const viewModes = ["editor", "doer", "submissions"] as const;
 const viewModeSchema = z.enum(viewModes);
@@ -20,79 +20,39 @@ function getDefaultMode(enrolledAs: EnrollmentType[]) {
 }
 
 export class ViewModeStore {
-  public viewMode: ViewMode | Status = notLoaded;
-  private lastOverride: ViewMode | null = null;
+  get viewMode() {
+    const { data } = this.focusedActivityStore;
+    if (data instanceof Status) {
+      return data;
+    }
+    const { igod, activity } = data;
+    if (igod && this.locationStore.searchParams.activityViewMode) {
+      return this.locationStore.searchParams.activityViewMode;
+    }
+    return getDefaultMode(activity.enrolledAs);
+  }
 
-  constructor(private focusedActivityStore: FocusedActivityStore) {
+  constructor(
+    private focusedActivityStore: FocusedActivityStore,
+    private locationStore: LocationStore,
+  ) {
     makeAutoObservable(this);
-
-    // Initialize lastOverride from URL search params if available
-    if (typeof window !== "undefined") {
-      this.updateViewModeFromURL();
-
-      // Listen for popstate events (browser back/forward navigation)
-      window.addEventListener("popstate", () => {
-        this.updateViewModeFromURL();
-      });
-    }
-
-    reaction(
-      () => focusedActivityStore.data,
-      (data) => {
-        if (data instanceof Status) {
-          this.viewMode = data;
-          return;
-        }
-        if (data.igod && this.lastOverride) {
-          this.viewMode = this.lastOverride;
-        } else {
-          this.viewMode = getDefaultMode(data.activity.enrolledAs);
-        }
-      },
-    );
   }
 
-  private setViewModeState(mode: ViewMode | null) {
-    this.lastOverride = mode;
-    if (mode && !(this.viewMode instanceof Status)) {
-      this.viewMode = mode;
+  public setViewMode(mode: ViewMode | null) {
+    if (mode === null) {
+      this.locationStore.deleteSearchParam("activityViewMode");
+      return;
     }
-  }
-
-  private get defaultMode() {
-    if (this.focusedActivityStore.activity instanceof Status) {
-      return this.focusedActivityStore.activity;
+    const { activity } = this.focusedActivityStore;
+    if (activity instanceof Status) {
+      throw new Error("Activity is not loaded");
     }
-    return getDefaultMode(this.focusedActivityStore.activity.enrolledAs);
-  }
-
-  private updateViewModeFromURL() {
-    const searchParams = new URLSearchParams(window.location.search);
-    const viewParam = searchParams.get(viewModeQueryParam);
-    if (!viewParam && !(this.defaultMode instanceof Status)) {
-      this.setViewModeState(this.defaultMode);
-    }
-    const result = viewModeSchema.safeParse(viewParam);
-    this.setViewModeState(result.success ? result.data : null);
-  }
-
-  setViewMode(mode: ViewMode) {
-    this.viewMode = mode;
-    this.lastOverride = mode;
-
-    // Update URL search params when viewMode changes
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-
-      if (mode === this.defaultMode) {
-        // Clear the view query param when setting to default mode
-        url.searchParams.delete(viewModeQueryParam);
-      } else {
-        // Set the query param for non-default modes
-        url.searchParams.set(viewModeQueryParam, mode);
-      }
-
-      window.history.pushState({}, "", url.toString());
+    const defaultMode = getDefaultMode(activity.enrolledAs);
+    if (mode === defaultMode) {
+      this.locationStore.deleteSearchParam("activityViewMode");
+    } else {
+      this.locationStore.setSearchParam("activityViewMode", mode);
     }
   }
 }

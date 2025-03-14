@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { z } from "zod";
 import { Activity } from "~/client/activity/Activity";
 import { storeObserver } from "~/client/utils/storeObserver";
-import { redirectQueryParam } from "~/common/constants";
+import { searchParamsX } from "~/common/searchParams";
 import { api } from "~/trpc/react";
 
 const ActivityPage = storeObserver(function ActivityPage({
@@ -29,7 +29,7 @@ const ActivityPage = storeObserver(function ActivityPage({
       user && userStore.setUser(user);
     } else if (isLoggedIn === false) {
       router.push(
-        `/login?${redirectQueryParam}=${encodeURIComponent(
+        `/login?${searchParamsX.redirectUrl.key}=${encodeURIComponent(
           window.location.pathname,
         )}`,
       );

@@ -21,7 +21,9 @@ export class FocusedActivityStore {
   }
 
   async loadActivity(activityId: string) {
-    this.activityId = activityId;
+    runInAction(() => {
+      this.activityId = activityId;
+    });
     const activity = await trpc.activity.get.query({ activityId });
     runInAction(() => {
       this.activity = activity;

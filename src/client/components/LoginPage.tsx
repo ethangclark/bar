@@ -4,14 +4,14 @@ import { EmailInputPage } from "~/client/components/EmailInputPage";
 import { NoScrollPage } from "~/client/components/Page";
 import { useNotify } from "~/client/hooks/useNotify";
 import { storeObserver } from "~/client/utils/storeObserver";
-import { redirectQueryParam } from "~/common/constants";
+import { searchParamsX } from "~/common/searchParams";
 import { trpc } from "~/trpc/proxy";
 import { api } from "~/trpc/react";
 
 export const LoginPage = storeObserver(function LoginPage({ userStore }) {
   const [notify, contextHolder] = useNotify();
   const [submitting, setSubmitting] = useState(false);
-  const rawRedirect = useSearchParams().get(redirectQueryParam);
+  const rawRedirect = useSearchParams().get(searchParamsX.redirectUrl.key);
 
   const { data, isLoading: isLoggedInLoading } =
     api.auth.basicSessionDeets.useQuery();
@@ -44,7 +44,7 @@ export const LoginPage = storeObserver(function LoginPage({ userStore }) {
         description: "Please check your email for a link to sign in.",
       });
     },
-    [notify, rawRedirect],
+    [notify, rawRedirect, router, userStore],
   );
 
   const loading = isLoggedInLoading || submitting;

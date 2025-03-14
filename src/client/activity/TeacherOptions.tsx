@@ -5,13 +5,17 @@ import { storeObserver } from "../utils/storeObserver";
 function CopyableEmail({
   email,
   ifNoEmail,
+  className,
 }: {
   email: string | null;
   ifNoEmail: string;
+  className?: string;
 }) {
   return (
     <div className="flex items-center gap-1">
-      <Typography.Text className="rounded border border-gray-300 px-1 font-bold text-gray-800">
+      <Typography.Text
+        className={`rounded border border-gray-300 px-1 font-bold ${className}`}
+      >
         {email ?? ifNoEmail}
       </Typography.Text>
       {email && (
@@ -55,8 +59,11 @@ export const TeacherOptions = storeObserver(function TeacherOptions({
             ← Back to submissions
           </Typography.Link>
           <span className="flex items-center gap-1">
-            <Typography.Text>Viewing submission for</Typography.Text>
+            <Typography.Text className="text-red-500">
+              Viewing submission for
+            </Typography.Text>
             <CopyableEmail
+              className="text-red-500"
               email={impersonating.email}
               ifNoEmail={impersonating.name ?? "Anonymous"}
             />

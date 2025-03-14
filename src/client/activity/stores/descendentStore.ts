@@ -20,6 +20,7 @@ import { noop } from "~/common/fnUtils";
 import { identity, objectEntries, objectValues } from "~/common/objectUtils";
 import { type MessageDelta } from "~/server/db/pubsub/messageDeltaPubSub";
 import { type FocusedActivityStore } from "./focusedActivityStore";
+import { type HmrStore } from "./hmrStore";
 import { type UserStore } from "./userStore";
 
 const baseState = () => ({
@@ -61,12 +62,9 @@ export class DescendentStore {
 
   constructor(
     private serverInterface: DescendentServerInterface,
-    private focusedActivityStore: {
-      activityId: FocusedActivityStore["activityId"];
-    },
-    private userStore: {
-      user: UserStore["user"];
-    },
+    private focusedActivityStore: Pick<FocusedActivityStore, "activityId">,
+    private userStore: Pick<UserStore, "user">,
+    private hmrStore: Pick<HmrStore, "hmrCount">,
   ) {
     makeAutoObservable(this);
 
@@ -76,8 +74,12 @@ export class DescendentStore {
   }
 
   private async loadDescendents(activityId: string, includeUserIds: string[]) {
-    this.reset();
-    this.descendents = loading;
+    runInAction(() => {
+      this.reset(); // funny that we have to wrap this -- I'd think this.reset would be an action??
+    });
+    runInAction(() => {
+      this.descendents = loading;
+    });
     const descendents = await this.serverInterface.readDescendents({
       activityId,
       includeUserIds,
@@ -106,6 +108,10 @@ export class DescendentStore {
       if (!activityId) {
         return;
       }
+
+      // run when hmrCount changes
+      void this.hmrStore.hmrCount;
+
       // users are always streamed all activity descendent events
       // for which they have read permissions, so no need to pass in includeUserIds
       unsub();
@@ -131,6 +137,10 @@ export class DescendentStore {
       if (!activityId) {
         return;
       }
+
+      // run when hmrCount changes
+      void this.hmrStore.hmrCount;
+
       // users are always streamed all message delta events
       // for which they have read permissions, so no need to pass in includeUserIds
       unsub();
