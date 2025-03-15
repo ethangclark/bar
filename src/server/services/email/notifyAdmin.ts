@@ -12,3 +12,5 @@ export async function notifyAdmin(subject: string, detail: SuperJSONValue) {
     html: `<pre>${content}</pre>`,
   });
 }
+
+export const alertAdmin = notifyAdmin;

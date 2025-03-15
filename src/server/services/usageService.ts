@@ -1,11 +1,17 @@
 import { eq, sql } from "drizzle-orm";
 import { type DbOrTx } from "~/server/db";
 import { users } from "~/server/db/schema";
+import { alertAdmin } from "./email/notifyAdmin";
 import { getUser } from "./userService";
 
 export async function determineIfUsageOk(userId: string, tx: DbOrTx) {
   const user = await getUser(userId, tx);
   if (user.llmTokensUsed > 100 * 1000 * 1000) {
+    await alertAdmin("Usage alert", {
+      userId,
+      user,
+      llmTokensUsed: user.llmTokensUsed,
+    });
     return new Error(
       "You have exceeded your allotted usage. Please contact support.",
     );
