@@ -1,4 +1,4 @@
-import { Button, Form, Input, Modal } from "antd";
+import { Button, Collapse, Form, Input, Modal } from "antd";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Assignment } from "~/client/components/Assignment";
@@ -14,17 +14,7 @@ import { storeObserver } from "../utils/storeObserver";
 import { AdHocActivityItem } from "./AdHocActivityItem";
 import { ConnectToCanvas } from "./ConnectToCanvas";
 
-const SectionTitle = ({ title }: { title: string }) => (
-  <div className="text-2xl">{title}</div>
-);
-
-const Section = ({ children }: { children: React.ReactNode }) => (
-  <div className="mb-6">{children}</div>
-);
-
-const SectionHeader = ({ children }: { children: React.ReactNode }) => (
-  <div className="mb-3 flex w-full justify-between">{children}</div>
-);
+const yourActivities = "your-activities";
 
 export const Overview = storeObserver(function Overview({
   activitesStore,
@@ -67,6 +57,12 @@ export const Overview = storeObserver(function Overview({
     setCreating(false);
   }, [activitesStore, title, router]);
 
+  console.log({
+    isLoadingCourses,
+    activities,
+    user,
+  });
+
   if (
     isLoadingCourses ||
     activities instanceof Status ||
@@ -77,82 +73,100 @@ export const Overview = storeObserver(function Overview({
 
   return (
     <Page>
-      <div>
+      <div style={{ minWidth: 500 }}>
         <div className="mb-8 flex w-full justify-end">
           <LogoutButton />
         </div>
-        <Section>
-          <SectionHeader>
-            <SectionTitle title="Ad hoc activities" />
-            <Button
-              disabled={creating}
-              onClick={() => {
-                setCreating(true);
-              }}
-            >
-              Create activity
-            </Button>
-          </SectionHeader>
-          <div className="mt-4 flex flex-col gap-2">
-            <Modal
-              title="Create activity"
-              open={creating}
-              onCancel={() => setCreating(false)}
-              onOk={onCreate}
-              okText="Create"
-              okButtonProps={{ disabled: title.length === 0 }}
-            >
-              <Form onFinish={onCreate}>
-                <Input
-                  placeholder="Activity title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </Form>
-            </Modal>
-            {activities?.map((activity) => {
-              if (activity.type !== "adHoc") {
-                return null;
-              }
-              return (
-                <AdHocActivityItem
-                  key={activity.id}
-                  activity={activity}
-                  adHocActivity={activity.adHocActivity}
-                />
-              );
-            })}
-          </div>
-        </Section>
-        <Section>
-          <SectionHeader>
-            <SectionTitle title="Course activities" />
-          </SectionHeader>
-          <div className="mb-4 text-sm text-gray-500">
-            To create activities for course assignments, connect to your LMS.
-          </div>
-          {courses?.map((c, idx) => (
-            <div key={idx}>
-              <div className="mb-4 text-4xl">{c.title}</div>
-              <div>
-                {c.assignments.map((a, idx) => {
-                  return <Assignment key={idx} assignment={a} course={c} />;
-                })}
-              </div>
-            </div>
-          ))}
-          <div className="flex w-full justify-center gap-4">
-            {courses?.length === 0 &&
-              allIntegrationTypes.map((it) => {
-                switch (it) {
-                  case "canvas":
-                    return <ConnectToCanvas key={it} />;
-                  default:
-                    assertTypesExhausted(it);
-                }
-              })}
-          </div>
-        </Section>
+        <Collapse
+          accordion
+          defaultActiveKey={
+            activities?.length > 0 ? [yourActivities] : undefined
+          }
+          items={[
+            {
+              key: yourActivities,
+              label: "Your activities",
+              extra: (
+                <Button
+                  size="small"
+                  disabled={creating}
+                  onClick={() => {
+                    setCreating(true);
+                  }}
+                >
+                  Create activity
+                </Button>
+              ),
+              children: (
+                <div className="flex flex-col gap-2">
+                  <Modal
+                    title="Create activity"
+                    open={creating}
+                    onCancel={() => setCreating(false)}
+                    onOk={onCreate}
+                    okText="Create"
+                    okButtonProps={{ disabled: title.length === 0 }}
+                  >
+                    <Form onFinish={onCreate}>
+                      <Input
+                        placeholder="Activity title"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                      />
+                    </Form>
+                  </Modal>
+                  {activities?.map((activity) => {
+                    if (activity.type !== "adHoc") {
+                      return null;
+                    }
+                    return (
+                      <AdHocActivityItem
+                        key={activity.id}
+                        activity={activity}
+                        adHocActivity={activity.adHocActivity}
+                      />
+                    );
+                  })}
+                </div>
+              ),
+            },
+            {
+              key: "course-activities",
+              label: "Course activities",
+              children: (
+                <>
+                  <div className="mb-4 text-sm text-gray-500">
+                    To create activities for course assignments, connect to your
+                    LMS.
+                  </div>
+                  {courses?.map((c, idx) => (
+                    <div key={idx}>
+                      <div className="mb-4 text-4xl">{c.title}</div>
+                      <div>
+                        {c.assignments.map((a, idx) => {
+                          return (
+                            <Assignment key={idx} assignment={a} course={c} />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                  <div className="flex w-full justify-center gap-4">
+                    {courses?.length === 0 &&
+                      allIntegrationTypes.map((it) => {
+                        switch (it) {
+                          case "canvas":
+                            return <ConnectToCanvas key={it} />;
+                          default:
+                            assertTypesExhausted(it);
+                        }
+                      })}
+                  </div>
+                </>
+              ),
+            },
+          ]}
+        />
       </div>
     </Page>
   );

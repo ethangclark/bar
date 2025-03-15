@@ -1,7 +1,9 @@
 import { autorun, makeAutoObservable } from "mobx";
 import { notLoaded, Status, type NotLoaded } from "~/client/utils/status";
+import { invoke } from "~/common/fnUtils";
 import { type ViewMode } from "~/common/searchParams";
 import { type UserBasic } from "~/common/types";
+import { trpc } from "~/trpc/proxy";
 import { type LocationStore } from "./locationStore";
 import { type ViewModeStore } from "./viewModeStore";
 
@@ -47,6 +49,14 @@ export class UserStore {
         this._impersonating = null;
       }
       lastWasSupported = isSupported;
+    });
+
+    void invoke(async () => {
+      const { user } = await trpc.auth.basicSessionDeets.query();
+      console.log({ user });
+      if (user && this._user instanceof Status) {
+        this.setUser(user);
+      }
     });
   }
 
