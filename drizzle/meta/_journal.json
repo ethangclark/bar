@@ -274,6 +274,13 @@
       "when": 1742057951342,
       "tag": "0038_lame_toad",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1742073486631,
+      "tag": "0039_fearless_captain_marvel",
+      "breakpoints": true
     }
   ]
 }
