@@ -42,7 +42,7 @@ export async function sendLoginEmail({
   }
 
   if (env.NODE_ENV !== "production") {
-    console.log("Login link: %s", urlWithLoginToken);
+    console.log(`Login link:\n\n${urlWithLoginToken}\n\n`);
   }
 
   await sendEmail({
