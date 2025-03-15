@@ -26,7 +26,10 @@ const SectionHeader = ({ children }: { children: React.ReactNode }) => (
   <div className="mb-3 flex w-full justify-between">{children}</div>
 );
 
-export const Overview = storeObserver(function Overview({ activitesStore }) {
+export const Overview = storeObserver(function Overview({
+  activitesStore,
+  userStore,
+}) {
   const { data: courses, isLoading: isLoadingCourses } =
     api.courses.all.useQuery();
 
@@ -35,6 +38,8 @@ export const Overview = storeObserver(function Overview({ activitesStore }) {
   useEffect(() => {
     void activitesStore.fetch();
   }, [activitesStore]);
+
+  const { user } = userStore;
 
   const activities = activitesStore.data;
 
@@ -62,7 +67,11 @@ export const Overview = storeObserver(function Overview({ activitesStore }) {
     setCreating(false);
   }, [activitesStore, title, router]);
 
-  if (isLoadingCourses || activities instanceof Status) {
+  if (
+    isLoadingCourses ||
+    activities instanceof Status ||
+    user instanceof Status
+  ) {
     return <LoadingPage />;
   }
 

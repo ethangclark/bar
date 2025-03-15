@@ -285,8 +285,48 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
   // should be exactly one of these
   adHocActivity: one(adHocActivities),
   integrationActivity: one(integrationActivities),
+  studentActivities: many(studentActivities),
 }));
 export const activitySchema = createSelectSchema(activities);
+
+export const studentActivities = pgTable(
+  "student_activities",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (sa) => [
+    uniqueIndex("student_activities_unique_pair_idx").on(
+      sa.activityId,
+      sa.userId,
+    ),
+    index("student_activities_activity_id_idx").on(sa.activityId),
+    index("student_activities_user_id_idx").on(sa.userId),
+  ],
+);
+export type StudentActivity = InferSelectModel<typeof studentActivities>;
+export const studentActivitiesRelations = relations(
+  studentActivities,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [studentActivities.activityId],
+      references: [activities.id],
+    }),
+    user: one(users, {
+      fields: [studentActivities.userId],
+      references: [users.id],
+    }),
+  }),
+);
+export const studentActivitySchema = createSelectSchema(studentActivities);
 
 export const integrationActivities = pgTable(
   "integration_activities",
