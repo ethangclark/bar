@@ -59,6 +59,12 @@ export const users = pgTable(
       withTimezone: true,
     }).notNull(),
     llmTokensUsed: integer("tokens_used").default(0).notNull(),
+    requestedAdHocInstructorAccess: boolean(
+      "requested_ad_hoc_instructor_access",
+    )
+      .default(false)
+      .notNull(),
+    isAdHocInstructor: boolean("is_ad_hoc_instructor").default(false).notNull(),
   },
   (u) => [
     index("user_email_idx").on(u.email),
