@@ -77,6 +77,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   userIntegrations: many(userIntegrations),
   adHocActivities: many(adHocActivities),
+  studentActivities: many(studentActivities),
 }));
 export const userSchema = createSelectSchema(users);
 
