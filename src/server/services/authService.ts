@@ -1,7 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
-import { assertOne } from "~/common/assertions";
+import { assertOne, assertTypesExhausted } from "~/common/assertions";
+import { type LoginType } from "~/common/searchParams";
 import { type UserBasic } from "~/common/types";
 import { db, schema, type DbOrTx } from "~/server/db";
 import { type Session } from "../db/schema";
@@ -39,6 +40,7 @@ export async function attemptAutoLogin(
   loginToken: string,
   session: Session,
   tx: DbOrTx,
+  loginType: LoginType | null,
 ) {
   const loginTokenHash = hashLoginToken(loginToken);
   const user = await tx.query.users.findFirst({
@@ -49,7 +51,7 @@ export async function attemptAutoLogin(
   // if the login token was created after the session was created,
   // then we can login the user (because they're not an email scanner)
   if (user.loginTokenCreatedAt > session.createdAt) {
-    await loginUser(loginToken, session, tx);
+    await loginUser(loginToken, session, tx, loginType);
     return { succeeded: true };
   } else {
     return { succeeded: false };
@@ -60,6 +62,7 @@ export async function loginUser(
   loginToken: string,
   session: Session,
   tx: DbOrTx,
+  loginType: LoginType | null,
 ) {
   const loginTokenHash = hashLoginToken(loginToken);
 
@@ -93,11 +96,44 @@ export async function loginUser(
     })
     .where(eq(schema.sessions.sessionCookieValue, session.sessionCookieValue));
 
+  switch (loginType) {
+    case null:
+      break;
+    case "instructor": {
+      if (user.isAdHocInstructor) {
+        break;
+      }
+      await db
+        .update(schema.users)
+        .set({
+          requestedAdHocInstructorAccess: true,
+
+          // COMMENT_004a
+          // we may add some sort of approval process in the future,
+          // but for now we'll just grant access to anyone who requests it
+          // See COMMENT_004b
+          isAdHocInstructor: true,
+        })
+        .where(eq(schema.users.id, user.id));
+
+      user.requestedAdHocInstructorAccess = true;
+
+      // COMMENT_004b
+      // See COMMENT_004a
+      user.isAdHocInstructor = true;
+      break;
+    }
+    default:
+      assertTypesExhausted(loginType);
+  }
+
   return {
     user: {
       id: user.id,
       email,
       name: user.name,
+      isAdHocInstructor: user.isAdHocInstructor,
+      requestedAdHocInstructorAccess: user.requestedAdHocInstructorAccess,
     } satisfies UserBasic,
   };
 }

@@ -4,6 +4,10 @@ const viewModes = ["editor", "doer", "submissions"] as const;
 const viewModeSchema = z.enum(viewModes);
 export type ViewMode = z.infer<typeof viewModeSchema>;
 
+const loginTypes = ["instructor"] as const;
+export const loginTypeSchema = z.enum(loginTypes);
+export type LoginType = z.infer<typeof loginTypeSchema>;
+
 export const searchParamsX = {
   loginToken: {
     key: "token" as const,
@@ -16,6 +20,10 @@ export const searchParamsX = {
   activityViewMode: {
     key: "view" as const,
     schema: viewModeSchema,
+  },
+  loginType: {
+    key: "role" as const,
+    schema: loginTypeSchema,
   },
 };
 

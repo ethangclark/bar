@@ -9,7 +9,7 @@ import { FrontPageLogo } from "~/client/components/Logo";
 import { NoScrollPage } from "~/client/components/Page";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { invoke } from "~/common/fnUtils";
-import { searchParamsX } from "~/common/searchParams";
+import { loginTypeSchema, searchParamsX } from "~/common/searchParams";
 import { trpc } from "~/trpc/proxy";
 
 const RootLoginPageInner = storeObserver(function RootLoginPageInner({
@@ -18,6 +18,10 @@ const RootLoginPageInner = storeObserver(function RootLoginPageInner({
   const searchParams = useSearchParams();
   const loginToken = searchParams.get(searchParamsX.loginToken.key);
   const rawRedirect = searchParams.get(searchParamsX.redirectUrl.key);
+  const loginType = loginTypeSchema
+    .nullable()
+    .parse(searchParams.get(searchParamsX.loginType.key));
+
   const router = useRouter();
 
   const [loggingIn, setLoggingIn] = useState(true);
@@ -29,6 +33,7 @@ const RootLoginPageInner = storeObserver(function RootLoginPageInner({
       void invoke(async () => {
         const { succeeded, user } = await trpc.auth.autoLogin.mutate({
           loginToken,
+          loginType,
         });
         if (succeeded) {
           user && userStore.setUser(user);
@@ -42,7 +47,7 @@ const RootLoginPageInner = storeObserver(function RootLoginPageInner({
         }
       });
     }
-  }, [loginToken, rawRedirect, router, userStore]);
+  }, [loginToken, loginType, rawRedirect, router, userStore]);
 
   if (!loginToken) {
     return <LoginPage />;

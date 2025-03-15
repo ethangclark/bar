@@ -55,8 +55,18 @@ async function getNewStore(
     {
       activityId: defaultActivityId,
     },
-    { user: { id: "userId", name: null, email: null } },
-    { hmrCount: 0 },
+    {
+      user: {
+        id: "userId",
+        name: null,
+        email: null,
+        isAdHocInstructor: false,
+        requestedAdHocInstructorAccess: false,
+      },
+    },
+    {
+      hmrCount: 0,
+    },
   );
   return { store, publishDescendents, publishMessageDelta };
 }

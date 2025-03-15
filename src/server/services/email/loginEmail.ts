@@ -1,5 +1,5 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { searchParamsX } from "~/common/searchParams";
+import { type LoginType, searchParamsX } from "~/common/searchParams";
 import { getBaseUrl } from "~/common/urlUtils";
 import { env } from "~/env";
 import { db, schema } from "~/server/db";
@@ -11,9 +11,11 @@ import { sendEmail } from "./sendEmail";
 export async function sendLoginEmail({
   email,
   encodedRedirect,
+  loginType,
 }: {
   email: string;
   encodedRedirect: string | null | undefined;
+  loginType: LoginType | null;
 }) {
   await db
     .delete(schema.users)
@@ -39,6 +41,9 @@ export async function sendLoginEmail({
   let urlWithLoginToken = `${getBaseUrl()}/login?${searchParamsX.loginToken.key}=${encodeURIComponent(loginToken)}`;
   if (encodedRedirect) {
     urlWithLoginToken += `&${searchParamsX.redirectUrl.key}=${encodeURIComponent(encodedRedirect)}`;
+  }
+  if (loginType) {
+    urlWithLoginToken += `&${searchParamsX.loginType.key}=${encodeURIComponent(loginType)}`;
   }
 
   if (env.NODE_ENV !== "production") {

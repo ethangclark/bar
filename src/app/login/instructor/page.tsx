@@ -8,7 +8,7 @@ export default function LogInInstructor() {
   return (
     // I hate Next.js
     <Suspense fallback={<LoadingPage />}>
-      <LoginPage />
+      <LoginPage forInstructor />
     </Suspense>
   );
 }

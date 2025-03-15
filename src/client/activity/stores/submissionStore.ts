@@ -2,13 +2,14 @@ import { autorun, makeAutoObservable } from "mobx";
 import { QueryStore } from "~/client/utils/queryStore";
 import { Status } from "~/client/utils/status";
 import { groupBy } from "~/common/indexUtils";
+import { type UserBasic } from "~/common/types";
 import { type Completion } from "~/server/db/schema";
 import { type FocusedActivityStore } from "./focusedActivityStore";
 
 type CompletionGetter = (params: { activityId: string }) => Promise<
   Array<
     Completion & {
-      user: { id: string; name: string | null; email: string | null };
+      user: UserBasic;
     }
   >
 >;

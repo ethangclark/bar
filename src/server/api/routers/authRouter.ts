@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { loginTypeSchema } from "~/common/searchParams";
 import { type UserBasic } from "~/common/types";
 import { env } from "~/env";
 import {
@@ -23,12 +24,21 @@ function getIsAdmin(user: UserBasic) {
 
 function getBasicSessionDeets(ctx: Ctx) {
   const loggedIn = isLoggedIn(ctx);
-  const isAdmin = ctx.user ? getIsAdmin(ctx.user) : false;
-  const email = ctx.user?.email ?? null;
-  const name = ctx.user?.name ?? null;
-  const userId = ctx.user?.id ?? null;
-  const user: UserBasic | null = userId ? { id: userId, email, name } : null;
-  return { isLoggedIn: loggedIn, user, isAdmin };
+  const { user } = ctx;
+  const isAdmin = user ? getIsAdmin(user) : false;
+
+  // important to pull just the fields we need so we don't expose any sensitive data
+  const userBasic: UserBasic | null = user
+    ? {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        isAdHocInstructor: user.isAdHocInstructor,
+        requestedAdHocInstructorAccess: user.requestedAdHocInstructorAccess,
+      }
+    : null;
+
+  return { isLoggedIn: loggedIn, user: userBasic, isAdmin };
 }
 
 export const authRouter = createTRPCRouter({
@@ -41,16 +51,26 @@ export const authRouter = createTRPCRouter({
       z.object({
         email: z.string().email(),
         encodedRedirect: z.string().nullable().optional(),
+        loginType: loginTypeSchema.nullable(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const { email, encodedRedirect } = input;
-      const { loginToken } = await sendLoginEmail({ email, encodedRedirect });
+      const { email, encodedRedirect, loginType } = input;
+      const { loginToken } = await sendLoginEmail({
+        email,
+        encodedRedirect,
+        loginType,
+      });
       if (env.NODE_ENV !== "production" && env.QUICK_DEV_LOGIN) {
         if (!ctx.session) {
           throw new Error("No session found for quick-dev-login mode");
         }
-        const { user } = await loginUser(loginToken, ctx.session, db);
+        const { user } = await loginUser(
+          loginToken,
+          ctx.session,
+          db,
+          loginType,
+        );
         return {
           isLoggedIn: true,
           user,
@@ -61,12 +81,22 @@ export const authRouter = createTRPCRouter({
     }),
 
   login: publicProcedure
-    .input(z.object({ loginToken: z.string() }))
+    .input(
+      z.object({
+        loginToken: z.string(),
+        loginType: loginTypeSchema.nullable().optional(),
+      }),
+    )
     .mutation(async ({ input, ctx }) => {
       const { session } = ctx;
       if (!session) throw new Error("Session not found");
-      const { loginToken } = input;
-      const { user } = await loginUser(loginToken, session, db);
+      const { loginToken, loginType } = input;
+      const { user } = await loginUser(
+        loginToken,
+        session,
+        db,
+        loginType ?? null,
+      );
 
       const deets: ReturnType<typeof getBasicSessionDeets> = {
         isLoggedIn: true,
@@ -77,14 +107,24 @@ export const authRouter = createTRPCRouter({
     }),
 
   autoLogin: publicProcedure
-    .input(z.object({ loginToken: z.string() }))
+    .input(
+      z.object({
+        loginToken: z.string(),
+        loginType: loginTypeSchema.nullable().optional(),
+      }),
+    )
     .mutation(async ({ input, ctx }) => {
-      const { loginToken } = input;
+      const { loginToken, loginType } = input;
       const { session } = ctx;
       if (!session) {
         return { succeeded: false, user: null };
       }
-      const { succeeded } = await attemptAutoLogin(loginToken, session, db);
+      const { succeeded } = await attemptAutoLogin(
+        loginToken,
+        session,
+        db,
+        loginType ?? null,
+      );
       return { succeeded, ...getBasicSessionDeets(ctx) };
     }),
 

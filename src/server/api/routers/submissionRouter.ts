@@ -25,6 +25,8 @@ export const submissionRouter = createTRPCRouter({
               id: true,
               name: true,
               email: true,
+              isAdHocInstructor: true,
+              requestedAdHocInstructorAccess: true,
             },
           },
         },
