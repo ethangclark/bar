@@ -35,9 +35,9 @@ function getMostRecentThread(threads: Thread[]) {
     return thread;
   }
 
-  // COMMENT_CODE_001b
+  // COMMENT_001b
   // The threadController should ensure there's at least one thread!
-  // See COMMENT_CODE_001a
+  // See COMMENT_001a
   throw new Error("No thread found");
 }
 

@@ -28,12 +28,20 @@ export const threadController: DescendentController<Thread> = {
       )
       .returning();
 
+    // COMMENT_003a; see COMMENT_003b
     enqueueSideEffect(() => generateIntroMessages(threads));
 
     return threads;
   },
   // anyone can read a thread for themselves
-  async read({ activityId, tx, userId, enrolledAs, includeUserIds }) {
+  async read({
+    activityId,
+    tx,
+    userId,
+    enrolledAs,
+    includeUserIds,
+    enqueueSideEffect,
+  }) {
     let userIds = [userId];
     if (isGrader(enrolledAs)) {
       // grader can read threads for themselves and for other users
@@ -53,9 +61,9 @@ export const threadController: DescendentController<Thread> = {
     if (threads.length > 0) {
       return threads;
     } else {
-      // COMMENT_CODE_001a
+      // COMMENT_001a
       // Ensure there's at least one thread!
-      // See COMMENT_CODE_001b
+      // See COMMENT_001b
       const created = await db
         .insert(schema.threads)
         .values({
@@ -63,6 +71,12 @@ export const threadController: DescendentController<Thread> = {
           userId,
         })
         .returning();
+
+      // COMMENT_003b
+      // Generate intro messages for the newly created thread
+      // see COMMENT_003a
+      enqueueSideEffect(() => generateIntroMessages(created));
+
       return created;
     }
   },

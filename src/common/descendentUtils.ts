@@ -284,6 +284,7 @@ type EditParams<T extends DescendentRow> = ActionBaseParams & {
 type CreateParams<T extends DescendentRow> = EditParams<T>;
 type ReadParams = ActionBaseParams & {
   includeUserIds: string[];
+  enqueueSideEffect: (cb: () => MaybePromise<void>) => void;
 };
 type UpdateParams<T extends DescendentRow> = EditParams<T>;
 type DeleteParams = ActionBaseParams & {

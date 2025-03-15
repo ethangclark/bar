@@ -35,15 +35,29 @@ export const descendentRouter = createTRPCRouter({
         activityId,
       });
 
-      return db.transaction(async (tx) => {
+      // COMMENT_002a1
+      // if changing this impl, also update the impl in COMMENT_002b1
+      const agentEffectQueue = Array<() => MaybePromise<void>>();
+      const enqueueSideEffect = (cb: () => MaybePromise<void>) => {
+        agentEffectQueue.push(cb);
+      };
+
+      const result = await db.transaction(async (tx) => {
         return readDescendents({
           activityId,
           userId,
           enrolledAs: activity.enrolledAs,
           includeUserIds: includeUserIds ?? [],
           tx,
+          enqueueSideEffect,
         });
       });
+
+      // COMMENT_002a2
+      // if changing this impl, also update the impl in COMMENT_002b2
+      setTimeout(() => agentEffectQueue.forEach(invoke));
+
+      return result;
     }),
 
   modify: protectedProcedure
@@ -63,6 +77,8 @@ export const descendentRouter = createTRPCRouter({
         activityId,
       });
 
+      // COMMENT_002b1
+      // if changing this impl, also update the impl in COMMENT_002a1
       const agentEffectQueue = Array<() => MaybePromise<void>>();
       const enqueueSideEffect = (cb: () => MaybePromise<void>) => {
         agentEffectQueue.push(cb);
@@ -79,6 +95,8 @@ export const descendentRouter = createTRPCRouter({
         });
       });
 
+      // COMMENT_002b2
+      // if changing this impl, also update the impl in COMMENT_002a2
       setTimeout(() => agentEffectQueue.forEach(invoke));
 
       return result;

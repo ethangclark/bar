@@ -96,12 +96,14 @@ export async function readDescendents({
   enrolledAs,
   includeUserIds,
   tx,
+  enqueueSideEffect,
 }: {
   activityId: string;
   userId: string;
   enrolledAs: EnrollmentType[];
   includeUserIds: string[];
   tx: DbOrTx;
+  enqueueSideEffect: AfterTx;
 }) {
   const params = {
     userId,
@@ -109,6 +111,7 @@ export async function readDescendents({
     enrolledAs,
     includeUserIds,
     tx,
+    enqueueSideEffect,
   };
 
   const result: Partial<Descendents> = {};
