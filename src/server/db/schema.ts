@@ -77,7 +77,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   userIntegrations: many(userIntegrations),
   adHocActivities: many(adHocActivities),
-  studentActivities: many(studentActivities),
+  standaloneEnrollments: many(standaloneEnrollments),
 }));
 export const userSchema = createSelectSchema(users);
 
@@ -286,48 +286,8 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
   // should be exactly one of these
   adHocActivity: one(adHocActivities),
   integrationActivity: one(integrationActivities),
-  studentActivities: many(studentActivities),
 }));
 export const activitySchema = createSelectSchema(activities);
-
-export const studentActivities = pgTable(
-  "student_activities",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    activityId: uuid("activity_id")
-      .notNull()
-      .references(() => activities.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-  },
-  (sa) => [
-    uniqueIndex("student_activities_unique_pair_idx").on(
-      sa.activityId,
-      sa.userId,
-    ),
-    index("student_activities_activity_id_idx").on(sa.activityId),
-    index("student_activities_user_id_idx").on(sa.userId),
-  ],
-);
-export type StudentActivity = InferSelectModel<typeof studentActivities>;
-export const studentActivitiesRelations = relations(
-  studentActivities,
-  ({ one }) => ({
-    activity: one(activities, {
-      fields: [studentActivities.activityId],
-      references: [activities.id],
-    }),
-    user: one(users, {
-      fields: [studentActivities.userId],
-      references: [users.id],
-    }),
-  }),
-);
-export const studentActivitySchema = createSelectSchema(studentActivities);
 
 export const integrationActivities = pgTable(
   "integration_activities",
@@ -377,6 +337,7 @@ export const integrationActivitySchema = createSelectSchema(
 export const adHocActivities = pgTable(
   "ad_hoc_activities",
   {
+    id: uuid("id").primaryKey().defaultRandom(),
     activityId: uuid("activity_id")
       .notNull()
       .references(() => activities.id, {
@@ -390,12 +351,15 @@ export const adHocActivities = pgTable(
       }),
     title: text("title").notNull(),
   },
-  (ma) => [index("ad_hoc_activities_creator_id_idx").on(ma.creatorId)],
+  (ma) => [
+    index("ad_hoc_activities_activity_id_idx").on(ma.activityId),
+    index("ad_hoc_activities_creator_id_idx").on(ma.creatorId),
+  ],
 );
 export type AdHocActivity = InferSelectModel<typeof adHocActivities>;
 export const adHocActivitiesRelations = relations(
   adHocActivities,
-  ({ one }) => ({
+  ({ one, many }) => ({
     activity: one(activities, {
       fields: [adHocActivities.activityId],
       references: [activities.id],
@@ -404,9 +368,55 @@ export const adHocActivitiesRelations = relations(
       fields: [adHocActivities.creatorId],
       references: [users.id],
     }),
+    standaloneEnrollments: many(standaloneEnrollments),
   }),
 );
 export const adHocActivitySchema = createSelectSchema(adHocActivities);
+
+export const standaloneEnrollments = pgTable(
+  "standalone_enrollments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    adHocActivityId: uuid("ad_hoc_activity_id")
+      .notNull()
+      .references(() => adHocActivities.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (sa) => [
+    uniqueIndex("standalone_enrollments_unique_pair_idx").on(
+      sa.adHocActivityId,
+      sa.userId,
+    ),
+    index("standalone_enrollments_ad_hoc_activity_id_idx").on(
+      sa.adHocActivityId,
+    ),
+    index("standalone_enrollments_user_id_idx").on(sa.userId),
+  ],
+);
+export type StandaloneEnrollment = InferSelectModel<
+  typeof standaloneEnrollments
+>;
+export const standaloneEnrollmentsRelations = relations(
+  standaloneEnrollments,
+  ({ one }) => ({
+    adHocActivity: one(adHocActivities, {
+      fields: [standaloneEnrollments.adHocActivityId],
+      references: [adHocActivities.id],
+    }),
+    user: one(users, {
+      fields: [standaloneEnrollments.userId],
+      references: [users.id],
+    }),
+  }),
+);
+export const standaloneEnrollmentSchema = createSelectSchema(
+  standaloneEnrollments,
+);
 
 export const items = pgTable(
   "item",

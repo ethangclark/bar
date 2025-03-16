@@ -44,7 +44,7 @@ export const nonDescendents = [
   "posts",
   "senderRoleEnum",
   "sessions",
-  "studentActivities",
+  "standaloneEnrollments",
   "userIntegrations",
   "users",
   "verificationTokens",

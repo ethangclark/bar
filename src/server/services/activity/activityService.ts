@@ -10,39 +10,35 @@ import {
   getCourseAndAssignment,
 } from "./activityCourses";
 
-async function getEnrolledAs({
-  activityId,
+const adHocEnrollmentTypes = ["student"] as const satisfies EnrollmentType[];
+
+async function ensureAutoEnrollment({
+  adHocActivityId,
+  userId,
+}: {
+  adHocActivityId: string;
+  userId: string;
+}): Promise<void> {
+  await db
+    .insert(schema.standaloneEnrollments)
+    .values({ adHocActivityId, userId })
+    .onConflictDoNothing({
+      target: [
+        schema.standaloneEnrollments.adHocActivityId,
+        schema.standaloneEnrollments.userId,
+      ],
+    });
+}
+
+function getEnrolledAs({
   creatorId,
   userId,
-  skipAutoEnroll,
 }: {
-  for: "adhoc"; // important; anyone can enroll in an adhoc activity by just having the link (with current model)
-  activityId: string;
+  isAdHocActivity: true; // important; this only applies to adHoc activities
   creatorId: string;
   userId: string;
-  skipAutoEnroll?: true;
-}): Promise<EnrollmentType[]> {
-  if (creatorId === userId) {
-    return allEnrollmentTypes;
-  }
-
-  if (!skipAutoEnroll) {
-    // automatically enroll the user in the activity
-    await db
-      .insert(schema.studentActivities)
-      .values({
-        activityId,
-        userId,
-      })
-      .onConflictDoNothing({
-        target: [
-          schema.studentActivities.activityId,
-          schema.studentActivities.userId,
-        ],
-      });
-  }
-
-  return ["student"];
+}): EnrollmentType[] {
+  return creatorId === userId ? allEnrollmentTypes : adHocEnrollmentTypes;
 }
 
 export async function getActivity({
@@ -90,12 +86,17 @@ export async function getActivity({
   if (adHocActivity) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { integrationActivity, ...rest } = activity;
-    const enrolledAs = await getEnrolledAs({
-      for: "adhoc",
-      activityId,
+    const enrolledAs = getEnrolledAs({
+      isAdHocActivity: true,
       creatorId: adHocActivity.creatorId,
       userId,
     });
+
+    await ensureAutoEnrollment({
+      adHocActivityId: adHocActivity.id,
+      userId,
+    });
+
     return {
       ...rest,
       type: "adHoc" as const,
@@ -147,10 +148,8 @@ export async function getAllActivities({
     },
   });
   for (const adHocActivity of adHocActivities) {
-    const enrolledAs = await getEnrolledAs({
-      for: "adhoc",
-      skipAutoEnroll: true, // HACK: if they're loading a bunch, don't auto-enroll them (for performance/sanity's sake) (need to refactor around this)
-      activityId: adHocActivity.activityId,
+    const enrolledAs = getEnrolledAs({
+      isAdHocActivity: true,
       creatorId: adHocActivity.creatorId,
       userId,
     });
@@ -159,6 +158,26 @@ export async function getAllActivities({
       type: "adHoc" as const,
       adHocActivity,
       enrolledAs,
+    });
+  }
+
+  const standaloneEnrollments = await db.query.standaloneEnrollments.findMany({
+    where: eq(schema.standaloneEnrollments.userId, userId),
+    with: {
+      adHocActivity: {
+        with: {
+          activity: true,
+        },
+      },
+    },
+  });
+  for (const standaloneEnrollment of standaloneEnrollments) {
+    const { adHocActivity } = standaloneEnrollment;
+    result.push({
+      ...adHocActivity.activity,
+      adHocActivity,
+      type: "adHoc" as const,
+      enrolledAs: adHocEnrollmentTypes,
     });
   }
 
