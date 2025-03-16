@@ -54,7 +54,7 @@ export const Overview = storeObserver(function Overview({
 
   const { item: standaloneActivitiesItem } = useStandaloneActivities(
     activities,
-    onCreate,
+    !(user instanceof Status) && user.isInstructor ? onCreate : null,
   );
 
   if (

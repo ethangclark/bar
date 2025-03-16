@@ -8,7 +8,7 @@ const standaloneActivitiesKey = "ad-hoc-activities";
 
 export function useStandaloneActivities(
   activities: RichActivity[] | Status,
-  onCreate: (title: string) => Promise<void>,
+  onCreate: ((title: string) => Promise<void>) | null,
 ) {
   const item = useMemo(
     () =>
@@ -19,7 +19,9 @@ export function useStandaloneActivities(
           : {
               key: standaloneActivitiesKey,
               label: "Standalone activities",
-              extra: <CreateActivityButton small onCreate={onCreate} />,
+              extra: onCreate ? (
+                <CreateActivityButton small onCreate={onCreate} />
+              ) : null,
               children: (
                 <div className="flex flex-col gap-2">
                   {activities.map((activity) => {

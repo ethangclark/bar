@@ -15,10 +15,3 @@ export class NotFound extends Status {}
 export const notFound = new NotFound();
 
 export type Data<T> = T extends Status | infer U ? U : never;
-
-export function statusCast<T>(
-  maybeStatus: T,
-  ifStatus: T extends Status ? never : T,
-) {
-  return maybeStatus instanceof Status ? ifStatus : maybeStatus;
-}

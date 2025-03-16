@@ -53,7 +53,6 @@ export class UserStore {
 
     void invoke(async () => {
       const { user } = await trpc.auth.basicSessionDeets.query();
-      console.log({ user });
       if (user && this._user instanceof Status) {
         this.setUser(user);
       }

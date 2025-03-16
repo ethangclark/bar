@@ -1,12 +1,46 @@
 import { Button, Dropdown, Typography, type MenuProps } from "antd";
 import { MoreVertical } from "lucide-react";
-import { type Activity, type StandaloneActivity } from "~/server/db/schema";
+import {
+  enrollmentTypeColorClassName,
+  enrollmentTypeLabel,
+  isDeveloper,
+  type EnrollmentType,
+} from "~/common/enrollmentTypeUtils";
+import { type RichActivity } from "~/common/types";
+import { type StandaloneActivity } from "~/server/db/schema";
 import { trpc } from "~/trpc/proxy";
 import { Status } from "../utils/status";
 import { storeObserver } from "../utils/storeObserver";
 
+function EnrolledAsLabelContent({
+  enrolledAs,
+}: {
+  enrolledAs: EnrollmentType[];
+}) {
+  const reduced = enrolledAs.includes("teacher")
+    ? ["teacher" as const]
+    : enrolledAs;
+  return (
+    <span>
+      {reduced.map((e) => (
+        <span key={e} className={enrollmentTypeColorClassName(e)}>
+          {enrollmentTypeLabel(e)}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function EnrolledAsLabel({ enrolledAs }: { enrolledAs: EnrollmentType[] }) {
+  return (
+    <div className="rounded-md border border-gray-300 px-1 py-0.5 text-xs">
+      <EnrolledAsLabelContent enrolledAs={enrolledAs} />
+    </div>
+  );
+}
+
 export const StandaloneActivityItem = storeObserver<{
-  activity: Activity;
+  activity: RichActivity;
   standaloneActivity: StandaloneActivity;
 }>(function StandaloneActivity({
   activity,
@@ -43,7 +77,7 @@ export const StandaloneActivityItem = storeObserver<{
   return (
     <div
       key={activity.id}
-      className="ml-[-12px] flex w-full items-center rounded-md hover:bg-gray-50" // if changing ml, change pl below correspondingly
+      className="flex w-full items-center rounded-md hover:bg-gray-50" // if changing ml, change pl below correspondingly
     >
       <Typography.Link
         href={`/activity/${activity.id}`}
@@ -51,9 +85,12 @@ export const StandaloneActivityItem = storeObserver<{
       >
         {standaloneActivity.title}
       </Typography.Link>
-      <Dropdown menu={{ items: dropdownItems }} placement="bottomRight">
-        <Button type="text" icon={<MoreVertical size={16} />} />
-      </Dropdown>
+      <EnrolledAsLabel enrolledAs={activity.enrolledAs} />
+      {isDeveloper(activity.enrolledAs) && (
+        <Dropdown menu={{ items: dropdownItems }} placement="bottomRight">
+          <Button type="text" icon={<MoreVertical size={16} />} />
+        </Dropdown>
+      )}
     </div>
   );
 });

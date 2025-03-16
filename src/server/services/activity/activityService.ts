@@ -162,6 +162,7 @@ export async function getAllActivities({
       enrolledAs,
     });
   }
+  const ownedStandaloneActivityIds = standaloneActivities.map((s) => s.id);
 
   const standaloneEnrollments = await db.query.standaloneEnrollments.findMany({
     where: eq(schema.standaloneEnrollments.userId, userId),
@@ -175,6 +176,9 @@ export async function getAllActivities({
   });
   for (const standaloneEnrollment of standaloneEnrollments) {
     const { standaloneActivity } = standaloneEnrollment;
+    if (ownedStandaloneActivityIds.includes(standaloneActivity.id)) {
+      continue;
+    }
     result.push({
       ...standaloneActivity.activity,
       standaloneActivity,

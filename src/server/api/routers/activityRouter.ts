@@ -29,6 +29,12 @@ export const activityRouter = createTRPCRouter({
   create: protectedProcedure
     .input(z.object({ title: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      if (!ctx.user.isInstructor) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not allowed to create standalone activities",
+        });
+      }
       const activities = await db
         .insert(schema.activities)
         .values({})
@@ -62,7 +68,7 @@ export const activityRouter = createTRPCRouter({
         if (activity.standaloneActivity.creatorId !== ctx.userId) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "You are not allowed to update this ad hoc activity",
+            message: "You are not allowed to update this standalone activity",
           });
         }
         await db
@@ -87,7 +93,7 @@ export const activityRouter = createTRPCRouter({
       if (!standaloneActivity) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Ad hoc activity not found",
+          message: "Standalone activity not found",
         });
       }
       await db
@@ -106,7 +112,7 @@ export const activityRouter = createTRPCRouter({
       if (!standaloneActivity) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Ad hoc activity not found",
+          message: "Standalone activity not found",
         });
       }
       await db
