@@ -18,7 +18,7 @@ export function useAdHocActivities(
           ? null
           : {
               key: adHocActivitiesKey,
-              label: "Ad hoc activities",
+              label: "Standalone activities",
               extra: <CreateActivityButton small onCreate={onCreate} />,
               children: (
                 <div className="flex flex-col gap-2">

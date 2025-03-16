@@ -79,7 +79,7 @@ export const Overview = storeObserver(function Overview({
         </div>
         {items.length > 0 ? (
           <div>
-            <div className="mb-4 text-2xl">Your activities</div>
+            <div className="mb-4 text-2xl">Activities</div>
             <Collapse
               accordion
               defaultActiveKey={
