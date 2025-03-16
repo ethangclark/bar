@@ -100,27 +100,27 @@ export async function loginUser(
     case null:
       break;
     case "instructor": {
-      if (user.isAdHocInstructor) {
+      if (user.isInstructor) {
         break;
       }
       await db
         .update(schema.users)
         .set({
-          requestedAdHocInstructorAccess: true,
+          requestedInstructorAccess: true,
 
           // COMMENT_004a
           // we may add some sort of approval process in the future,
           // but for now we'll just grant access to anyone who requests it
           // See COMMENT_004b
-          isAdHocInstructor: true,
+          isInstructor: true,
         })
         .where(eq(schema.users.id, user.id));
 
-      user.requestedAdHocInstructorAccess = true;
+      user.requestedInstructorAccess = true;
 
       // COMMENT_004b
       // See COMMENT_004a
-      user.isAdHocInstructor = true;
+      user.isInstructor = true;
       break;
     }
     default:
@@ -132,8 +132,8 @@ export async function loginUser(
       id: user.id,
       email,
       name: user.name,
-      isAdHocInstructor: user.isAdHocInstructor,
-      requestedAdHocInstructorAccess: user.requestedAdHocInstructorAccess,
+      isInstructor: user.isInstructor,
+      requestedInstructorAccess: user.requestedInstructorAccess,
     } satisfies UserBasic,
   };
 }

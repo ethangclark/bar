@@ -34,18 +34,18 @@ export const activityRouter = createTRPCRouter({
         .values({})
         .returning();
       const activity = assertOne(activities);
-      const adHocActivities = await db
-        .insert(schema.adHocActivities)
+      const standaloneActivities = await db
+        .insert(schema.standaloneActivities)
         .values({
           activityId: activity.id,
           creatorId: ctx.userId,
           title: input.title,
         })
         .returning();
-      const adHocActivity = assertOne(adHocActivities);
+      const standaloneActivity = assertOne(standaloneActivities);
       return {
         activity,
-        adHocActivity,
+        standaloneActivity,
         enrolledAs: allEnrollmentTypes, // this is a bit, uh, messy
       };
     }),
@@ -58,8 +58,8 @@ export const activityRouter = createTRPCRouter({
         activityId: input.activityId,
       });
 
-      if (activity.type === "adHoc") {
-        if (activity.adHocActivity.creatorId !== ctx.userId) {
+      if (activity.type === "standalone") {
+        if (activity.standaloneActivity.creatorId !== ctx.userId) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: "You are not allowed to update this ad hoc activity",
@@ -75,16 +75,16 @@ export const activityRouter = createTRPCRouter({
         );
       }
     }),
-  deleteAdHocActivity: protectedProcedure
+  deleteStandaloneActivity: protectedProcedure
     .input(z.object({ activityId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const adHocActivity = await db.query.adHocActivities.findFirst({
+      const standaloneActivity = await db.query.standaloneActivities.findFirst({
         where: and(
-          eq(schema.adHocActivities.activityId, input.activityId),
-          eq(schema.adHocActivities.creatorId, ctx.userId),
+          eq(schema.standaloneActivities.activityId, input.activityId),
+          eq(schema.standaloneActivities.creatorId, ctx.userId),
         ),
       });
-      if (!adHocActivity) {
+      if (!standaloneActivity) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Ad hoc activity not found",
@@ -92,26 +92,26 @@ export const activityRouter = createTRPCRouter({
       }
       await db
         .delete(schema.activities)
-        .where(eq(schema.activities.id, adHocActivity.activityId));
+        .where(eq(schema.activities.id, standaloneActivity.activityId));
     }),
-  updateAdHocActivity: protectedProcedure
+  updateStandaloneActivity: protectedProcedure
     .input(z.object({ activityId: z.string(), title: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const adHocActivity = await db.query.adHocActivities.findFirst({
+      const standaloneActivity = await db.query.standaloneActivities.findFirst({
         where: and(
-          eq(schema.adHocActivities.activityId, input.activityId),
-          eq(schema.adHocActivities.creatorId, ctx.userId),
+          eq(schema.standaloneActivities.activityId, input.activityId),
+          eq(schema.standaloneActivities.creatorId, ctx.userId),
         ),
       });
-      if (!adHocActivity) {
+      if (!standaloneActivity) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Ad hoc activity not found",
         });
       }
       await db
-        .update(schema.adHocActivities)
+        .update(schema.standaloneActivities)
         .set({ title: input.title })
-        .where(eq(schema.adHocActivities.activityId, input.activityId));
+        .where(eq(schema.standaloneActivities.activityId, input.activityId));
     }),
 });

@@ -39,6 +39,6 @@ export type UserBasic = {
   id: string;
   email: string | null;
   name: string | null;
-  isAdHocInstructor: boolean;
-  requestedAdHocInstructorAccess: boolean;
+  isInstructor: boolean;
+  requestedInstructorAccess: boolean;
 };

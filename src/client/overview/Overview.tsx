@@ -8,11 +8,11 @@ import { type RichActivity } from "~/common/types";
 import { trpc } from "~/trpc/proxy";
 import { Status } from "../utils/status";
 import { storeObserver } from "../utils/storeObserver";
-import { useAdHocActivities } from "./adHocActivities";
 import { courseActivitiesKey, useCourseActivities } from "./courseActivities";
 import { CreateActivityButton } from "./CreateActivityButton";
+import { useStandaloneActivities } from "./standaloneActivities";
 
-const adHocActivitiesKey = "ad-hoc-activities";
+const standaloneActivitiesKey = "ad-hoc-activities";
 
 export const Overview = storeObserver(function Overview({
   activitesStore,
@@ -31,14 +31,14 @@ export const Overview = storeObserver(function Overview({
 
   const onCreate = useCallback(
     async (title: string) => {
-      const { activity, adHocActivity, enrolledAs } =
+      const { activity, standaloneActivity, enrolledAs } =
         await trpc.activity.create.mutate({
           title,
         });
       const richActivity: RichActivity = {
-        type: "adHoc" as const,
+        type: "standalone" as const,
         ...activity,
-        adHocActivity,
+        standaloneActivity,
         enrolledAs,
       };
       activitesStore.setCache((activities) => {
@@ -52,7 +52,7 @@ export const Overview = storeObserver(function Overview({
     [activitesStore, router],
   );
 
-  const { item: adHocActivitiesItem } = useAdHocActivities(
+  const { item: standaloneActivitiesItem } = useStandaloneActivities(
     activities,
     onCreate,
   );
@@ -60,14 +60,14 @@ export const Overview = storeObserver(function Overview({
   if (
     activities instanceof Status ||
     user instanceof Status ||
-    adHocActivitiesItem instanceof Status ||
+    standaloneActivitiesItem instanceof Status ||
     courseActivitiesItem instanceof Status
   ) {
     return <LoadingPage />;
   }
 
   const items = [
-    ...(adHocActivitiesItem ? [adHocActivitiesItem] : []),
+    ...(standaloneActivitiesItem ? [standaloneActivitiesItem] : []),
     ...(courseActivitiesItem ? [courseActivitiesItem] : []),
   ];
 
@@ -84,7 +84,7 @@ export const Overview = storeObserver(function Overview({
               accordion
               defaultActiveKey={
                 !courses?.length
-                  ? [adHocActivitiesKey]
+                  ? [standaloneActivitiesKey]
                   : courses?.length && !activities?.length
                     ? [courseActivitiesKey]
                     : undefined

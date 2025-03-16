@@ -59,12 +59,10 @@ export const users = pgTable(
       withTimezone: true,
     }).notNull(),
     llmTokensUsed: integer("tokens_used").default(0).notNull(),
-    requestedAdHocInstructorAccess: boolean(
-      "requested_ad_hoc_instructor_access",
-    )
+    requestedInstructorAccess: boolean("requested_instructor_access")
       .default(false)
       .notNull(),
-    isAdHocInstructor: boolean("is_ad_hoc_instructor").default(false).notNull(),
+    isInstructor: boolean("is_instructor").default(false).notNull(),
   },
   (u) => [
     index("user_email_idx").on(u.email),
@@ -76,7 +74,7 @@ export type User = InferSelectModel<typeof users>;
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   userIntegrations: many(userIntegrations),
-  adHocActivities: many(adHocActivities),
+  standaloneActivities: many(standaloneActivities),
   standaloneEnrollments: many(standaloneEnrollments),
 }));
 export const userSchema = createSelectSchema(users);
@@ -284,7 +282,7 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
   messages: many(messages),
   completions: many(completions),
   // should be exactly one of these
-  adHocActivity: one(adHocActivities),
+  standaloneActivity: one(standaloneActivities),
   integrationActivity: one(integrationActivities),
 }));
 export const activitySchema = createSelectSchema(activities);
@@ -334,8 +332,8 @@ export const integrationActivitySchema = createSelectSchema(
   integrationActivities,
 );
 
-export const adHocActivities = pgTable(
-  "ad_hoc_activities",
+export const standaloneActivities = pgTable(
+  "standalone_activities",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     activityId: uuid("activity_id")
@@ -352,34 +350,35 @@ export const adHocActivities = pgTable(
     title: text("title").notNull(),
   },
   (ma) => [
-    index("ad_hoc_activities_activity_id_idx").on(ma.activityId),
-    index("ad_hoc_activities_creator_id_idx").on(ma.creatorId),
+    index("standalone_activities_activity_id_idx").on(ma.activityId),
+    index("standalone_activities_creator_id_idx").on(ma.creatorId),
   ],
 );
-export type AdHocActivity = InferSelectModel<typeof adHocActivities>;
-export const adHocActivitiesRelations = relations(
-  adHocActivities,
+export type StandaloneActivity = InferSelectModel<typeof standaloneActivities>;
+export const standaloneActivitiesRelations = relations(
+  standaloneActivities,
   ({ one, many }) => ({
     activity: one(activities, {
-      fields: [adHocActivities.activityId],
+      fields: [standaloneActivities.activityId],
       references: [activities.id],
     }),
     creator: one(users, {
-      fields: [adHocActivities.creatorId],
+      fields: [standaloneActivities.creatorId],
       references: [users.id],
     }),
     standaloneEnrollments: many(standaloneEnrollments),
   }),
 );
-export const adHocActivitySchema = createSelectSchema(adHocActivities);
+export const standaloneActivitySchema =
+  createSelectSchema(standaloneActivities);
 
 export const standaloneEnrollments = pgTable(
   "standalone_enrollments",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    adHocActivityId: uuid("ad_hoc_activity_id")
+    standaloneActivityId: uuid("standalone_activity_id")
       .notNull()
-      .references(() => adHocActivities.id, { onDelete: "cascade" }),
+      .references(() => standaloneActivities.id, { onDelete: "cascade" }),
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -389,11 +388,11 @@ export const standaloneEnrollments = pgTable(
   },
   (sa) => [
     uniqueIndex("standalone_enrollments_unique_pair_idx").on(
-      sa.adHocActivityId,
+      sa.standaloneActivityId,
       sa.userId,
     ),
-    index("standalone_enrollments_ad_hoc_activity_id_idx").on(
-      sa.adHocActivityId,
+    index("standalone_enrollments_standalone_activity_id_idx").on(
+      sa.standaloneActivityId,
     ),
     index("standalone_enrollments_user_id_idx").on(sa.userId),
   ],
@@ -404,9 +403,9 @@ export type StandaloneEnrollment = InferSelectModel<
 export const standaloneEnrollmentsRelations = relations(
   standaloneEnrollments,
   ({ one }) => ({
-    adHocActivity: one(adHocActivities, {
-      fields: [standaloneEnrollments.adHocActivityId],
-      references: [adHocActivities.id],
+    standaloneActivity: one(standaloneActivities, {
+      fields: [standaloneEnrollments.standaloneActivityId],
+      references: [standaloneActivities.id],
     }),
     user: one(users, {
       fields: [standaloneEnrollments.userId],

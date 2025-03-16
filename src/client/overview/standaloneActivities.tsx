@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { type RichActivity } from "~/common/types";
 import { Status } from "../utils/status";
-import { AdHocActivityItem } from "./AdHocActivityItem";
 import { CreateActivityButton } from "./CreateActivityButton";
+import { StandaloneActivityItem } from "./StandaloneActivityItem";
 
-const adHocActivitiesKey = "ad-hoc-activities";
+const standaloneActivitiesKey = "ad-hoc-activities";
 
-export function useAdHocActivities(
+export function useStandaloneActivities(
   activities: RichActivity[] | Status,
   onCreate: (title: string) => Promise<void>,
 ) {
@@ -17,20 +17,20 @@ export function useAdHocActivities(
         : !activities.length
           ? null
           : {
-              key: adHocActivitiesKey,
+              key: standaloneActivitiesKey,
               label: "Standalone activities",
               extra: <CreateActivityButton small onCreate={onCreate} />,
               children: (
                 <div className="flex flex-col gap-2">
                   {activities.map((activity) => {
-                    if (activity.type !== "adHoc") {
+                    if (activity.type !== "standalone") {
                       return null;
                     }
                     return (
-                      <AdHocActivityItem
+                      <StandaloneActivityItem
                         key={activity.id}
                         activity={activity}
-                        adHocActivity={activity.adHocActivity}
+                        standaloneActivity={activity.standaloneActivity}
                       />
                     );
                   })}

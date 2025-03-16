@@ -281,6 +281,13 @@
       "when": 1742073486631,
       "tag": "0039_fearless_captain_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1742092548212,
+      "tag": "0040_lame_firestar",
+      "breakpoints": true
     }
   ]
 }

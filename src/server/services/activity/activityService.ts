@@ -10,21 +10,23 @@ import {
   getCourseAndAssignment,
 } from "./activityCourses";
 
-const adHocEnrollmentTypes = ["student"] as const satisfies EnrollmentType[];
+const standaloneEnrollmentTypes = [
+  "student",
+] as const satisfies EnrollmentType[];
 
 async function ensureAutoEnrollment({
-  adHocActivityId,
+  standaloneActivityId,
   userId,
 }: {
-  adHocActivityId: string;
+  standaloneActivityId: string;
   userId: string;
 }): Promise<void> {
   await db
     .insert(schema.standaloneEnrollments)
-    .values({ adHocActivityId, userId })
+    .values({ standaloneActivityId, userId })
     .onConflictDoNothing({
       target: [
-        schema.standaloneEnrollments.adHocActivityId,
+        schema.standaloneEnrollments.standaloneActivityId,
         schema.standaloneEnrollments.userId,
       ],
     });
@@ -34,11 +36,11 @@ function getEnrolledAs({
   creatorId,
   userId,
 }: {
-  isAdHocActivity: true; // important; this only applies to adHoc activities
+  isStandaloneActivity: true; // important; this only applies to standalone activities
   creatorId: string;
   userId: string;
 }): EnrollmentType[] {
-  return creatorId === userId ? allEnrollmentTypes : adHocEnrollmentTypes;
+  return creatorId === userId ? allEnrollmentTypes : standaloneEnrollmentTypes;
 }
 
 export async function getActivity({
@@ -57,14 +59,14 @@ export async function getActivity({
     where: eq(schema.activities.id, activityId),
     with: {
       integrationActivity: true,
-      adHocActivity: true,
+      standaloneActivity: true,
     },
   });
   if (!activity) {
     throw new Error("Activity not found");
   }
 
-  const { integrationActivity, adHocActivity } = activity;
+  const { integrationActivity, standaloneActivity } = activity;
 
   if (integrationActivity) {
     const { course, assignment } = await getCourseAndAssignment({
@@ -72,7 +74,7 @@ export async function getActivity({
       integrationActivity,
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { adHocActivity, ...rest } = activity;
+    const { standaloneActivity, ...rest } = activity;
     return {
       ...rest,
       type: "integration" as const,
@@ -83,24 +85,24 @@ export async function getActivity({
     };
   }
 
-  if (adHocActivity) {
+  if (standaloneActivity) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { integrationActivity, ...rest } = activity;
     const enrolledAs = getEnrolledAs({
-      isAdHocActivity: true,
-      creatorId: adHocActivity.creatorId,
+      isStandaloneActivity: true,
+      creatorId: standaloneActivity.creatorId,
       userId,
     });
 
     await ensureAutoEnrollment({
-      adHocActivityId: adHocActivity.id,
+      standaloneActivityId: standaloneActivity.id,
       userId,
     });
 
     return {
       ...rest,
-      type: "adHoc" as const,
-      adHocActivity, // infers as non-nullable
+      type: "standalone" as const,
+      standaloneActivity, // infers as non-nullable
       enrolledAs,
     };
   }
@@ -108,7 +110,7 @@ export async function getActivity({
   throw new Error("Could not determine activity type");
 }
 
-// we're sort of mushing together the adHocActivity and integrationActivity
+// we're sort of mushing together the standaloneActivity and integrationActivity
 // into a single type, but it works for now (and at least it's represented
 // in an explicit union type)
 export type RichActivity = Awaited<ReturnType<typeof getActivity>>;
@@ -141,22 +143,22 @@ export async function getAllActivities({
     });
   }
 
-  const adHocActivities = await db.query.adHocActivities.findMany({
-    where: eq(schema.adHocActivities.creatorId, userId),
+  const standaloneActivities = await db.query.standaloneActivities.findMany({
+    where: eq(schema.standaloneActivities.creatorId, userId),
     with: {
       activity: true,
     },
   });
-  for (const adHocActivity of adHocActivities) {
+  for (const standaloneActivity of standaloneActivities) {
     const enrolledAs = getEnrolledAs({
-      isAdHocActivity: true,
-      creatorId: adHocActivity.creatorId,
+      isStandaloneActivity: true,
+      creatorId: standaloneActivity.creatorId,
       userId,
     });
     result.push({
-      ...adHocActivity.activity,
-      type: "adHoc" as const,
-      adHocActivity,
+      ...standaloneActivity.activity,
+      type: "standalone" as const,
+      standaloneActivity,
       enrolledAs,
     });
   }
@@ -164,7 +166,7 @@ export async function getAllActivities({
   const standaloneEnrollments = await db.query.standaloneEnrollments.findMany({
     where: eq(schema.standaloneEnrollments.userId, userId),
     with: {
-      adHocActivity: {
+      standaloneActivity: {
         with: {
           activity: true,
         },
@@ -172,12 +174,12 @@ export async function getAllActivities({
     },
   });
   for (const standaloneEnrollment of standaloneEnrollments) {
-    const { adHocActivity } = standaloneEnrollment;
+    const { standaloneActivity } = standaloneEnrollment;
     result.push({
-      ...adHocActivity.activity,
-      adHocActivity,
-      type: "adHoc" as const,
-      enrolledAs: adHocEnrollmentTypes,
+      ...standaloneActivity.activity,
+      standaloneActivity,
+      type: "standalone" as const,
+      enrolledAs: standaloneEnrollmentTypes,
     });
   }
 

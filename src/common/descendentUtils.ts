@@ -32,7 +32,7 @@ function isZodSchemaKey(key: string): key is `${string}Schema` {
 export const nonDescendents = [
   "activityStatusEnum",
   "activities",
-  "adHocActivities",
+  "standaloneActivities",
   "cacheValues",
   "canvasIntegrations",
   "canvasUsers",

@@ -33,8 +33,8 @@ function getBasicSessionDeets(ctx: Ctx) {
         id: user.id,
         email: user.email,
         name: user.name,
-        isAdHocInstructor: user.isAdHocInstructor,
-        requestedAdHocInstructorAccess: user.requestedAdHocInstructorAccess,
+        isInstructor: user.isInstructor,
+        requestedInstructorAccess: user.requestedInstructorAccess,
       }
     : null;
 

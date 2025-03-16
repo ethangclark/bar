@@ -48,8 +48,8 @@ export class FocusedActivityStore {
     switch (this.activity.type) {
       case "integration":
         return this.activity.assignment.title;
-      case "adHoc":
-        return this.activity.adHocActivity.title;
+      case "standalone":
+        return this.activity.standaloneActivity.title;
     }
   }
 
@@ -57,7 +57,7 @@ export class FocusedActivityStore {
     if (this.activity instanceof Status) {
       return this.activity;
     }
-    return this.activity.type === "adHoc";
+    return this.activity.type === "standalone";
   }
   titleSaving = false;
   titleSavedTimeout = setTimeout(noop);
@@ -66,17 +66,17 @@ export class FocusedActivityStore {
       return;
     }
     switch (this.activity.type) {
-      case "adHoc":
+      case "standalone":
         this.titleSaving = true;
-        const oldTitle = this.activity.adHocActivity.title;
-        this.activity.adHocActivity.title = title;
+        const oldTitle = this.activity.standaloneActivity.title;
+        this.activity.standaloneActivity.title = title;
         try {
-          await trpc.activity.updateAdHocActivity.mutate({
+          await trpc.activity.updateStandaloneActivity.mutate({
             activityId: this.activity.id,
             title,
           });
         } catch (e) {
-          this.activity.adHocActivity.title = oldTitle;
+          this.activity.standaloneActivity.title = oldTitle;
           throw e;
         } finally {
           this.titleSaving = false;

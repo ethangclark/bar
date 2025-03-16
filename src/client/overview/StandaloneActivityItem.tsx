@@ -1,21 +1,25 @@
 import { Button, Dropdown, Typography, type MenuProps } from "antd";
 import { MoreVertical } from "lucide-react";
-import { type Activity, type AdHocActivity } from "~/server/db/schema";
+import { type Activity, type StandaloneActivity } from "~/server/db/schema";
 import { trpc } from "~/trpc/proxy";
 import { Status } from "../utils/status";
 import { storeObserver } from "../utils/storeObserver";
 
-export const AdHocActivityItem = storeObserver<{
+export const StandaloneActivityItem = storeObserver<{
   activity: Activity;
-  adHocActivity: AdHocActivity;
-}>(function AdHocActivity({ activity, adHocActivity, activitesStore }) {
+  standaloneActivity: StandaloneActivity;
+}>(function StandaloneActivity({
+  activity,
+  standaloneActivity,
+  activitesStore,
+}) {
   const handleDelete = async () => {
     if (
       confirm(
         "Are you sure you want to delete this activity? This will delete the activity and all associated data, and it cannot be undone.",
       )
     ) {
-      await trpc.activity.deleteAdHocActivity.mutate({
+      await trpc.activity.deleteStandaloneActivity.mutate({
         activityId: activity.id,
       });
       activitesStore.setCache((activities) => {
@@ -45,7 +49,7 @@ export const AdHocActivityItem = storeObserver<{
         href={`/activity/${activity.id}`}
         className={"mr-12 grow py-1 pl-3"} // if changing pl, change ml above correspondingly
       >
-        {adHocActivity.title}
+        {standaloneActivity.title}
       </Typography.Link>
       <Dropdown menu={{ items: dropdownItems }} placement="bottomRight">
         <Button type="text" icon={<MoreVertical size={16} />} />

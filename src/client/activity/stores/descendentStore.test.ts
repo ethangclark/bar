@@ -60,8 +60,8 @@ async function getNewStore(
         id: "userId",
         name: null,
         email: null,
-        isAdHocInstructor: false,
-        requestedAdHocInstructorAccess: false,
+        isInstructor: false,
+        requestedInstructorAccess: false,
       },
     },
     {
