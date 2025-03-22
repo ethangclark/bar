@@ -1,4 +1,4 @@
-import { Button, Dropdown, Typography, type MenuProps } from "antd";
+import { Button, Dropdown, Progress, Typography, type MenuProps } from "antd";
 import { MoreVertical } from "lucide-react";
 import {
   enrollmentTypeColorClassName,
@@ -9,32 +9,24 @@ import {
 import { type RichActivity } from "~/common/types";
 import { type StandaloneActivity } from "~/server/db/schema";
 import { trpc } from "~/trpc/proxy";
+import { LoadingNotCentered } from "../components/Loading";
 import { Status } from "../utils/status";
 import { storeObserver } from "../utils/storeObserver";
 
-function EnrolledAsLabelContent({
-  enrolledAs,
-}: {
-  enrolledAs: EnrollmentType[];
-}) {
+function EnrolledAsLabel({ enrolledAs }: { enrolledAs: EnrollmentType[] }) {
+  if (enrolledAs.length === 1 && enrolledAs.includes("student")) {
+    return null;
+  }
   const reduced = enrolledAs.includes("teacher")
     ? ["teacher" as const]
     : enrolledAs;
   return (
-    <span>
+    <div className="rounded-md border border-gray-300 px-1 py-0.5 text-xs">
       {reduced.map((e) => (
         <span key={e} className={enrollmentTypeColorClassName(e)}>
           {enrollmentTypeLabel(e)}
         </span>
       ))}
-    </span>
-  );
-}
-
-function EnrolledAsLabel({ enrolledAs }: { enrolledAs: EnrollmentType[] }) {
-  return (
-    <div className="rounded-md border border-gray-300 px-1 py-0.5 text-xs">
-      <EnrolledAsLabelContent enrolledAs={enrolledAs} />
     </div>
   );
 }
@@ -42,10 +34,12 @@ function EnrolledAsLabel({ enrolledAs }: { enrolledAs: EnrollmentType[] }) {
 export const StandaloneActivityItem = storeObserver<{
   activity: RichActivity;
   standaloneActivity: StandaloneActivity;
+  percentCompleted: number | Status | null;
 }>(function StandaloneActivity({
   activity,
   standaloneActivity,
   activitesStore,
+  percentCompleted,
 }) {
   const handleDelete = async () => {
     if (
@@ -77,14 +71,22 @@ export const StandaloneActivityItem = storeObserver<{
   return (
     <div
       key={activity.id}
-      className="flex w-full items-center rounded-md hover:bg-gray-50" // if changing ml, change pl below correspondingly
+      className="flex w-full items-center rounded-md hover:bg-gray-50"
     >
       <Typography.Link
         href={`/activity/${activity.id}`}
-        className={"mr-12 grow py-1 pl-3"} // if changing pl, change ml above correspondingly
+        className={"mr-12 grow py-1 pl-3"}
       >
         {standaloneActivity.title}
       </Typography.Link>
+      <div className="mx-2">
+        {percentCompleted === null ? null : percentCompleted instanceof
+          Status ? (
+          <LoadingNotCentered />
+        ) : (
+          <Progress percent={percentCompleted} />
+        )}
+      </div>
       <EnrolledAsLabel enrolledAs={activity.enrolledAs} />
       {isDeveloper(activity.enrolledAs) && (
         <Dropdown menu={{ items: dropdownItems }} placement="bottomRight">

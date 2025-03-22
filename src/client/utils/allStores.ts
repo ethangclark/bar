@@ -58,7 +58,7 @@ const itemStore = new ItemStore(draftStore, questionStore);
 const viewPieceStore = new ViewPieceStore(descendentStore);
 const submissionStore = new SubmissionStore(
   focusedActivityStore,
-  trpc.submission.allCompletions.query,
+  trpc.submission.enrolleeCompletions.query,
 );
 
 export const stores = {

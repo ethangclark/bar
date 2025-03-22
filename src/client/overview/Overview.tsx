@@ -6,6 +6,7 @@ import { LogoutButton } from "~/client/components/LogoutButton";
 import { Page } from "~/client/components/Page";
 import { type RichActivity } from "~/common/types";
 import { trpc } from "~/trpc/proxy";
+import { api } from "~/trpc/react";
 import { Status } from "../utils/status";
 import { storeObserver } from "../utils/storeObserver";
 import { useCourseActivities } from "./courseActivities";
@@ -24,6 +25,9 @@ export const Overview = storeObserver(function Overview({
     void activitesStore.fetch();
   }, [activitesStore]);
   const activities = activitesStore.data;
+
+  const { data: completionTotals = {} } =
+    api.submission.myCompletionTotals.useQuery();
 
   const { item: courseActivitiesItem } = useCourseActivities();
 
@@ -58,6 +62,7 @@ export const Overview = storeObserver(function Overview({
     activities,
     user,
     onCreate,
+    completionTotals,
   });
 
   if (
