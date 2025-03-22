@@ -27,11 +27,20 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
           maxHeight: `calc(100vh - ${scrollbarHeight}px)`,
         }}
       >
-        {igod && <TeacherOptions />}
-        <div className="md:text-md mb-3 flex w-full items-center justify-between">
-          <Progress />
-          <div className="pl-7 text-lg md:text-2xl">{assignmentTitle}</div>
+        <div className="flex w-full justify-between">
+          <div>
+            <Typography.Link href="/overview">
+              ← Back to overview
+            </Typography.Link>
+          </div>
+          {igod && <TeacherOptions />}
           <LogoutButton />
+        </div>
+        <div className="md:text-md mb-2 flex w-full items-center justify-between gap-4">
+          <div className="text-lg md:text-2xl">{assignmentTitle}</div>
+          <div className="grow">
+            <Progress />
+          </div>
         </div>
         {igod && (
           <div className={`mb-[18px] mt-2 w-full`}>

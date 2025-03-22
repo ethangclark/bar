@@ -56,7 +56,7 @@ export const TeacherOptions = storeObserver(function TeacherOptions({
               viewModeStore.setViewMode("submissions");
             }}
           >
-            ← Back to submissions
+            Return to submissions
           </Typography.Link>
           <span className="flex items-center gap-1">
             <Typography.Text className="text-red-500">
@@ -72,7 +72,7 @@ export const TeacherOptions = storeObserver(function TeacherOptions({
       ) : (
         <>
           <Typography.Link onClick={() => viewModeStore.setViewMode("editor")}>
-            ← Back to design
+            Return to design
           </Typography.Link>
           <Tooltip
             title="These options only visible to teachers and developers."

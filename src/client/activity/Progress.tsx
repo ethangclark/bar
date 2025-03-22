@@ -22,17 +22,7 @@ export const Progress = storeObserver(function Progress({
 
   return (
     <AtndProgress
-      type="circle"
-      size={50}
-      steps={{ count: items.length, gap: 8 }}
-      percent={(completionCount / items.length) * 100}
-      format={() => (
-        <span className="font-bold">
-          {completionCount} / {items.length}
-        </span>
-      )}
-      trailColor="rgba(0, 0, 0, 0.10)"
-      strokeWidth={15}
+      percent={Math.floor((completionCount / items.length) * 100)}
     />
   );
 });
