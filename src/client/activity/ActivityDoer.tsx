@@ -28,7 +28,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
         }}
       >
         {igod && <TeacherOptions />}
-        <div className="md:text-md mb-2 flex w-full items-center justify-between">
+        <div className="md:text-md mb-3 flex w-full items-center justify-between">
           <Progress />
           <div className="pl-7 text-lg md:text-2xl">{assignmentTitle}</div>
           <LogoutButton />

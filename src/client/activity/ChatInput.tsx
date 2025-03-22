@@ -87,10 +87,14 @@ export const ChatInput = storeObserver(function ChatInput({
           disabled={inputsDisabled}
         />
       </div>
-      <div className="w-full text-center text-xs text-gray-400">
-        Press enter to send. Response may take a few seconds. Let Summit know if
-        you want to move on to another part of the activity, or need help. Email
-        questions and issues to hello@summited.ai
+      <div>
+        <div className="w-full text-center text-xs text-gray-400">
+          Press enter to send. Let Summit know if something is confusing or you
+          need help.
+        </div>
+        <div className="w-full text-center text-xs text-gray-400">
+          You can contact the creators of Summit at hello@summited.ai.
+        </div>
       </div>
     </div>
   );
