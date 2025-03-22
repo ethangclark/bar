@@ -1,7 +1,7 @@
 import createSubscriber from "pg-listen";
 import superjson from "superjson";
 import { invoke } from "~/common/fnUtils";
-import type { SuperJSONValue } from "~/common/types";
+import type { SuperJsonValue } from "~/common/types";
 import { env } from "~/env";
 import { cache, getCache } from "~/server/services/cacheService";
 
@@ -13,7 +13,7 @@ const MAX_CHANNEL_NAME_LENGTH = 63;
 /**
  * A simple async queue that lets you push items and later await them.
  */
-class AsyncQueue<T extends SuperJSONValue> {
+class AsyncQueue<T extends SuperJsonValue> {
   private items: T[] = [];
   private resolvers: Array<(value: T) => void> = [];
   private closed = false;
@@ -83,7 +83,7 @@ function isCacheRef(payload: unknown): payload is CacheRefPayload {
   );
 }
 
-export class PubSub<T extends SuperJSONValue> {
+export class PubSub<T extends SuperJsonValue> {
   private pglSubscriber: ReturnType<typeof createSubscriber>;
   private subscribers = new Set<Subscriber<T>>();
 

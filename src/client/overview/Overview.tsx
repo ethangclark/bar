@@ -8,11 +8,13 @@ import { type RichActivity } from "~/common/types";
 import { trpc } from "~/trpc/proxy";
 import { Status } from "../utils/status";
 import { storeObserver } from "../utils/storeObserver";
-import { courseActivitiesKey, useCourseActivities } from "./courseActivities";
-import { CreateActivityButton } from "./CreateActivityButton";
-import { useStandaloneActivities } from "./standaloneActivities";
-
-const standaloneActivitiesKey = "ad-hoc-activities";
+import { useCourseActivities } from "./courseActivities";
+import { NoActivites } from "./NoActivities";
+import {
+  createdActivitesKey,
+  participatingActivitesKey,
+  useStandaloneActivities,
+} from "./standaloneActivities";
 
 export const Overview = storeObserver(function Overview({
   activitesStore,
@@ -23,7 +25,7 @@ export const Overview = storeObserver(function Overview({
   }, [activitesStore]);
   const activities = activitesStore.data;
 
-  const { item: courseActivitiesItem, courses } = useCourseActivities();
+  const { item: courseActivitiesItem } = useCourseActivities();
 
   const { user } = userStore;
 
@@ -52,22 +54,25 @@ export const Overview = storeObserver(function Overview({
     [activitesStore, router],
   );
 
-  const { item: standaloneActivitiesItem } = useStandaloneActivities(
+  const { created, participating } = useStandaloneActivities({
     activities,
-    !(user instanceof Status) && user.isInstructor ? onCreate : null,
-  );
+    user,
+    onCreate,
+  });
 
   if (
     activities instanceof Status ||
     user instanceof Status ||
-    standaloneActivitiesItem instanceof Status ||
+    created instanceof Status ||
+    participating instanceof Status ||
     courseActivitiesItem instanceof Status
   ) {
     return <LoadingPage />;
   }
 
   const items = [
-    ...(standaloneActivitiesItem ? [standaloneActivitiesItem] : []),
+    ...(participating ? [participating] : []),
+    ...(created ? [created] : []),
     ...(courseActivitiesItem ? [courseActivitiesItem] : []),
   ];
 
@@ -83,28 +88,17 @@ export const Overview = storeObserver(function Overview({
             <Collapse
               accordion
               defaultActiveKey={
-                !courses?.length
-                  ? [standaloneActivitiesKey]
-                  : courses?.length && !activities?.length
-                    ? [courseActivitiesKey]
+                participating
+                  ? [participatingActivitesKey]
+                  : created
+                    ? [createdActivitesKey]
                     : undefined
               }
               items={items}
             />
           </div>
         ) : (
-          <div className="flex grow flex-col items-center justify-center gap-4">
-            <div
-              className="text-center text-sm text-gray-500"
-              style={{ width: 300 }}
-            >
-              Click to create a standalone activity :)
-            </div>
-            <CreateActivityButton onCreate={onCreate} />
-            <div className="text-center text-sm text-gray-500">
-              Coming soon: LMS connections
-            </div>
-          </div>
+          <NoActivites onCreate={onCreate} />
         )}
       </div>
     </Page>

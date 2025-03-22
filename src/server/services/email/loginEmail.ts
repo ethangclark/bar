@@ -50,13 +50,17 @@ export async function sendLoginEmail({
     console.log(`Login link:\n\n${urlWithLoginToken}\n\n`);
   }
 
-  await sendEmail({
-    to: email,
-    from: env.EMAIL_FROM,
-    subject: "Sign in to to SummitEd",
-    text: loginEmailText({ urlWithLoginToken, email }),
-    html: loginEmailHtml({ urlWithLoginToken, email }),
-  });
+  if (env.QUICK_DEV_LOGIN) {
+    // skip sending the email
+  } else {
+    await sendEmail({
+      to: email,
+      from: env.EMAIL_FROM,
+      subject: "Sign in to to SummitEd",
+      text: loginEmailText({ urlWithLoginToken, email }),
+      html: loginEmailHtml({ urlWithLoginToken, email }),
+    });
+  }
 
   return { loginToken };
 }

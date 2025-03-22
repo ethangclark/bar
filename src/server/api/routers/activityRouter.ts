@@ -77,7 +77,7 @@ export const activityRouter = createTRPCRouter({
           .where(eq(schema.activities.id, input.activityId));
       } else {
         throw new Error(
-          "Not yet implemented: non-ad-hoc activity status updates",
+          "Not yet implemented: non-standalone activity status updates",
         );
       }
     }),

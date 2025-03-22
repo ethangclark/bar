@@ -1,5 +1,6 @@
 import { Button, Form, Input, Modal } from "antd";
 import { useState } from "react";
+import { type MaybePromise } from "~/common/types";
 
 export const createActivityButtonText = "Create activity";
 
@@ -7,7 +8,7 @@ export function CreateActivityButton({
   onCreate,
   small = false,
 }: {
-  onCreate: (title: string) => Promise<void>;
+  onCreate: (title: string) => MaybePromise<void>;
   small?: boolean;
 }) {
   const [creating, setCreating] = useState(false);

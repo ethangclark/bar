@@ -21,9 +21,9 @@ type JsonPlus =
   | Map<string, JsonPlus>;
 
 // I'd prefer to use Parameters<typeof superjson.serialize>[0], but that resolves to `any`
-export type SuperJSONValue = JsonPlus;
+export type SuperJsonValue = JsonPlus;
 
-export type SuperJsonObject = { [key: string]: SuperJSONValue };
+export type SuperJsonObject = { [key: string]: SuperJsonValue };
 
 export const audioDataXSchema = z.object({
   data: z.string(), // base64 encoded audio

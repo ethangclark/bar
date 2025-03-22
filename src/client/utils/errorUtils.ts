@@ -1,5 +1,5 @@
 import superjson from "superjson";
-import { type SuperJsonObject } from "~/common/types";
+import { type SuperJsonObject, type SuperJsonValue } from "~/common/types";
 import { trpc } from "~/trpc/proxy";
 import { subscribeToTrpcErrors } from "~/trpc/trpcErrorBridge";
 
@@ -63,3 +63,7 @@ if (typeof window !== "undefined") {
 subscribeToTrpcErrors((error) => {
   reportClientError(error);
 });
+
+export function clog(value: SuperJsonValue) {
+  return console.log(superjson.parse(superjson.stringify(value)));
+}

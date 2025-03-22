@@ -1,14 +1,14 @@
 import { eq, lt, sql } from "drizzle-orm";
 import superjson from "superjson";
 import { assertOne } from "~/common/assertions";
-import { type SuperJSONValue } from "~/common/types";
+import { type SuperJsonValue } from "~/common/types";
 import { db, schema } from "../db";
 
 export async function cache({
   value,
   durationSeconds,
 }: {
-  value: SuperJSONValue;
+  value: SuperJsonValue;
   durationSeconds: number;
 }) {
   const values = await db
@@ -28,7 +28,7 @@ export async function getCache({
   id,
 }: {
   id: string;
-}): Promise<SuperJSONValue> {
+}): Promise<SuperJsonValue> {
   const rows = await db
     .select()
     .from(schema.cacheValues)
