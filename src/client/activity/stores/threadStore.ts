@@ -1,6 +1,6 @@
 import { Modal } from "antd";
 import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
-import { Status, notLoaded } from "~/client/utils/status";
+import { Status, isStatus, notLoaded } from "~/client/utils/status";
 import { assertTypesExhausted } from "~/common/assertions";
 import { indexById } from "~/common/indexUtils";
 import {
@@ -64,7 +64,10 @@ export class ThreadStore {
       { activityId },
       {
         onData: (threadWrap: ThreadWrap) => {
-          if (threadWrap.userId !== this.userStore.user) {
+          const userId = isStatus(this.userStore.user)
+            ? null
+            : this.userStore.user.id;
+          if (threadWrap.userId !== userId) {
             return;
           }
           Modal.info({

@@ -149,7 +149,7 @@ If they want to skip an item, let them, but encourage them to return to it later
 
 Be sure to let the student know which item(s) you are working with them on at any given time.
 
-When they complete an item, tell them that you are marking that item number as complete. Examples: "I'll mark item 5 as complete." "I'll mark item 12 as complete." (They will expect you to explicitly state each item number.)
+When they complete an item, tell them which item number they just completed. Examples: "You just completed item 5." "You just completed item 12." Be super explicit about it -- even if it's just a bit of information that doesn't require a response, they need to know the item number they just completed.
 
 Always mention the image or video number when referring to an image or video.
 
