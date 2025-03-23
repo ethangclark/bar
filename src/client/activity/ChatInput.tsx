@@ -35,6 +35,14 @@ export const ChatInput = storeObserver(function ChatInput({
 
   const inputsDisabled = loading || threadStore.isOldThread;
 
+  const initialMessageSent = useRef(false);
+
+  useEffect(() => {
+    if (initialMessageSent.current && !inputsDisabled) {
+      editorRef.current?.focus();
+    }
+  }, [inputsDisabled]);
+
   return (
     <div
       style={{
@@ -72,11 +80,9 @@ export const ChatInput = storeObserver(function ChatInput({
                 threadId: thread.id,
                 doneGenerating: true,
               });
+              initialMessageSent.current = true;
             } finally {
               setIsMessageSending(false);
-              if (editorRef.current) {
-                editorRef.current.focus();
-              }
             }
           }}
           disabled={inputsDisabled}
