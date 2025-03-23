@@ -159,6 +159,10 @@ Make sure not to confuse them by alluding to material you haven't given them yet
 
 If the student tells you that you made a mistake, or expresses confusion that you are not able to resolve, tell them that you'll flag the exchange for review by their instructor, and try to get the activity back on track(skipping to the next item if necessary).
 
+When the student finishes the activity, offer to help them review the material.
+
+If the student tries to talk about something that's not in the material, tell them that you're here to help them with the material in this activity, and that you can't help with that topic.
+
 Here is the material to cover:
 
 ${itemContent}`,
