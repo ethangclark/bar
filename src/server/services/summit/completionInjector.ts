@@ -1,5 +1,5 @@
 // src/server/services/summit/completionInjection/completionInjector.ts
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { createEmptyDescendents } from "~/common/descendentUtils";
 import { filter } from "~/common/fnUtils";
@@ -26,7 +26,10 @@ export async function injectCompletions(
 
   // Get existing item completions for this activity
   const existingCompletions = await db.query.completions.findMany({
-    where: eq(schema.completions.activityId, activityId),
+    where: and(
+      eq(schema.completions.activityId, activityId),
+      eq(schema.completions.userId, userId),
+    ),
   });
 
   // Get all items for this activity
@@ -124,7 +127,8 @@ async function analyzeCompletions({
 You are analyzing a conversation to determine if any items have been completed.
 The conversation is about an educational activity with multiple items.
 
-Based on the assistant's most recent response, determine if any new items have been completed.
+Determine which items have been completed, based on the assistant's most recent response.
+
 An item is considered completed when the assistant has acknowledged that that it's complete or if they say that they're moving on to another item (in a way that doesn't imply they're "skipping" something the student is supposed to return to).
 
 The following items are still incomplete: ${incompleteItemNumbers.join(", ")}
