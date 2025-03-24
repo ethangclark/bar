@@ -780,6 +780,48 @@ export type MessageWithDescendents = Message & {
   >;
 };
 
+// flags a message with a reason and a user id
+export const flags = pgTable(
+  "flag",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    messageId: uuid("message_id")
+      .notNull()
+      .references(() => messages.id, { onDelete: "cascade" }),
+    reason: text("reason").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (x) => [
+    index("flag_activity_id_idx").on(x.activityId),
+    index("flag_user_id_idx").on(x.userId),
+    index("flag_message_id_idx").on(x.messageId),
+  ],
+);
+export type Flag = InferSelectModel<typeof flags>;
+export const flagsRelations = relations(flags, ({ one }) => ({
+  activity: one(activities, {
+    fields: [flags.activityId],
+    references: [activities.id],
+  }),
+  user: one(users, {
+    fields: [flags.userId],
+    references: [users.id],
+  }),
+  message: one(messages, {
+    fields: [flags.messageId],
+    references: [messages.id],
+  }),
+}));
+export const flagSchema = createSelectSchema(flags);
+
 export const viewPieces = pgTable(
   "view_piece",
   {

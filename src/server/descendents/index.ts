@@ -14,6 +14,7 @@ import { objectEntries, objectValues } from "~/common/objectUtils";
 import { type DbOrTx } from "~/server/db";
 import { completionController } from "./completionController";
 import { evalKeyController } from "./evalKeyController";
+import { flagController } from "./flagController";
 import { infoImageController } from "./infoImageController";
 import { infoTextController } from "./infoTextController";
 import { infoVideoController } from "./infoVideoController";
@@ -44,6 +45,7 @@ export const controllers: Controllers = {
   viewPieceTexts: viewPieceTextController,
   viewPieceVideos: viewPieceVideoController,
   completions: completionController,
+  flags: flagController,
 };
 
 export async function createDescendents({

@@ -288,6 +288,13 @@
       "when": 1742092548212,
       "tag": "0040_lame_firestar",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1742855515406,
+      "tag": "0041_bent_daredevil",
+      "breakpoints": true
     }
   ]
 }

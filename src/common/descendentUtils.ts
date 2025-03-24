@@ -65,6 +65,7 @@ export const descendentNames = [
   "viewPieceTexts",
   "viewPieceVideos",
   "completions",
+  "flags",
 ] as const satisfies Array<keyof typeof schema>;
 
 export const descendentNamesSchema = z.enum(descendentNames);
@@ -107,6 +108,7 @@ export const descendentsSchema = z.object({
   viewPieceTexts: z.array(schema.viewPieceTextSchema),
   viewPieceVideos: z.array(schema.viewPieceVideoSchema),
   completions: z.array(schema.completionSchema),
+  flags: z.array(schema.flagSchema),
 }) satisfies z.ZodType<{
   [K in DescendentName]: unknown;
 }>;

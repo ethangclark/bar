@@ -5,6 +5,7 @@ import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import { threadWrapPubSub } from "~/server/db/pubsub/threadWrapPubSub";
 import { type Message, type MessageWithDescendents } from "~/server/db/schema";
 import { injectCompletions } from "./completionInjector";
+import { injectFlags } from "./flagInjector";
 import { injectMedia } from "./mediaInjection/mediaInjector";
 import { insertIntroMessages } from "./summitIntro";
 
@@ -48,6 +49,7 @@ export async function postProcessAssistantResponse(
   const [completionResponse] = await Promise.all([
     injectCompletions(assistantResponse, prevMessages),
     injectMedia(assistantResponse, prevMessages),
+    injectFlags(assistantResponse, prevMessages),
   ]);
   const { completedActivityThisTurn } = completionResponse;
 
