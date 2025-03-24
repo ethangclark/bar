@@ -176,8 +176,6 @@ ${itemContent}`,
         userId: thread.userId,
         content: `Hey — this is Summit. I'm a learning assistant whose goal is to help you master the material in this activity.
 
-We'll move through things one item at a time. If you want to skip anything, let me know, and we can return to it later.
-
 If anything is confusing, or something's not right, call it out, and we'll figure it out together. (If we can't, I'll flag our exchange so your instructor can review the issue.)
 
 Ready to jump in?`,
