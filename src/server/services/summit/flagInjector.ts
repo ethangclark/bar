@@ -20,6 +20,13 @@ async function getFlag({
   const prompt = `
   You are analyzing a conversation to determine if the last message says that the conversation will be flagged -- and if so, the reason that a flag was warranted.
 
+  Specifically, flag messages that:
+
+  1. Explicitly mention that the conversation will be flagged.
+  2. Acknowledge that some sort of issue in the tutoring process itself has occurred.
+
+  Do NOT flag messages that reflect levels of confusion that are a normal part of the tutoring process; we are ONLY looking to identify problems in the tutoring process itself, or acknowledgements of specific issues in the tutoring process.
+
   If the last message does not say that the conversation will be flagged, respond with:
   <no-flags></no-flags>
   
