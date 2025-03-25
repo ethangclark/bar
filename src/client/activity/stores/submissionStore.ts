@@ -1,17 +1,16 @@
 import { autorun, makeAutoObservable } from "mobx";
 import { QueryStore } from "~/client/utils/queryStore";
 import { Status } from "~/client/utils/status";
-import { groupBy } from "~/common/indexUtils";
 import { type UserBasic } from "~/common/types";
-import { type Completion } from "~/server/db/schema";
+import { type Completion, type Flag } from "~/server/db/schema";
 import { type FocusedActivityStore } from "./focusedActivityStore";
 
 type CompletionGetter = (params: { activityId: string }) => Promise<
-  Array<
-    Completion & {
-      user: UserBasic;
-    }
-  >
+  Array<{
+    user: UserBasic;
+    completions: Completion[];
+    flags: Flag[];
+  }>
 >;
 
 export class SubmissionStore {
@@ -36,17 +35,7 @@ export class SubmissionStore {
     if (data instanceof Status) {
       return data;
     }
-    const byUserId = groupBy(data, "userId");
-    return Object.values(byUserId).map((completions) => {
-      const user = completions[0]?.user;
-      if (user === undefined) {
-        throw new Error("User is undefined");
-      }
-      return {
-        user,
-        completions,
-      };
-    });
+    return data;
   }
 
   submittedUsers(_: { statusMeansZero: true }) {
@@ -54,7 +43,6 @@ export class SubmissionStore {
     if (data instanceof Status) {
       return 0;
     }
-    const userIds = new Set(data.map((c) => c.userId));
-    return userIds.size;
+    return data.length;
   }
 }

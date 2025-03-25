@@ -11,11 +11,7 @@ import { Status } from "../utils/status";
 import { storeObserver } from "../utils/storeObserver";
 import { useCourseActivities } from "./courseActivities";
 import { NoActivites } from "./NoActivities";
-import {
-  createdActivitesKey,
-  participatingActivitesKey,
-  useStandaloneActivities,
-} from "./standaloneActivities";
+import { useStandaloneActivities } from "./standaloneActivities";
 
 export const Overview = storeObserver(function Overview({
   activitesStore,
@@ -91,15 +87,8 @@ export const Overview = storeObserver(function Overview({
           <div>
             <div className="mb-4 text-2xl">Activities</div>
             <Collapse
-              accordion
-              defaultActiveKey={
-                participating
-                  ? [participatingActivitesKey]
-                  : created
-                    ? [createdActivitesKey]
-                    : undefined
-              }
               items={items}
+              defaultActiveKey={items.map((item) => item.key)}
             />
           </div>
         ) : (

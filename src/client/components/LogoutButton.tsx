@@ -6,7 +6,7 @@ import { LoadingNotCentered } from "./Loading";
 export function LogoutButton() {
   const [loggingOut, setLoggingOut] = useState(false);
   return (
-    <div className="relative">
+    <div className="relative mr-[-16px]">
       <Button
         type="text"
         className={`padding-0 ${loggingOut ? "invisible" : "visible"}`}

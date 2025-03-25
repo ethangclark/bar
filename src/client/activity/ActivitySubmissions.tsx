@@ -1,6 +1,7 @@
 import { Typography } from "antd";
 import { Fragment } from "react";
 import { LoadingCentered } from "../components/Loading";
+import { LogoutButton } from "../components/LogoutButton";
 import { Status } from "../utils/status";
 import { storeObserver } from "../utils/storeObserver";
 
@@ -26,20 +27,25 @@ export const ActivitySubmissions = storeObserver(function ActivitySubmissions({
 
   return (
     <div>
-      <div className="">
+      <div className="flex justify-between">
         <Typography.Link onClick={() => viewModeStore.setViewMode("editor")}>
           ← Back to design
         </Typography.Link>
+        <LogoutButton />
       </div>
       <div className="mb-4 text-3xl">Submissions</div>
-      <div className="grid grid-cols-4 gap-x-4">
+      <div className="grid grid-cols-5 gap-x-4">
         <div>Email</div>
         <div>Items complete</div>
         <div>Questions complete</div>
+        <div>Flags</div>
         <div>View</div>
         {submissions.length === 0 && <div>(No submissions yet)</div>}
         {submissions.map((submission) => {
           const activityId = submission.completions[0]?.activityId ?? null;
+          const flagCount = submission.flags.filter(
+            (flag) => !flag.unflagged,
+          ).length;
           return (
             <Fragment key={submission.user.id}>
               <div>{submission.user.email ?? "<no email on record>"}</div>
@@ -53,6 +59,9 @@ export const ActivitySubmissions = storeObserver(function ActivitySubmissions({
                   ).length
                 }{" "}
                 / {questionItemIds.size}
+              </div>
+              <div className={flagCount > 0 ? "text-red-500" : ""}>
+                {flagCount}
               </div>
               <div>
                 <Typography.Link

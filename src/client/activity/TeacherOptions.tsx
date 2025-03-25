@@ -58,7 +58,7 @@ export const TeacherOptions = storeObserver(function TeacherOptions({
           >
             Return to submissions
           </Typography.Link>
-          <span className="flex items-center gap-1">
+          <span className="flex flex-wrap items-center gap-1">
             <Typography.Text className="text-red-500">
               Viewing submission for
             </Typography.Text>
