@@ -1,6 +1,7 @@
 // src/server/services/summit/mediaInjectionDataGetter.ts
 import { assertTypesExhausted } from "~/common/assertions";
 import { getLlmResponse } from "~/server/ai/llm";
+import { defaultModel } from "~/server/ai/llm/types";
 import { db } from "~/server/db";
 import { type Message, type MessageWithDescendents } from "~/server/db/schema";
 import {
@@ -25,7 +26,7 @@ async function getMediaInjectionResponse({
   const response = await getLlmResponse(
     userId,
     {
-      model: "google/gemini-2.0-flash-001",
+      model: defaultModel,
       messages: [{ role: "user", content: prompt }],
     },
     db,

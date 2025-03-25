@@ -8,10 +8,14 @@ const modelSchema = z.enum([
   // "anthropic/claude-3.5-sonnet:beta",
   // "google/gemini-2.0-flash-thinking-exp:free", // rate limits are bad
   "google/gemini-2.0-flash-001",
-  // "google/gemini-2.0-pro-exp-02-05:free",
+  // "google/gemini-2.0-pro-exp-02-05:free", // rate limits are bad
   // "deepseek/deepseek-chat",
+  "deepseek/deepseek-chat-v3-0324",
 ]);
 export type Model = z.infer<typeof modelSchema>;
+
+export const defaultModel: Model = "google/gemini-2.0-flash-001";
+// export const defaultModel: Model = "deepseek/deepseek-chat-v3-0324";
 
 const textContentSchema = z.object({
   type: z.literal("text"),

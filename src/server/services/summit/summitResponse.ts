@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { createEmptyDescendents } from "~/common/descendentUtils";
 import { invoke } from "~/common/fnUtils";
 import { streamLlmResponse } from "~/server/ai/llm";
+import { defaultModel } from "~/server/ai/llm/types";
 import { db, schema } from "~/server/db";
 import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
 import { messageDeltaPubSub } from "~/server/db/pubsub/messageDeltaPubSub";
@@ -53,7 +54,7 @@ async function respondToThread({
   const gen = streamLlmResponse(
     emptyIncompleteMessage.userId,
     {
-      model: "google/gemini-2.0-flash-001",
+      model: defaultModel,
       messages: oldMessages.map((m) => ({
         role: m.senderRole,
         content: m.content,

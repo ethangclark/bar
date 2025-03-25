@@ -1,4 +1,5 @@
 import { getLlmResponse } from "~/server/ai/llm";
+import { defaultModel } from "~/server/ai/llm/types";
 import { db } from "~/server/db";
 import { beginStr, endStr, parseDescription } from "./parseDescription";
 
@@ -12,7 +13,7 @@ async function getAiResponse({
   const response = await getLlmResponse(
     userId,
     {
-      model: "google/gemini-2.0-flash-001",
+      model: defaultModel,
       messages: [
         {
           role: "user",
