@@ -1,17 +1,23 @@
+import { Typography } from "antd";
 import { useEffect } from "react";
+import { type Flag } from "~/server/db/schema";
+import { storeObserver } from "../utils/storeObserver";
 
-export function MessageView({
-  children,
-  className,
-  isLastMessage,
-  messageLength,
-  scrollToBottom,
-}: {
+export const MessageView = storeObserver<{
   children: React.ReactNode;
   className?: string;
   isLastMessage: boolean;
   messageLength: number;
   scrollToBottom: () => void;
+  flag: Flag | null;
+}>(function MessageView({
+  descendentStore,
+  children,
+  className,
+  isLastMessage,
+  messageLength,
+  scrollToBottom,
+  flag,
 }) {
   useEffect(() => {
     if (isLastMessage) {
@@ -25,5 +31,24 @@ export function MessageView({
     messageLength,
   ]);
 
-  return <div className={`mb-4 flex ${className}`}>{children}</div>;
-}
+  return (
+    <div className={`mb-4 flex flex-col gap-1 ${className}`}>
+      {children}
+      {flag && (
+        <Typography.Link
+          className={`text-xs ${flag.unflagged ? "text-red-600" : ""}`}
+          onClick={() => {
+            descendentStore.update("flags", {
+              id: flag.id,
+              unflagged: !flag.unflagged,
+            });
+          }}
+        >
+          {flag.unflagged
+            ? "Message has been unflagged. Click here to re-flag."
+            : "Message has been flagged. Click here to unflag."}
+        </Typography.Link>
+      )}
+    </div>
+  );
+});

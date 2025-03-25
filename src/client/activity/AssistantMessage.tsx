@@ -1,8 +1,10 @@
+import { useMemo } from "react";
 import { assertTypesExhausted } from "~/common/assertions";
 import { type Message } from "~/server/db/schema";
 import { Image } from "../components/Image";
 import { PreformattedText } from "../components/PreformattedText";
 import { Video } from "../components/Video";
+import { isStatus } from "../utils/status";
 import { storeObserver } from "../utils/storeObserver";
 import { MessageView } from "./MessageView";
 
@@ -15,8 +17,17 @@ export const AssistantMessage = storeObserver<{
   isLastMessage,
   scrollToBottom,
   viewPieceStore,
+  descendentStore,
 }) {
   const children = viewPieceStore.viewPieceChildren(message.id);
+
+  const flags = descendentStore.get("flags");
+  const flag = useMemo(() => {
+    if (isStatus(flags)) {
+      return null;
+    }
+    return flags.find((f) => f.messageId === message.id) ?? null;
+  }, [flags, message.id]);
 
   if (children) {
     return (
@@ -30,6 +41,7 @@ export const AssistantMessage = storeObserver<{
                   isLastMessage={isLastMessage && i === children.length - 1}
                   messageLength={child.url.length}
                   scrollToBottom={scrollToBottom}
+                  flag={flag}
                 >
                   <Image alt={child.textAlternative} url={child.url} />
                 </MessageView>
@@ -41,6 +53,7 @@ export const AssistantMessage = storeObserver<{
                   isLastMessage={isLastMessage && i === children.length - 1}
                   messageLength={child.textAlternative.length}
                   scrollToBottom={scrollToBottom}
+                  flag={flag}
                 >
                   <Video videoId={child.videoId} />
                 </MessageView>
@@ -52,6 +65,7 @@ export const AssistantMessage = storeObserver<{
                   isLastMessage={isLastMessage && i === children.length - 1}
                   messageLength={child.content.length}
                   scrollToBottom={scrollToBottom}
+                  flag={flag}
                 >
                   <PreformattedText>{child.content}</PreformattedText>
                 </MessageView>
@@ -68,6 +82,7 @@ export const AssistantMessage = storeObserver<{
         isLastMessage={isLastMessage}
         messageLength={message.content.length}
         scrollToBottom={scrollToBottom}
+        flag={flag}
       >
         <PreformattedText>{message.content}</PreformattedText>
       </MessageView>

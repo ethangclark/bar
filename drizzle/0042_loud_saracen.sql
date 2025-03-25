@@ -1,0 +1,1 @@
+ALTER TABLE "flag" ADD COLUMN "unflagged" boolean DEFAULT false NOT NULL;

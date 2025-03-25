@@ -17,12 +17,12 @@ async function getFlag({
 }) {
   // Prepare the prompt for the LLM
   const prompt = `
-  You are analyzing a conversation to determine if the last message says that the conversation will be flagged -- and if so, why.
+  You are analyzing a conversation to determine if the last message says that the conversation will be flagged -- and if so, the reason that a flag was warranted.
 
   If the last message does not say that the conversation will be flagged, respond with:
   <no-flags></no-flags>
   
-  If the last message says that the conversation will be flagged, respond with:
+  However, if the last message says that the conversation will be flagged, respond with:
   <flag-reason>reason</flag-reason>
 
   ...where reason is a description of why the conversation will be flagged. (It can be anywhere between one sentence and a paragraph -- use your judgement.)

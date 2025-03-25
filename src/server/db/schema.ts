@@ -798,6 +798,7 @@ export const flags = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    unflagged: boolean("unflagged").notNull().default(false),
   },
   (x) => [
     index("flag_activity_id_idx").on(x.activityId),

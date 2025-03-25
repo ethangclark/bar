@@ -1,6 +1,8 @@
 import { and, eq, inArray } from "drizzle-orm";
+import { assertTypesExhausted } from "~/common/assertions";
 import { type DescendentController } from "~/common/descendentUtils";
 import { isGrader } from "~/common/enrollmentTypeUtils";
+import { objectKeys } from "~/common/objectUtils";
 import { type Flag } from "~/server/db/schema";
 import { schema } from "../db";
 
@@ -52,11 +54,33 @@ export const flagController: DescendentController<Flag> = {
   },
   async update({ activityId, tx, rows, userId }) {
     for (const row of rows) {
+      // this rigamarole is to make sure we're deliberate and include
+      // all the fields we want to update (and none that we don't)
+      const update: Partial<Pick<Flag, "reason" | "unflagged">> = {};
+      objectKeys(row).forEach((key) => {
+        switch (key) {
+          case "id":
+          case "activityId":
+          case "userId":
+          case "messageId":
+          case "createdAt":
+            break;
+          case "reason": {
+            update.reason = row[key];
+            break;
+          }
+          case "unflagged": {
+            update.unflagged = row[key];
+            break;
+          }
+          default:
+            assertTypesExhausted(key);
+        }
+      });
+
       await tx
         .update(schema.flags)
-        .set({
-          reason: row.reason,
-        })
+        .set(update)
         .where(
           and(
             eq(schema.flags.activityId, activityId),
