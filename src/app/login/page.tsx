@@ -31,12 +31,12 @@ const RootLoginPageInner = storeObserver(function RootLoginPageInner({
   useEffect(() => {
     if (loginToken) {
       void invoke(async () => {
-        const { succeeded, user } = await trpc.auth.autoLogin.mutate({
+        const result = await trpc.auth.autoLogin.mutate({
           loginToken,
           loginType,
         });
-        if (succeeded) {
-          user && userStore.setUser(user);
+        if (result.succeeded) {
+          userStore.setUser(result.user);
           if (rawRedirect) {
             router.push(decodeURIComponent(rawRedirect));
           } else {

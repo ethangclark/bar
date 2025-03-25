@@ -41,20 +41,22 @@ export async function attemptAutoLogin(
   session: Session,
   tx: DbOrTx,
   loginType: LoginType | null,
-) {
+): Promise<
+  { succeeded: true; user: UserBasic } | { succeeded: false; user: null }
+> {
   const loginTokenHash = hashLoginToken(loginToken);
   const user = await tx.query.users.findFirst({
     where: eq(schema.users.loginTokenHash, loginTokenHash),
   });
-  if (!user) return { succeeded: false };
+  if (!user) return { succeeded: false, user: null };
 
   // if the login token was created after the session was created,
   // then we can login the user (because they're not an email scanner)
   if (user.loginTokenCreatedAt > session.createdAt) {
-    await loginUser(loginToken, session, tx, loginType);
-    return { succeeded: true };
+    const { user } = await loginUser(loginToken, session, tx, loginType);
+    return { succeeded: true, user };
   } else {
-    return { succeeded: false };
+    return { succeeded: false, user: null };
   }
 }
 

@@ -113,19 +113,19 @@ export const authRouter = createTRPCRouter({
         loginType: loginTypeSchema.nullable().optional(),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }): ReturnType<typeof attemptAutoLogin> => {
       const { loginToken, loginType } = input;
       const { session } = ctx;
       if (!session) {
-        return { succeeded: false, user: null };
+        return { succeeded: false as const, user: null };
       }
-      const { succeeded } = await attemptAutoLogin(
+      const result = await attemptAutoLogin(
         loginToken,
         session,
         db,
         loginType ?? null,
       );
-      return { succeeded, ...getBasicSessionDeets(ctx) };
+      return result;
     }),
 
   logout: protectedProcedure.mutation(async ({ ctx }) => {
