@@ -38,7 +38,7 @@ export const MessageView = storeObserver<{
         <Typography.Link
           className={`text-xs ${flag.unflagged ? "text-red-600" : ""}`}
           onClick={() => {
-            descendentStore.update("flags", {
+            void descendentStore.update("flags", {
               id: flag.id,
               unflagged: !flag.unflagged,
             });
