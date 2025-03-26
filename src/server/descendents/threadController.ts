@@ -61,9 +61,6 @@ export const threadController: DescendentController<Thread> = {
     if (threads.length > 0) {
       return threads;
     } else {
-      // COMMENT_001a
-      // Ensure there's at least one thread!
-      // See COMMENT_001b
       const created = await db
         .insert(schema.threads)
         .values({

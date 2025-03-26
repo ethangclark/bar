@@ -15,9 +15,9 @@ export const messageRouter = createTRPCRouter({
       ctx,
     }): AsyncGenerator<MessageDelta> {
       const { activityId } = input;
-      const { userId } = ctx;
+      const { user } = ctx;
       const activity = await getActivity({
-        userId,
+        user,
         activityId,
         assertAccess: true,
       });
@@ -27,7 +27,7 @@ export const messageRouter = createTRPCRouter({
           if (
             messageController.canRead(messageDelta.baseMessage, {
               activityId,
-              userId,
+              userId: user.id,
               enrolledAs: activity.enrolledAs,
             })
           ) {

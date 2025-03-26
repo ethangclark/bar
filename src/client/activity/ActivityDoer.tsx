@@ -27,7 +27,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
           maxHeight: `calc(100vh - ${scrollbarHeight}px)`,
         }}
       >
-        <div className="flex w-full justify-between">
+        <div className="flex w-full items-center justify-between gap-1">
           <div>
             <Typography.Link href="/overview">
               ← Back to overview

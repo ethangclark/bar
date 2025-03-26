@@ -21,7 +21,7 @@ export const submissionRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const activity = await getActivity({
         assertAccess: true,
-        userId: ctx.userId,
+        user: ctx.user,
         activityId: input.activityId,
       });
       if (!isGrader(activity.enrolledAs)) {

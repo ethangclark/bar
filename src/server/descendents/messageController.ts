@@ -37,6 +37,7 @@ export const messageController: DescendentController<Message> = {
   // anyone can read a message for themselves
   async read({ activityId, tx, userId, enrolledAs, includeUserIds }) {
     let userIds = [userId];
+    console.log("ENROLLED AS", enrolledAs);
     if (isGrader(enrolledAs)) {
       // grader can read messages for themselves and for other users
       userIds = [...new Set([userId, ...includeUserIds])];

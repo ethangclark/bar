@@ -3,15 +3,13 @@ import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { objectValues } from "~/common/objectUtils";
+import { searchParamsX, type ViewMode } from "~/common/searchParams";
 import { api } from "~/trpc/react";
 import { LoadingCentered } from "../components/Loading";
 import { LogoutButton } from "../components/LogoutButton";
 import { Title } from "../components/Title";
 
-export const Admin = storeObserver(function Admin({
-  userStore,
-  viewModeStore,
-}) {
+export const Admin = storeObserver(function Admin({ userStore }) {
   const { data: flags } = api.admin.flags.useQuery({ lastCount: 100 });
 
   type FlagWithUser = typeof flags extends undefined | Array<infer T>
@@ -48,6 +46,11 @@ export const Admin = storeObserver(function Admin({
         dataIndex: "id",
         key: "id",
       },
+      userId: {
+        title: "User ID",
+        dataIndex: "userId",
+        key: "userId",
+      },
       activityId: {
         title: "Activity ID",
         dataIndex: "activityId",
@@ -56,8 +59,9 @@ export const Admin = storeObserver(function Admin({
           <Typography.Link
             onClick={() => {
               userStore.impersonateUser(row.user);
-              router.push(`/activity/${row.activityId}`);
-              viewModeStore.setViewMode("doer");
+              router.push(
+                `/activity/${row.activityId}?${searchParamsX.activityViewMode.key}=${"doer" satisfies ViewMode}`,
+              );
             }}
           >
             {activityId}
@@ -79,7 +83,7 @@ export const Admin = storeObserver(function Admin({
     const columns = objectValues(columnBases);
 
     return columns;
-  }, [router, userStore, viewModeStore]);
+  }, [router, userStore]);
 
   const keyedFlags = useMemo(
     () => (flags ?? []).map((f) => ({ ...f, key: f.id })),
