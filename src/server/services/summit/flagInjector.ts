@@ -18,24 +18,50 @@ async function getFlag({
 }) {
   // Prepare the prompt for the LLM
   const prompt = `
-  You are analyzing a conversation to determine if the last message says that the conversation will be flagged -- and if so, the reason that a flag was warranted.
-
-  Specifically, flag messages that:
-
-  1. Explicitly mention that the conversation will be flagged.
-  2. Acknowledge that some sort of issue in the tutoring process itself has occurred.
-
-  Do NOT flag messages that reflect levels of confusion that are a normal part of the tutoring process; we are ONLY looking to identify problems in the tutoring process itself, or acknowledgements of specific issues in the tutoring process.
-
-  If the last message does not say that the conversation will be flagged, respond with:
-  <no-flags></no-flags>
+  You are analyzing a conversation between a student a virtual learning assistant to determine if the last message sent by the learning assistant indicates that a new flag should be added to the conversation.
   
-  However, if the last message says that the conversation will be flagged, respond with:
+  If the last message demonstrates that a new flag is warranted, respond with:
   <flag-reason>reason</flag-reason>
+  (where "reason" is a description of why the conversation will be flagged.)
 
-  ...where reason is a description of why the conversation will be flagged. (It can be anywhere between one sentence and a paragraph -- use your judgement.)
+  If the last message does not indicate that a new flag should be added, respond with:
+  <no-flags></no-flags>
+
+  It's normal for students to get confused about the content of the assignment, or the instructions. Don't flag instances of this sort of confusion being expressed.
+
+  What we're looking for is instances where the tutor acknowledges either an explicit request to flag the conversation, or acknowledges that the tutoring process itself has encountered a fundamental problem.
+
+  Here are some examples of messages that show that the message should be flagged:
+
+  Example message: "I'm sorry -- it sounds like I made a mistake. I'll flag this conversation. Let's move on to the next question."
+  Example response: <flag-reason>The tutor acknowledged that they made a mistake and flagged the conversation.</flag-reason>
+
+  Example message: "My apologies -- it appears that I asked a question that was not part of the assignment. I'll flag this conversation."
+  Example response: <flag-reason>The tutor asked an unrelated question.</flag-reason>
+
+  Example message: "It looks like I included some unusual characters in my last response -- my apologies. Let me try that again..."
+  Example response: <flag-reason>The tutor included some unusual characters in their last response.</flag-reason>
+
+  Here are some examples of messages that should NOT be flagged:
   
+  Example message: "I'm having a hard time understanding your response. Can you please clarify?"
+  Example response: <no-flags></no-flags>
+
+  Example message: "It sounds like you're confused about the quadratic formula. Let's go over it again."
+  Example response: <no-flags></no-flags>
+
+  Example message: "Sorry for the confusion -- let me break that down in more detail."
+  Example response: <no-flags></no-flags>
+
+  Remember: You're only calling out if the *last message* indicates that a new flag should be added. If there are other flags mentioned earlier in the conversation, don't worry about those; just focus on the last message.
+  
+  Following are the actual messages from the conversation:
+
+  BEGIN CONVERSATION
+
   ${[...prevMessages, assistantResponse].map((msg, idx) => `${idx === prevMessages.length ? "(BEGIN LAST MESSAGE)\n" : ""}${msg.senderRole}: ${msg.content}`).join("\n\n")}
+
+  END CONVERSATION
   `;
 
   const llmResponse = await getLlmResponse(

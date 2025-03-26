@@ -5,6 +5,7 @@ import { isGrader } from "~/common/enrollmentTypeUtils";
 import { objectKeys } from "~/common/objectUtils";
 import { type Flag } from "~/server/db/schema";
 import { schema } from "../db";
+import { isUserAdmin } from "../services/userService";
 
 const canRead: DescendentController<Flag>["canRead"] = (
   flag,
@@ -56,7 +57,10 @@ export const flagController: DescendentController<Flag> = {
     for (const row of rows) {
       // this rigamarole is to make sure we're deliberate and include
       // all the fields we want to update (and none that we don't)
-      const update: Partial<Pick<Flag, "reason" | "unflagged">> = {};
+      const update: Partial<
+        Pick<Flag, "reason" | "unflagged" | "adminNote" | "adminChecked">
+      > = {};
+      const admin = await isUserAdmin(userId, tx);
       objectKeys(row).forEach((key) => {
         switch (key) {
           case "id":
@@ -71,6 +75,18 @@ export const flagController: DescendentController<Flag> = {
           }
           case "unflagged": {
             update.unflagged = row[key];
+            break;
+          }
+          case "adminNote": {
+            if (admin) {
+              update.adminNote = row[key];
+            }
+            break;
+          }
+          case "adminChecked": {
+            if (admin) {
+              update.adminChecked = row[key];
+            }
             break;
           }
           default:

@@ -14,6 +14,11 @@ export const queryUser = async (userId: string | null, tx: DbOrTx) => {
   );
 };
 
+export const isUserAdmin = async (userId: string, tx: DbOrTx) => {
+  const user = await queryUser(userId, tx);
+  return user?.isAdmin ?? false;
+};
+
 export const createUser = async (tx: DbOrTx) => {
   const user = await tx
     .insert(users)

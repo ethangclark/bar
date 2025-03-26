@@ -62,6 +62,7 @@ async function getNewStore(
         email: null,
         isInstructor: false,
         requestedInstructorAccess: false,
+        isAdmin: false,
       },
     },
     {

@@ -1,5 +1,6 @@
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { activityRouter } from "./routers/activityRouter";
+import { adminRouter } from "./routers/adminRouter";
 import { authRouter } from "./routers/authRouter";
 import { canvasRouter } from "./routers/canvasRouter";
 import { coursesRouter } from "./routers/coursesRouter";
@@ -30,6 +31,7 @@ export const appRouter = createTRPCRouter({
   transcription: transcriptionRouter,
   threadWrap: threadWrapRouter,
   submission: submissionRouter,
+  admin: adminRouter,
 });
 
 // export type definition of API

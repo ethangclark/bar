@@ -38,6 +38,7 @@ export const submissionRouter = createTRPCRouter({
               email: true,
               isInstructor: true,
               requestedInstructorAccess: true,
+              isAdmin: true,
             } satisfies { [key in keyof UserBasic]: true },
           },
         },

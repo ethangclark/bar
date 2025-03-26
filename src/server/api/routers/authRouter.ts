@@ -18,14 +18,10 @@ import {
 } from "~/server/services/authService";
 import { sendLoginEmail } from "~/server/services/email/loginEmail";
 
-function getIsAdmin(user: UserBasic) {
-  return user.email === "ethangclark@gmail.com";
-}
-
 function getBasicSessionDeets(ctx: Ctx) {
   const loggedIn = isLoggedIn(ctx);
   const { user } = ctx;
-  const isAdmin = user ? getIsAdmin(user) : false;
+  const isAdmin = user?.isAdmin ?? false;
 
   // important to pull just the fields we need so we don't expose any sensitive data
   const userBasic: UserBasic | null = user
@@ -35,6 +31,7 @@ function getBasicSessionDeets(ctx: Ctx) {
         name: user.name,
         isInstructor: user.isInstructor,
         requestedInstructorAccess: user.requestedInstructorAccess,
+        isAdmin: user.isAdmin,
       }
     : null;
 
@@ -74,7 +71,7 @@ export const authRouter = createTRPCRouter({
         return {
           isLoggedIn: true,
           user,
-          isAdmin: getIsAdmin(user),
+          isAdmin: user?.isAdmin ?? false,
         };
       }
       return getBasicSessionDeets(ctx);
@@ -101,7 +98,7 @@ export const authRouter = createTRPCRouter({
       const deets: ReturnType<typeof getBasicSessionDeets> = {
         isLoggedIn: true,
         user,
-        isAdmin: getIsAdmin(user),
+        isAdmin: user?.isAdmin ?? false,
       };
       return deets;
     }),

@@ -175,7 +175,7 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
 
 export const adminProcedure = publicProcedure.use(async ({ ctx, next }) => {
   const user = await queryUser(ctx.userId, db);
-  if (user?.email !== "ethangclark@gmail.com") {
+  if (!user?.isAdmin) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({

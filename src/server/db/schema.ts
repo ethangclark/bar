@@ -63,6 +63,7 @@ export const users = pgTable(
       .default(false)
       .notNull(),
     isInstructor: boolean("is_instructor").default(false).notNull(),
+    isAdmin: boolean("is_admin").default(false).notNull(),
   },
   (u) => [
     index("user_email_idx").on(u.email),
@@ -799,6 +800,8 @@ export const flags = pgTable(
       .notNull()
       .defaultNow(),
     unflagged: boolean("unflagged").notNull().default(false),
+    adminNote: text("admin_note").notNull().default(""),
+    adminChecked: boolean("admin_checked").notNull().default(false),
   },
   (x) => [
     index("flag_activity_id_idx").on(x.activityId),

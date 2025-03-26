@@ -59,7 +59,7 @@ export const messageController: DescendentController<Message> = {
     messages = messages.filter((m) => {
       switch (m.senderRole) {
         case "system":
-          return user.email === "ethangclark@gmail.com";
+          return user.isAdmin;
         case "assistant":
           return true;
         case "user":

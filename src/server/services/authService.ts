@@ -136,6 +136,7 @@ export async function loginUser(
       name: user.name,
       isInstructor: user.isInstructor,
       requestedInstructorAccess: user.requestedInstructorAccess,
+      isAdmin: user.isAdmin,
     } satisfies UserBasic,
   };
 }

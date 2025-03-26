@@ -41,4 +41,5 @@ export type UserBasic = {
   name: string | null;
   isInstructor: boolean;
   requestedInstructorAccess: boolean;
+  isAdmin: boolean;
 };
