@@ -33,7 +33,7 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
             <LinkX href="/overview">← Back to overview</LinkX>
           </div>
           {igod && <TeacherOptions />}
-          <LogoutButton />
+          <LogoutButton flushRight />
         </div>
         <div className="md:text-md mb-2 flex w-full items-center justify-between gap-4">
           <div className="text-lg md:text-2xl">{assignmentTitle}</div>

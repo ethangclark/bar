@@ -36,7 +36,7 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
     <div className="mx-4 flex h-full w-[672px] flex-col justify-between pb-2">
       <div className="flex w-full items-center justify-between">
         <LinkX href="/overview">← All activities</LinkX>
-        <LogoutButton />
+        <LogoutButton flushRight />
       </div>
       <div className="mb-4 flex items-center justify-between gap-2">
         <div className="mr-2 flex grow items-center gap-4">

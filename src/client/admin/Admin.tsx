@@ -10,10 +10,7 @@ import { LoadingCentered } from "../components/Loading";
 import { LogoutButton } from "../components/LogoutButton";
 import { Title } from "../components/Title";
 
-export const Admin = storeObserver(function Admin({
-  userStore,
-  descendentStore,
-}) {
+export const Admin = storeObserver(function Admin({ userStore }) {
   const { data: flags, refetch } = api.admin.flags.useQuery({ lastCount: 100 });
   const { mutateAsync: toggleFlag } = api.admin.toggleFlag.useMutation();
 
@@ -47,7 +44,7 @@ export const Admin = storeObserver(function Admin({
           return (
             <Checkbox
               checked={row.adminChecked}
-              onChange={async (e) => {
+              onChange={async () => {
                 setFlagChanging(true);
                 await toggleFlag({ id: row.id });
                 await refetch();
@@ -100,7 +97,7 @@ export const Admin = storeObserver(function Admin({
     const columns = objectValues(columnBases);
 
     return columns;
-  }, [router, userStore]);
+  }, [flagChanging, refetch, router, toggleFlag, userStore]);
 
   const keyedFlags = useMemo(
     () => (flags ?? []).map((f) => ({ ...f, key: f.id })),
@@ -114,7 +111,7 @@ export const Admin = storeObserver(function Admin({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end">
-        <LogoutButton normalPadding />
+        <LogoutButton flushRight={false} />
       </div>
       <Title>Admin</Title>
       <Table dataSource={keyedFlags} columns={columns} />

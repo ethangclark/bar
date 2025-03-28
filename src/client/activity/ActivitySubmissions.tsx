@@ -31,7 +31,7 @@ export const ActivitySubmissions = storeObserver(function ActivitySubmissions({
         <LinkStyle onClick={() => viewModeStore.setViewMode("editor")}>
           ← Back to design
         </LinkStyle>
-        <LogoutButton />
+        <LogoutButton flushRight />
       </div>
       <div className="mb-4 text-3xl">Submissions</div>
       <div className="grid grid-cols-5 gap-x-4">
