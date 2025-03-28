@@ -11,9 +11,9 @@ export const threadWrapRouter = createTRPCRouter({
     .input(z.object({ activityId: z.string() }))
     .subscription(async function* ({ input, ctx }): AsyncGenerator<ThreadWrap> {
       const { activityId } = input;
-      const { userId } = ctx;
+      const { user } = ctx;
       await getActivity({
-        userId,
+        user,
         activityId,
         assertAccess: true,
       });

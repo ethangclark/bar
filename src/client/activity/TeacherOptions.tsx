@@ -1,5 +1,6 @@
 import { message, Tooltip, Typography } from "antd";
 import { CircleHelp, Copy } from "lucide-react";
+import { LinkStyle } from "../components/Link";
 import { storeObserver } from "../utils/storeObserver";
 
 function CopyableEmail({
@@ -20,7 +21,7 @@ function CopyableEmail({
       </Typography.Text>
       {email && (
         <Tooltip title="Copy email">
-          <Typography.Link
+          <LinkStyle
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(email);
@@ -31,7 +32,7 @@ function CopyableEmail({
             }}
           >
             <Copy size={16} />
-          </Typography.Link>
+          </LinkStyle>
         </Tooltip>
       )}
     </div>
@@ -50,14 +51,14 @@ export const TeacherOptions = storeObserver(function TeacherOptions({
     >
       {impersonating ? (
         <div className="flex items-center gap-6">
-          <Typography.Link
+          <LinkStyle
             onClick={() => {
               userStore.stopImpersonating();
               viewModeStore.setViewMode("submissions");
             }}
           >
             Return to submissions
-          </Typography.Link>
+          </LinkStyle>
           <span className="flex flex-wrap items-center gap-1">
             <Typography.Text className="text-red-500">
               Viewing submission for
@@ -71,16 +72,16 @@ export const TeacherOptions = storeObserver(function TeacherOptions({
         </div>
       ) : (
         <>
-          <Typography.Link onClick={() => viewModeStore.setViewMode("editor")}>
+          <LinkStyle onClick={() => viewModeStore.setViewMode("editor")}>
             Return to design
-          </Typography.Link>
+          </LinkStyle>
           <Tooltip
             title="These options only visible to teachers and developers."
             className="text-gray-500"
           >
             <CircleHelp size={16} />
           </Tooltip>
-          <Typography.Link
+          <LinkStyle
             onClick={async () => {
               await Promise.all([
                 threadStore.removeCompletions(),
@@ -89,7 +90,7 @@ export const TeacherOptions = storeObserver(function TeacherOptions({
             }}
           >
             Reset + new chat
-          </Typography.Link>
+          </LinkStyle>
         </>
       )}
     </div>

@@ -17,13 +17,13 @@ export const activityRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const activity = await getActivity({
         assertAccess: true,
-        userId: ctx.userId,
+        user: ctx.user,
         activityId: input.activityId,
       });
       return activity;
     }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    const activities = await getAllActivities({ userId: ctx.userId });
+    const activities = await getAllActivities({ user: ctx.user });
     return activities;
   }),
   create: protectedProcedure
@@ -60,7 +60,7 @@ export const activityRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const activity = await getActivity({
         assertAccess: true,
-        userId: ctx.userId,
+        user: ctx.user,
         activityId: input.activityId,
       });
 

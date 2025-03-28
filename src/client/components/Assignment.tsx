@@ -1,4 +1,3 @@
-import { Typography } from "antd";
 import React from "react";
 import { formatDateTime } from "~/common/timeUtils";
 import { type ActivityStatus } from "~/server/db/schema";
@@ -7,6 +6,7 @@ import {
   type LmsAssignment,
   type LmsCourse,
 } from "~/server/integrations/types";
+import { LinkX } from "./Link";
 
 const StatusWrapper = ({ children }: { children: React.ReactNode }) => (
   <span className={`rounded border-2 p-1 font-bold`}>{children}</span>
@@ -83,12 +83,12 @@ export function Assignment({
             lockedAt={assignment.lockedAt}
           />
         </div>
-        <Typography.Link
+        <LinkX
           className="text-2xl"
           href={`/activity/${assignment.activity.id}`}
         >
           {assignment.title}
-        </Typography.Link>
+        </LinkX>
       </div>
       <div className="ml-1 text-sm">
         {assignment.dueAt ? (

@@ -27,11 +27,11 @@ export const descendentRouter = createTRPCRouter({
     )
     .query(async ({ input, ctx }) => {
       const { activityId, includeUserIds } = input;
-      const { userId } = ctx;
+      const { user } = ctx;
 
       const activity = await getActivity({
         assertAccess: true,
-        userId,
+        user,
         activityId,
       });
 
@@ -45,7 +45,7 @@ export const descendentRouter = createTRPCRouter({
       const result = await db.transaction(async (tx) => {
         return readDescendents({
           activityId,
-          userId,
+          userId: user.id,
           enrolledAs: activity.enrolledAs,
           includeUserIds: includeUserIds ?? [],
           tx,
@@ -69,11 +69,11 @@ export const descendentRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const { activityId, modifications } = input;
-      const { userId } = ctx;
+      const { user } = ctx;
 
       const activity = await getActivity({
         assertAccess: true,
-        userId,
+        user,
         activityId,
       });
 
@@ -88,7 +88,7 @@ export const descendentRouter = createTRPCRouter({
         return modifyDescendents({
           activityId,
           modifications,
-          userId,
+          userId: user.id,
           enrolledAs: activity.enrolledAs,
           tx,
           enqueueSideEffect,
@@ -109,9 +109,9 @@ export const descendentRouter = createTRPCRouter({
       ctx,
     }): AsyncGenerator<Descendents> {
       const { activityId } = input;
-      const { userId } = ctx;
+      const { user } = ctx;
       const activity = await getActivity({
-        userId,
+        user,
         activityId,
         assertAccess: true,
       });
@@ -129,7 +129,7 @@ export const descendentRouter = createTRPCRouter({
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               controller.canRead(descendent as any, {
                 activityId,
-                userId,
+                userId: user.id,
                 enrolledAs: activity.enrolledAs,
               }),
           );

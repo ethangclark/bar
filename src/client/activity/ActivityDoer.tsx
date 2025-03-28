@@ -1,4 +1,5 @@
 import { Typography } from "antd";
+import { LinkStyle, LinkX } from "../components/Link";
 import { LogoutButton } from "../components/LogoutButton";
 import { scrollbarHeight } from "../utils/scrollbarWidth";
 import { Status } from "../utils/status";
@@ -27,14 +28,12 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
           maxHeight: `calc(100vh - ${scrollbarHeight}px)`,
         }}
       >
-        <div className="flex w-full justify-between">
+        <div className="flex w-full items-center justify-between gap-1">
           <div>
-            <Typography.Link href="/overview">
-              ← Back to overview
-            </Typography.Link>
+            <LinkX href="/overview">← Back to overview</LinkX>
           </div>
           {igod && <TeacherOptions />}
-          <LogoutButton />
+          <LogoutButton flushRight />
         </div>
         <div className="md:text-md mb-2 flex w-full items-center justify-between gap-4">
           <div className="text-lg md:text-2xl">{assignmentTitle}</div>
@@ -50,12 +49,12 @@ export const ActivityDoer = storeObserver<{ assignmentTitle: string }>(
         {threadStore.isOldThread && (
           <div className="mb-5 flex w-full items-center justify-center rounded-lg bg-gray-200 py-2 text-gray-500">
             <Typography.Text>This is an old thread.</Typography.Text>
-            <Typography.Link
+            <LinkStyle
               className="mx-1"
               onClick={() => threadStore.selectLatestThread()}
             >
               Click here
-            </Typography.Link>
+            </LinkStyle>
             <Typography.Text>to view the current conversation.</Typography.Text>
           </div>
         )}

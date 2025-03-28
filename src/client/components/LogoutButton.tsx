@@ -3,14 +3,10 @@ import { useState } from "react";
 import { trpc } from "~/trpc/proxy";
 import { LoadingNotCentered } from "./Loading";
 
-export function LogoutButton({
-  normalPadding = false,
-}: {
-  normalPadding?: boolean;
-}) {
+export function LogoutButton({ flushRight }: { flushRight: boolean }) {
   const [loggingOut, setLoggingOut] = useState(false);
   return (
-    <div className={`relative ${normalPadding ? "" : "mr-[-16px]"}`}>
+    <div className={`relative ${flushRight ? "mr-[-16px]" : ""}`}>
       <Button
         type="text"
         className={`padding-0 ${loggingOut ? "invisible" : "visible"}`}

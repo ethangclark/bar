@@ -1,5 +1,10 @@
 import { autorun, makeAutoObservable } from "mobx";
-import { notLoaded, Status, type NotLoaded } from "~/client/utils/status";
+import {
+  isStatus,
+  notLoaded,
+  Status,
+  type NotLoaded,
+} from "~/client/utils/status";
 import { invoke } from "~/common/fnUtils";
 import { type ViewMode } from "~/common/searchParams";
 import { type UserBasic } from "~/common/types";
@@ -29,6 +34,13 @@ export class UserStore {
   private _user: UserBasic | NotLoaded = notLoaded;
   private _impersonating: UserBasic | null = null;
 
+  get rootIsAdmin() {
+    if (isStatus(this._user)) {
+      return this._user;
+    }
+    return this._user.isAdmin;
+  }
+
   constructor(
     private locationStore: LocationStore,
     private viewModeStore: ViewModeStore,
@@ -38,6 +50,9 @@ export class UserStore {
     // get rid of impersonation cache if we navigate to a location that doesn't support it
     let lastWasSupported = false;
     autorun(() => {
+      if (isStatus(this.rootIsAdmin) || this.rootIsAdmin) {
+        return;
+      }
       if (this.viewModeStore.viewMode instanceof Status) {
         return;
       }
@@ -60,6 +75,11 @@ export class UserStore {
   }
 
   get impersonating() {
+    // admin gets to impersonate wherever they want
+    if (this.rootIsAdmin === true) {
+      return this._impersonating;
+    }
+
     if (this.viewModeStore.viewMode instanceof Status) {
       return null;
     }

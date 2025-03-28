@@ -28,19 +28,6 @@ function threadsNewToOld(threads: Thread[]) {
   return threads.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 }
 
-function getMostRecentThread(threads: Thread[]) {
-  // try to grab the latest thread
-  const [thread] = threadsNewToOld(threads);
-  if (thread) {
-    return thread;
-  }
-
-  // COMMENT_001b
-  // The threadController should ensure there's at least one thread!
-  // See COMMENT_001a
-  throw new Error("No thread found");
-}
-
 export class ThreadStore {
   private _selectedThreadId: string | null = null;
 
@@ -112,7 +99,7 @@ export class ThreadStore {
     if (threads instanceof Status) {
       return threads;
     }
-    return getMostRecentThread(threads);
+    return threadsNewToOld(threads)[0] ?? notLoaded;
   }
 
   private get threadSet() {

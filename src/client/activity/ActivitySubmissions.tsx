@@ -1,5 +1,5 @@
-import { Typography } from "antd";
 import { Fragment } from "react";
+import { LinkStyle } from "../components/Link";
 import { LoadingCentered } from "../components/Loading";
 import { LogoutButton } from "../components/LogoutButton";
 import { Status } from "../utils/status";
@@ -28,10 +28,10 @@ export const ActivitySubmissions = storeObserver(function ActivitySubmissions({
   return (
     <div>
       <div className="flex justify-between">
-        <Typography.Link onClick={() => viewModeStore.setViewMode("editor")}>
+        <LinkStyle onClick={() => viewModeStore.setViewMode("editor")}>
           ← Back to design
-        </Typography.Link>
-        <LogoutButton />
+        </LinkStyle>
+        <LogoutButton flushRight />
       </div>
       <div className="mb-4 text-3xl">Submissions</div>
       <div className="grid grid-cols-5 gap-x-4">
@@ -64,7 +64,7 @@ export const ActivitySubmissions = storeObserver(function ActivitySubmissions({
                 {flagCount}
               </div>
               <div>
-                <Typography.Link
+                <LinkStyle
                   disabled={activityId === null}
                   onClick={() => {
                     userStore.impersonateUser(submission.user);
@@ -72,7 +72,7 @@ export const ActivitySubmissions = storeObserver(function ActivitySubmissions({
                   }}
                 >
                   View
-                </Typography.Link>
+                </LinkStyle>
               </div>
             </Fragment>
           );

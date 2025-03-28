@@ -5,6 +5,7 @@ import {
 } from "~/common/enrollmentTypeUtils";
 import { noop } from "~/common/fnUtils";
 import { db, schema } from "~/server/db";
+import { type User } from "~/server/db/schema";
 import {
   getAssignmentActivities,
   getCourseAndAssignment,
@@ -34,21 +35,27 @@ async function ensureAutoEnrollment({
 
 function getEnrolledAs({
   creatorId,
-  userId,
+  user,
 }: {
   isStandaloneActivity: true; // important; this only applies to standalone activities
   creatorId: string;
-  userId: string;
+  user: User;
 }): EnrollmentType[] {
-  return creatorId === userId ? allEnrollmentTypes : standaloneEnrollmentTypes;
+  if (user.isAdmin) {
+    return allEnrollmentTypes;
+  } else if (creatorId === user.id) {
+    return allEnrollmentTypes;
+  } else {
+    return standaloneEnrollmentTypes;
+  }
 }
 
 export async function getActivity({
-  userId,
+  user,
   activityId,
   assertAccess,
 }: {
-  userId: string;
+  user: User;
   activityId: string;
   assertAccess: true;
 }) {
@@ -70,7 +77,7 @@ export async function getActivity({
 
   if (integrationActivity) {
     const { course, assignment } = await getCourseAndAssignment({
-      userId,
+      userId: user.id,
       integrationActivity,
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -91,12 +98,12 @@ export async function getActivity({
     const enrolledAs = getEnrolledAs({
       isStandaloneActivity: true,
       creatorId: standaloneActivity.creatorId,
-      userId,
+      user,
     });
 
     await ensureAutoEnrollment({
       standaloneActivityId: standaloneActivity.id,
-      userId,
+      userId: user.id,
     });
 
     return {
@@ -116,22 +123,24 @@ export async function getActivity({
 export type RichActivity = Awaited<ReturnType<typeof getActivity>>;
 
 export async function assertActivityAccess({
-  userId,
+  user,
   activityId,
 }: {
-  userId: string;
+  user: User;
   activityId: string;
 }) {
-  await getActivity({ userId, activityId, assertAccess: true });
+  await getActivity({ user, activityId, assertAccess: true });
 }
 
 export async function getAllActivities({
-  userId,
+  user,
 }: {
-  userId: string;
+  user: User;
 }): Promise<RichActivity[]> {
   const result = Array<RichActivity>();
-  const assignmentActivities = await getAssignmentActivities({ userId });
+  const assignmentActivities = await getAssignmentActivities({
+    userId: user.id,
+  });
   for (const assignmentActivity of assignmentActivities) {
     result.push({
       ...assignmentActivity.activity,
@@ -144,7 +153,7 @@ export async function getAllActivities({
   }
 
   const standaloneActivities = await db.query.standaloneActivities.findMany({
-    where: eq(schema.standaloneActivities.creatorId, userId),
+    where: eq(schema.standaloneActivities.creatorId, user.id),
     with: {
       activity: true,
     },
@@ -153,7 +162,7 @@ export async function getAllActivities({
     const enrolledAs = getEnrolledAs({
       isStandaloneActivity: true,
       creatorId: standaloneActivity.creatorId,
-      userId,
+      user,
     });
     result.push({
       ...standaloneActivity.activity,
@@ -165,7 +174,7 @@ export async function getAllActivities({
   const ownedStandaloneActivityIds = standaloneActivities.map((s) => s.id);
 
   const standaloneEnrollments = await db.query.standaloneEnrollments.findMany({
-    where: eq(schema.standaloneEnrollments.userId, userId),
+    where: eq(schema.standaloneEnrollments.userId, user.id),
     with: {
       standaloneActivity: {
         with: {

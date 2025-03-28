@@ -1,6 +1,6 @@
-import { Typography } from "antd";
 import { useEffect } from "react";
 import { type Flag } from "~/server/db/schema";
+import { LinkStyle } from "../components/Link";
 import { storeObserver } from "../utils/storeObserver";
 
 export const MessageView = storeObserver<{
@@ -35,7 +35,7 @@ export const MessageView = storeObserver<{
     <div className={`mb-4 flex flex-col gap-1 ${className}`}>
       {children}
       {flag && (
-        <Typography.Link
+        <LinkStyle
           className={`text-xs ${flag.unflagged ? "text-red-600" : ""}`}
           onClick={() => {
             void descendentStore.update("flags", {
@@ -47,7 +47,7 @@ export const MessageView = storeObserver<{
           {flag.unflagged
             ? "Message has been unflagged. Click here to re-flag."
             : "Message has been flagged. Click here to unflag."}
-        </Typography.Link>
+        </LinkStyle>
       )}
     </div>
   );

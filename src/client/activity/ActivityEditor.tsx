@@ -1,4 +1,4 @@
-import { Input, Typography } from "antd";
+import { Input } from "antd";
 import { generateKeyBetween } from "fractional-indexing";
 import {
   FancySavingIndicator,
@@ -7,6 +7,7 @@ import {
 import { Status } from "~/client/utils/status";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { indexToItemNumber } from "~/common/indexUtils";
+import { LinkX } from "../components/Link";
 import { LogoutButton } from "../components/LogoutButton";
 import { AddItemButtons } from "./AddItemButtons";
 import { EditorControls } from "./editorButtons/EditorControls";
@@ -34,8 +35,8 @@ export const ActivityEditor = storeObserver(function ActivityEditor({
   return (
     <div className="mx-4 flex h-full w-[672px] flex-col justify-between pb-2">
       <div className="flex w-full items-center justify-between">
-        <Typography.Link href="/overview">← All activities</Typography.Link>
-        <LogoutButton />
+        <LinkX href="/overview">← All activities</LinkX>
+        <LogoutButton flushRight />
       </div>
       <div className="mb-4 flex items-center justify-between gap-2">
         <div className="mr-2 flex grow items-center gap-4">

@@ -3,6 +3,7 @@ import "~/styles/globals.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider } from "antd";
 import { GeistSans } from "geist/font/sans";
+import { AdminBanner } from "~/client/admin/AdminBanner";
 import { CustomProviders } from "~/client/components/providers";
 import { TRPCReactProvider } from "~/trpc/react";
 
@@ -27,6 +28,7 @@ export default function RootLayout({
             >
               <CustomProviders>
                 <main className="flex min-h-screen flex-col items-center overflow-auto">
+                  <AdminBanner />
                   {children}
                 </main>
               </CustomProviders>

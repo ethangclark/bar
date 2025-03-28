@@ -1,8 +1,9 @@
 "use client";
 
-import { Button, Typography } from "antd";
+import { Button } from "antd";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { LinkX } from "~/client/components/Link";
 import { LoadingNotCentered, LoadingPage } from "~/client/components/Loading";
 import { LoginPage } from "~/client/components/LoginPage";
 import { FrontPageLogo } from "~/client/components/Logo";
@@ -88,8 +89,7 @@ const RootLoginPageInner = storeObserver(function RootLoginPageInner({
           </div>
         </div>
         <div className={`text-sm ${showBailOut ? "visible" : "invisible"}`}>
-          Not working? Try{" "}
-          <Typography.Link href="/">logging in again</Typography.Link>.
+          Not working? Try <LinkX href="/">logging in again</LinkX>.
         </div>
       </div>
     </NoScrollPage>

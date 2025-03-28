@@ -81,7 +81,7 @@ export const Overview = storeObserver(function Overview({
     <Page>
       <div style={{ minWidth: 500 }} className="flex grow flex-col gap-4">
         <div className="mb-8 flex w-full justify-end">
-          <LogoutButton />
+          <LogoutButton flushRight />
         </div>
         {items.length > 0 ? (
           <div>
