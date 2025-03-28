@@ -47,6 +47,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
     return (
       <Component
         ref={ref}
+        autoComplete="off"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         style={{
