@@ -1,4 +1,4 @@
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { type UserBasic } from "~/common/types";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
@@ -25,5 +25,21 @@ export const adminRouter = createTRPCRouter({
         },
       });
       return flags;
+    }),
+  toggleFlag: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      const flag = await db.query.flags.findFirst({
+        where: eq(schema.flags.id, input.id),
+      });
+      if (!flag) {
+        throw new Error("Flag not found");
+      }
+      await db
+        .update(schema.flags)
+        .set({
+          adminChecked: !flag.adminChecked,
+        })
+        .where(eq(schema.flags.id, input.id));
     }),
 });

@@ -1,6 +1,6 @@
-import { Table } from "antd";
+import { Checkbox, Table } from "antd";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { objectValues } from "~/common/objectUtils";
 import { searchParamsX, type ViewMode } from "~/common/searchParams";
@@ -10,8 +10,12 @@ import { LoadingCentered } from "../components/Loading";
 import { LogoutButton } from "../components/LogoutButton";
 import { Title } from "../components/Title";
 
-export const Admin = storeObserver(function Admin({ userStore }) {
-  const { data: flags } = api.admin.flags.useQuery({ lastCount: 100 });
+export const Admin = storeObserver(function Admin({
+  userStore,
+  descendentStore,
+}) {
+  const { data: flags, refetch } = api.admin.flags.useQuery({ lastCount: 100 });
+  const { mutateAsync: toggleFlag } = api.admin.toggleFlag.useMutation();
 
   type FlagWithUser = typeof flags extends undefined | Array<infer T>
     ? T
@@ -28,13 +32,30 @@ export const Admin = storeObserver(function Admin({ userStore }) {
 
   const router = useRouter();
 
+  const [flagChanging, setFlagChanging] = useState(false);
+
   const columns = useMemo(() => {
     const columnBases = {
       adminChecked: {
         title: "Checked",
         dataIndex: "adminChecked",
         key: "adminChecked",
-        render: (adminChecked: boolean) => (adminChecked ? "Yes" : "No"),
+        render: (adminChecked: boolean, row: FlagWithUser) => {
+          if (flagChanging) {
+            return <LoadingCentered />;
+          }
+          return (
+            <Checkbox
+              checked={row.adminChecked}
+              onChange={async (e) => {
+                setFlagChanging(true);
+                await toggleFlag({ id: row.id });
+                await refetch();
+                setFlagChanging(false);
+              }}
+            />
+          );
+        },
       },
       createdAt: {
         title: "Created At",
