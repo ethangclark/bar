@@ -1,8 +1,8 @@
 "use client";
 
 import { Button, Dropdown } from "antd";
-import Link from "next/link";
 import { Image } from "~/client/components/Image";
+import { LinkX } from "~/client/components/Link";
 import { FrontPageLogo } from "~/client/components/Logo";
 import { Page } from "~/client/components/Page";
 
@@ -22,11 +22,13 @@ export default function Home() {
               items: [
                 {
                   key: "instructors",
-                  label: <Link href="/login/instructor">For instructors</Link>,
+                  label: (
+                    <LinkX href="/login/instructor">For instructors</LinkX>
+                  ),
                 },
                 {
                   key: "student",
-                  label: <Link href="/login/student">For students</Link>,
+                  label: <LinkX href="/login/student">For students</LinkX>,
                 },
               ],
             }}
@@ -40,11 +42,13 @@ export default function Home() {
               items: [
                 {
                   key: "instructors",
-                  label: <Link href="/login/instructor">For instructors</Link>,
+                  label: (
+                    <LinkX href="/login/instructor">For instructors</LinkX>
+                  ),
                 },
                 {
                   key: "students",
-                  label: <Link href="/login/student">For students</Link>,
+                  label: <LinkX href="/login/student">For students</LinkX>,
                 },
               ],
             }}

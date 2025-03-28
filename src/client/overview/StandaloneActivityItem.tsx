@@ -1,4 +1,4 @@
-import { Button, Dropdown, Progress, Typography, type MenuProps } from "antd";
+import { Button, Dropdown, Progress, type MenuProps } from "antd";
 import { MoreVertical } from "lucide-react";
 import {
   enrollmentTypeColorClassName,
@@ -9,6 +9,7 @@ import {
 import { type RichActivity } from "~/common/types";
 import { type StandaloneActivity } from "~/server/db/schema";
 import { trpc } from "~/trpc/proxy";
+import { LinkX } from "../components/Link";
 import { LoadingNotCentered } from "../components/Loading";
 import { Status } from "../utils/status";
 import { storeObserver } from "../utils/storeObserver";
@@ -73,12 +74,12 @@ export const StandaloneActivityItem = storeObserver<{
       key={activity.id}
       className="flex w-full items-center rounded-md hover:bg-gray-50"
     >
-      <Typography.Link
+      <LinkX
         href={`/activity/${activity.id}`}
         className={"mr-12 grow py-1 pl-3"}
       >
         {standaloneActivity.title}
-      </Typography.Link>
+      </LinkX>
       <div className="mx-2">
         {percentCompleted === null ? null : percentCompleted instanceof
           Status ? (

@@ -1,10 +1,11 @@
-import { Table, Typography } from "antd";
+import { Table } from "antd";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { objectValues } from "~/common/objectUtils";
 import { searchParamsX, type ViewMode } from "~/common/searchParams";
 import { api } from "~/trpc/react";
+import { LinkStyle } from "../components/Link";
 import { LoadingCentered } from "../components/Loading";
 import { LogoutButton } from "../components/LogoutButton";
 import { Title } from "../components/Title";
@@ -41,11 +42,6 @@ export const Admin = storeObserver(function Admin({ userStore }) {
         key: "createdAt",
         render: (createdAt: Date) => createdAt.toLocaleString(),
       },
-      id: {
-        title: "Flag ID",
-        dataIndex: "id",
-        key: "id",
-      },
       userId: {
         title: "User ID",
         dataIndex: "userId",
@@ -56,7 +52,7 @@ export const Admin = storeObserver(function Admin({ userStore }) {
         dataIndex: "activityId",
         key: "activityId",
         render: (activityId: string, row: FlagWithUser) => (
-          <Typography.Link
+          <LinkStyle
             onClick={() => {
               userStore.impersonateUser(row.user);
               router.push(
@@ -65,7 +61,7 @@ export const Admin = storeObserver(function Admin({ userStore }) {
             }}
           >
             {activityId}
-          </Typography.Link>
+          </LinkStyle>
         ),
       },
       reason: {

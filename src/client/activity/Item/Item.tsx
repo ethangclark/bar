@@ -1,4 +1,4 @@
-import { Typography } from "antd";
+import { LinkStyle } from "~/client/components/Link";
 import { assertTypesExhausted } from "~/common/assertions";
 import { type EnrollmentType } from "~/common/enrollmentTypeUtils";
 import { noop } from "~/common/fnUtils";
@@ -67,27 +67,27 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
       <div className="flex w-full items-center justify-between">
         <div className="mb-1 flex items-center gap-2">
           <div className="flex flex-col">
-            <Typography.Link
+            <LinkStyle
               className="mb-[-2px] text-xs"
               onClick={moveItemUp ?? noop}
               disabled={!moveItemUp}
               title={moveItemUp ? "Move up" : "No item above"}
             >
               ↑
-            </Typography.Link>
-            <Typography.Link
+            </LinkStyle>
+            <LinkStyle
               className="mt-[-2px] text-xs"
               onClick={moveItemDown ?? noop}
               disabled={!moveItemDown}
               title={moveItemDown ? "Move down" : "No item below"}
             >
               ↓
-            </Typography.Link>
+            </LinkStyle>
           </div>
           <div className="text-lg font-bold">Item {itemNumber}</div>
           <TypeTitle>{getItemTitle(item)}</TypeTitle>
         </div>
-        <Typography.Link
+        <LinkStyle
           onClick={() => draftStore.toggleDeletion(item.id)}
           className="text-xs"
         >
@@ -96,7 +96,7 @@ export const Item = storeObserver<CustomProps>(function Item(props) {
           ) : (
             <span className="text-gray-500 hover:text-red-500">Delete</span>
           )}
-        </Typography.Link>
+        </LinkStyle>
       </div>
       <div className={`w-full ${deleted ? "opacity-30" : ""}`}>
         {objectKeys(item).map((itemKey) => {
