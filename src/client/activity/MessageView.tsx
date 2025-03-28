@@ -10,6 +10,7 @@ export const MessageView = storeObserver<{
   messageLength: number;
   scrollToBottom: () => void;
   flag: Flag | null;
+  footer?: React.ReactNode;
 }>(function MessageView({
   descendentStore,
   children,
@@ -18,6 +19,7 @@ export const MessageView = storeObserver<{
   messageLength,
   scrollToBottom,
   flag,
+  footer,
 }) {
   useEffect(() => {
     if (isLastMessage) {
@@ -29,10 +31,12 @@ export const MessageView = storeObserver<{
     // important to include messageLength in the dependency array
     // so we re-scroll to the bottom when the message content changes
     messageLength,
+    // re-scroll if footer changes
+    footer,
   ]);
 
   return (
-    <div className={`mb-4 flex flex-col gap-1 ${className}`}>
+    <div className={`flex flex-col gap-1 pb-4 ${className ?? ""}`}>
       {children}
       {flag && (
         <LinkStyle
@@ -48,6 +52,9 @@ export const MessageView = storeObserver<{
             ? "Message has been unflagged. Click here to re-flag."
             : "Message has been flagged. Click here to unflag."}
         </LinkStyle>
+      )}
+      {footer && (
+        <div className="absolute relative bottom-0 left-0">{footer}</div>
       )}
     </div>
   );

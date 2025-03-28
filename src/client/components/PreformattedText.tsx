@@ -1,3 +1,9 @@
-export function PreformattedText({ children }: { children: React.ReactNode }) {
-  return <pre className="text-wrap font-serif">{children}</pre>;
+export function PreformattedText({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <pre className={`text-wrap font-serif ${className}`}>{children}</pre>;
 }

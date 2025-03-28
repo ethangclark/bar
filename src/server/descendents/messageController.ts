@@ -3,7 +3,7 @@ import { assertTypesExhausted } from "~/common/assertions";
 import { type DescendentController } from "~/common/descendentUtils";
 import { isGrader } from "~/common/enrollmentTypeUtils";
 import { type Message } from "~/server/db/schema";
-import { schema } from "../db";
+import { db, schema } from "../db";
 import { respondToUserMessages } from "../services/summit/summitResponse";
 
 const canRead: DescendentController<Message>["canRead"] = (
@@ -56,18 +56,38 @@ export const messageController: DescendentController<Message> = {
           inArray(schema.messages.userId, userIds),
         ),
       );
-    messages = messages.filter((m) => {
-      switch (m.senderRole) {
-        case "system":
-          return user.isAdmin;
-        case "assistant":
-          return true;
-        case "user":
-          return userIds.includes(m.userId);
-        default:
-          assertTypesExhausted(m.senderRole);
-      }
-    });
+    messages = messages
+      .filter((m) => {
+        switch (m.senderRole) {
+          case "system":
+            return user.isAdmin;
+          case "assistant":
+            return true;
+          case "user":
+            return userIds.includes(m.userId);
+          default:
+            assertTypesExhausted(m.senderRole);
+        }
+      })
+      .map((m) => ({
+        ...m,
+        doneGenerating: true,
+      }));
+
+    // ensure all messages are marked as doneGenerating
+    // (in case server was interrupted)
+    void db
+      .update(schema.messages)
+      .set({
+        doneGenerating: true,
+      })
+      .where(
+        and(
+          eq(schema.messages.activityId, activityId),
+          inArray(schema.messages.userId, userIds),
+        ),
+      );
+
     return messages;
   },
   async update() {

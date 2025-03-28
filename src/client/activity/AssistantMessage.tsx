@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { assertTypesExhausted } from "~/common/assertions";
 import { type Message } from "~/server/db/schema";
 import { Image } from "../components/Image";
@@ -7,6 +7,37 @@ import { Video } from "../components/Video";
 import { isStatus } from "../utils/status";
 import { storeObserver } from "../utils/storeObserver";
 import { MessageView } from "./MessageView";
+
+interface FancyEllipsisProps {
+  /** Interval in milliseconds between dot updates (default: 500ms) */
+  interval?: number;
+  /** Maximum number of dots (default: 3) */
+  maxDots?: number;
+  /** Optional extra Tailwind CSS classes */
+  className?: string;
+}
+
+const FancyEllipsis: React.FC<FancyEllipsisProps> = ({
+  interval = 500,
+  maxDots = 3,
+  className = "",
+}) => {
+  // Start with one dot.
+  const [dotCount, setDotCount] = useState(1);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      // Cycle the dot count from 1 to maxDots.
+      setDotCount((prev) => (prev % maxDots) + 1);
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [interval, maxDots]);
+
+  return (
+    <span className={`inline-block ${className}`}>{".".repeat(dotCount)}</span>
+  );
+};
 
 export const AssistantMessage = storeObserver<{
   message: Message;
@@ -83,8 +114,22 @@ export const AssistantMessage = storeObserver<{
         messageLength={message.content.length}
         scrollToBottom={scrollToBottom}
         flag={flag}
+        footer={
+          message.doneGenerating ? undefined : (
+            <div className="bg-white opacity-50">
+              Thinking
+              <FancyEllipsis />
+            </div>
+          )
+        }
       >
-        <PreformattedText>{message.content}</PreformattedText>
+        <PreformattedText
+          className={
+            message.doneGenerating ? "" : "max-w-[300px] text-xs opacity-50"
+          }
+        >
+          {message.content}
+        </PreformattedText>
       </MessageView>
     );
   }
