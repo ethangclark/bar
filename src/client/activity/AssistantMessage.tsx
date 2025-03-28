@@ -115,17 +115,17 @@ export const AssistantMessage = storeObserver<{
         scrollToBottom={scrollToBottom}
         flag={flag}
         footer={
-          message.doneGenerating ? undefined : (
-            <div className="bg-white opacity-50">
+          message.status === "incomplete" ? (
+            <div className="bg-white text-gray-600">
               Thinking
               <FancyEllipsis />
             </div>
-          )
+          ) : undefined
         }
       >
         <PreformattedText
           className={
-            message.doneGenerating ? "" : "max-w-[300px] text-xs opacity-50"
+            message.status === "incomplete" ? "text-xs text-gray-300" : ""
           }
         >
           {message.content}

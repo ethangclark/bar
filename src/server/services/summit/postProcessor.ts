@@ -46,7 +46,7 @@ export async function postProcessAssistantResponse(
   prevMessages: MessageWithDescendents[],
   { totalTokens }: { totalTokens: number },
 ) {
-  const [completionResponse] = await Promise.all([
+  const [completionResponse, { hasViewPieces }] = await Promise.all([
     injectCompletions(assistantResponse, prevMessages),
     injectMedia(assistantResponse, prevMessages),
     injectFlags(assistantResponse, prevMessages),
@@ -65,4 +65,6 @@ export async function postProcessAssistantResponse(
   } else {
     await wrapThreadOnTokenLimit({ userId, activityId, totalTokens });
   }
+
+  return { hasViewPieces };
 }

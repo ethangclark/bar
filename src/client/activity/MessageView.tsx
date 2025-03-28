@@ -23,7 +23,8 @@ export const MessageView = storeObserver<{
 }) {
   useEffect(() => {
     if (isLastMessage) {
-      scrollToBottom();
+      // timeout allows images to render
+      setTimeout(scrollToBottom);
     }
   }, [
     isLastMessage,

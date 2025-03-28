@@ -2,6 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { assertTypesExhausted } from "~/common/assertions";
 import { type DescendentController } from "~/common/descendentUtils";
 import { isGrader } from "~/common/enrollmentTypeUtils";
+import { invoke } from "~/common/fnUtils";
 import { type Message } from "~/server/db/schema";
 import { db, schema } from "../db";
 import { respondToUserMessages } from "../services/summit/summitResponse";
@@ -71,18 +72,33 @@ export const messageController: DescendentController<Message> = {
       })
       .map((m) => ({
         ...m,
-        doneGenerating: true,
+        status:
+          m.status === "incomplete" ? "completeWithoutViewPieces" : m.status,
       }));
 
-    // ensure all messages are marked as doneGenerating
+    // this is a reminder to revisit this logic if the enum values change
+    // (this should throw a type error in that case)
+    invoke(() => {
+      const dummyStatus = messages[0]?.status;
+      switch (dummyStatus) {
+        case undefined:
+        case "incomplete":
+        case "completeWithViewPieces":
+        case "completeWithoutViewPieces":
+          break;
+        default:
+          assertTypesExhausted(dummyStatus);
+      }
+    });
+
+    // ensure all incomplete messages are marked as complete
     // (in case server was interrupted)
     void db
       .update(schema.messages)
-      .set({
-        doneGenerating: true,
-      })
+      .set({ status: "completeWithoutViewPieces" })
       .where(
         and(
+          eq(schema.messages.status, "incomplete"),
           eq(schema.messages.activityId, activityId),
           inArray(schema.messages.userId, userIds),
         ),

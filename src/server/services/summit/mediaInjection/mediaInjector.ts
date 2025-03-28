@@ -20,7 +20,7 @@ import { getMediaInjectionData } from "./mediaInjectionDataGetter";
 export async function injectMedia(
   assistantResponse: Message,
   prevMessages: MessageWithDescendents[],
-) {
+): Promise<{ hasViewPieces: boolean }> {
   // nothing to do if there are no media to inject
   const hasImages = prevMessages.some((m) =>
     m.content.includes(imageOmissionDisclaimer),
@@ -30,7 +30,7 @@ export async function injectMedia(
   );
 
   if (!hasImages && !hasVideos) {
-    return;
+    return { hasViewPieces: false };
   }
 
   const { userId, activityId } = assistantResponse;
@@ -58,7 +58,7 @@ export async function injectMedia(
   );
 
   if (data.length === 0) {
-    return;
+    return { hasViewPieces: false };
   }
 
   const imageNumericIds = data
@@ -196,4 +196,6 @@ export async function injectMedia(
     viewPieceTexts,
   };
   await descendentPubSub.publish(descendents);
+
+  return { hasViewPieces: true };
 }

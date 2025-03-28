@@ -316,6 +316,13 @@
       "when": 1742955296011,
       "tag": "0044_simple_alex_power",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1743201064712,
+      "tag": "0045_magenta_mathemanic",
+      "breakpoints": true
     }
   ]
 }

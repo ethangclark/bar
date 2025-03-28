@@ -1,6 +1,5 @@
 import { eq } from "drizzle-orm";
 import { createEmptyDescendents } from "~/common/descendentUtils";
-import { invoke } from "~/common/fnUtils";
 import { streamLlmResponse } from "~/server/ai/llm";
 import { defaultModel } from "~/server/ai/llm/types";
 import { db, schema } from "~/server/db";
@@ -11,9 +10,15 @@ import { publishNextIncompleteMessage } from "./nextIncompleteMessage";
 import { postProcessAssistantResponse } from "./postProcessor";
 import { debouncePublish } from "./utils";
 
-export async function updateAndPublishCompletion(assistantResponse: Message) {
+export async function updateAndPublishCompletion(
+  assistantResponse: Message,
+  { hasViewPieces }: { hasViewPieces: boolean },
+) {
   const updates = {
-    doneGenerating: true,
+    status: hasViewPieces
+      ? ("completeWithViewPieces" as const)
+      : ("completeWithoutViewPieces" as const),
+    hasViewPieces,
   };
 
   const updatedMessage = {
@@ -85,36 +90,34 @@ async function respondToThread({
     })
     .where(eq(schema.messages.id, emptyIncompleteMessage.id));
 
-  await Promise.all([
-    invoke(async () => {
-      const messagesWithDescendents = await db.query.messages.findMany({
-        where: eq(schema.messages.threadId, threadId),
+  const messagesWithDescendents = await db.query.messages.findMany({
+    where: eq(schema.messages.threadId, threadId),
+    with: {
+      viewPieces: {
         with: {
-          viewPieces: {
+          images: {
             with: {
-              images: {
-                with: {
-                  infoImage: true,
-                },
-              },
-              videos: {
-                with: {
-                  infoVideo: true,
-                },
-              },
-              texts: true,
+              infoImage: true,
             },
           },
+          videos: {
+            with: {
+              infoVideo: true,
+            },
+          },
+          texts: true,
         },
-      });
-      await postProcessAssistantResponse(
-        streamedIncompleteMessage,
-        messagesWithDescendents,
-        { totalTokens },
-      );
-    }),
-    updateAndPublishCompletion(streamedIncompleteMessage),
-  ]);
+      },
+    },
+  });
+  const { hasViewPieces } = await postProcessAssistantResponse(
+    streamedIncompleteMessage,
+    messagesWithDescendents,
+    { totalTokens },
+  );
+  await updateAndPublishCompletion(streamedIncompleteMessage, {
+    hasViewPieces,
+  });
 }
 
 export async function respondToUserMessages(userMessages: Message[]) {

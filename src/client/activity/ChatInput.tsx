@@ -78,7 +78,7 @@ export const ChatInput = storeObserver(function ChatInput({
                 content: v,
                 senderRole: "user",
                 threadId: thread.id,
-                doneGenerating: true,
+                status: "completeWithoutViewPieces",
               });
               initialMessageSent.current = true;
             } finally {

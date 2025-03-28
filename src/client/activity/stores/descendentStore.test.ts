@@ -118,7 +118,7 @@ describe(DescendentStore.name, () => {
       userId: "userId",
       threadId: "threadId",
       senderRole: "user",
-      doneGenerating: false,
+      status: "completeWithoutViewPieces",
     };
     // create the initial descendents
     const initialDescendents = {

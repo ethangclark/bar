@@ -183,7 +183,15 @@ export class ThreadStore {
     if (!lastMessage) {
       return true;
     }
-    return lastMessage.doneGenerating;
+    switch (lastMessage.status) {
+      case "completeWithViewPieces":
+      case "completeWithoutViewPieces":
+        return true;
+      case "incomplete":
+        return false;
+      default:
+        assertTypesExhausted(lastMessage.status);
+    }
   }
 
   async createThread() {

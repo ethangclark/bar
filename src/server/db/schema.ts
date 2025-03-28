@@ -729,6 +729,12 @@ export const senderRoleEnum = pgEnum("sender_role", [
 export const senderRoleSchema = z.enum(senderRoleEnum.enumValues);
 export type SenderRole = z.infer<typeof senderRoleSchema>;
 
+const messageStatusEnum = pgEnum("message_status", [
+  "incomplete",
+  "completeWithViewPieces",
+  "completeWithoutViewPieces",
+]);
+
 // could add image support to messages at some point if that makes sense
 export const messages = pgTable(
   "message",
@@ -748,7 +754,7 @@ export const messages = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    doneGenerating: boolean("done_generating").notNull(),
+    status: messageStatusEnum("status").notNull(),
   },
   (x) => [
     index("message_user_id_idx").on(x.userId),

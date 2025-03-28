@@ -168,7 +168,7 @@ Here is the material to cover:
 ${itemContent}`,
         senderRole: "system" as const,
         activityId: thread.activityId,
-        doneGenerating: true,
+        status: "completeWithoutViewPieces",
         createdAt: sql`now() - interval '1 second'`,
       },
       {
@@ -181,7 +181,7 @@ If anything is confusing, or something's not right, call it out, and we'll figur
 Ready to jump in?`,
         senderRole: "assistant" as const,
         activityId: thread.activityId,
-        doneGenerating: true,
+        status: "completeWithoutViewPieces",
       },
     ])
     .returning();
