@@ -3,7 +3,7 @@ import { assertOne } from "~/common/assertions";
 import { db, schema } from "~/server/db";
 import { publishDescendentUpserts } from "~/server/db/pubsub/descendentPubSub";
 
-export async function publishNextIncompleteMessage({
+export async function publishNewIncompleteMessage({
   userId,
   activityId,
   threadId,

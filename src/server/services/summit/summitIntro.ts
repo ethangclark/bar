@@ -18,20 +18,20 @@ function fmtSection(header: string, content: string, completed: boolean) {
   return `### ${header}${completed ? " (complete -- skip unless something builds on it, in which case re-present the material without tutoring them through it)" : ""}\n${content}\n\n`;
 }
 
-export function fmtInfoText(content: string, completed: boolean) {
+function fmtInfoText(content: string, completed: boolean) {
   return fmtSection("Information", content, completed);
 }
 
 export const imageOmissionDisclaimer = `image omitted; description follows`;
 export const videoOmissionDisclaimer = `video omitted; description follows`;
 
-export const imageHeaderWithOmissionDisclaimer = (numericId: number) =>
+const imageHeaderWithOmissionDisclaimer = (numericId: number) =>
   `Image ${numericIdToImageNumber(numericId)} (${imageOmissionDisclaimer})`;
 
-export const videoHeaderWithOmissionDisclaimer = (numericId: number) =>
+const videoHeaderWithOmissionDisclaimer = (numericId: number) =>
   `Video ${numericIdToVideoNumber(numericId)} (${videoOmissionDisclaimer})`;
 
-export function fmtInfoImage(
+function fmtInfoImage(
   numericId: number,
   textAlternative: string,
   completed: boolean,

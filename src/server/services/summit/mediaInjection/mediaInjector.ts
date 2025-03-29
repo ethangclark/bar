@@ -15,11 +15,20 @@ import {
   videoOmissionDisclaimer,
 } from "../summitIntro";
 import { getMediaInjectionData } from "./mediaInjectionDataGetter";
+import { type MediaInjectionData } from "./mediaInjectionParser";
+
+const noPieceResponse = {
+  hasViewPieces: false as const,
+  mediaInjectionData: null,
+};
 
 export async function injectMedia(
   assistantResponse: Message,
   prevMessages: MessageWithDescendents[],
-): Promise<{ hasViewPieces: boolean }> {
+): Promise<
+  | { hasViewPieces: false; mediaInjectionData: null }
+  | { hasViewPieces: true; mediaInjectionData: MediaInjectionData }
+> {
   // nothing to do if there are no media to inject
   const hasImages = prevMessages.some((m) =>
     m.content.includes(imageOmissionDisclaimer),
@@ -29,7 +38,7 @@ export async function injectMedia(
   );
 
   if (!hasImages && !hasVideos) {
-    return { hasViewPieces: false };
+    return noPieceResponse;
   }
 
   const { userId, activityId } = assistantResponse;
@@ -57,7 +66,7 @@ export async function injectMedia(
   );
 
   if (data.length === 0) {
-    return { hasViewPieces: false };
+    return noPieceResponse;
   }
 
   const imageNumericIds = data
@@ -195,5 +204,5 @@ export async function injectMedia(
   };
   await publishDescendentUpserts(descendents);
 
-  return { hasViewPieces: true };
+  return { hasViewPieces: true, mediaInjectionData: data };
 }

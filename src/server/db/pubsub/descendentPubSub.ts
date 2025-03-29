@@ -20,3 +20,15 @@ export async function publishDescendentUpserts(
     },
   });
 }
+
+export async function publishDescendentDeletions(
+  descendents: Partial<Descendents>,
+) {
+  await descendentPubSub.publish({
+    ...createEmptyModifications(),
+    toDelete: {
+      ...createEmptyDescendents(),
+      ...descendents,
+    },
+  });
+}
