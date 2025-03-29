@@ -16,7 +16,6 @@ async function getFlag({
   assistantResponse: Message;
   prevMessages: MessageWithDescendents[];
 }) {
-  // Prepare the prompt for the LLM
   const prompt = `
   You are analyzing a conversation between a student and a virtual learning assistant.
   
