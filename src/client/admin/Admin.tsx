@@ -8,7 +8,6 @@ import { api } from "~/trpc/react";
 import { LinkStyle } from "../components/Link";
 import { LoadingCentered } from "../components/Loading";
 import { LogoutButton } from "../components/LogoutButton";
-import { Title } from "../components/Title";
 
 export const Admin = storeObserver(function Admin({ userStore }) {
   const { data: flags, refetch } = api.admin.flags.useQuery({ lastCount: 100 });
@@ -37,7 +36,7 @@ export const Admin = storeObserver(function Admin({ userStore }) {
         title: "Checked",
         dataIndex: "adminChecked",
         key: "adminChecked",
-        render: (adminChecked: boolean, row: FlagWithUser) => {
+        render: (_, row: FlagWithUser) => {
           if (flagChanging) {
             return <LoadingCentered />;
           }
@@ -100,7 +99,15 @@ export const Admin = storeObserver(function Admin({ userStore }) {
   }, [flagChanging, refetch, router, toggleFlag, userStore]);
 
   const keyedFlags = useMemo(
-    () => (flags ?? []).map((f) => ({ ...f, key: f.id })),
+    () =>
+      (flags ?? [])
+        .map((f) => ({ ...f, key: f.id }))
+        .sort((a, b) => {
+          // Sort flags with adminChecked=true to appear first
+          if (a.adminChecked && !b.adminChecked) return 1;
+          if (!a.adminChecked && b.adminChecked) return -1;
+          return 0;
+        }),
     [flags],
   );
 
@@ -109,12 +116,16 @@ export const Admin = storeObserver(function Admin({ userStore }) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col">
       <div className="flex justify-end">
         <LogoutButton flushRight={false} />
       </div>
-      <Title>Admin</Title>
-      <Table dataSource={keyedFlags} columns={columns} />
+      <div className="text-3xl font-bold">Admin</div>
+      <Table
+        dataSource={keyedFlags}
+        columns={columns}
+        pagination={{ position: ["topRight", "bottomRight"] }}
+      />
     </div>
   );
 });
