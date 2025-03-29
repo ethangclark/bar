@@ -22,9 +22,9 @@ async function getNewStore(
   descendentLoader: () => Descendents,
   modificationResponder: () => Modifications,
 ) {
-  let onDescendents: null | ((descendents: Descendents) => void) = null;
-  const publishDescendents = (descendents: Descendents) => {
-    onDescendents?.(descendents);
+  let onModifications: null | ((modifications: Modifications) => void) = null;
+  const publishModifications = (modifications: Modifications) => {
+    onModifications?.(modifications);
   };
   let onMessageDeltas: null | ((messageDelta: MessageDelta) => void) = null;
   const publishMessageDelta = (messageDelta: MessageDelta) => {
@@ -32,11 +32,11 @@ async function getNewStore(
   };
   const descendentServerInterface: DescendentServerInterface = {
     readDescendents: () => Promise.resolve(descendentLoader()),
-    subscribeToNewDescendents: (_, cb) => {
-      onDescendents = cb;
+    subscribeToModifications: (_, cb) => {
+      onModifications = cb;
       return {
         unsubscribe: () => {
-          onDescendents = null;
+          onModifications = null;
         },
       };
     },
@@ -69,7 +69,7 @@ async function getNewStore(
       hmrCount: 0,
     },
   );
-  return { store, publishDescendents, publishMessageDelta };
+  return { store, publishModifications, publishMessageDelta };
 }
 
 describe(DescendentStore.name, () => {

@@ -39,9 +39,9 @@ export type DescendentServerInterface = {
     activityId: string;
     includeUserIds: string[];
   }) => Promise<Descendents>;
-  subscribeToNewDescendents: (
+  subscribeToModifications: (
     params: { activityId: string },
-    onDescendents: (descendents: Descendents) => void,
+    onModifications: (modifications: Modifications) => void,
   ) => { unsubscribe: () => void };
   subscribeToMessageDeltas: (
     params: { activityId: string },
@@ -115,16 +115,14 @@ export class DescendentStore {
       // users are always streamed all activity descendent events
       // for which they have read permissions, so no need to pass in includeUserIds
       unsub();
-      unsub = this.serverInterface.subscribeToNewDescendents(
+      unsub = this.serverInterface.subscribeToModifications(
         { activityId },
-        (descendents: Descendents) => {
+        (modifications: Modifications) => {
           const existing = this.descendents;
           if (existing instanceof Status) {
             return;
           }
-          runInAction(() => {
-            upsertDescendents(existing, descendents);
-          });
+          this.incorporateModifications(modifications);
         },
       ).unsubscribe;
     });

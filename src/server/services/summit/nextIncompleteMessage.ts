@@ -1,8 +1,7 @@
 import { eq } from "drizzle-orm";
 import { assertOne } from "~/common/assertions";
-import { createEmptyDescendents } from "~/common/descendentUtils";
 import { db, schema } from "~/server/db";
-import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
+import { publishDescendentUpserts } from "~/server/db/pubsub/descendentPubSub";
 
 export async function publishNextIncompleteMessage({
   userId,
@@ -36,11 +35,9 @@ export async function publishNextIncompleteMessage({
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
     .filter((m) => m.id !== emptyIncompleteMessage.id);
 
-  const descendents = {
-    ...createEmptyDescendents(),
+  await publishDescendentUpserts({
     messages: [emptyIncompleteMessage],
-  };
-  await descendentPubSub.publish(descendents);
+  });
 
   return { emptyIncompleteMessage, oldMessages };
 }

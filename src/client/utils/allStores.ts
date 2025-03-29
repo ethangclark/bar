@@ -20,7 +20,7 @@ import { QueryStore } from "./queryStore";
 
 const descendentServerInterface: DescendentServerInterface = {
   readDescendents: trpc.descendent.read.query,
-  subscribeToNewDescendents: (params, onData) =>
+  subscribeToModifications: (params, onData) =>
     trpc.descendent.newDescendents.subscribe(params, { onData }),
   subscribeToMessageDeltas: (params, onMessageDelta) =>
     trpc.message.messageDeltas.subscribe(params, {

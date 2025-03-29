@@ -2,7 +2,7 @@ import { createEmptyDescendents } from "~/common/descendentUtils";
 import { getLlmResponse } from "~/server/ai/llm";
 import { defaultModel } from "~/server/ai/llm/types";
 import { db, schema } from "~/server/db";
-import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
+import { publishDescendentUpserts } from "~/server/db/pubsub/descendentPubSub";
 import { type Message, type MessageWithDescendents } from "~/server/db/schema";
 import { notifyAdmin } from "../email/notifyAdmin";
 import { extractFlagReason } from "./extractFlagReason";
@@ -131,5 +131,5 @@ export async function injectFlags(
     ...createEmptyDescendents(),
     flags: newFlags,
   };
-  await descendentPubSub.publish(descendents);
+  await publishDescendentUpserts(descendents);
 }

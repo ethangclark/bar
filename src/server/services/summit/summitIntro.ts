@@ -1,6 +1,5 @@
 import { eq, sql } from "drizzle-orm";
 import { assertTypesExhausted } from "~/common/assertions";
-import { createEmptyDescendents } from "~/common/descendentUtils";
 import {
   numericIdToImageNumber,
   numericIdToVideoNumber,
@@ -8,7 +7,7 @@ import {
 import { sortByOrderFracIdx } from "~/common/indexUtils";
 import { objectKeys } from "~/common/objectUtils";
 import { db, schema } from "~/server/db";
-import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
+import { publishDescendentUpserts } from "~/server/db/pubsub/descendentPubSub";
 import {
   type ItemWithDescendents,
   type Question,
@@ -192,11 +191,7 @@ Ready to jump in?`,
 async function beginThread(thread: Thread) {
   const messages = await insertIntroMessages(thread);
 
-  const descendents = {
-    ...createEmptyDescendents(),
-    messages,
-  };
-  await descendentPubSub.publish(descendents);
+  await publishDescendentUpserts({ messages });
 }
 
 export async function generateIntroMessages(threads: Thread[]) {

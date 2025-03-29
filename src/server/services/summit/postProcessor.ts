@@ -1,7 +1,6 @@
 import { assertOne } from "~/common/assertions";
-import { createEmptyDescendents } from "~/common/descendentUtils";
 import { db, schema } from "~/server/db";
-import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
+import { publishDescendentUpserts } from "~/server/db/pubsub/descendentPubSub";
 import { threadWrapPubSub } from "~/server/db/pubsub/threadWrapPubSub";
 import { type Message, type MessageWithDescendents } from "~/server/db/schema";
 import { injectCompletions } from "./completionInjector";
@@ -26,8 +25,7 @@ async function wrapThreadOnTokenLimit({
     const thread = assertOne(threads);
     const messages = await insertIntroMessages(thread);
 
-    await descendentPubSub.publish({
-      ...createEmptyDescendents(),
+    await publishDescendentUpserts({
       threads,
       messages,
     });

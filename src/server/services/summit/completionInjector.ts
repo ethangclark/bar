@@ -1,7 +1,6 @@
 // src/server/services/summit/completionInjection/completionInjector.ts
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { createEmptyDescendents } from "~/common/descendentUtils";
 import { filter } from "~/common/fnUtils";
 import {
   indexToItemNumber,
@@ -11,7 +10,7 @@ import {
 import { getLlmResponse } from "~/server/ai/llm";
 import { defaultModel } from "~/server/ai/llm/types";
 import { db, schema } from "~/server/db";
-import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
+import { publishDescendentUpserts } from "~/server/db/pubsub/descendentPubSub";
 import { type Message, type MessageWithDescendents } from "~/server/db/schema";
 import { notifyAdmin } from "../email/notifyAdmin";
 
@@ -91,8 +90,7 @@ export async function injectCompletions(
     .returning();
 
   // Publish the new completions to subscribers
-  await descendentPubSub.publish({
-    ...createEmptyDescendents(),
+  await publishDescendentUpserts({
     completions: insertedCompletions,
   });
 

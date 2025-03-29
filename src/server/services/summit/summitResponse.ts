@@ -1,9 +1,8 @@
 import { eq } from "drizzle-orm";
-import { createEmptyDescendents } from "~/common/descendentUtils";
 import { streamLlmResponse } from "~/server/ai/llm";
 import { defaultModel } from "~/server/ai/llm/types";
 import { db, schema } from "~/server/db";
-import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
+import { publishDescendentUpserts } from "~/server/db/pubsub/descendentPubSub";
 import { messageDeltaPubSub } from "~/server/db/pubsub/messageDeltaPubSub";
 import { type Message } from "~/server/db/schema";
 import { publishNextIncompleteMessage } from "./nextIncompleteMessage";
@@ -25,17 +24,15 @@ export async function updateAndPublishCompletion(
     ...assistantResponse,
     ...updates,
   };
-  const descendent = {
-    ...createEmptyDescendents(),
-    messages: [updatedMessage],
-  };
 
   await Promise.all([
     db
       .update(schema.messages)
       .set(updates)
       .where(eq(schema.messages.id, assistantResponse.id)),
-    descendentPubSub.publish(descendent),
+    publishDescendentUpserts({
+      messages: [updatedMessage],
+    }),
   ]);
 }
 

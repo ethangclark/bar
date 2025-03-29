@@ -1,9 +1,8 @@
 // src/server/services/summit/mediaInjector.ts
 import { eq, inArray } from "drizzle-orm";
 import { assertTypesExhausted } from "~/common/assertions";
-import { createEmptyDescendents } from "~/common/descendentUtils";
 import { db, schema } from "~/server/db";
-import { descendentPubSub } from "~/server/db/pubsub/descendentPubSub";
+import { publishDescendentUpserts } from "~/server/db/pubsub/descendentPubSub";
 import {
   type Message,
   type MessageWithDescendents,
@@ -189,13 +188,12 @@ export async function injectMedia(
   ]);
 
   const descendents = {
-    ...createEmptyDescendents(),
     viewPieces,
     viewPieceImages,
     viewPieceVideos,
     viewPieceTexts,
   };
-  await descendentPubSub.publish(descendents);
+  await publishDescendentUpserts(descendents);
 
   return { hasViewPieces: true };
 }
