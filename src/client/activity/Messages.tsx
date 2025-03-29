@@ -49,6 +49,7 @@ export const Messages = storeObserver(function Messages({
               return data?.isAdmin ? (
                 <div
                   key={m.id}
+                  id={m.id}
                   className="mb-4 rounded-2xl border border-red-500 bg-gray-100 px-4 py-2"
                 >
                   <PreformattedText>{m.content}</PreformattedText>
@@ -58,6 +59,7 @@ export const Messages = storeObserver(function Messages({
               return (
                 <MessageView
                   key={m.id}
+                  id={m.id}
                   className="ml-[30%] flex flex-col items-end"
                   isLastMessage={i === messages.length - 1}
                   messageLength={m.content.length}

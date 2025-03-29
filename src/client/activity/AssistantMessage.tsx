@@ -71,6 +71,7 @@ export const AssistantMessage = storeObserver<{
               return (
                 <MessageView
                   key={child.key}
+                  id={isLastChild ? message.id : undefined}
                   isLastMessage={isLast}
                   messageLength={child.url.length}
                   scrollToBottom={scrollToBottom}
@@ -83,6 +84,7 @@ export const AssistantMessage = storeObserver<{
               return (
                 <MessageView
                   key={child.key}
+                  id={isLastChild ? message.id : undefined}
                   isLastMessage={isLast}
                   messageLength={child.textAlternative.length}
                   scrollToBottom={scrollToBottom}
@@ -95,6 +97,7 @@ export const AssistantMessage = storeObserver<{
               return (
                 <MessageView
                   key={child.key}
+                  id={isLastChild ? message.id : undefined}
                   isLastMessage={isLast}
                   messageLength={child.content.length}
                   scrollToBottom={scrollToBottom}
@@ -112,6 +115,7 @@ export const AssistantMessage = storeObserver<{
   } else {
     return (
       <MessageView
+        id={message.id}
         isLastMessage={isLastMessage}
         messageLength={message.content.length}
         scrollToBottom={scrollToBottom}
