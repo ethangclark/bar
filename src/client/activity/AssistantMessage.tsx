@@ -76,6 +76,7 @@ export const AssistantMessage = storeObserver<{
                   messageLength={child.url.length}
                   scrollToBottom={scrollToBottom}
                   flag={isLastChild ? flag : null}
+                  diagnosticMessage="ASSISTANT MESSAGE - IMAGE"
                 >
                   <Image alt={child.textAlternative} url={child.url} />
                 </MessageView>
@@ -89,6 +90,7 @@ export const AssistantMessage = storeObserver<{
                   messageLength={child.textAlternative.length}
                   scrollToBottom={scrollToBottom}
                   flag={isLastChild ? flag : null}
+                  diagnosticMessage="ASSISTANT MESSAGE - VIDEO"
                 >
                   <Video videoId={child.videoId} />
                 </MessageView>
@@ -102,6 +104,7 @@ export const AssistantMessage = storeObserver<{
                   messageLength={child.content.length}
                   scrollToBottom={scrollToBottom}
                   flag={isLastChild ? flag : null}
+                  diagnosticMessage="ASSISTANT MESSAGE - TEXT"
                 >
                   <PreformattedText>{child.content}</PreformattedText>
                 </MessageView>
@@ -120,6 +123,7 @@ export const AssistantMessage = storeObserver<{
         messageLength={message.content.length}
         scrollToBottom={scrollToBottom}
         flag={flag}
+        diagnosticMessage="ASSISTANT MESSAGE"
         footer={
           message.status === "incomplete" ? (
             <div className="bg-white text-gray-600">

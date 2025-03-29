@@ -4,6 +4,7 @@ import { Status } from "~/client/utils/status";
 import { assertTypesExhausted } from "~/common/assertions";
 import { formatRelativeTime } from "~/common/timeUtils";
 import { api } from "~/trpc/react";
+import { DiagnosticMessage } from "../components/DiagnosticMessage";
 import { LoadingCentered } from "../components/Loading";
 import { PreformattedText } from "../components/PreformattedText";
 import { storeObserver } from "../utils/storeObserver";
@@ -38,6 +39,8 @@ export const Messages = storeObserver(function Messages({
     return <LoadingCentered />;
   }
 
+  const { diagnosticsEnabled } = diagnosticsStore;
+
   return (
     <ScrollyContentBox>
       <div
@@ -47,12 +50,13 @@ export const Messages = storeObserver(function Messages({
         {messages.map((m, i) => {
           switch (m.senderRole) {
             case "system":
-              return data?.isAdmin && diagnosticsStore.diagnosticsEnabled ? (
+              return data?.isAdmin && diagnosticsEnabled ? (
                 <div
                   key={m.id}
                   id={m.id}
                   className="mb-4 rounded-2xl border border-red-500 bg-gray-100 px-4 py-2"
                 >
+                  <DiagnosticMessage diagnosticMessage="SYSTEM MESSAGE" />
                   <PreformattedText>{m.content}</PreformattedText>
                 </div>
               ) : null;
@@ -66,6 +70,7 @@ export const Messages = storeObserver(function Messages({
                   messageLength={m.content.length}
                   scrollToBottom={scrollToBottom}
                   flag={null}
+                  diagnosticMessage="USER MESSAGE"
                 >
                   <div className="rounded-2xl bg-gray-100 px-4 py-2">
                     <PreformattedText>{m.content}</PreformattedText>

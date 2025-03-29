@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { type Flag } from "~/server/db/schema";
+import { DiagnosticMessage } from "../components/DiagnosticMessage";
 import { LinkStyle } from "../components/Link";
 import { storeObserver } from "../utils/storeObserver";
 
@@ -10,6 +11,7 @@ export const MessageView = storeObserver<{
   isLastMessage: boolean;
   messageLength: number;
   scrollToBottom: () => void;
+  diagnosticMessage: string;
   flag: Flag | null;
   footer?: React.ReactNode;
 }>(function MessageView({
@@ -22,6 +24,7 @@ export const MessageView = storeObserver<{
   scrollToBottom,
   flag,
   footer,
+  diagnosticMessage,
 }) {
   useEffect(() => {
     if (isLastMessage) {
@@ -40,6 +43,7 @@ export const MessageView = storeObserver<{
 
   return (
     <div className={`flex flex-col gap-1 pb-4 ${className ?? ""}`} id={id}>
+      <DiagnosticMessage diagnosticMessage={diagnosticMessage} />
       {children}
       {flag && (
         <LinkStyle

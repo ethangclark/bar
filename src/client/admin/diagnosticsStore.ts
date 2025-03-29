@@ -1,19 +1,13 @@
 import { makeAutoObservable } from "mobx";
-import { type LocationStore } from "../activity/stores/locationStore";
 
 export class DiagnosticsStore {
-  constructor(private locationStore: LocationStore) {
+  diagnosticsEnabled = false;
+
+  constructor() {
     makeAutoObservable(this);
   }
 
-  get diagnosticsEnabled() {
-    return this.locationStore.searchParam("diagnostics") === "enabled";
-  }
-
   toggleDiagnostics() {
-    this.locationStore.setSearchParam(
-      "diagnostics",
-      this.diagnosticsEnabled ? undefined : "enabled",
-    );
+    this.diagnosticsEnabled = !this.diagnosticsEnabled;
   }
 }
