@@ -46,6 +46,7 @@ const threadStore = new ThreadStore(
   descendentStore,
   focusedActivityStore,
   userStore,
+  locationStore,
 );
 const draftStore = new DraftStore(focusedActivityStore, descendentStore);
 const editorStore = new EditorStore(

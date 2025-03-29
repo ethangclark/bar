@@ -798,6 +798,9 @@ export const flags = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    threadId: uuid("thread_id")
+      .notNull()
+      .references(() => threads.id, { onDelete: "cascade" }),
     messageId: uuid("message_id")
       .notNull()
       .references(() => messages.id, { onDelete: "cascade" }),

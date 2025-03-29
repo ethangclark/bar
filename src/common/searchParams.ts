@@ -25,6 +25,14 @@ export const searchParamsX = {
     key: "role" as const,
     schema: loginTypeSchema,
   },
+  threadId: {
+    key: "thread" as const,
+    schema: z.string(),
+  },
+  messageId: {
+    key: "message" as const,
+    schema: z.string(),
+  },
 };
 
 export type SearchParamName = keyof typeof searchParamsX;

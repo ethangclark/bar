@@ -51,6 +51,10 @@ export class LocationStore {
     return params;
   }
 
+  searchParam<T extends SearchParamName>(name: T): SearchParamsX[T] {
+    return this.searchParams[name];
+  }
+
   // Sets a search parameter in the URL. The value is stringified and encoded.
   setSearchParam<T extends SearchParamName>(name: T, value: SearchParamsX[T]) {
     if (typeof window === "undefined") return;

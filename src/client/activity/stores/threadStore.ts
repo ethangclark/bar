@@ -1,5 +1,5 @@
 import { Modal } from "antd";
-import { autorun, makeAutoObservable, reaction, runInAction } from "mobx";
+import { autorun, makeAutoObservable, reaction } from "mobx";
 import { Status, isStatus, notLoaded } from "~/client/utils/status";
 import { assertTypesExhausted } from "~/common/assertions";
 import { indexById } from "~/common/indexUtils";
@@ -11,6 +11,7 @@ import { type Thread } from "~/server/db/schema";
 import { trpc } from "~/trpc/proxy";
 import { type DescendentStore } from "./descendentStore";
 import { type FocusedActivityStore } from "./focusedActivityStore";
+import { type LocationStore } from "./locationStore";
 import { type UserStore } from "./userStore";
 
 function threadWrapReasonToTitle(reason: ThreadWrapReason) {
@@ -40,12 +41,11 @@ function threadsNewToOld(threads: Thread[]) {
 }
 
 export class ThreadStore {
-  private _selectedThreadId: string | null = null;
-
   constructor(
     private descendentStore: DescendentStore,
     private focusedActivityStore: FocusedActivityStore,
     private userStore: UserStore,
+    private locationStore: LocationStore,
   ) {
     makeAutoObservable(this);
     autorun(() => {
@@ -90,7 +90,7 @@ export class ThreadStore {
   }
 
   public selectThread(threadId: string) {
-    this._selectedThreadId = threadId;
+    this.locationStore.setSearchParam("threadId", threadId);
   }
 
   private get threads() {
@@ -122,15 +122,15 @@ export class ThreadStore {
   }
 
   get thread() {
-    const { _selectedThreadId } = this;
-    if (_selectedThreadId === null) {
+    const threadId = this.locationStore.searchParam("threadId");
+    if (threadId === undefined) {
       return this.defaultThread;
     }
     const { threadSet } = this;
     if (threadSet instanceof Status) {
       return threadSet;
     }
-    const thread = threadSet[_selectedThreadId];
+    const thread = threadSet[threadId];
     if (thread) {
       return thread;
     }
@@ -207,9 +207,7 @@ export class ThreadStore {
 
   async createThread() {
     const newThread = await this.descendentStore.create("threads", {});
-    runInAction(() => {
-      this._selectedThreadId = newThread.id;
-    });
+    this.selectThread(newThread.id);
   }
 
   async removeCompletions() {

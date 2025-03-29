@@ -74,7 +74,7 @@ export const Admin = storeObserver(function Admin({ userStore }) {
             onClick={() => {
               userStore.impersonateUser(row.user);
               router.push(
-                `/activity/${row.activityId}?${searchParamsX.activityViewMode.key}=${"doer" satisfies ViewMode}`,
+                `/activity/${row.activityId}?${searchParamsX.activityViewMode.key}=${"doer" satisfies ViewMode}&${searchParamsX.threadId.key}=${row.threadId}&${searchParamsX.messageId.key}=${row.messageId}`,
               );
             }}
           >
