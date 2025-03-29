@@ -64,15 +64,17 @@ export const AssistantMessage = storeObserver<{
     return (
       <>
         {children.map((child, i) => {
+          const isLastChild = i === children.length - 1;
+          const isLast = isLastMessage && isLastChild;
           switch (child.type) {
             case "image":
               return (
                 <MessageView
                   key={child.key}
-                  isLastMessage={isLastMessage && i === children.length - 1}
+                  isLastMessage={isLast}
                   messageLength={child.url.length}
                   scrollToBottom={scrollToBottom}
-                  flag={flag}
+                  flag={isLastChild ? flag : null}
                 >
                   <Image alt={child.textAlternative} url={child.url} />
                 </MessageView>
@@ -81,10 +83,10 @@ export const AssistantMessage = storeObserver<{
               return (
                 <MessageView
                   key={child.key}
-                  isLastMessage={isLastMessage && i === children.length - 1}
+                  isLastMessage={isLast}
                   messageLength={child.textAlternative.length}
                   scrollToBottom={scrollToBottom}
-                  flag={flag}
+                  flag={isLastChild ? flag : null}
                 >
                   <Video videoId={child.videoId} />
                 </MessageView>
@@ -93,10 +95,10 @@ export const AssistantMessage = storeObserver<{
               return (
                 <MessageView
                   key={child.key}
-                  isLastMessage={isLastMessage && i === children.length - 1}
+                  isLastMessage={isLast}
                   messageLength={child.content.length}
                   scrollToBottom={scrollToBottom}
-                  flag={flag}
+                  flag={isLastChild ? flag : null}
                 >
                   <PreformattedText>{child.content}</PreformattedText>
                 </MessageView>
