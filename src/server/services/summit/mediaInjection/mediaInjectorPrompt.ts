@@ -71,8 +71,8 @@ ALWAYS put <image> and <video> tags on their own line! Do NOT mix them in with r
 
 Here is the message you're analyzing:
 
-BEGIN MESSAGE
+BEGIN ACTUAL LEARNING ASSISTANT MESSAGE
 
 ${assistantMessageContent}
 
-END MESSAGE`;
+END ACTUAL LEARNING ASSISTANT MESSAGE`;
