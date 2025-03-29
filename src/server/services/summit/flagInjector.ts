@@ -122,6 +122,7 @@ export async function injectFlags(
         activityId: assistantResponse.activityId,
         reason: flagReason,
         messageId: assistantResponse.id,
+        threadId: assistantResponse.threadId,
       },
     ])
     .returning();

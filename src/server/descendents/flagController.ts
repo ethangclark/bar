@@ -67,6 +67,7 @@ export const flagController: DescendentController<Flag> = {
           case "activityId":
           case "userId":
           case "messageId":
+          case "threadId":
           case "createdAt":
             break;
           case "reason": {
