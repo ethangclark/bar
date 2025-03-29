@@ -16,6 +16,7 @@ import { UploadStore } from "../activity/stores/uploadStore";
 import { UserStore } from "../activity/stores/userStore";
 import { ViewModeStore } from "../activity/stores/viewModeStore";
 import { ViewPieceStore } from "../activity/stores/viewPieceStore";
+import { DiagnosticsStore } from "../admin/diagnosticsStore";
 import { QueryStore } from "./queryStore";
 
 const descendentServerInterface: DescendentServerInterface = {
@@ -34,6 +35,7 @@ const activitesStore = new QueryStore(trpc.activity.getAll.query);
 const uploadStore = new UploadStore();
 const focusedActivityStore = new FocusedActivityStore();
 const locationStore = new LocationStore();
+const diagnosticsStore = new DiagnosticsStore(locationStore);
 const viewModeStore = new ViewModeStore(focusedActivityStore, locationStore);
 const userStore = new UserStore(locationStore, viewModeStore);
 const descendentStore = new DescendentStore(
@@ -64,9 +66,10 @@ const submissionStore = new SubmissionStore(
 
 export const stores = {
   activitesStore,
-  editorStore,
+  diagnosticsStore,
   draftStore,
   descendentStore,
+  editorStore,
   focusedActivityStore,
   hmrStore,
   itemStore,

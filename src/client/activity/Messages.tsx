@@ -14,6 +14,7 @@ import { ScrollyContentBox } from "./ScrollyContentBox";
 export const Messages = storeObserver(function Messages({
   threadStore,
   userStore,
+  diagnosticsStore,
 }) {
   const messageWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -46,7 +47,7 @@ export const Messages = storeObserver(function Messages({
         {messages.map((m, i) => {
           switch (m.senderRole) {
             case "system":
-              return data?.isAdmin ? (
+              return data?.isAdmin && diagnosticsStore.diagnosticsEnabled ? (
                 <div
                   key={m.id}
                   id={m.id}
