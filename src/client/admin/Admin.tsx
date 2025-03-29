@@ -1,4 +1,4 @@
-import { Checkbox, Table } from "antd";
+import { Button, Checkbox, Modal, Table } from "antd";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { storeObserver } from "~/client/utils/storeObserver";
@@ -8,6 +8,24 @@ import { api } from "~/trpc/react";
 import { LinkStyle } from "../components/Link";
 import { LoadingCentered } from "../components/Loading";
 import { LogoutButton } from "../components/LogoutButton";
+
+const EzModal = ({
+  children,
+  buttonText,
+}: {
+  children: React.ReactNode;
+  buttonText: string;
+}) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Modal open={open} onCancel={() => setOpen(false)}>
+        {children}
+      </Modal>
+      <Button onClick={() => setOpen(true)}>{buttonText}</Button>
+    </>
+  );
+};
 
 export const Admin = storeObserver(function Admin({ userStore }) {
   const { data: flags, refetch } = api.admin.flags.useQuery({ lastCount: 100 });
@@ -57,18 +75,7 @@ export const Admin = storeObserver(function Admin({ userStore }) {
         title: "Created At",
         dataIndex: "createdAt",
         key: "createdAt",
-        render: (createdAt: Date) => createdAt.toLocaleString(),
-      },
-      userId: {
-        title: "User ID",
-        dataIndex: "userId",
-        key: "userId",
-      },
-      activityId: {
-        title: "Activity ID",
-        dataIndex: "activityId",
-        key: "activityId",
-        render: (activityId: string, row: FlagWithUser) => (
+        render: (createdAt: Date, row: FlagWithUser) => (
           <LinkStyle
             onClick={() => {
               userStore.impersonateUser(row.user);
@@ -77,7 +84,7 @@ export const Admin = storeObserver(function Admin({ userStore }) {
               );
             }}
           >
-            {activityId}
+            {createdAt.toLocaleString()}
           </LinkStyle>
         ),
       },
@@ -90,6 +97,16 @@ export const Admin = storeObserver(function Admin({ userStore }) {
         title: "Note",
         dataIndex: "adminNote",
         key: "adminNote",
+      },
+      id: {
+        title: "Data",
+        dataIndex: "id",
+        key: "id",
+        render: (_, row: FlagWithUser) => (
+          <EzModal buttonText="View Data">
+            <pre>{JSON.stringify(row, null, 2)}</pre>
+          </EzModal>
+        ),
       },
     } satisfies ColumnBases;
 
