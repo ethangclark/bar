@@ -18,26 +18,28 @@ async function getFlag({
 }) {
   // Prepare the prompt for the LLM
   const prompt = `
-  You are analyzing a conversation between a student a virtual learning assistant to determine if the last message sent by the learning assistant indicates that a new flag should be added to the conversation.
+  You are analyzing a conversation between a student and a virtual learning assistant.
   
-  If the last message demonstrates that a new flag is warranted, respond with:
+  Your task is to determine if the last message sent by the learning assistant denotes that a new flag should be added (or has been added) to the conversation.
+  
+  If the last message demonstrates that a new flag should be added, respond with:
   <flag-reason>reason</flag-reason>
-  (where "reason" is a description of why the conversation will be flagged.)
+  ...where "reason" is a description of the original issue -- the issue that led to an assessment that the conversation should be flagged.
 
   If the last message does not indicate that a new flag should be added, respond with:
   <no-flags></no-flags>
+  
+  The purpose of flags is to mark instances where there is a problem with the tutoring process itself. We determine this by looking for instances where the tutor acknowledges either an explicit request to flag the conversation, or acknowledges that the tutoring process itself has encountered a fundamental problem.
 
-  It's normal for students to get confused about the content of the assignment, or the instructions. Don't flag instances of this sort of confusion being expressed.
+  It's normal for students to get confused about the content of the assignment, or the instructions. Don't flag instances of this sort of confusion being expressed; it's only issues they encounter that are related to the tutoring process itself that should be flagged, like issues with mistakes by the tutor, or issues with the tutoring platform that the student notices.
 
-  What we're looking for is instances where the tutor acknowledges either an explicit request to flag the conversation, or acknowledges that the tutoring process itself has encountered a fundamental problem.
+  Here are some examples of message that warrant a <flag-reason> response:
 
-  Here are some examples of messages that show that the message should be flagged:
-
-  Example message: "I'm sorry -- it sounds like I made a mistake. I'll flag this conversation. Let's move on to the next question."
-  Example response: <flag-reason>The tutor acknowledged that they made a mistake and flagged the conversation.</flag-reason>
+  Example message: "I'm sorry -- it sounds like I made a mistake; you're right that the Battle of Gettysburg was in 1863, not 1862. I'll flag this conversation. Let's move on to the next question."
+  Example response: <flag-reason>The tutor referenced the wrong date in their description of the Battle of Gettysburg.</flag-reason>
 
   Example message: "My apologies -- it appears that I asked a question that was not part of the assignment. I'll flag this conversation."
-  Example response: <flag-reason>The tutor asked an unrelated question.</flag-reason>
+  Example response: <flag-reason>The tutor asked a question taht was not part of the assignment.</flag-reason>
 
   Example message: "It looks like I included some unusual characters in my last response -- my apologies. Let me try that again..."
   Example response: <flag-reason>The tutor included some unusual characters in their last response.</flag-reason>
