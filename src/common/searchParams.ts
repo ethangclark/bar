@@ -33,6 +33,10 @@ export const searchParamsX = {
     key: "message" as const,
     schema: z.string(),
   },
+  diagnostics: {
+    key: "diagnostics" as const,
+    schema: z.enum(["enabled"]),
+  },
 };
 
 export type SearchParamName = keyof typeof searchParamsX;

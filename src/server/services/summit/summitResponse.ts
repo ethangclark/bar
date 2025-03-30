@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, inArray, not } from "drizzle-orm";
 import { streamLlmResponse } from "~/server/ai/llm";
 import { defaultModel } from "~/server/ai/llm/types";
 import { db, schema } from "~/server/db";
@@ -67,8 +67,11 @@ async function respondToThread({
     })
     .where(eq(schema.messages.id, emptyIncompleteMessage.id));
 
-  const messagesWithDescendents = await db.query.messages.findMany({
-    where: eq(schema.messages.threadId, threadId),
+  const prevMessages = await db.query.messages.findMany({
+    where: and(
+      eq(schema.messages.threadId, threadId),
+      not(inArray(schema.messages.id, Array.from(replyAttemptIds))),
+    ),
     with: {
       viewPieces: {
         with: {
@@ -90,7 +93,7 @@ async function respondToThread({
 
   const { needsRetry, retryHistory: nextRetryHistory } = await postProcess(
     streamedIncompleteMessage,
-    messagesWithDescendents,
+    prevMessages,
     retryHistory,
     threadTokenLength,
   );

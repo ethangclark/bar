@@ -7,12 +7,15 @@ import { type MediaInjectionData } from "../mediaInjection/mediaInjectionParser"
 import { enrichResponse } from "./enrichResponse";
 import { wrapUpResponse } from "./wrapUpResponse";
 
+type Winner = {
+  response: Message;
+  enrichments: Awaited<ReturnType<typeof enrichResponse>>;
+  errorScore: number;
+};
+
 export type RetryHistory = {
   prevResponseAttempts: Message[];
-  prevBest: {
-    response: Message;
-    errorScore: number;
-  };
+  prevBest: Winner;
 };
 
 let prev = 0;
@@ -44,28 +47,41 @@ async function deleteBadAttempt(message: Message, tx: DbOrTx) {
 }
 
 export async function postProcess(
-  assistantResponse: Message,
+  currentResponse: Message,
   prevMessages: MessageWithDescendents[],
   retryHistory: RetryHistory | null,
   threadTokenLength: number,
 ) {
-  const { hasViewPieces, completedActivityThisTurn, mediaInjectionData } =
-    await enrichResponse(assistantResponse, prevMessages);
+  const enrichments = await enrichResponse(currentResponse, prevMessages);
 
-  const errorScore = await getErrorScore(assistantResponse, mediaInjectionData);
+  const errorScore = await getErrorScore(
+    currentResponse,
+    enrichments.mediaInjectionData,
+  );
 
-  if (retryHistory && errorScore < retryHistory.prevBest.errorScore) {
-    await deleteBadAttempt(retryHistory.prevBest.response, db);
-  }
+  const winner = await invoke(async (): Promise<Winner> => {
+    if (retryHistory && errorScore > retryHistory.prevBest.errorScore) {
+      await deleteBadAttempt(currentResponse, db);
+      return retryHistory.prevBest;
+    }
+    if (retryHistory) {
+      await deleteBadAttempt(retryHistory.prevBest.response, db);
+    }
+    return {
+      response: currentResponse,
+      enrichments,
+      errorScore,
+    };
+  });
 
   const wasFinalAttempt =
     retryHistory?.prevResponseAttempts.length === maxAttempts - 1;
 
   if (errorScore === 0 || wasFinalAttempt) {
     await wrapUpResponse({
-      assistantResponse,
-      hasViewPieces,
-      completedActivityThisTurn,
+      assistantResponse: winner.response,
+      hasViewPieces: winner.enrichments.hasViewPieces,
+      completedActivityThisTurn: winner.enrichments.completedActivityThisTurn,
       threadTokenLength,
       tx: db,
     });
@@ -75,28 +91,14 @@ export async function postProcess(
     };
   }
 
-  const bestAttempt = invoke((): Message => {
-    if (retryHistory && retryHistory.prevBest.errorScore < errorScore) {
-      return retryHistory.prevBest.response;
-    }
-    return assistantResponse;
-  });
-  const bestErrorScore = Math.min(
-    errorScore,
-    retryHistory?.prevBest.errorScore ?? Infinity,
-  );
-
   return {
     needsRetry: true,
     retryHistory: {
       prevResponseAttempts: [
         ...(retryHistory?.prevResponseAttempts ?? []),
-        assistantResponse,
+        currentResponse,
       ],
-      prevBest: {
-        response: bestAttempt,
-        errorScore: bestErrorScore,
-      },
+      prevBest: winner,
     },
   };
 }

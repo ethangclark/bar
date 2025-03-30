@@ -4,14 +4,14 @@ import { injectFlags } from "../flagInjection/flagInjector";
 import { injectMedia } from "../mediaInjection/mediaInjector";
 
 export async function enrichResponse(
-  assistantResponse: Message,
+  responseMessage: Message,
   prevMessages: MessageWithDescendents[],
 ) {
   const [{ completedActivityThisTurn }, { hasViewPieces, mediaInjectionData }] =
     await Promise.all([
-      injectCompletions(assistantResponse, prevMessages),
-      injectMedia(assistantResponse, prevMessages),
-      injectFlags(assistantResponse, prevMessages),
+      injectCompletions(responseMessage, prevMessages),
+      injectMedia(responseMessage, prevMessages),
+      injectFlags(responseMessage, prevMessages),
     ]);
 
   return { hasViewPieces, completedActivityThisTurn, mediaInjectionData };

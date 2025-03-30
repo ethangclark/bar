@@ -7,6 +7,7 @@ import { storeObserver } from "../utils/storeObserver";
 export const MessageView = storeObserver<{
   children: React.ReactNode;
   id?: string;
+  messageId: string;
   className?: string;
   isLastMessage: boolean;
   messageLength: number;
@@ -16,6 +17,7 @@ export const MessageView = storeObserver<{
   footer?: React.ReactNode;
 }>(function MessageView({
   id,
+  messageId,
   descendentStore,
   children,
   className,
@@ -43,7 +45,9 @@ export const MessageView = storeObserver<{
 
   return (
     <div className={`flex flex-col gap-1 pb-4 ${className ?? ""}`} id={id}>
-      <DiagnosticMessage diagnosticMessage={diagnosticMessage} />
+      <DiagnosticMessage
+        diagnosticMessage={`${diagnosticMessage} - ${messageId}`}
+      />
       {children}
       {flag && (
         <LinkStyle
