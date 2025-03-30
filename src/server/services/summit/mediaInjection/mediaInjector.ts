@@ -14,21 +14,18 @@ import {
   imageOmissionDisclaimer,
   videoOmissionDisclaimer,
 } from "../summitIntro";
+import { type ViewPieceInjection } from "../types";
 import { getMediaInjectionData } from "./mediaInjectionDataGetter";
-import { type MediaInjectionData } from "./mediaInjectionParser";
 
 const noPieceResponse = {
-  hasViewPieces: false as const,
-  mediaInjectionData: null,
+  hasViewPieces: false,
+  injections: Array<ViewPieceInjection>(),
 };
 
 export async function injectMedia(
   assistantResponse: Message,
   prevMessages: MessageWithDescendents[],
-): Promise<
-  | { hasViewPieces: false; mediaInjectionData: null }
-  | { hasViewPieces: true; mediaInjectionData: MediaInjectionData }
-> {
+): Promise<{ hasViewPieces: boolean; injections: ViewPieceInjection[] }> {
   // nothing to do if there are no media to inject
   const hasImages = prevMessages.some((m) =>
     m.content.includes(imageOmissionDisclaimer),
@@ -126,6 +123,8 @@ export async function injectMedia(
   const videoPieceDrafts = Array<ViewPieceVideo>();
   const textPieceDrafts = Array<ViewPieceText>();
 
+  const injections: ViewPieceInjection[] = [];
+
   data.forEach((datum, idx) => {
     const viewPiece = viewPieces[idx];
     if (!viewPiece) {
@@ -135,12 +134,18 @@ export async function injectMedia(
     const dt = datum.type;
     switch (dt) {
       case "text": {
-        textPieceDrafts.push({
+        const data = {
           id: crypto.randomUUID(),
           viewPieceId: viewPiece.id,
           content: datum.textContent,
           activityId,
           userId,
+        };
+        textPieceDrafts.push(data);
+        injections.push({
+          type: "text",
+          viewPiece,
+          data,
         });
         break;
       }
@@ -151,12 +156,18 @@ export async function injectMedia(
         if (!infoImage) {
           throw new Error("Failed to find info image");
         }
-        imagePieceDrafts.push({
+        const data = {
           id: crypto.randomUUID(),
           viewPieceId: viewPiece.id,
           infoImageId: infoImage.id,
           activityId,
           userId,
+        };
+        imagePieceDrafts.push(data);
+        injections.push({
+          type: "image",
+          viewPiece,
+          data,
         });
         break;
       }
@@ -167,12 +178,18 @@ export async function injectMedia(
         if (!infoVideo) {
           throw new Error("Failed to find info video");
         }
-        videoPieceDrafts.push({
+        const data = {
           id: crypto.randomUUID(),
           viewPieceId: viewPiece.id,
           infoVideoId: infoVideo.id,
           activityId,
           userId,
+        };
+        videoPieceDrafts.push(data);
+        injections.push({
+          type: "video",
+          viewPiece,
+          data,
         });
         break;
       }
@@ -204,5 +221,5 @@ export async function injectMedia(
   };
   await publishDescendentUpserts(descendents);
 
-  return { hasViewPieces: true, mediaInjectionData: data };
+  return { hasViewPieces: true, injections };
 }

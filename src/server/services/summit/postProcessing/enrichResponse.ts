@@ -7,12 +7,14 @@ export async function enrichResponse(
   responseMessage: Message,
   prevMessages: MessageWithDescendents[],
 ) {
-  const [{ completedActivityThisTurn }, { hasViewPieces, mediaInjectionData }] =
-    await Promise.all([
-      injectCompletions(responseMessage, prevMessages),
-      injectMedia(responseMessage, prevMessages),
-      injectFlags(responseMessage, prevMessages),
-    ]);
+  const [
+    { completedActivityThisTurn },
+    { hasViewPieces, injections: mediaInjections },
+  ] = await Promise.all([
+    injectCompletions(responseMessage, prevMessages),
+    injectMedia(responseMessage, prevMessages),
+    injectFlags(responseMessage, prevMessages),
+  ]);
 
-  return { hasViewPieces, completedActivityThisTurn, mediaInjectionData };
+  return { hasViewPieces, completedActivityThisTurn, mediaInjections };
 }

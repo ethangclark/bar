@@ -3,10 +3,10 @@ import { invoke } from "~/common/fnUtils";
 import { db, schema, type DbOrTx } from "~/server/db";
 import { publishDescendentDeletions } from "~/server/db/pubsub/descendentPubSub";
 import { type Message, type MessageWithDescendents } from "~/server/db/schema";
-import { type MediaInjectionData } from "../mediaInjection/mediaInjectionParser";
 import { enrichResponse } from "./enrichResponse";
 import { wrapUpResponse } from "./wrapUpResponse";
 
+import { getErrorScore } from "../errorScoring/errorScore";
 type Winner = {
   response: Message;
   enrichments: Awaited<ReturnType<typeof enrichResponse>>;
@@ -17,25 +17,6 @@ export type RetryHistory = {
   prevResponseAttempts: Message[];
   prevBest: Winner;
 };
-
-let prev = 0;
-
-async function getErrorScore(
-  responseMessage: Message,
-  mediaInjectionData: MediaInjectionData | null,
-) {
-  if (prev === 0) {
-    prev = 0.3;
-    return prev;
-  } else if (prev === 0.3) {
-    prev = 0.6;
-    return prev;
-  } else if (prev === 0.6) {
-    prev = 0;
-    return prev;
-  }
-  return prev;
-}
 
 const maxAttempts = 3;
 
@@ -54,10 +35,10 @@ export async function postProcess(
 ) {
   const enrichments = await enrichResponse(currentResponse, prevMessages);
 
-  const errorScore = await getErrorScore(
-    currentResponse,
-    enrichments.mediaInjectionData,
-  );
+  const errorScore = await getErrorScore({
+    baseMessage: currentResponse,
+    mediaInjections: enrichments.mediaInjections,
+  });
 
   const winner = await invoke(async (): Promise<Winner> => {
     if (retryHistory && errorScore > retryHistory.prevBest.errorScore) {
