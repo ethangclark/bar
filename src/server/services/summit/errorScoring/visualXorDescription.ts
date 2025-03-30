@@ -2,14 +2,13 @@ import { assertTypesExhausted } from "~/common/assertions";
 import { getLlmResponse } from "~/server/ai/llm";
 import { defaultModel } from "~/server/ai/llm/types";
 import { db } from "~/server/db";
-import { scores } from "./scores";
 import { type ErrorScoreParams } from "./types";
 
-export async function getVisualXorDescriptionErrorScore(
+export async function getVisualXorDescriptionOk(
   params: ErrorScoreParams,
-): Promise<number> {
+): Promise<{ ok: boolean }> {
   if (params.mediaInjections.length === 0) {
-    return 0;
+    return { ok: true };
   }
   const messageContent = params.baseMessage.content;
   const injectionDataRepr = params.mediaInjections
@@ -100,5 +99,5 @@ ${injectionDataRepr}
   const ok =
     response.includes("REMOVAL_OK") && !response.includes("REMOVAL_NOT_OK");
 
-  return ok ? 0 : scores.descriptionRedundantWithVisual;
+  return { ok };
 }

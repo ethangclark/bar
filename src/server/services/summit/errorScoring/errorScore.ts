@@ -1,8 +1,13 @@
+import { scores } from "./scores";
 import { type ErrorScoreParams } from "./types";
-import { getVisualXorDescriptionErrorScore } from "./visualXorDescription";
+import { getVisualXorDescriptionOk } from "./visualXorDescription";
 
 export async function getErrorScore(params: ErrorScoreParams) {
-  const visualXorDescriptionErrorScore =
-    await getVisualXorDescriptionErrorScore(params);
-  return 0 + visualXorDescriptionErrorScore;
+  const { ok: visualXorDescriptionOk } =
+    await getVisualXorDescriptionOk(params);
+
+  const score =
+    0 + (visualXorDescriptionOk ? 0 : scores.descriptionRedundantWithVisual);
+
+  return score;
 }
