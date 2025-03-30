@@ -20,7 +20,7 @@ INPUT:
 Let's look at image 1000. The description of this image is: a mitochondrion with details of the mitochondrial membrane and mitochondrial DNA, its folded inner membrane forming the cristae structures. Do you have any questions about it?
 
 OUTPUT:
-Let's look at image 1000. Here's what it looks like:
+Following is image 1000, which pictures a mitochondrion:
 
 <image>1000</image>
 
@@ -31,12 +31,16 @@ END EXAMPLE 1
 EXAMPLE 2:
 
 INPUT:
-To understand this concept better, I recommend watching video 7893. In this video, you'll see an Olympic gymnastics routine, it demonstrates how momentum is conserved throughout the athlete's movements, especially during the aerial maneuvers and landings. Let me know when you're ready to move on.
+We will now move on to item 5. Here is a description of image 1004:
+
+A butane lighter is shown in 3 panels. In the first panel, on the left, the butane fill line is indicated, and it's shown that above the line, butane particles are dispersed, and below the line, they are tightly-packed. In the second panel, in the center, it's shown that the lever has been pushed down without making sparks; butane is shown in dispersed form above the lighter. In the third pane, on the right, it's shown that the lever was pushed after making sparks, and that the butane no longer exists outside of the lighter, but rather that a flame has been created and that dispersed water vapor and carbon dioxide particles now exist above the lighter.
+
+Let me know when you are ready to move on.
 
 OUTPUT:
-To understand this concept better, I recommend watching video 7893.
+Following is image 1004, which pictures the structure and function of a butane lighter:
 
-<video>7893</video>
+<image>1004</image>
 
 Let me know when you're ready to move on.
 

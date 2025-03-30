@@ -3,6 +3,6 @@ import { getVisualXorDescriptionErrorScore } from "./visualXorDescription";
 
 export async function getErrorScore(params: ErrorScoreParams) {
   const visualXorDescriptionErrorScore =
-    getVisualXorDescriptionErrorScore(params);
+    await getVisualXorDescriptionErrorScore(params);
   return 0 + visualXorDescriptionErrorScore;
 }
