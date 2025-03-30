@@ -16,7 +16,7 @@
     "test": "vitest",
     "prerelease": "npm-run-all --parallel type-check \"test -- --run\" && yarn build",
     "release": "yarn prerelease && git push origin main",
-    "test:prompts": "TEST_TIMEOUT=99999999 TEST_TYPE=prompt_test tsx promptTest.ts",
+    "test:prompts": "TEST_TIMEOUT_SECONDS=300 TEST_TYPE=prompt_test tsx promptTest.ts",
     "test:coverage": "vitest --run --coverage.reporter=text",
     "start": "yarn db:migrate && next start"
   },
