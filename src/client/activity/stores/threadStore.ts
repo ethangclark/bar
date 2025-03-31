@@ -72,7 +72,7 @@ export class ThreadStore {
             title: threadWrapReasonToTitle(threadWrap.reason),
             content: threadWrapReasonToMessage(threadWrap.reason),
             onOk: () => {
-              this.selectThread(threadWrap.threadId);
+              void this.createThread();
             },
           });
         },
