@@ -23,6 +23,7 @@ export const Progress = storeObserver(function Progress({
   return (
     <AtndProgress
       percent={Math.floor((completionCount / items.length) * 100)}
+      format={(percent) => `${percent}% complete`}
     />
   );
 });
