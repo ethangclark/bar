@@ -16,6 +16,8 @@ const promptTestEnv = {
   OPENAI_API_KEY: processEnv.OPENAI_API_KEY,
   // @ts-ignore
   GROQ_API_KEY: processEnv.GROQ_API_KEY,
+  // @ts-ignore
+  OPENROUTER_API_KEY: processEnv.OPENROUTER_API_KEY,
 };
 
 // @ts-ignore

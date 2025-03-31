@@ -12,7 +12,7 @@ import { defaultModel } from "~/server/ai/llm/types";
 import { db, schema } from "~/server/db";
 import { publishDescendentUpserts } from "~/server/db/pubsub/descendentPubSub";
 import { type Message, type MessageWithDescendents } from "~/server/db/schema";
-import { notifyAdmin } from "../email/notifyAdmin";
+import { notifyAdmin } from "../../email/notifyAdmin";
 
 /**
  * Analyzes the assistant response to determine if any items have been completed

@@ -1,70 +1,50 @@
-import { eq } from "drizzle-orm";
+import { and, eq, inArray, not } from "drizzle-orm";
 import { streamLlmResponse } from "~/server/ai/llm";
 import { defaultModel } from "~/server/ai/llm/types";
 import { db, schema } from "~/server/db";
-import { publishDescendentUpserts } from "~/server/db/pubsub/descendentPubSub";
 import { messageDeltaPubSub } from "~/server/db/pubsub/messageDeltaPubSub";
 import { type Message } from "~/server/db/schema";
-import { publishNextIncompleteMessage } from "./nextIncompleteMessage";
-import { postProcessAssistantResponse } from "./postProcessor";
+import { postProcess, type RetryHistory } from "./postProcessing/postProcessor";
+import { publishNewIncompleteMessage } from "./preProcessing/beginResponse";
 import { debouncePublish } from "./utils";
-
-export async function updateAndPublishCompletion(
-  assistantResponse: Message,
-  { hasViewPieces }: { hasViewPieces: boolean },
-) {
-  const updates = {
-    status: hasViewPieces
-      ? ("completeWithViewPieces" as const)
-      : ("completeWithoutViewPieces" as const),
-    hasViewPieces,
-  };
-
-  const updatedMessage = {
-    ...assistantResponse,
-    ...updates,
-  };
-
-  await Promise.all([
-    db
-      .update(schema.messages)
-      .set(updates)
-      .where(eq(schema.messages.id, assistantResponse.id)),
-    publishDescendentUpserts({
-      messages: [updatedMessage],
-    }),
-  ]);
-}
 
 async function respondToThread({
   userId,
   activityId,
   threadId,
+  retryHistory,
 }: {
   userId: string;
   activityId: string;
   threadId: string;
+  retryHistory: RetryHistory | null;
 }) {
+  const replyAttemptIds = new Set(
+    retryHistory?.prevResponseAttempts.map((m) => m.id) ?? [],
+  );
+
   const { emptyIncompleteMessage, oldMessages } =
-    await publishNextIncompleteMessage({
+    await publishNewIncompleteMessage({
       userId,
       activityId,
       threadId,
     });
 
-  let totalTokens = 0;
+  let threadTokenLength = 0;
   const gen = streamLlmResponse(
     emptyIncompleteMessage.userId,
     {
       model: defaultModel,
-      messages: oldMessages.map((m) => ({
-        role: m.senderRole,
-        content: m.content,
-      })),
+      messages: oldMessages
+        .filter((m) => !replyAttemptIds.has(m.id))
+        .map((m) => ({
+          role: m.senderRole,
+          content: m.content,
+        })),
     },
     db,
     (tt) => {
-      totalTokens = tt;
+      threadTokenLength = tt;
     },
   );
 
@@ -87,8 +67,11 @@ async function respondToThread({
     })
     .where(eq(schema.messages.id, emptyIncompleteMessage.id));
 
-  const messagesWithDescendents = await db.query.messages.findMany({
-    where: eq(schema.messages.threadId, threadId),
+  const prevMessages = await db.query.messages.findMany({
+    where: and(
+      eq(schema.messages.threadId, threadId),
+      not(inArray(schema.messages.id, Array.from(replyAttemptIds))),
+    ),
     with: {
       viewPieces: {
         with: {
@@ -107,14 +90,21 @@ async function respondToThread({
       },
     },
   });
-  const { hasViewPieces } = await postProcessAssistantResponse(
+
+  const { needsRetry, retryHistory: nextRetryHistory } = await postProcess(
     streamedIncompleteMessage,
-    messagesWithDescendents,
-    { totalTokens },
+    prevMessages,
+    retryHistory,
+    threadTokenLength,
   );
-  await updateAndPublishCompletion(streamedIncompleteMessage, {
-    hasViewPieces,
-  });
+  if (needsRetry) {
+    await respondToThread({
+      userId,
+      activityId,
+      threadId,
+      retryHistory: nextRetryHistory,
+    });
+  }
 }
 
 export async function respondToUserMessages(userMessages: Message[]) {
@@ -132,7 +122,12 @@ export async function respondToUserMessages(userMessages: Message[]) {
     for (const [activityId, ts] of Object.entries(a2ts)) {
       for (const threadId of ts) {
         promises.push(
-          respondToThread({ userId, activityId, threadId }).catch((e) => {
+          respondToThread({
+            userId,
+            activityId,
+            threadId,
+            retryHistory: null,
+          }).catch((e) => {
             console.error(e);
           }),
         );

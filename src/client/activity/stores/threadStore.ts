@@ -72,7 +72,7 @@ export class ThreadStore {
             title: threadWrapReasonToTitle(threadWrap.reason),
             content: threadWrapReasonToMessage(threadWrap.reason),
             onOk: () => {
-              this.selectThread(threadWrap.threadId);
+              void this.createThread();
             },
           });
         },
@@ -179,10 +179,19 @@ export class ThreadStore {
     if (messages instanceof Status) {
       return messages;
     }
-    const v = messages
+    const sorted = messages
       .filter((m) => m.threadId === thread.id)
       .sort((m1, m2) => m1.createdAt.getTime() - m2.createdAt.getTime());
-    return v;
+    const lastIncompleteMessage = sorted
+      .slice()
+      .reverse()
+      .find((m) => m.status === "incomplete");
+    // only include the last incomplete message;
+    // no incomplete messages that come before it
+    const sortedWithReducedIncompletes = sorted.filter((m) =>
+      m.status === "incomplete" ? m.id === lastIncompleteMessage?.id : true,
+    );
+    return sortedWithReducedIncompletes;
   }
 
   get lastMessageComplete() {

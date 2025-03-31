@@ -64,7 +64,7 @@ export const Messages = storeObserver(function Messages({
               return (
                 <MessageView
                   key={m.id}
-                  id={m.id}
+                  messageId={m.id}
                   className="ml-[30%] flex flex-col items-end"
                   isLastMessage={i === messages.length - 1}
                   messageLength={m.content.length}

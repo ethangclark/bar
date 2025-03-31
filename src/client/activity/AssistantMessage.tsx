@@ -65,59 +65,64 @@ export const AssistantMessage = storeObserver<{
 
   return (
     <>
-      {children?.map((child, i) => {
-        const isLastChild = i === children.length - 1;
-        const isLast = isLastMessage && isLastChild;
-        switch (child.type) {
-          case "image":
-            return (
-              <MessageView
-                key={child.key}
-                id={isLastChild ? message.id : undefined}
-                isLastMessage={isLast}
-                messageLength={child.url.length}
-                scrollToBottom={scrollToBottom}
-                flag={isLastChild ? flag : null}
-                diagnosticMessage="ASSISTANT MESSAGE - IMAGE"
-              >
-                <Image alt={child.textAlternative} url={child.url} />
-              </MessageView>
-            );
-          case "video":
-            return (
-              <MessageView
-                key={child.key}
-                id={isLastChild ? message.id : undefined}
-                isLastMessage={isLast}
-                messageLength={child.textAlternative.length}
-                scrollToBottom={scrollToBottom}
-                flag={isLastChild ? flag : null}
-                diagnosticMessage="ASSISTANT MESSAGE - VIDEO"
-              >
-                <Video videoId={child.videoId} />
-              </MessageView>
-            );
-          case "text":
-            return (
-              <MessageView
-                key={child.key}
-                id={isLastChild ? message.id : undefined}
-                isLastMessage={isLast}
-                messageLength={child.content.length}
-                scrollToBottom={scrollToBottom}
-                flag={isLastChild ? flag : null}
-                diagnosticMessage="ASSISTANT MESSAGE - TEXT"
-              >
-                <PreformattedText>{child.content}</PreformattedText>
-              </MessageView>
-            );
-          default:
-            assertTypesExhausted(child);
-        }
-      })}
+      {message.status !== "incomplete" &&
+        children?.map((child, i) => {
+          const isLastChild = i === children.length - 1;
+          const isLast = isLastMessage && isLastChild;
+          switch (child.type) {
+            case "image":
+              return (
+                <MessageView
+                  key={child.key}
+                  id={isLastChild ? message.id : undefined}
+                  messageId={message.id}
+                  isLastMessage={isLast}
+                  messageLength={child.url.length}
+                  scrollToBottom={scrollToBottom}
+                  flag={isLastChild ? flag : null}
+                  diagnosticMessage="ASSISTANT MESSAGE - IMAGE"
+                >
+                  <Image alt={child.textAlternative} url={child.url} />
+                </MessageView>
+              );
+            case "video":
+              return (
+                <MessageView
+                  key={child.key}
+                  id={isLastChild ? message.id : undefined}
+                  messageId={message.id}
+                  isLastMessage={isLast}
+                  messageLength={child.textAlternative.length}
+                  scrollToBottom={scrollToBottom}
+                  flag={isLastChild ? flag : null}
+                  diagnosticMessage="ASSISTANT MESSAGE - VIDEO"
+                >
+                  <Video videoId={child.videoId} />
+                </MessageView>
+              );
+            case "text":
+              return (
+                <MessageView
+                  key={child.key}
+                  id={isLastChild ? message.id : undefined}
+                  messageId={message.id}
+                  isLastMessage={isLast}
+                  messageLength={child.content.length}
+                  scrollToBottom={scrollToBottom}
+                  flag={isLastChild ? flag : null}
+                  diagnosticMessage="ASSISTANT MESSAGE - TEXT"
+                >
+                  <PreformattedText>{child.content}</PreformattedText>
+                </MessageView>
+              );
+            default:
+              assertTypesExhausted(child);
+          }
+        })}
       {(!children || diagnosticsEnabled) && (
         <MessageView
           id={message.id}
+          messageId={message.id}
           isLastMessage={isLastMessage}
           messageLength={message.content.length}
           scrollToBottom={scrollToBottom}

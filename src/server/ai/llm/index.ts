@@ -16,7 +16,7 @@ export async function* streamLlmResponse(
   userId: string,
   request: OpenRouterRequest,
   tx: DbOrTx,
-  onTotalTokens: (totalTokens: number) => void,
+  onTotalTokens?: (totalTokens: number) => void,
 ): AsyncGenerator<string | null> {
   const gen = streamOpenRouterResponse(userId, request, tx);
   let next = await gen.next();
@@ -33,5 +33,5 @@ export async function* streamLlmResponse(
     yield parsed;
     next = await gen.next();
   }
-  onTotalTokens(totalTokens);
+  onTotalTokens?.(totalTokens);
 }
