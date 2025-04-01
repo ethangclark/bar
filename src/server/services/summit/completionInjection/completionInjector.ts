@@ -176,6 +176,22 @@ assistant: Hi! I'm Summit, your learning assistant.
 RESULT:
 <none></none>
 
+EXAMPLE 4:
+user: Am I done?
+assistant: You're all done!
+RESULT:
+<complete>1</complete>
+<complete>2</complete>
+<complete>3</complete>
+<complete>4</complete>
+<complete>5</complete>
+<complete>6</complete>
+<complete>7</complete>
+<complete>8</complete>
+<complete>9</complete>
+<complete>10</complete>
+(or however many items there are)
+
 Here is the conversation history to analyze. Good luck!
 
 BEGIN CONVERSATION

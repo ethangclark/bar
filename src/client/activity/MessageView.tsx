@@ -27,6 +27,7 @@ export const MessageView = storeObserver<{
   flag,
   footer,
   diagnosticMessage,
+  userStore,
 }) {
   useEffect(() => {
     if (isLastMessage) {
@@ -61,7 +62,7 @@ export const MessageView = storeObserver<{
         >
           {flag.unflagged
             ? "Message has been unflagged. Click here to re-flag."
-            : "Message has been flagged. Click here to unflag."}
+            : `Message has been flagged.${userStore.rootIsAdmin ? " Click here to unflag." : ""}`}
         </LinkStyle>
       )}
       {footer && (
