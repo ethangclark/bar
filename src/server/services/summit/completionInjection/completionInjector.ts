@@ -38,29 +38,27 @@ export async function injectCompletions(
   });
   items = sortByOrderFracIdx(items);
 
-  const incompleteItemNumbers = filter(
-    items.map((item, idx) => {
-      if (
-        existingCompletions.some((completion) => completion.itemId === item.id)
-      ) {
-        return null;
-      }
-      return indexToItemNumber(idx);
-    }),
+  const ogCompletedItemIds = new Set(existingCompletions.map((c) => c.itemId));
+  const ogCompletedBools = items.map((item) => ogCompletedItemIds.has(item.id));
+
+  const validItemNumbers = items.map((_, idx) => indexToItemNumber(idx));
+
+  const ogIncompleteItemNumbers = filter(
+    ogCompletedBools.map((completed, idx) =>
+      completed ? null : indexToItemNumber(idx),
+    ),
     z.number(),
   );
-  const validItemNumbers = items.map((_, idx) => indexToItemNumber(idx));
 
   // Analyze the response to determine completed items
   const { completedItemNumbers } = await analyzeCompletions({
     userId,
     sortedMessages: [...prevMessages, assistantResponse],
-    incompleteItemNumbers,
     validItemNumbers,
   });
 
   const completedThisTurn = completedItemNumbers.filter((n) =>
-    incompleteItemNumbers.includes(n),
+    ogIncompleteItemNumbers.includes(n),
   );
 
   if (completedThisTurn.length === 0) {
@@ -113,47 +111,78 @@ export async function injectCompletions(
 async function analyzeCompletions({
   userId,
   sortedMessages,
-  incompleteItemNumbers,
   validItemNumbers,
 }: {
   userId: string;
   sortedMessages: Message[];
-  incompleteItemNumbers: number[];
   validItemNumbers: number[];
 }) {
   // Prepare the prompt for the LLM
   const prompt = `
-You are analyzing a conversation to determine if any items have been completed.
-The conversation is about an educational activity with multiple items.
+You are being asked to analyze a conversation between a learning assistant and a student in order to determine which lesson items have been completed.
 
-Determine which items have been completed, based on the assistant's most recent response.
+Informational items (informational text, images, videos, etc) are considered complete if the learning assistant has presented them to the student.
 
-An item is considered completed when the assistant has acknowledged that that it's complete or if they say that they're moving on to another item (in a way that doesn't imply they're "skipping" something the student is supposed to return to).
+Questions are considered complete if the student has answered them in a way that's satisfactory to the learning assistant.
 
-The following items are still incomplete: ${incompleteItemNumbers.join(", ")}
+You are to respond with the completed items' numbers in <complete> tags, and the numbers of items that are in progress in <in-progress> tags, like so:
+<complete>1</complete>
+<complete>2</complete>
+<complete>3</complete>
+<complete>4</complete>
+<complete>5</complete>
+<complete>6</complete>
+<complete>7</complete>
+<complete>8</complete>
+<complete>9</complete>
+<complete>10</complete>
+<complete>11</complete>
+<complete>12</complete>
+<complete>13</complete>
+<in-progress>14</in-progress>
 
-Respond with XML tags indicating which items have been completed. For example:
-<item-completed>23</item-completed>
-<item-completed>24</item-completed>
-
-If no new items have been completed, respond with:
-<no-new-completions></no-new-completions>
+If no items are complete OR in progress, respond with:
+<none></none>
 
 Here are some examples:
 
 EXAMPLE 1:
-user: I've finished the first exercise. What's next?
-assistant: Great job completing item 1! Let's move on to item 2 now.
-RESULT: <item-completed>1</item-completed>
+assistant: Let's start with item 1. It's this: The mitochondrion is the powerhouse of the cell.
+user: Got it.
+assistant: Great! Now let's move on to item 2. The ribosome is the cell's protein factory.
+user: Sounds good.
+assistant: Alright -- on to item 3. It's this: The cell membrane is the cell's outer wall.
+user: Why is it called a wall?
+assistant: It's called a wall because it surrounds the cell and protects it.
+RESULT:
+<complete>1</complete>
+<complete>2</complete>
+<in-progress>3</in-progress>
 
 EXAMPLE 2:
-user: I'm stuck on problem 3. Can you help?
-assistant: Let me explain how to approach problem 3. First, you need to...
-RESULT: <no-new-completions></no-new-completions>
+assistant: Here's the first item: The quadratic equation is derived via completing the square.
+user: What's that?
+assistant: It's a method by which both sides of the equations are transformed into a form that can be factored into two binomials.
+user: Got it.
+assistant: Great! Now let's move on to item 2. Use the quadratic formula to solve for x in the equation x^2 + 2x - 3 = 0.
+user: Let's skip this and come back to it later.
+assistant: Alright, I'll save it for later. Item 3 is this: What are the roots of the equation 2x^2 + 4x - 6 = 0?
+RESULT:
+<complete>1</complete>
+<in-progress>3</in-progress>
 
-Here is the conversation history:
+EXAMPLE 3:
+assistant: Hi! I'm Summit, your learning assistant.
+RESULT:
+<none></none>
 
-${sortedMessages.map((msg, idx) => `${idx === sortedMessages.length - 1 ? "(BEGIN LAST MESSAGE)\n" : ""}${msg.senderRole}: ${msg.content}`).join("\n\n")}
+Here is the conversation history to analyze. Good luck!
+
+BEGIN CONVERSATION
+
+${sortedMessages.map((msg) => `${msg.senderRole}: ${msg.content}`).join("\n\n")}
+
+END CONVERSATION
 `;
 
   const llmResponse = await getLlmResponse(
@@ -212,7 +241,7 @@ function extractCompletedItemNumbers({
   const completedItemNumbers: number[] = [];
 
   // Check if the response indicates no new completions
-  if (llmResponse.includes("<no-new-completions>")) {
+  if (llmResponse.includes("<none>")) {
     return [];
   }
 
@@ -224,8 +253,8 @@ function extractCompletedItemNumbers({
     return asNumbers;
   }
 
-  // Extract item IDs from <item-completed> tags
-  const completedRegex = /<item-completed>(.*?)<\/item-completed>/g;
+  // Extract item IDs from <complete> tags
+  const completedRegex = /<complete>(.*?)<\/complete>/g;
   let match;
 
   while ((match = completedRegex.exec(llmResponse)) !== null) {
