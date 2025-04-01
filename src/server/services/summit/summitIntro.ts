@@ -194,7 +194,7 @@ ${itemContent}`,
         userId: thread.userId,
         content: `Hey — this is Summit. I'm a learning assistant whose goal is to help you master the material in this activity.
 
-If anything is confusing, or something's not right, call it out, and we'll figure it out together. (If we can't, I'll flag our exchange so your instructor can review the issue.)
+If anything is confusing, or something's not right, call it out, and we'll figure it out together. (If we can't, I'll flag the relevant item so your instructor can review the issue later.)
 
 Ready to jump in?`,
         senderRole: "assistant" as const,
