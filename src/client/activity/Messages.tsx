@@ -22,9 +22,12 @@ export const Messages = storeObserver(function Messages({
   const { messages } = threadStore;
 
   const scrollToBottom = useCallback(() => {
-    messageWrapperRef.current?.scrollTo({
-      top: messageWrapperRef.current.scrollHeight,
-      behavior: "smooth",
+    // timeout ensures rendering is complete
+    setTimeout(() => {
+      messageWrapperRef.current?.scrollTo({
+        top: messageWrapperRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     });
   }, []);
 
@@ -71,6 +74,7 @@ export const Messages = storeObserver(function Messages({
                   scrollToBottom={scrollToBottom}
                   flag={null}
                   diagnosticMessage="USER MESSAGE"
+                  complete
                 >
                   <div className="rounded-2xl bg-gray-100 px-4 py-2">
                     <PreformattedText>{m.content}</PreformattedText>

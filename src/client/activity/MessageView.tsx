@@ -11,10 +11,10 @@ export const MessageView = storeObserver<{
   className?: string;
   isLastMessage: boolean;
   messageLength: number;
+  complete: boolean;
   scrollToBottom: () => void;
   diagnosticMessage: string;
   flag: Flag | null;
-  footer?: React.ReactNode;
 }>(function MessageView({
   id,
   messageId,
@@ -23,16 +23,15 @@ export const MessageView = storeObserver<{
   className,
   isLastMessage,
   messageLength,
+  complete,
   scrollToBottom,
   flag,
-  footer,
   diagnosticMessage,
   userStore,
 }) {
   useEffect(() => {
     if (isLastMessage) {
-      // timeout allows images to render
-      setTimeout(scrollToBottom);
+      scrollToBottom();
     }
   }, [
     isLastMessage,
@@ -40,8 +39,8 @@ export const MessageView = storeObserver<{
     // important to include messageLength in the dependency array
     // so we re-scroll to the bottom when the message content changes
     messageLength,
-    // re-scroll if footer changes
-    footer,
+    // re-scroll if isComplete changes
+    complete,
   ]);
 
   return (
@@ -64,9 +63,6 @@ export const MessageView = storeObserver<{
             ? "Message has been unflagged. Click here to re-flag."
             : `Message has been flagged.${userStore.rootIsAdmin ? " Click here to unflag." : ""}`}
         </LinkStyle>
-      )}
-      {footer && (
-        <div className="absolute relative bottom-0 left-0">{footer}</div>
       )}
     </div>
   );

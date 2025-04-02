@@ -1,3 +1,4 @@
+import { Button } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { assertTypesExhausted } from "~/common/assertions";
 import { type Message } from "~/server/db/schema";
@@ -38,6 +39,41 @@ const FancyEllipsis: React.FC<FancyEllipsisProps> = ({
     <span className={`inline-block ${className}`}>{".".repeat(dotCount)}</span>
   );
 };
+
+function Thinking({
+  children,
+  scrollToBottom,
+}: {
+  children: React.ReactNode;
+  scrollToBottom: () => void;
+}) {
+  const [viewingContent, setViewingContent] = useState(false);
+  return (
+    <div className="flex flex-col items-start">
+      {viewingContent && (
+        <div className="my-2 rounded-lg border-2 border-dotted border-gray-400 p-2 text-sm text-gray-600">
+          {children}
+        </div>
+      )}
+      <div
+        onClick={() => {
+          setViewingContent(!viewingContent);
+          scrollToBottom();
+        }}
+      >
+        <span className="flex flex-col">
+          <span className="flex pl-1.5 text-gray-700">
+            Thinking
+            <FancyEllipsis />
+          </span>
+          <Button type="text" className="text-xs text-gray-500" size="small">
+            {viewingContent ? "Hide" : "See"} thoughts
+          </Button>
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export const AssistantMessage = storeObserver<{
   message: Message;
@@ -81,6 +117,7 @@ export const AssistantMessage = storeObserver<{
                   scrollToBottom={scrollToBottom}
                   flag={isLastChild ? flag : null}
                   diagnosticMessage="ASSISTANT MESSAGE - IMAGE"
+                  complete
                 >
                   <Image alt={child.textAlternative} url={child.url} />
                 </MessageView>
@@ -96,6 +133,7 @@ export const AssistantMessage = storeObserver<{
                   scrollToBottom={scrollToBottom}
                   flag={isLastChild ? flag : null}
                   diagnosticMessage="ASSISTANT MESSAGE - VIDEO"
+                  complete
                 >
                   <Video videoId={child.videoId} />
                 </MessageView>
@@ -111,6 +149,7 @@ export const AssistantMessage = storeObserver<{
                   scrollToBottom={scrollToBottom}
                   flag={isLastChild ? flag : null}
                   diagnosticMessage="ASSISTANT MESSAGE - TEXT"
+                  complete
                 >
                   <PreformattedText>{child.content}</PreformattedText>
                 </MessageView>
@@ -125,25 +164,18 @@ export const AssistantMessage = storeObserver<{
           messageId={message.id}
           isLastMessage={isLastMessage}
           messageLength={message.content.length}
+          complete={message.status !== "incomplete"}
           scrollToBottom={scrollToBottom}
           flag={flag}
           diagnosticMessage="ASSISTANT MESSAGE - BASE"
-          footer={
-            message.status === "incomplete" ? (
-              <div className="bg-white text-gray-600">
-                Thinking
-                <FancyEllipsis />
-              </div>
-            ) : undefined
-          }
         >
-          <PreformattedText
-            className={
-              message.status === "incomplete" ? "text-xs text-gray-300" : ""
-            }
-          >
-            {message.content}
-          </PreformattedText>
+          {message.status === "incomplete" ? (
+            <Thinking scrollToBottom={scrollToBottom}>
+              {message.content}
+            </Thinking>
+          ) : (
+            <PreformattedText>{message.content}</PreformattedText>
+          )}
         </MessageView>
       )}
     </>
