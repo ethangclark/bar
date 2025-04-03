@@ -1,102 +1,66 @@
 import { TRPCError } from "@trpc/server";
-import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
-import { assertOne, assertTypesExhausted } from "~/common/assertions";
+import { assertTypesExhausted } from "~/common/assertions";
 import { type LoginType } from "~/common/searchParams";
 import { type UserBasic } from "~/common/types";
 import { db, schema, type DbOrTx } from "~/server/db";
 import { type Session } from "../db/schema";
-import { hashLoginToken } from "../utils";
+import { hashPassword, hashToken } from "../utils";
 
-export async function getOrCreateVerifiedEmailUser({
-  email,
+export async function associateSessionWithUser({
+  sessionCookieValue,
+  userId,
   tx,
 }: {
-  email: string;
+  sessionCookieValue: string;
+  userId: string;
   tx: DbOrTx;
 }) {
-  const existingVerified = await tx.query.users.findFirst({
-    where: eq(schema.users.email, email),
-  });
-  if (existingVerified) {
-    return existingVerified;
-  }
-
-  // clean up any existing unverified users with this email
-  // (simpler than trying to reuse unverified users if they exist)
-  await tx.delete(schema.users).where(eq(schema.users.unverifiedEmail, email));
-
-  const users = await tx
-    .insert(schema.users)
-    .values({
-      unverifiedEmail: email,
-      loginTokenCreatedAt: dayjs().add(1000, "year").toDate(),
-    })
-    .returning();
-  return assertOne(users);
+  await tx
+    .update(schema.sessions)
+    .set({ userId })
+    .where(eq(schema.sessions.sessionCookieValue, sessionCookieValue));
 }
 
-export async function attemptAutoLogin(
-  loginToken: string,
-  session: Session,
-  tx: DbOrTx,
-  loginType: LoginType | null,
-): Promise<
-  { succeeded: true; user: UserBasic } | { succeeded: false; user: null }
-> {
-  const loginTokenHash = hashLoginToken(loginToken);
-  const user = await tx.query.users.findFirst({
-    where: eq(schema.users.loginTokenHash, loginTokenHash),
-  });
-  if (!user) return { succeeded: false, user: null };
-
-  // if the login token was created after the session was created,
-  // then we can login the user (because they're not an email scanner)
-  if (user.loginTokenCreatedAt > session.createdAt) {
-    const { user } = await loginUser(loginToken, session, tx, loginType);
-    return { succeeded: true, user };
-  } else {
-    return { succeeded: false, user: null };
-  }
-}
-
-export async function loginUser(
-  loginToken: string,
-  session: Session,
-  tx: DbOrTx,
-  loginType: LoginType | null,
-) {
-  const loginTokenHash = hashLoginToken(loginToken);
+export async function setPasswordAndLogIn({
+  setPasswordToken,
+  session,
+  tx,
+  loginType,
+  password,
+}: {
+  setPasswordToken: string;
+  session: Session;
+  tx: DbOrTx;
+  loginType: LoginType | null;
+  password: string;
+}) {
+  const setPasswordTokenHash = hashToken(setPasswordToken);
 
   // verify the login token
   const user = await tx.query.users.findFirst({
-    where: eq(schema.users.loginTokenHash, loginTokenHash),
+    where: eq(schema.users.setPasswordTokenHash, setPasswordTokenHash),
   });
   if (!user) throw new TRPCError({ code: "UNAUTHORIZED" });
 
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-  const email = user.email || user.unverifiedEmail;
-  if (!email) {
-    throw new Error("Could not identify user email");
-  }
+  const { email, passwordSalt } = user;
 
-  // ensure email is noted as verified
+  const passwordHash = hashPassword({ password, salt: passwordSalt });
+
   await db
     .update(schema.users)
     .set({
       email,
-      unverifiedEmail: null,
-      loginTokenHash: null,
+      passwordHash,
+      setPasswordTokenHash: null,
     })
     .where(eq(schema.users.id, user.id));
 
-  // associate the session with the user
-  await db
-    .update(schema.sessions)
-    .set({
-      userId: user.id,
-    })
-    .where(eq(schema.sessions.sessionCookieValue, session.sessionCookieValue));
+  await associateSessionWithUser({
+    sessionCookieValue: session.sessionCookieValue,
+    userId: user.id,
+    tx,
+  });
 
   switch (loginType) {
     case null:

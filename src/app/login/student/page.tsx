@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { LoadingPage } from "~/client/components/Loading";
-import { LoginPage } from "~/client/components/LoginPage";
+import { LoginPage } from "~/client/components/login/LoginPage";
 
 export default function LogInStudent() {
   return (

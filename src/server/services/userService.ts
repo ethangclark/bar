@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
 import { assertOne } from "~/common/assertions";
 import { env } from "~/env";
-import { type DbOrTx } from "~/server/db";
+import { schema, type DbOrTx } from "~/server/db";
 import { users } from "~/server/db/schema";
 
 export const queryUser = async (userId: string | null, tx: DbOrTx) => {
@@ -19,27 +19,29 @@ export const isUserAdmin = async (userId: string, tx: DbOrTx) => {
   return user?.isAdmin ?? false;
 };
 
-export const createUser = async (tx: DbOrTx) => {
-  const user = await tx
-    .insert(users)
-    .values({
-      loginTokenCreatedAt: dayjs().add(1000, "year").toDate(),
-    })
-    .returning();
-  return assertOne(user);
-};
-
-export const getOrCreateUser = async ({
-  userId,
+export async function getOrCreateUser({
+  email,
   tx,
 }: {
-  userId: string | null;
+  email: string;
   tx: DbOrTx;
-}) => {
-  const user = await queryUser(userId, tx);
-  if (user) return user;
-  return createUser(tx);
-};
+}) {
+  const existing = await tx.query.users.findFirst({
+    where: eq(schema.users.email, email),
+  });
+  if (existing) {
+    return existing;
+  }
+
+  const users = await tx
+    .insert(schema.users)
+    .values({
+      email,
+      setPasswordTokenCreatedAt: dayjs().add(1000, "year").toDate(),
+    })
+    .returning();
+  return assertOne(users);
+}
 
 export const getUser = async (userId: string, tx: DbOrTx) => {
   const user = await queryUser(userId, tx);
