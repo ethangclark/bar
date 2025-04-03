@@ -145,6 +145,7 @@ export const LoginPage = storeObserver<{ forInstructor?: boolean }>(
             case "setPassword":
               return (
                 <PasswordInputPageCore
+                  email={email}
                   loading={loading}
                   stage="setPassword"
                   onSubmitPassword={handleSetPassword}
@@ -153,6 +154,7 @@ export const LoginPage = storeObserver<{ forInstructor?: boolean }>(
             case "enterPassword":
               return (
                 <PasswordInputPageCore
+                  email={email}
                   loading={loading}
                   stage="enterPassword"
                   onSubmitPassword={handleSubmitPassword}

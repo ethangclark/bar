@@ -7,11 +7,13 @@ import { LoadingCentered } from "../Loading";
 import { InputPageWrapper } from "./InputPageWrapper";
 
 export function PasswordInputPageCore({
+  email,
   loading,
   stage,
   onSubmitPassword,
   loginFailed,
 }: {
+  email: string;
   loading: boolean;
   stage: "setPassword" | "enterPassword";
   onSubmitPassword: (password: string) => void;
@@ -26,6 +28,9 @@ export function PasswordInputPageCore({
 
   return (
     <InputPageWrapper>
+      <div className="mb-6">
+        <p>Signing in as {email}</p>
+      </div>
       <Form onFinish={handleSubmit} layout="inline" className="mb-8">
         <Form.Item name="password" label="Password">
           <Input
