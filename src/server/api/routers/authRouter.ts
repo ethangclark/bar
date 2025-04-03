@@ -45,7 +45,7 @@ export const authRouter = createTRPCRouter({
     return getBasicSessionDeets(ctx);
   }),
 
-  passwordOkOrSendReset: publicProcedure
+  prePasswordActions: publicProcedure
     .input(
       z.object({
         email: z.string().email(),
@@ -54,7 +54,7 @@ export const authRouter = createTRPCRouter({
       }),
     )
     .mutation(
-      async ({ input }): Promise<{ result: "passwordOk" | "sentReset" }> => {
+      async ({ input }): Promise<{ result: "okdPwExists" | "sentReset" }> => {
         /*
         if (env.NODE_ENV !== "production" && env.QUICK_DEV_LOGIN) {
           if (!ctx.session) {
@@ -78,9 +78,9 @@ export const authRouter = createTRPCRouter({
         const user = await db.query.users.findFirst({
           where: eq(users.email, email),
         });
-        const passwordOk = !!user?.passwordHash;
-        if (passwordOk) {
-          return { result: "passwordOk" };
+        const okdPwExists = !!user?.passwordHash;
+        if (okdPwExists) {
+          return { result: "okdPwExists" };
         }
         await sendSetPasswordEmail({ email, encodedRedirect, loginType });
         return { result: "sentReset" };

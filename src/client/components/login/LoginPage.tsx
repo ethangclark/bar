@@ -47,13 +47,13 @@ export const LoginPage = storeObserver<{ forInstructor?: boolean }>(
       async (emailSubmitted: string) => {
         setEmail(emailSubmitted);
         setIsPwSetLoading(true);
-        const { result } = await trpc.auth.passwordOkOrSendReset.mutate({
+        const { result } = await trpc.auth.prePasswordActions.mutate({
           email: emailSubmitted,
           encodedRedirect,
           loginType: forInstructor ? "instructor" : null,
         });
         switch (result) {
-          case "passwordOk":
+          case "okdPwExists":
             setStage("enterPassword");
             break;
           case "sentReset":
