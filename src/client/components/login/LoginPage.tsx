@@ -149,6 +149,7 @@ export const LoginPage = storeObserver<{ forInstructor?: boolean }>(
                   loading={loading}
                   stage="setPassword"
                   onSubmitPassword={handleSetPassword}
+                  encodedRedirect={encodedRedirect}
                 />
               );
             case "enterPassword":
@@ -159,6 +160,7 @@ export const LoginPage = storeObserver<{ forInstructor?: boolean }>(
                   stage="enterPassword"
                   onSubmitPassword={handleSubmitPassword}
                   loginFailed={loginFailed}
+                  encodedRedirect={encodedRedirect}
                 />
               );
             default:

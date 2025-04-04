@@ -120,7 +120,7 @@ export const authRouter = createTRPCRouter({
     .input(
       z.object({
         email: z.string().email(),
-        encodedRedirect: z.string(),
+        encodedRedirect: z.string().nullable(),
         loginType: loginTypeSchema.nullable(),
       }),
     )
