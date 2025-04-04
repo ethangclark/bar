@@ -72,7 +72,7 @@ export function PasswordInputPageCore({
           <Button
             type="primary"
             htmlType="submit"
-            disabled={!z.string().safeParse(password).success}
+            disabled={!z.string().min(4).safeParse(password).success}
           >
             Log in
           </Button>

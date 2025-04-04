@@ -35,11 +35,12 @@ export type AudioDataX = z.infer<typeof audioDataXSchema>;
 export const integrationTypes = ["canvas"] as const;
 export const allIntegrationTypes = [...integrationTypes];
 
-export type UserBasic = {
-  id: string;
-  email: string | null;
-  name: string | null;
-  isInstructor: boolean;
-  requestedInstructorAccess: boolean;
-  isAdmin: boolean;
-};
+export const userBasicSchema = z.object({
+  id: z.string(),
+  email: z.string().nullable(),
+  name: z.string().nullable(),
+  isInstructor: z.boolean(),
+  requestedInstructorAccess: z.boolean(),
+  isAdmin: z.boolean(),
+});
+export type UserBasic = z.infer<typeof userBasicSchema>;
