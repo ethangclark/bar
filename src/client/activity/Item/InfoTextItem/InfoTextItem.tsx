@@ -1,8 +1,8 @@
 import { type InfoText } from "~/server/db/schema";
-import { Editor } from "../../components/Editor";
-import { storeObserver } from "../../utils/storeObserver";
-import { joinSegments, parseTextWithLatex } from "./infoTextItemUtils";
-import { isInfoTextDraftReady } from "./itemValidator";
+import { Editor } from "../../../components/Editor";
+import { storeObserver } from "../../../utils/storeObserver";
+import { isInfoTextDraftReady } from "../itemValidator";
+import { joinSegments, parseTextWithLatex } from "./utils";
 
 export const InfoTextItem = storeObserver<{
   infoText: InfoText;

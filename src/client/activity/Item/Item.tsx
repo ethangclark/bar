@@ -6,7 +6,7 @@ import { objectKeys } from "~/common/objectUtils";
 import { type ItemWithDescendents } from "~/server/db/schema";
 import { storeObserver } from "../../utils/storeObserver";
 import { InfoImageItem } from "./InfoImageItem";
-import { InfoTextItem } from "./InfoTextItem";
+import { InfoTextItem } from "./InfoTextItem/InfoTextItem";
 import { InfoVideoItem } from "./InfoVideoItem";
 import { TypeTitle } from "./Layout";
 import { QuestionItem } from "./QuestionItem";

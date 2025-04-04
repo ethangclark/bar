@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseTextWithLatex } from "./infoTextItemUtils";
+import { parseTextWithLatex } from "./utils";
 
 describe("parseTextWithLatex", () => {
   it("handles plain text without LaTeX", () => {
