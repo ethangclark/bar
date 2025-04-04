@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getRedirectUrl } from "~/common/canvasUtils";
 import { parseDateOrNull } from "~/common/timeUtils";
 import { db, schema, type DbOrTx } from "~/server/db";
-import { getOrCreateUser } from "~/server/services/userService";
+import { type User } from "~/server/db/schema";
 import { updateTokenCache } from "./canvasTokenCache";
 import {
   ambiguousEnrollmentTypeSchema,
@@ -72,12 +72,12 @@ async function getLoginResponse({
 type LoginResponse = Awaited<ReturnType<typeof getLoginResponse>>;
 
 async function upsertCanvasUser({
-  userId,
+  user,
   canvasIntegrationId,
   loginResponse,
   tx,
 }: {
-  userId: string | null;
+  user: User;
   canvasIntegrationId: string;
   loginResponse: LoginResponse;
   tx: DbOrTx;
@@ -106,7 +106,6 @@ async function upsertCanvasUser({
       .where(eq(schema.canvasUsers.canvasGlobalId, canvasUser.globalId));
     return { user: existing.user };
   } else {
-    const user = await getOrCreateUser({ userId, tx });
     await tx.insert(schema.canvasUsers).values({
       userId: user.id,
       canvasIntegrationId,
@@ -121,12 +120,12 @@ async function upsertCanvasUser({
 }
 
 export async function executeUserInitiation({
-  userId: maybeUserId,
+  user,
   oauthCode,
   canvasIntegrationId,
   tx,
 }: {
-  userId: string | null;
+  user: User;
   oauthCode: string;
   canvasIntegrationId: string;
   tx: DbOrTx;
@@ -145,8 +144,8 @@ export async function executeUserInitiation({
     oauthCode,
   });
 
-  const { user } = await upsertCanvasUser({
-    userId: maybeUserId,
+  await upsertCanvasUser({
+    user,
     canvasIntegrationId,
     loginResponse,
     tx,

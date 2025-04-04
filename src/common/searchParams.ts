@@ -9,10 +9,6 @@ export const loginTypeSchema = z.enum(loginTypes);
 export type LoginType = z.infer<typeof loginTypeSchema>;
 
 export const searchParamsX = {
-  loginToken: {
-    key: "token" as const,
-    schema: z.string(),
-  },
   redirectUrl: {
     key: "redirect" as const,
     schema: z.string(),
@@ -36,6 +32,10 @@ export const searchParamsX = {
   diagnostics: {
     key: "diagnostics" as const,
     schema: z.enum(["enabled"]),
+  },
+  setPasswordToken: {
+    key: "pwt" as const,
+    schema: z.string(),
   },
 };
 

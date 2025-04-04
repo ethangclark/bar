@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { loginEmailHtml, loginEmailText } from "./loginEmailUtils";
+import { loginEmailHtml, loginEmailText } from "./setPasswordEmailUtils";
 
 describe("emailUtils", () => {
   describe("html function", () => {
     it("should return correct HTML with escaped email and URL", () => {
       const result = loginEmailHtml({
-        urlWithLoginToken: "http://example.com/token",
+        urlWithSetPasswordToken: "http://example.com/token",
         email: "test@example.com",
       });
       expect(result).toContain("test@example&#8203;.com");
@@ -16,7 +16,7 @@ describe("emailUtils", () => {
   describe("text function", () => {
     it("should return correct text with email and URL", () => {
       const result = loginEmailText({
-        urlWithLoginToken: "http://example.com/token",
+        urlWithSetPasswordToken: "http://example.com/token",
         email: "test@example.com",
       });
       expect(result).toBe(

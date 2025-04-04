@@ -1,0 +1,1 @@
+ALTER TABLE "user" ALTER COLUMN "set_password_token_created_at" DROP DEFAULT;

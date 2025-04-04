@@ -1,7 +1,7 @@
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { loginTypeSchema } from "~/common/searchParams";
 import { type UserBasic } from "~/common/types";
-import { env } from "~/env";
 import {
   createTRPCRouter,
   type Ctx,
@@ -10,18 +10,20 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import { db } from "~/server/db";
+import { users } from "~/server/db/schema";
 import { executeUserInitiation } from "~/server/integrations/canvas/canvasApiService";
 import {
-  attemptAutoLogin,
-  loginUser,
+  associateSessionWithUser,
   logoutUser,
+  setPasswordAndLogIn,
 } from "~/server/services/authService";
-import { sendLoginEmail } from "~/server/services/email/loginEmail";
+import { sendSetPasswordEmail } from "~/server/services/email/setPasswordEmail";
+import { getOrCreateUser } from "~/server/services/userService";
+import { hashPassword } from "~/server/utils";
 
 function getBasicSessionDeets(ctx: Ctx) {
   const loggedIn = isLoggedIn(ctx);
   const { user } = ctx;
-  const isAdmin = user?.isAdmin ?? false;
 
   // important to pull just the fields we need so we don't expose any sensitive data
   const userBasic: UserBasic | null = user
@@ -35,7 +37,7 @@ function getBasicSessionDeets(ctx: Ctx) {
       }
     : null;
 
-  return { isLoggedIn: loggedIn, user: userBasic, isAdmin };
+  return { isLoggedIn: loggedIn, user: userBasic };
 }
 
 export const authRouter = createTRPCRouter({
@@ -43,86 +45,137 @@ export const authRouter = createTRPCRouter({
     return getBasicSessionDeets(ctx);
   }),
 
-  sendLoginEmail: publicProcedure
+  prePasswordActions: publicProcedure
     .input(
       z.object({
         email: z.string().email(),
-        encodedRedirect: z.string().nullable().optional(),
+        encodedRedirect: z.string().nullable(),
+        loginType: loginTypeSchema.nullable(),
+      }),
+    )
+    .mutation(
+      async ({ input }): Promise<{ result: "okdPwExists" | "sentReset" }> => {
+        /*
+        if (env.NODE_ENV !== "production" && env.QUICK_DEV_LOGIN) {
+          if (!ctx.session) {
+            throw new Error("No session found for quick-dev-login mode");
+          }
+          const { user } = await setPasswordAndLogIn({
+            setPasswordToken,
+            session: ctx.session,
+            tx: db,
+            loginType,
+            password: "password",
+          });
+          return {
+            isLoggedIn: true,
+            user,
+            isAdmin: user?.isAdmin ?? false,
+          };
+        }
+        */
+        const { email, encodedRedirect, loginType } = input;
+        const user = await db.query.users.findFirst({
+          where: eq(users.email, email),
+        });
+        const okdPwExists = !!user?.passwordHash;
+        if (okdPwExists) {
+          return { result: "okdPwExists" };
+        }
+        await sendSetPasswordEmail({ email, encodedRedirect, loginType });
+        return { result: "sentReset" };
+      },
+    ),
+
+  setPassword: publicProcedure
+    .input(
+      z.object({
+        token: z.string(),
+        password: z.string(),
         loginType: loginTypeSchema.nullable(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const { session } = ctx;
+      if (!session) throw new Error("No session found");
+      const { token, password, loginType } = input;
+      const { user } = await setPasswordAndLogIn({
+        setPasswordToken: token,
+        password,
+        session,
+        tx: db,
+        loginType,
+      });
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        isInstructor: user.isInstructor,
+        requestedInstructorAccess: user.requestedInstructorAccess,
+        isAdmin: user.isAdmin,
+      } satisfies UserBasic;
+    }),
+
+  sendSetPasswordEmail: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+        encodedRedirect: z.string().nullable(),
+        loginType: loginTypeSchema.nullable(),
+      }),
+    )
+    .mutation(async ({ input }) => {
       const { email, encodedRedirect, loginType } = input;
-      const { loginToken } = await sendLoginEmail({
+      await sendSetPasswordEmail({
         email,
         encodedRedirect,
         loginType,
       });
-      if (env.NODE_ENV !== "production" && env.QUICK_DEV_LOGIN) {
-        if (!ctx.session) {
-          throw new Error("No session found for quick-dev-login mode");
-        }
-        const { user } = await loginUser(
-          loginToken,
-          ctx.session,
-          db,
-          loginType,
-        );
-        return {
-          isLoggedIn: true,
-          user,
-          isAdmin: user?.isAdmin ?? false,
-        };
-      }
-      return getBasicSessionDeets(ctx);
     }),
 
   login: publicProcedure
     .input(
       z.object({
-        loginToken: z.string(),
-        loginType: loginTypeSchema.nullable().optional(),
+        email: z.string().email(),
+        password: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
       const { session } = ctx;
       if (!session) throw new Error("Session not found");
-      const { loginToken, loginType } = input;
-      const { user } = await loginUser(
-        loginToken,
-        session,
-        db,
-        loginType ?? null,
-      );
+      const { email, password } = input;
+      const user = await getOrCreateUser({ email, tx: db });
+
+      const hashedPassword = hashPassword({
+        password,
+        salt: user.passwordSalt,
+      });
+      if (hashedPassword !== user.passwordHash) {
+        return {
+          isLoggedIn: false,
+          user: null,
+          isAdmin: false,
+        };
+      }
+
+      await associateSessionWithUser({
+        sessionCookieValue: session.sessionCookieValue,
+        userId: user.id,
+        tx: db,
+      });
 
       const deets: ReturnType<typeof getBasicSessionDeets> = {
         isLoggedIn: true,
-        user,
-        isAdmin: user?.isAdmin ?? false,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          isInstructor: user.isInstructor,
+          requestedInstructorAccess: user.requestedInstructorAccess,
+          isAdmin: user.isAdmin,
+        },
       };
       return deets;
-    }),
-
-  autoLogin: publicProcedure
-    .input(
-      z.object({
-        loginToken: z.string(),
-        loginType: loginTypeSchema.nullable().optional(),
-      }),
-    )
-    .mutation(async ({ input, ctx }): ReturnType<typeof attemptAutoLogin> => {
-      const { loginToken, loginType } = input;
-      const { session } = ctx;
-      if (!session) {
-        return { succeeded: false as const, user: null };
-      }
-      const result = await attemptAutoLogin(
-        loginToken,
-        session,
-        db,
-        loginType ?? null,
-      );
-      return result;
     }),
 
   logout: protectedProcedure.mutation(async ({ ctx }) => {
@@ -130,15 +183,15 @@ export const authRouter = createTRPCRouter({
     await logoutUser(session, db);
   }),
 
-  processCanvasCode: publicProcedure
+  processCanvasCode: protectedProcedure
     .input(z.object({ code: z.string(), canvasIntegrationId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const { userId } = ctx;
+      const { user } = ctx;
       const { code, canvasIntegrationId } = input;
 
       await db.transaction(async (tx) => {
         await executeUserInitiation({
-          userId,
+          user,
           oauthCode: code,
           canvasIntegrationId,
           tx,

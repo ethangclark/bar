@@ -50,12 +50,11 @@ export const users = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name"),
-    email: text("email"),
-    unverifiedEmail: text("unverified_email"),
+    email: text("email").notNull().unique(),
     passwordSalt: uuid("password_salt").notNull().defaultRandom(),
     passwordHash: text("password_hash"),
-    loginTokenHash: text("login_token_hash"),
-    loginTokenCreatedAt: timestamp("login_token_created_at", {
+    setPasswordTokenHash: text("set_password_token_hash"),
+    setPasswordTokenCreatedAt: timestamp("set_password_token_created_at", {
       withTimezone: true,
     }).notNull(),
     llmTokensUsed: integer("tokens_used").default(0).notNull(),
@@ -67,8 +66,7 @@ export const users = pgTable(
   },
   (u) => [
     index("user_email_idx").on(u.email),
-    index("user_unverified_email_idx").on(u.unverifiedEmail),
-    index("user_login_token_hash_idx").on(u.loginTokenHash),
+    index("user_set_password_token_hash_idx").on(u.setPasswordTokenHash),
   ],
 );
 export type User = InferSelectModel<typeof users>;

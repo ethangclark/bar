@@ -6,7 +6,7 @@ import { z } from "zod";
 import { Activity } from "~/client/activity/Activity";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { searchParamsX } from "~/common/searchParams";
-import { api } from "~/trpc/react";
+import { trpc } from "~/trpc/proxy";
 
 const ActivityPage = storeObserver(function ActivityPage({
   focusedActivityStore,
@@ -17,25 +17,31 @@ const ActivityPage = storeObserver(function ActivityPage({
 
   const router = useRouter();
 
-  const { data } = api.auth.basicSessionDeets.useQuery();
+  useEffect(() => {
+    let mounted = true;
+    void trpc.auth.basicSessionDeets.query().then(({ isLoggedIn, user }) => {
+      if (!mounted) return;
+      if (isLoggedIn === true) {
+        void focusedActivityStore.loadActivity(activityId);
+        user && userStore.setUser(user);
+      } else if (isLoggedIn === false) {
+        router.push(
+          `/login?${searchParamsX.redirectUrl.key}=${encodeURIComponent(
+            window.location.pathname,
+          )}`,
+        );
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [activityId, focusedActivityStore, router, userStore]);
 
   useEffect(() => {
-    if (!data) {
-      return;
-    }
-    const { isLoggedIn, user } = data;
-    if (isLoggedIn === true) {
-      void focusedActivityStore.loadActivity(activityId);
-      user && userStore.setUser(user);
-    } else if (isLoggedIn === false) {
-      router.push(
-        `/login?${searchParamsX.redirectUrl.key}=${encodeURIComponent(
-          window.location.pathname,
-        )}`,
-      );
-    }
-    return () => focusedActivityStore.reset();
-  }, [focusedActivityStore, activityId, data, router, userStore]);
+    return () => {
+      focusedActivityStore.reset();
+    };
+  }, [focusedActivityStore]);
 
   return <Activity />;
 });

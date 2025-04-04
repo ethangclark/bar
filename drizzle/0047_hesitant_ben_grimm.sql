@@ -1,0 +1,2 @@
+ALTER TABLE "user" ADD COLUMN "set_password_token_hash" text;--> statement-breakpoint
+ALTER TABLE "user" ADD COLUMN "set_password_token_created_at" timestamp with time zone DEFAULT now() + interval '1000 years' NOT NULL;

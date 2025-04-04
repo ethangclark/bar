@@ -53,7 +53,7 @@ export const Messages = storeObserver(function Messages({
         {messages.map((m, i) => {
           switch (m.senderRole) {
             case "system":
-              return data?.isAdmin && diagnosticsEnabled ? (
+              return data?.user?.isAdmin && diagnosticsEnabled ? (
                 <div
                   key={m.id}
                   id={m.id}

@@ -11,13 +11,23 @@ export function getIpAddress(
   return ipAddress;
 }
 
-export function safeHash({ value, salt }: { value: string; salt: string }) {
+function safeHash({ value, salt }: { value: string; salt: string }) {
   const hashAsHex = crypto
     .pbkdf2Sync(value, salt, 1000, 64, "sha512")
     .toString("hex");
   return hashAsHex;
 }
 
-export function hashLoginToken(loginToken: string) {
-  return safeHash({ value: loginToken, salt: "" });
+export function hashToken(token: string) {
+  return safeHash({ value: token, salt: "" });
+}
+
+export function hashPassword({
+  password,
+  salt,
+}: {
+  password: string;
+  salt: string;
+}) {
+  return safeHash({ value: password, salt });
 }

@@ -2,15 +2,17 @@ import { Button, Form, Input } from "antd";
 import { useCallback, useState } from "react";
 import { z } from "zod";
 import { useNotify } from "~/client/hooks/useNotify";
-import { LoadingCentered } from "./Loading";
-import { FrontPageLogo } from "./Logo";
+import { LoadingCentered } from "../Loading";
+import { InputPageWrapper } from "./InputPageWrapper";
 
-export function EmailInputPage({
+export function EmailInputPageCore({
   loading,
   onSubmitEmail,
+  resetEmailSent,
 }: {
   loading: boolean;
   onSubmitEmail: (email: string) => void;
+  resetEmailSent: boolean;
 }) {
   const [email, setEmail] = useState("");
   const [blurred, setBlurred] = useState(false);
@@ -30,11 +32,8 @@ export function EmailInputPage({
   }, [email, notify, onSubmitEmail]);
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center">
+    <InputPageWrapper>
       {contextHolder}
-      <div className="mb-6">
-        <FrontPageLogo />
-      </div>
       <Form onFinish={handleSubmit} layout="inline" className="mb-8">
         <Form.Item name="email" label="Email">
           <Input
@@ -64,9 +63,14 @@ export function EmailInputPage({
           </Button>
         </Form.Item>
       </Form>
+      <div className={resetEmailSent ? "visible" : "invisible"}>
+        <p>
+          We've sent you an email to set your password. Please check your inbox.
+        </p>
+      </div>
       <div className={loading ? "visible" : "invisible"}>
         <LoadingCentered />
       </div>
-    </div>
+    </InputPageWrapper>
   );
 }
