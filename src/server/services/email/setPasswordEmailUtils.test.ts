@@ -20,7 +20,7 @@ describe("emailUtils", () => {
         email: "test@example.com",
       });
       expect(result).toBe(
-        "Sign in to SummitEd as test@example.com with this link: http://example.com/token\n\n",
+        "Set your SummitEd password for test@example.com with this link: http://example.com/token\n\n",
       );
     });
   });
