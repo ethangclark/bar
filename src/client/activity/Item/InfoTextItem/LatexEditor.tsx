@@ -44,14 +44,16 @@ export function LatexEditor({
   const ref = useRef<MathfieldElement>(null);
 
   return (
-    <math-field
-      ref={ref}
-      // @ts-expect-error The impl is weird ok?
-      class={className}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-      onInput={(evt: any) => onChange(evt.target.value)}
-    >
-      {value}
-    </math-field>
+    <div className="mr-[-4px]">
+      <math-field
+        ref={ref}
+        // @ts-expect-error The impl is weird ok?
+        class={className}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        onInput={(evt: any) => onChange(evt.target.value)}
+      >
+        {value}
+      </math-field>
+    </div>
   );
 }
