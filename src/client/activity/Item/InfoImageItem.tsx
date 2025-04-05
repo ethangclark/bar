@@ -2,15 +2,15 @@ import { Tooltip } from "antd";
 import { CircleHelp } from "lucide-react";
 import { type InfoImage } from "~/server/db/schema";
 import { trpc } from "~/trpc/proxy";
-import { Editor } from "../../components/Editor";
+import { Editor } from "../../components/editor/Editor";
 import { Image } from "../../components/Image";
 import { ImageUploadLink } from "../../components/ImageUploader";
 import { storeObserver } from "../../utils/storeObserver";
-import { TypeTitle } from "./Layout";
 import {
   isInfoImageDraftImageReady,
   isInfoImageDraftTextReady,
 } from "./itemValidator";
+import { TypeTitle } from "./Layout";
 
 export const InfoImageItem = storeObserver<{
   infoImage: InfoImage;

@@ -1,10 +1,10 @@
 import { Button, Popconfirm } from "antd";
 import { Trash2 } from "lucide-react";
 import { type InfoText } from "~/server/db/schema";
-import { Editor } from "../../../components/Editor";
+import { Editor } from "../../../components/editor/Editor";
+import { LatexEditor } from "../../../components/editor/LatexEditor";
 import { storeObserver } from "../../../utils/storeObserver";
 import { isInfoTextDraftReady } from "../itemValidator";
-import { LatexEditor } from "./LatexEditor";
 import { joinSegments, parseTextWithLatex } from "./utils";
 
 function getRoundingCn({

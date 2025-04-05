@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Editor } from "../components/Editor";
+import { Editor } from "../components/editor/Editor";
 import { LoadingCentered } from "../components/Loading";
 import { VoiceTranscriber } from "../components/VoiceTranscriber";
 import { Status } from "../utils/status";

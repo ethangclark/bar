@@ -2,14 +2,14 @@ import { UploadOutlined } from "@ant-design/icons";
 import { Button, Tooltip } from "antd";
 import { CircleHelp } from "lucide-react";
 import { useState } from "react";
-import { Editor } from "~/client/components/Editor";
+import { Editor } from "~/client/components/editor/Editor";
 import { LoadingCentered } from "~/client/components/Loading";
 import { Video } from "~/client/components/Video";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { type InfoVideo } from "~/server/db/schema";
+import { isInfoVideoDraftReady } from "./itemValidator";
 import { TypeTitle } from "./Layout";
 import { UploadVideo } from "./UploadVideo";
-import { isInfoVideoDraftReady } from "./itemValidator";
 
 export const InfoVideoItem = storeObserver<{
   infoVideoDraft: InfoVideo;

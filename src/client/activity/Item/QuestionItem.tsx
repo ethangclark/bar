@@ -1,5 +1,5 @@
 import { type Question } from "~/server/db/schema";
-import { Editor } from "../../components/Editor";
+import { Editor } from "../../components/editor/Editor";
 import { storeObserver } from "../../utils/storeObserver";
 import { isEvalKeyDraftReady, isQuestionDraftReady } from "./itemValidator";
 

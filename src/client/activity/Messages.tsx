@@ -6,7 +6,7 @@ import { formatRelativeTime } from "~/common/timeUtils";
 import { api } from "~/trpc/react";
 import { DiagnosticMessage } from "../components/DiagnosticMessage";
 import { LoadingCentered } from "../components/Loading";
-import { PreformattedText } from "../components/PreformattedText";
+import { PreformattedText } from "../components/editor/PreformattedText";
 import { storeObserver } from "../utils/storeObserver";
 import { AssistantMessage } from "./AssistantMessage";
 import { MessageView } from "./MessageView";
