@@ -64,7 +64,7 @@ export const InfoImageItem = storeObserver<{
             textAlternative: v,
           });
         }}
-        isOk={imageOk && !textOk}
+        isOk={imageOk ? textOk : true}
         placeholder="Describe the image here..."
       />
     </div>

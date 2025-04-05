@@ -37,7 +37,7 @@ export const QuestionItem = storeObserver<{
                 content: v,
               });
             }}
-            isOk={questionOk && !evalKeyOk}
+            isOk={questionOk ? evalKeyOk : true}
           />
         </div>
       ) : null}

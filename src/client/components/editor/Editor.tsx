@@ -71,7 +71,6 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
     ref,
   ) {
     const segments = useMemo(() => parseTextWithLatex(value), [value]);
-
     return (
       <div className="flex w-full flex-col" style={{ minHeight }}>
         {segments.map((segment, index) => {
@@ -161,7 +160,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
           }
         })}
         {disabled ? null : (
-          <div className="mt-1 flex w-full justify-center">
+          <div className="flex w-full justify-end">
             <Button
               size="small"
               type="text"
