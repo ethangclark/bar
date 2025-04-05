@@ -94,6 +94,7 @@ export const InfoTextItem = storeObserver<{
                 <LatexEditor
                   key={index}
                   className="grow"
+                  placeholder="Tap keyboard icon or type equation here..."
                   value={segment.content}
                   onChange={(v) => {
                     const newSegments = segments
@@ -138,6 +139,23 @@ export const InfoTextItem = storeObserver<{
           }
         }
       })}
+      <div className="mt-1 flex w-full justify-center">
+        <Button
+          size="small"
+          className="border-none"
+          onClick={() => {
+            draftStore.updateDraft("infoTexts", {
+              id: infoText.id,
+              content: joinSegments([
+                ...segments,
+                { type: "latex", content: "" },
+              ]),
+            });
+          }}
+        >
+          Add equation
+        </Button>
+      </div>
     </div>
   );
 });

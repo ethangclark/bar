@@ -36,10 +36,12 @@ export function LatexEditor({
   value,
   onChange,
   className,
+  placeholder,
 }: {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  placeholder?: string;
 }) {
   const ref = useRef<MathfieldElement>(null);
 
@@ -50,6 +52,7 @@ export function LatexEditor({
       class={className}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
       onInput={(evt: any) => onChange(evt.target.value)}
+      placeholder={placeholder?.replace(/ /g, "\\ ")}
     >
       {value}
     </math-field>
