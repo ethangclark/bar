@@ -33,6 +33,7 @@ export const Overview = storeObserver(function Overview({
 
   const onCreate = useCallback(
     async (title: string) => {
+      console.log({ title });
       const { activity, standaloneActivity, enrolledAs } =
         await trpc.activity.create.mutate({
           title,

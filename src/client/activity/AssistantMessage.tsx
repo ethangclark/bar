@@ -2,7 +2,7 @@ import { Button } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { assertTypesExhausted } from "~/common/assertions";
 import { type Message } from "~/server/db/schema";
-import { PreformattedText } from "../components/editor/PreformattedText";
+import { Editor } from "../components/editor/Editor";
 import { Image } from "../components/Image";
 import { Video } from "../components/Video";
 import { isStatus } from "../utils/status";
@@ -151,7 +151,7 @@ export const AssistantMessage = storeObserver<{
                   diagnosticMessage="ASSISTANT MESSAGE - TEXT"
                   complete
                 >
-                  <PreformattedText>{child.content}</PreformattedText>
+                  <Editor disabled value={child.content} />
                 </MessageView>
               );
             default:
@@ -174,7 +174,7 @@ export const AssistantMessage = storeObserver<{
               {message.content}
             </Thinking>
           ) : (
-            <PreformattedText>{message.content}</PreformattedText>
+            <Editor disabled value={message.content} />
           )}
         </MessageView>
       )}

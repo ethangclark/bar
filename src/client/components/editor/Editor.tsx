@@ -45,7 +45,7 @@ function getOutlineCn({
 
 type EditorProps = {
   value: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   isOk?: boolean;
   placeholder?: string;
   onKeyDown?: (e: {
@@ -97,7 +97,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
                         return s;
                       })
                       .flat(1);
-                    onChange(joinSegments(newSegments));
+                    onChange?.(joinSegments(newSegments));
                   }}
                   roundingCn={getRoundingCn({ isFirstSegment, isLastSegment })}
                   outlineCn={getOutlineCn({ isFirstSegment, isLastSegment })}
@@ -134,7 +134,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
                           return s;
                         })
                         .flat(1);
-                      onChange(joinSegments(newSegments));
+                      onChange?.(joinSegments(newSegments));
                     }}
                     onKeyDown={onKeyDown}
                     disabled={disabled}
@@ -146,7 +146,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
                       const newSegments = segments.filter(
                         (_, i) => i !== index,
                       );
-                      onChange(joinSegments(newSegments));
+                      onChange?.(joinSegments(newSegments));
                     }}
                     okText="Yes"
                     cancelText="No"
@@ -167,7 +167,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
               type="text"
               className="text-xs text-gray-700"
               onClick={() => {
-                onChange(
+                onChange?.(
                   joinSegments([...segments, { type: "latex", content: "" }]),
                 );
               }}
