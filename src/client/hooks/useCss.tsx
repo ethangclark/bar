@@ -1,19 +1,25 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
+import { noop } from "~/common/fnUtils";
+
+export function injectCss(css: string) {
+  if (typeof document === "undefined") {
+    return noop;
+  }
+  const style = document.createElement("style");
+  style.appendChild(document.createTextNode(css));
+  document.head.appendChild(style);
+  return () => {
+    document.head.removeChild(style);
+  };
+}
 
 export function useCss(createCss: (id: string) => string) {
   const [id] = useState(() => Math.random().toString(36).slice(2));
 
-  const styleRef = useRef<HTMLStyleElement | null>(null);
-
   useLayoutEffect(() => {
-    styleRef.current = document.createElement("style");
-    const style = styleRef.current;
-    style.appendChild(document.createTextNode(createCss(id)));
-    document.head.appendChild(styleRef.current);
-    return () => {
-      document.head.removeChild(style);
-    };
+    const remove = injectCss(createCss(id));
+    return remove;
   }, [createCss, id]);
 
-  return { id };
+  return useMemo(() => ({ id }), [id]);
 }

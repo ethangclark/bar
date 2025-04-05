@@ -49,6 +49,7 @@ export const InfoTextItem = storeObserver<{
             return (
               <LatexEditor
                 key={index}
+                className="w-full"
                 value={segment.content}
                 onChange={(v) => {
                   const newSegments = segments
