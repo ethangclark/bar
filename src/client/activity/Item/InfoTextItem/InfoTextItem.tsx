@@ -1,3 +1,5 @@
+import { Button } from "antd";
+import { Trash2 } from "lucide-react";
 import { type InfoText } from "~/server/db/schema";
 import { Editor } from "../../../components/Editor";
 import { storeObserver } from "../../../utils/storeObserver";
@@ -88,10 +90,10 @@ export const InfoTextItem = storeObserver<{
           }
           case "latex": {
             return (
-              <div className="w-full border-2 border-x border-dotted border-gray-200 pl-2.5 pr-1">
+              <div className="flex w-full items-center border-2 border-x border-dotted border-gray-200 pl-2.5 pr-1">
                 <LatexEditor
                   key={index}
-                  className="w-full"
+                  className="grow"
                   value={segment.content}
                   onChange={(v) => {
                     const newSegments = segments
@@ -114,6 +116,9 @@ export const InfoTextItem = storeObserver<{
                   // className={isOk || !isLastSegment ? "" : "placeholder-red-500"}
                   // placeholder="Insert text here..."
                 />
+                <Button type="text" className="px-2">
+                  <Trash2 className="text-gray-500" size={16} />
+                </Button>
               </div>
             );
           }
