@@ -2,6 +2,7 @@ import { type InfoText } from "~/server/db/schema";
 import { Editor } from "../../../components/Editor";
 import { storeObserver } from "../../../utils/storeObserver";
 import { isInfoTextDraftReady } from "../itemValidator";
+import { LatexEditor } from "./LatexEditor";
 import { joinSegments, parseTextWithLatex } from "./utils";
 
 export const InfoTextItem = storeObserver<{
@@ -10,7 +11,6 @@ export const InfoTextItem = storeObserver<{
   const isOk = isInfoTextDraftReady(infoText);
 
   const segments = parseTextWithLatex(infoText.content);
-  console.log({ segments, infoTextContent: infoText.content });
 
   return (
     <div key={infoText.id} className="w-full">
@@ -47,10 +47,10 @@ export const InfoTextItem = storeObserver<{
           }
           case "latex": {
             return (
-              <Editor
+              <LatexEditor
                 key={index}
                 value={segment.content}
-                setValue={(v) => {
+                onChange={(v) => {
                   const newSegments = segments
                     .map((s, i) => {
                       if (i === index) {
@@ -68,8 +68,8 @@ export const InfoTextItem = storeObserver<{
                     content: joinSegments(newSegments),
                   });
                 }}
-                className={isOk || !isLastSegment ? "" : "placeholder-red-500"}
-                placeholder="Insert text here..."
+                // className={isOk || !isLastSegment ? "" : "placeholder-red-500"}
+                // placeholder="Insert text here..."
               />
             );
           }

@@ -12,6 +12,12 @@ declare global {
 
 import "mathlive";
 import { type MathfieldElement } from "mathlive";
+import "mathlive/fonts.css";
+import { useRef } from "react";
+
+if (typeof window !== "undefined") {
+  window.mathVirtualKeyboard.layouts = ["minimalist"];
+}
 
 export function LatexEditor({
   value,
@@ -20,9 +26,11 @@ export function LatexEditor({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const ref = useRef<MathfieldElement>(null);
+
   return (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-    <math-field onInput={(evt: any) => onChange(evt.target.value)}>
+    <math-field ref={ref} onInput={(evt: any) => onChange(evt.target.value)}>
       {value}
     </math-field>
   );
