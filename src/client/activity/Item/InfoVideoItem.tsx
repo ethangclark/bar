@@ -79,13 +79,13 @@ export const InfoVideoItem = storeObserver<{
       </div>
       <Editor
         value={infoVideoDraft.textAlternative}
-        setValue={(value) => {
+        onChange={(value) => {
           draftStore.updateDraft("infoVideos", {
             id: infoVideoDraft.id,
             textAlternative: value,
           });
         }}
-        className={isOk ? "" : "placeholder-red-500"}
+        isOk={isOk}
         placeholder="Insert text description of the video here..."
       />
 

@@ -58,13 +58,13 @@ export const InfoImageItem = storeObserver<{
       </div>
       <Editor
         value={infoImage.textAlternative}
-        setValue={(v) => {
+        onChange={(v) => {
           draftStore.updateDraft("infoImages", {
             id: infoImage.id,
             textAlternative: v,
           });
         }}
-        className={imageOk && !textOk ? "placeholder-red-500" : ""}
+        isOk={imageOk && !textOk}
         placeholder="Describe the image here..."
       />
     </div>

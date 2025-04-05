@@ -236,11 +236,19 @@ export function LatexEditor({
   onChange,
   className,
   placeholder,
+  onKeyDown,
+  disabled,
 }: {
   value: string;
   onChange: (value: string) => void;
   className?: string;
   placeholder?: string;
+  onKeyDown?: (e: {
+    key: string;
+    shiftKey: boolean;
+    preventDefault: () => void;
+  }) => void;
+  disabled?: boolean;
 }) {
   const ref = useRef<MathfieldElement>(null);
 
@@ -252,6 +260,8 @@ export function LatexEditor({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
       onInput={(evt: any) => onChange(evt.target.value)}
       placeholder={placeholder?.replace(/ /g, "\\ ")}
+      onKeyDown={onKeyDown}
+      disabled={disabled}
     >
       {value}
     </math-field>

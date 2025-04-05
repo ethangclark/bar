@@ -1,101 +1,183 @@
-import { forwardRef, type KeyboardEventHandler } from "react";
-import ExpandingTextarea, {
-  type TextareaProps,
-} from "react-expanding-textarea";
+import { Button, Popconfirm } from "antd";
+import { Trash2 } from "lucide-react";
+import { forwardRef, useMemo } from "react";
+import { BasicEditor } from "./BasicEditor";
+import { LatexEditor } from "./LatexEditor";
+import { joinSegments, parseTextWithLatex } from "./utils";
 
-const FixedTextArea = forwardRef<
-  HTMLTextAreaElement,
-  Omit<TextareaProps, "rows">
->(function FixedTextArea(props, ref) {
-  return <textarea {...props} ref={ref} />;
-});
+function getRoundingCn({
+  isFirstSegment,
+  isLastSegment,
+}: {
+  isFirstSegment: boolean;
+  isLastSegment: boolean;
+}) {
+  if (isFirstSegment && isLastSegment) {
+    return "rounded-md";
+  }
+  if (isFirstSegment) {
+    return "rounded-t-md";
+  }
+  if (isLastSegment) {
+    return "rounded-b-md";
+  }
+  return "";
+}
+
+function getOutlineCn({
+  isFirstSegment,
+  isLastSegment,
+}: {
+  isFirstSegment: boolean;
+  isLastSegment: boolean;
+}) {
+  if (isFirstSegment && isLastSegment) {
+    return "border border-gray-200";
+  }
+  if (isFirstSegment) {
+    return "border-t border-x border-gray-200";
+  }
+  if (isLastSegment) {
+    return "border-b border-x border-gray-200";
+  }
+  return "";
+}
 
 type EditorProps = {
   value: string;
-  setValue: (value: string) => void;
-  width?: number | string;
+  onChange: (value: string) => void;
+  isOk?: boolean;
   placeholder?: string;
-  minHeight?: number;
-  onKeyDown?: KeyboardEventHandler<HTMLTextAreaElement>;
+  onKeyDown?: (e: {
+    key: string;
+    shiftKey: boolean;
+    preventDefault: () => void;
+  }) => void;
   disabled?: boolean;
-  className?: string;
-  height?: number;
-  paddingCn?: string;
-  roundingCn?: string;
-  outlineCn?: string;
+  minHeight?: number;
 };
 
 export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
   function Editor(
     {
       value,
-      setValue,
-      width = "100%", // 516,
-      placeholder = "Type here...",
-      minHeight = 32 /* smaller than this causes a bounce on load */,
+      onChange,
+      isOk = true,
+      placeholder,
       onKeyDown,
       disabled,
-      className,
-      height,
-      paddingCn = "p-2",
-      roundingCn = "rounded-md",
-      outlineCn = "outline outline-1 outline-gray-200 focus:outline focus:outline-gray-200",
+      minHeight,
     },
     ref,
   ) {
-    const Component = height ? FixedTextArea : ExpandingTextarea;
+    const segments = useMemo(() => parseTextWithLatex(value), [value]);
+
     return (
-      <Component
-        ref={ref}
-        autoComplete="off"
-        autoCorrect="off"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        style={{
-          width,
-          resize: "none",
-          minHeight,
-          height,
-        }}
-        onKeyDown={onKeyDown}
-        disabled={disabled}
-        className={`${paddingCn} ${roundingCn} ${outlineCn} ${className ?? ""}`}
-        placeholder={placeholder}
-      />
+      <div className="flex w-full flex-col" style={{ minHeight }}>
+        {segments.map((segment, index) => {
+          const isFirstSegment = index === 0;
+          const isLastSegment = index === segments.length - 1;
+          switch (segment.type) {
+            case "text": {
+              return (
+                <BasicEditor
+                  key={index}
+                  ref={isLastSegment ? ref : undefined}
+                  value={segment.content}
+                  onChange={(v) => {
+                    const newSegments = segments
+                      .map((s, i) => {
+                        if (i === index) {
+                          if (v === "") {
+                            return [];
+                          } else {
+                            return { ...s, content: v };
+                          }
+                        }
+                        return s;
+                      })
+                      .flat(1);
+                    onChange(joinSegments(newSegments));
+                  }}
+                  roundingCn={getRoundingCn({ isFirstSegment, isLastSegment })}
+                  outlineCn={getOutlineCn({ isFirstSegment, isLastSegment })}
+                  className={
+                    isOk || !isLastSegment ? "" : "placeholder-red-500"
+                  }
+                  placeholder={placeholder}
+                  onKeyDown={onKeyDown}
+                  disabled={disabled}
+                  minHeight={
+                    minHeight && segments.length === 1 ? minHeight : undefined
+                  }
+                />
+              );
+            }
+            case "latex": {
+              return (
+                <div className="flex w-full items-center border-2 border-x border-dotted border-gray-200 pl-2.5 pr-1">
+                  <LatexEditor
+                    key={index}
+                    className="grow"
+                    placeholder="Tap keyboard icon or type equation here..."
+                    value={segment.content}
+                    onChange={(v) => {
+                      const newSegments = segments
+                        .map((s, i) => {
+                          if (i === index) {
+                            if (v === "") {
+                              return [];
+                            } else {
+                              return { ...s, content: v };
+                            }
+                          }
+                          return s;
+                        })
+                        .flat(1);
+                      onChange(joinSegments(newSegments));
+                    }}
+                    onKeyDown={onKeyDown}
+                    disabled={disabled}
+                  />
+                  <Popconfirm
+                    title="Delete this equation?"
+                    description="Are you sure you want to delete this equation?"
+                    onConfirm={() => {
+                      const newSegments = segments.filter(
+                        (_, i) => i !== index,
+                      );
+                      onChange(joinSegments(newSegments));
+                    }}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <Button type="text" className="px-2">
+                      <Trash2 className="text-gray-500" size={16} />
+                    </Button>
+                  </Popconfirm>
+                </div>
+              );
+            }
+          }
+        })}
+        {disabled ? null : (
+          <div className="mt-1 flex w-full justify-center">
+            <Button
+              size="small"
+              type="text"
+              className="text-xs text-gray-700"
+              onClick={() => {
+                onChange(
+                  joinSegments([...segments, { type: "latex", content: "" }]),
+                );
+              }}
+              onKeyDown={onKeyDown}
+            >
+              Add equation
+            </Button>
+          </div>
+        )}
+      </div>
     );
   },
 );
-
-export function WysiwygEditor({
-  value,
-  setValue,
-  placeholder,
-  disabled = false,
-  outlineCn = "focus:outline focus:outline-gray-200",
-  roundingCn = "rounded-none",
-  className = "",
-  width,
-}: {
-  value: string;
-  setValue: (value: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  outlineCn?: string;
-  roundingCn?: string;
-  className?: string;
-  width?: number;
-}) {
-  return (
-    <Editor
-      placeholder={placeholder}
-      value={value}
-      setValue={setValue}
-      paddingCn="p-1"
-      className={`mx-[-4px] grow disabled:cursor-auto disabled:bg-white ${className}`}
-      roundingCn={roundingCn}
-      outlineCn={outlineCn}
-      disabled={disabled}
-      width={width}
-    />
-  );
-}
