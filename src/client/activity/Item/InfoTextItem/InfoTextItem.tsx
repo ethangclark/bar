@@ -1,4 +1,4 @@
-import { Button } from "antd";
+import { Button, Popconfirm } from "antd";
 import { Trash2 } from "lucide-react";
 import { type InfoText } from "~/server/db/schema";
 import { Editor } from "../../../components/Editor";
@@ -116,9 +116,23 @@ export const InfoTextItem = storeObserver<{
                   // className={isOk || !isLastSegment ? "" : "placeholder-red-500"}
                   // placeholder="Insert text here..."
                 />
-                <Button type="text" className="px-2">
-                  <Trash2 className="text-gray-500" size={16} />
-                </Button>
+                <Popconfirm
+                  title="Delete this equation?"
+                  description="Are you sure you want to delete this equation?"
+                  onConfirm={() => {
+                    const newSegments = segments.filter((_, i) => i !== index);
+                    draftStore.updateDraft("infoTexts", {
+                      id: infoText.id,
+                      content: joinSegments(newSegments),
+                    });
+                  }}
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <Button type="text" className="px-2">
+                    <Trash2 className="text-gray-500" size={16} />
+                  </Button>
+                </Popconfirm>
               </div>
             );
           }
