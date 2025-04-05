@@ -44,7 +44,7 @@ export function LatexEditor({
   const ref = useRef<MathfieldElement>(null);
 
   return (
-    <div className="mr-[-4px]">
+    <div>
       <math-field
         ref={ref}
         // @ts-expect-error The impl is weird ok?
