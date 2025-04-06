@@ -116,9 +116,11 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
             }
             case "latex": {
               return (
-                <div className="flex w-full items-center overflow-x-auto border-2 border-x border-dotted border-gray-200 pl-2.5 pr-1">
+                <div
+                  key={index}
+                  className="flex w-full items-center overflow-x-auto border-2 border-x border-dotted border-gray-200 pl-2.5 pr-1"
+                >
                   <LatexEditor
-                    key={index}
                     className="grow"
                     placeholder="Tap keyboard icon or type equation here..."
                     value={segment.content}
