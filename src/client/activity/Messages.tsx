@@ -60,7 +60,7 @@ export const Messages = storeObserver(function Messages({
                   className="mb-4 rounded-2xl border border-red-500 bg-gray-100 px-4 py-2"
                 >
                   <DiagnosticMessage diagnosticMessage="SYSTEM MESSAGE" />
-                  <Editor disabled value={m.content} />
+                  <Editor presentMode value={m.content} />
                 </div>
               ) : null;
             case "user":
@@ -76,8 +76,10 @@ export const Messages = storeObserver(function Messages({
                   diagnosticMessage="USER MESSAGE"
                   complete
                 >
-                  <div className="rounded-2xl bg-gray-100 px-4 py-2">
-                    <Editor disabled value={m.content} />
+                  <div className="flex w-full justify-end">
+                    <div className="rounded-2xl bg-gray-100 px-4 py-2">
+                      <Editor presentMode value={m.content} />
+                    </div>
                   </div>
                   {dayjs().diff(dayjs(m.createdAt), "minute") > 10 && (
                     <div className="text-xs text-gray-500">

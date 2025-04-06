@@ -151,7 +151,7 @@ export const AssistantMessage = storeObserver<{
                   diagnosticMessage="ASSISTANT MESSAGE - TEXT"
                   complete
                 >
-                  <Editor disabled value={child.content} />
+                  <Editor presentMode value={child.content} />
                 </MessageView>
               );
             default:
@@ -174,7 +174,7 @@ export const AssistantMessage = storeObserver<{
               {message.content}
             </Thinking>
           ) : (
-            <Editor disabled value={message.content} />
+            <Editor presentMode value={message.content} />
           )}
         </MessageView>
       )}

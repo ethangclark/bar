@@ -1,6 +1,8 @@
 import { Button, Popconfirm } from "antd";
+import classNames from "classnames";
 import { Trash2 } from "lucide-react";
 import { forwardRef, useMemo } from "react";
+import { assertTypesExhausted } from "~/common/assertions";
 import { BasicEditor } from "./BasicEditor";
 import { LatexEditor } from "./LatexEditor";
 import { joinSegments, parseTextWithLatex } from "./utils";
@@ -55,6 +57,7 @@ type EditorProps = {
   }) => void;
   disabled?: boolean;
   minHeight?: number;
+  presentMode?: boolean;
 };
 
 export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
@@ -65,12 +68,35 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
       isOk = true,
       placeholder,
       onKeyDown,
-      disabled,
+      disabled: disabledRaw,
       minHeight,
+      presentMode,
     },
     ref,
   ) {
-    const segments = useMemo(() => parseTextWithLatex(value), [value]);
+    const disabled = disabledRaw || presentMode;
+    const segments = useMemo(() => {
+      if (presentMode) {
+        const parsed = parseTextWithLatex(value);
+        return parsed
+          .filter((item) => {
+            switch (item.type) {
+              case "latex":
+                return item.content !== "";
+              case "text":
+                return item.content !== "";
+              default:
+                assertTypesExhausted(item);
+            }
+          })
+          .map((item) => ({
+            ...item,
+            content: item.content.trim(),
+          }));
+      } else {
+        return parseTextWithLatex(value);
+      }
+    }, [value]);
     return (
       <div className="flex w-full flex-col" style={{ minHeight }}>
         {segments.map((segment, index) => {
@@ -100,9 +126,10 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
                   }}
                   roundingCn={getRoundingCn({ isFirstSegment, isLastSegment })}
                   outlineCn={getOutlineCn({ isFirstSegment, isLastSegment })}
-                  className={
-                    isOk || !isLastSegment ? "" : "placeholder-red-500"
-                  }
+                  className={classNames([
+                    isOk || !isLastSegment ? "" : "placeholder-red-500",
+                    presentMode ? "border-transparent bg-transparent" : "",
+                  ])}
                   placeholder={placeholder}
                   onKeyDown={onKeyDown}
                   disabled={disabled}
@@ -159,7 +186,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
             }
           }
         })}
-        {disabled ? null : (
+        {presentMode ? null : (
           <div className="flex w-full justify-end">
             <Button
               size="small"
@@ -171,6 +198,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
                 );
               }}
               onKeyDown={onKeyDown}
+              disabled={disabled}
             >
               Add equation
             </Button>
