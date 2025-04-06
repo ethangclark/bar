@@ -240,7 +240,7 @@ export function LatexEditor({
   disabled,
 }: {
   value: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   className?: string;
   placeholder?: string;
   onKeyDown?: (e: {
@@ -258,7 +258,7 @@ export function LatexEditor({
       // @ts-expect-error The impl is weird ok?
       class={className}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-      onInput={(evt: any) => onChange(evt.target.value)}
+      onInput={(evt: any) => onChange?.(evt.target.value)}
       placeholder={placeholder?.replace(/ /g, "\\ ")}
       onKeyDown={onKeyDown}
       disabled={disabled}

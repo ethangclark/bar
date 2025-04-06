@@ -6,7 +6,7 @@ import { formatRelativeTime } from "~/common/timeUtils";
 import { api } from "~/trpc/react";
 import { DiagnosticMessage } from "../components/DiagnosticMessage";
 import { LoadingCentered } from "../components/Loading";
-import { Editor } from "../components/editor/Editor";
+import { RichText } from "../components/editor/RichText";
 import { storeObserver } from "../utils/storeObserver";
 import { AssistantMessage } from "./AssistantMessage";
 import { MessageView } from "./MessageView";
@@ -60,7 +60,7 @@ export const Messages = storeObserver(function Messages({
                   className="mb-4 rounded-2xl border border-red-500 bg-gray-100 px-4 py-2"
                 >
                   <DiagnosticMessage diagnosticMessage="SYSTEM MESSAGE" />
-                  <Editor presentMode value={m.content} />
+                  <RichText value={m.content} />
                 </div>
               ) : null;
             case "user":
@@ -77,8 +77,8 @@ export const Messages = storeObserver(function Messages({
                   complete
                 >
                   <div className="flex w-full justify-end">
-                    <div className="rounded-2xl bg-gray-100 px-4 py-2">
-                      <Editor presentMode value={m.content} />
+                    <div className="overflow-x-auto rounded-2xl bg-gray-100 px-4 py-2">
+                      <RichText value={m.content} />
                     </div>
                   </div>
                   {dayjs().diff(dayjs(m.createdAt), "minute") > 10 && (

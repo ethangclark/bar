@@ -2,7 +2,7 @@ import { Button } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { assertTypesExhausted } from "~/common/assertions";
 import { type Message } from "~/server/db/schema";
-import { Editor } from "../components/editor/Editor";
+import { RichText } from "../components/editor/RichText";
 import { Image } from "../components/Image";
 import { Video } from "../components/Video";
 import { isStatus } from "../utils/status";
@@ -151,7 +151,7 @@ export const AssistantMessage = storeObserver<{
                   diagnosticMessage="ASSISTANT MESSAGE - TEXT"
                   complete
                 >
-                  <Editor presentMode value={child.content} />
+                  <RichText value={child.content} />
                 </MessageView>
               );
             default:
@@ -174,7 +174,7 @@ export const AssistantMessage = storeObserver<{
               {message.content}
             </Thinking>
           ) : (
-            <Editor presentMode value={message.content} />
+            <RichText value={message.content} />
           )}
         </MessageView>
       )}

@@ -57,7 +57,6 @@ type EditorProps = {
   }) => void;
   disabled?: boolean;
   minHeight?: number;
-  presentMode?: boolean;
 };
 
 export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
@@ -68,35 +67,12 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
       isOk = true,
       placeholder,
       onKeyDown,
-      disabled: disabledRaw,
+      disabled,
       minHeight,
-      presentMode,
     },
     ref,
   ) {
-    const disabled = disabledRaw || presentMode;
-    const segments = useMemo(() => {
-      if (presentMode) {
-        const parsed = parseTextWithLatex(value);
-        return parsed
-          .filter((item) => {
-            switch (item.type) {
-              case "latex":
-                return item.content !== "";
-              case "text":
-                return item.content !== "";
-              default:
-                assertTypesExhausted(item);
-            }
-          })
-          .map((item) => ({
-            ...item,
-            content: item.content.trim(),
-          }));
-      } else {
-        return parseTextWithLatex(value);
-      }
-    }, [value]);
+    const segments = useMemo(() => parseTextWithLatex(value), [value]);
     return (
       <div className="flex w-full flex-col" style={{ minHeight }}>
         {segments.map((segment, index) => {
@@ -128,7 +104,6 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
                   outlineCn={getOutlineCn({ isFirstSegment, isLastSegment })}
                   className={classNames([
                     isOk || !isLastSegment ? "" : "placeholder-red-500",
-                    presentMode ? "border-transparent bg-transparent" : "",
                   ])}
                   placeholder={placeholder}
                   onKeyDown={onKeyDown}
@@ -141,7 +116,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
             }
             case "latex": {
               return (
-                <div className="flex w-full items-center border-2 border-x border-dotted border-gray-200 pl-2.5 pr-1">
+                <div className="flex w-full items-center overflow-x-auto border-2 border-x border-dotted border-gray-200 pl-2.5 pr-1">
                   <LatexEditor
                     key={index}
                     className="grow"
@@ -184,26 +159,26 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
                 </div>
               );
             }
+            default:
+              assertTypesExhausted(segment);
           }
         })}
-        {presentMode ? null : (
-          <div className="flex w-full justify-end">
-            <Button
-              size="small"
-              type="text"
-              className="text-xs text-gray-700"
-              onClick={() => {
-                onChange?.(
-                  joinSegments([...segments, { type: "latex", content: "" }]),
-                );
-              }}
-              onKeyDown={onKeyDown}
-              disabled={disabled}
-            >
-              Add equation
-            </Button>
-          </div>
-        )}
+        <div className="flex w-full justify-end">
+          <Button
+            size="small"
+            type="text"
+            className="text-xs text-gray-600"
+            onClick={() => {
+              onChange?.(
+                joinSegments([...segments, { type: "latex", content: "" }]),
+              );
+            }}
+            onKeyDown={onKeyDown}
+            disabled={disabled}
+          >
+            Add equation
+          </Button>
+        </div>
       </div>
     );
   },
