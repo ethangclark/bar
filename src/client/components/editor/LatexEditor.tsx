@@ -237,7 +237,6 @@ export function LatexEditor({
   className,
   placeholder,
   onKeyDown,
-  disabled,
 }: {
   value: string;
   onChange?: (value: string) => void;
@@ -248,6 +247,9 @@ export function LatexEditor({
     shiftKey: boolean;
     preventDefault: () => void;
   }) => void;
+
+  // TODO: here's a bug in the mathlive; we need to find another means of disabling it.
+  // (Currently we're not using this prop.)
   disabled?: boolean;
 }) {
   const ref = useRef<MathfieldElement>(null);
@@ -261,7 +263,7 @@ export function LatexEditor({
       onInput={(evt: any) => onChange?.(evt.target.value)}
       placeholder={placeholder?.replace(/ /g, "\\ ")}
       onKeyDown={onKeyDown}
-      disabled={disabled}
+      // disabled={disabled} // TODO: here's a bug in the mathlive; we need to find another means of disabling it.
     >
       {value}
     </math-field>

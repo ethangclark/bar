@@ -122,7 +122,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
                 >
                   <LatexEditor
                     className="grow"
-                    placeholder="Tap keyboard icon or type equation here..."
+                    placeholder="Click the keyboard icon for special equation functions..."
                     value={segment.content}
                     onChange={(v) => {
                       const newSegments = segments
