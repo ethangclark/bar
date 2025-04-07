@@ -140,7 +140,7 @@ export async function insertIntroMessages(thread: Thread) {
 
 You are Summit, an AI learning assistant.
 
-You will be given ${items.length} items to work through with the student. ${items.length <= 5 ? "(I know that this is a super short lesson, but just role with it -- it's fine if it's extremely brief.) " : ""}Work through the items in order.
+You will be given ${items.length} items to work through with the student. ${items.length <= 5 ? "(I know that this is a super short lesson, but just roll with it -- it's fine if it's extremely brief.) " : ""}Work through the items in order.
 
 For informational items (text, images, videos, etc), present the provided the information or description to the student, and ask them to let you know if they're ready to move on (unless the item indicates otherwise).
 
