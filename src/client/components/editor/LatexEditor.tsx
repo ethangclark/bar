@@ -240,6 +240,7 @@ export function LatexEditor({
   className,
   placeholder,
   onKeyDown,
+  readOnly,
 }: {
   value: string;
   onChange?: (value: string) => void;
@@ -250,6 +251,7 @@ export function LatexEditor({
     shiftKey: boolean;
     preventDefault: () => void;
   }) => void;
+  readOnly?: boolean;
 
   // TODO: there's a bug in mathlive; we need to find another means of disabling it.
   // (Currently we're not using this prop.)
@@ -286,8 +288,9 @@ export function LatexEditor({
       // math-virtual-keyboard-layouts={layoutLabel} // Reference the custom layout label
       // math-virtual-keyboard-mode="manual" // Or "onfocus" / "off" depending on how you want to trigger it
 
-      // // TODO: there's a bug in mathlive; we need to find another means of disabling it.
+      // There's a bug in mathlive; `readonly` works fine, but `disabled` disables all instances
       // disabled={disabled}
+      readOnly={readOnly}
     >
       {value}
     </math-field>

@@ -43,12 +43,12 @@ export function RichText({ value }: { value: string }) {
           }
           case "latex": {
             return (
-              <div className="my-3">
+              <div className="my-3" key={index}>
                 <LatexEditor
-                  key={index}
                   className="grow"
                   value={segment.content}
                   disabled
+                  readOnly
                 />
               </div>
             );
