@@ -95,7 +95,7 @@ export async function postProcess(
   });
 
   const wasFinalAttempt =
-    retryHistory?.prevResponseAttempts.length === maxAttempts - 1;
+    (retryHistory?.prevResponseAttempts ?? []).length >= maxAttempts - 1;
 
   if (errorScore === 0 || wasFinalAttempt) {
     await wrapUpResponse({
