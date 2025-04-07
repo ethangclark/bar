@@ -22,7 +22,7 @@ To regenerate the base of this to extend, run the following:
 window.mathVirtualKeyboard.layouts = ["minimalist"];
 console.log(JSON.stringify(window.mathVirtualKeyboard.normalizedLayouts));
 */
-const layoutLabel = "minimalist-with-subscript"; // Renamed for clarity, you can keep 'minimalist'
+const layoutLabel = "minimalist-with-subscript";
 const layouts = [
   {
     label: layoutLabel,
@@ -84,16 +84,20 @@ const layouts = [
               latex: "\\sqrt{#0}",
               class: "small",
             },
+            // *** MODIFIED SUPERSCRIPT KEY HERE ***
             {
-              latex: "#@^{#?}", // Superscript
+              latex: "^{#?}", // Removed #@ - inserts script structure, cursor goes inside
               class: "small",
+              label: `<span class="flex items-center">X<sup class="text-xl">◻</sup></span>`, // Optional: clearer visual label
             },
-            // *** ADDED SUBSCRIPT KEY HERE ***
+            // **************************************
+            // *** MODIFIED SUBSCRIPT KEY HERE ***
             {
-              latex: "#@_{#?}", // Subscript
+              latex: "_{#?}", // Removed #@ - inserts script structure, cursor goes inside
               class: "small",
+              label: `<span class="flex items-center">X<sub class="text-xl">◻</sub></span>`, // Optional: clearer visual label
             },
-            // ********************************
+            // ************************************
             // *** ADDED PI KEY HERE ***
             {
               latex: "\\pi",
@@ -228,7 +232,6 @@ if (typeof window !== "undefined") {
       outline: none;
     }
   `);
-  window.mathVirtualKeyboard.layouts = layouts;
 }
 
 export function LatexEditor({
@@ -248,11 +251,24 @@ export function LatexEditor({
     preventDefault: () => void;
   }) => void;
 
-  // TODO: here's a bug in the mathlive; we need to find another means of disabling it.
+  // TODO: there's a bug in mathlive; we need to find another means of disabling it.
   // (Currently we're not using this prop.)
   disabled?: boolean;
 }) {
   const ref = useRef<MathfieldElement>(null);
+
+  // Effect to update mathVirtualKeyboard configuration if needed,
+  // though setting it outside the component like you did is often sufficient
+  // for static configurations.
+  // useEffect(() => {
+  //   if (ref.current) {
+  //     ref.current.mathVirtualKeyboardPolicy = "manual"; // Or 'auto'
+  //     ref.current.setOptions({
+  //       virtualKeyboardLayouts: layouts, // Pass the layouts object directly if needed dynamically
+  //       virtualKeyboardMode: "manual", // Or 'onfocus'
+  //     });
+  //   }
+  // }, []); // Runs once on mount
 
   return (
     <math-field
@@ -263,7 +279,15 @@ export function LatexEditor({
       onInput={(evt: any) => onChange?.(evt.target.value)}
       placeholder={placeholder?.replace(/ /g, "\\ ")}
       onKeyDown={onKeyDown}
-      // disabled={disabled} // TODO: here's a bug in the mathlive; we need to find another means of disabling it.
+      // // The virtual keyboard configuration is often better set globally
+      // // or via attributes/properties as MathLive expects.
+      // // Setting options like this might be necessary depending on setup.
+      // // It's also common to set `mathVirtualKeyboardLayouts` directly.
+      // math-virtual-keyboard-layouts={layoutLabel} // Reference the custom layout label
+      // math-virtual-keyboard-mode="manual" // Or "onfocus" / "off" depending on how you want to trigger it
+
+      // // TODO: there's a bug in mathlive; we need to find another means of disabling it.
+      // disabled={disabled}
     >
       {value}
     </math-field>
