@@ -36,7 +36,12 @@ export class EditorStore {
     }
     return {
       isLoading: false,
-      hasProblem: !drafts.every(isReady),
+      hasProblem: !drafts.every(
+        (draft) =>
+          isReady(draft) ||
+          // not a problem if it's deleted
+          this.draftStore.isDeletedDraft(draft.id),
+      ),
       includesSaveable: drafts.some((i) => this.draftStore.isEditedDraft(i.id)),
     };
   }

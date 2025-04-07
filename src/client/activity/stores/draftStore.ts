@@ -167,6 +167,8 @@ export class DraftStore {
     this.changes.updatedIds.add(updates.id);
   }
 
+  // this is real inefficient with this implementation
+  // (not going to prematurely optimize, though)
   private cascadeDeletes(deletingId: string, fromRootId: string) {
     if (this.drafts instanceof Status) {
       return;
@@ -195,6 +197,7 @@ export class DraftStore {
       });
     });
   }
+
   toggleDeletion(id: string) {
     if (this.drafts instanceof Status) {
       return;
