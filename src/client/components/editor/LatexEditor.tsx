@@ -98,12 +98,13 @@ const layouts = [
               label: `<span class="flex items-center">X<sub class="text-xl">◻</sub></span>`, // Optional: clearer visual label
             },
             // ************************************
-            // *** ADDED PI KEY HERE ***
+            // *** ADDED STACKED SCRIPT KEY HERE ***
             {
-              latex: "\\pi",
-              // class: "small",
+              latex: "{#@}^{#?}_{#?}", // Base, then superscript placeholder, then subscript placeholder
+              class: "small",
+              label: `<span class="flex items-center relative -ml-3">X<sup class="text-xl absolute -top-4 left-2">◻</sup><sub class="text-xl absolute top-0.5 left-2">◻</sub></span>`, // Visual label with stacked boxes
             },
-            // ********************************
+            // ************************************
           ],
           [
             // Second Row - Numbers
@@ -161,9 +162,12 @@ const layouts = [
             {
               class: "separator",
             },
+            // *** ADDED PI KEY HERE ***
             {
-              class: "separator",
+              latex: "\\pi",
+              // class: "small",
             },
+            // ********************************
             {
               class: "separator",
             },
