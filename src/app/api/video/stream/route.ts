@@ -1,3 +1,5 @@
+// app/api/video/stream/route.ts
+
 import { eq } from "drizzle-orm";
 import { db } from "~/server/db";
 
