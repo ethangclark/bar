@@ -1,15 +1,15 @@
 import { useLayoutEffect, useMemo, useState } from "react";
 import { noop } from "~/common/fnUtils";
 
-export function injectCss(css: string) {
+export function injectCss(css: string, appendTo = document.head) {
   if (typeof document === "undefined") {
     return noop;
   }
   const style = document.createElement("style");
   style.appendChild(document.createTextNode(css));
-  document.head.appendChild(style);
+  appendTo.appendChild(style);
   return () => {
-    document.head.removeChild(style);
+    appendTo.removeChild(style);
   };
 }
 

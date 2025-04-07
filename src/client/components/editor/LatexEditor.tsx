@@ -49,13 +49,7 @@ const layouts = [
         container: `${layoutLabel}-container`, // Updated class name
         rows: [
           [
-            // First Row - Added Subscript Key
-            {
-              latex: "+",
-            },
-            {
-              latex: "-",
-            },
+            // First Row
             {
               latex: "\\times",
             },
@@ -63,90 +57,62 @@ const layouts = [
               latex: "\\frac{#@}{#0}",
               class: "small",
             },
-            {
-              latex: "=",
-            },
-            {
-              variants: ".",
-              command: "performWithFeedback(insertDecimalSeparator)",
-              shift: ",",
-              class: "big-op hide-shift",
-              label: ".",
-            },
-            // Removed the parentheses so we have space for the subscript key
             // {
-            //   latex: "(",
-            // },
-            // {
-            //   latex: ")",
+            //   variants: ".",
+            //   command: "performWithFeedback(insertDecimalSeparator)",
+            //   shift: ",",
+            //   class: "big-op hide-shift",
+            //   label: ".",
             // },
             {
               latex: "\\sqrt{#0}",
               class: "small",
             },
-            // *** MODIFIED SUPERSCRIPT KEY HERE ***
             {
               latex: "^{#?}", // Removed #@ - inserts script structure, cursor goes inside
               class: "small",
-              label: `<span class="flex items-center">X<sup class="text-xl">◻</sup></span>`, // Optional: clearer visual label
+              label: `<span class="flex items-center">X<sup class="text-xl">◻</sup></span>`,
             },
-            // **************************************
-            // *** MODIFIED SUBSCRIPT KEY HERE ***
             {
               latex: "_{#?}", // Removed #@ - inserts script structure, cursor goes inside
               class: "small",
-              label: `<span class="flex items-center">X<sub class="text-xl">◻</sub></span>`, // Optional: clearer visual label
+              label: `<span class="flex items-center">X<sub class="text-xl">◻</sub></span>`,
             },
-            // ************************************
-            // *** ADDED STACKED SCRIPT KEY HERE ***
             {
               latex: "{#@}^{#?}_{#?}", // Base, then superscript placeholder, then subscript placeholder
               class: "small",
               label: `<span class="flex items-center relative -ml-3">X<sup class="text-xl absolute -top-4 left-2">◻</sup><sub class="text-xl absolute top-0.5 left-2">◻</sub></span>`, // Visual label with stacked boxes
             },
-            // ************************************
-          ],
-          [
-            // Second Row - Numbers
             {
-              latex: "1",
-            },
-            {
-              latex: "2",
-            },
-            {
-              latex: "3",
-            },
-            {
-              latex: "4",
-            },
-            {
-              latex: "5",
-            },
-            {
-              latex: "6",
-            },
-            {
-              latex: "7",
-            },
-            {
-              latex: "8",
-            },
-            {
-              latex: "9",
-            },
-            {
-              latex: "0",
+              latex: "\\pi",
             },
           ],
+          // [
+          //   // Second Row
+          //   {
+          //     latex: "^{#?}#@", // Superscript before
+          //     class: "small",
+          //     label: `<span class="flex items-center"><sup class="text-xl">◻</sup>X</span>`,
+          //   },
+          //   {
+          //     latex: "_{#?}#@", // Subscript after
+          //     class: "small",
+          //     label: `<span class="flex items-center"><sub class="text-xl">◻</sub>X</span>`,
+          //   },
+          //   {
+          //     latex: "^{#?}_{#?}#@", // Base, then superscript placeholder, then subscript placeholder
+          //     class: "small",
+          //     label: `<span class="flex items-center relative -ml-3"><sup class="text-xl absolute -top-4">◻</sup><sub class="text-xl absolute top-0.5">◻</sub>&nbsp;&nbsp;&nbsp;&nbsp;X</span>`, // Visual label with stacked boxes
+          //   },
+          // ],
           [
-            // Third Row - Separator
+            // N-1th Row - Separator
             {
               class: "separator horizontal-rule",
             },
           ],
           [
-            // Fourth Row - Actions
+            // Nth Row - Actions
             {
               class: "ghost if-can-undo",
               command: "undo",
@@ -162,10 +128,8 @@ const layouts = [
             {
               class: "separator",
             },
-            // *** ADDED PI KEY HERE ***
             {
-              latex: "\\pi",
-              // class: "small",
+              class: "separator",
             },
             // ********************************
             {
