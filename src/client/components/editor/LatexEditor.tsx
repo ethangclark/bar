@@ -13,7 +13,7 @@ declare global {
 import "mathlive";
 import { type MathfieldElement } from "mathlive";
 import "mathlive/fonts.css";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { injectCss } from "~/client/hooks/useCss";
 
 /*
@@ -239,6 +239,21 @@ export function LatexEditor({
   //     });
   //   }
   // }, []); // Runs once on mount
+
+  useEffect(() => {
+    if (ref.current?.shadowRoot) {
+      const remove = injectCss(
+        `
+        [data-tooltip]::after {
+          content: "" !important;
+          display: none !important;
+        }
+        `,
+        ref.current.shadowRoot,
+      );
+      return () => remove();
+    }
+  }, []);
 
   return (
     <math-field
