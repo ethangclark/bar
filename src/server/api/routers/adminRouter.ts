@@ -1,6 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
-import { type UserBasic } from "~/common/types";
+import { userBasicSchema, type UserBasic } from "~/common/types";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { db, schema } from "~/server/db";
 
@@ -42,4 +42,8 @@ export const adminRouter = createTRPCRouter({
         })
         .where(eq(schema.flags.id, input.id));
     }),
+  users: adminProcedure.query(async () => {
+    const users = await db.query.users.findMany();
+    return users.map((user) => userBasicSchema.parse(user));
+  }),
 });

@@ -37,7 +37,7 @@ export function CreateActivityButton({
         okText="Create"
         okButtonProps={{ disabled: title.length === 0 }}
       >
-        <Form onFinish={onCreate}>
+        <Form onFinish={() => onCreate(title)}>
           <Input
             placeholder="Activity title"
             value={title}

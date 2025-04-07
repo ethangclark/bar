@@ -1,5 +1,5 @@
 import { type Question } from "~/server/db/schema";
-import { Editor } from "../../components/Editor";
+import { Editor } from "../../components/editor/Editor";
 import { storeObserver } from "../../utils/storeObserver";
 import { isEvalKeyDraftReady, isQuestionDraftReady } from "./itemValidator";
 
@@ -16,13 +16,13 @@ export const QuestionItem = storeObserver<{
         <Editor
           placeholder="Insert question here..."
           value={question.content}
-          setValue={(v) => {
+          onChange={(v) => {
             draftStore.updateDraft("questions", {
               id: question.id,
               content: v,
             });
           }}
-          className={questionOk ? "" : "placeholder-red-500"}
+          isOk={questionOk}
         />
       </div>
       {evalKey ? (
@@ -31,13 +31,13 @@ export const QuestionItem = storeObserver<{
           <Editor
             placeholder="Insert answer here..."
             value={evalKey.content}
-            setValue={(v) => {
+            onChange={(v) => {
               draftStore.updateDraft("evalKeys", {
                 id: evalKey.id,
                 content: v,
               });
             }}
-            className={questionOk && !evalKeyOk ? "placeholder-red-500" : ""}
+            isOk={questionOk ? evalKeyOk : true}
           />
         </div>
       ) : null}

@@ -3,10 +3,13 @@ import { default as NextLink } from "next/link";
 
 export const LinkX = ({
   children,
+  href,
   ...props
-}: React.ComponentProps<typeof NextLink>) => (
-  <NextLink {...props}>
-    <Typography.Link>{children}</Typography.Link>
+}: Omit<React.ComponentProps<typeof Typography.Link>, "href"> & {
+  href: string;
+}) => (
+  <NextLink legacyBehavior passHref href={href}>
+    <Typography.Link {...props}>{children}</Typography.Link>
   </NextLink>
 );
 

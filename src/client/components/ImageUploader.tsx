@@ -1,10 +1,11 @@
 import { FileImageOutlined } from "@ant-design/icons";
 import { identity } from "@trpc/server/unstable-core-do-not-import";
 import type { UploadProps } from "antd";
-import { Typography, Upload } from "antd";
+import { Upload } from "antd";
 import { useMemo } from "react";
 import { isImageDataUrl } from "~/common/pngUtils";
 import { type Notify, useNotify } from "../hooks/useNotify";
+import { LinkStyle } from "./Link";
 
 type OnFileSelect = (params: { imageDataUrl: string }) => void;
 
@@ -83,10 +84,10 @@ export function ImageUploadLink({
     <Upload {...props}>
       {contextHolder}
       {children ?? (
-        <Typography.Link className={className}>
+        <LinkStyle className={className}>
           <FileImageOutlined className="mr-1" />
           {label}
-        </Typography.Link>
+        </LinkStyle>
       )}
     </Upload>
   );

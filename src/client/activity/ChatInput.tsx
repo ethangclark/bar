@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Editor } from "../components/Editor";
+import { Editor } from "../components/editor/Editor";
 import { LoadingCentered } from "../components/Loading";
 import { VoiceTranscriber } from "../components/VoiceTranscriber";
 import { Status } from "../utils/status";
@@ -55,39 +55,40 @@ export const ChatInput = storeObserver(function ChatInput({
             <LoadingCentered />
           </div>
         )}
-        <Editor
-          ref={editorRef}
-          value={v}
-          setValue={setV}
-          placeholder="Compose your message..."
-          height={70}
-          onKeyDown={async (e) => {
-            if (e.key !== "Enter" || e.shiftKey) {
-              return;
-            }
-            e.preventDefault();
+        <div className="flex w-full flex-col pr-4">
+          <Editor
+            ref={editorRef}
+            value={v}
+            onChange={setV}
+            placeholder="Compose your message..."
+            minHeight={70}
+            onKeyDown={async (e) => {
+              if (e.key !== "Enter" || e.shiftKey) {
+                return;
+              }
+              e.preventDefault();
 
-            if (thread instanceof Status) {
-              return;
-            }
+              if (thread instanceof Status) {
+                return;
+              }
 
-            setIsMessageSending(true);
-            setV("");
-            try {
-              await descendentStore.create("messages", {
-                content: v,
-                senderRole: "user",
-                threadId: thread.id,
-                status: "completeWithoutViewPieces",
-              });
-              initialMessageSent.current = true;
-            } finally {
-              setIsMessageSending(false);
-            }
-          }}
-          disabled={inputsDisabled}
-          className="mr-4"
-        />
+              setIsMessageSending(true);
+              setV("");
+              try {
+                await descendentStore.create("messages", {
+                  content: v,
+                  senderRole: "user",
+                  threadId: thread.id,
+                  status: "completeWithoutViewPieces",
+                });
+                initialMessageSent.current = true;
+              } finally {
+                setIsMessageSending(false);
+              }
+            }}
+            disabled={inputsDisabled}
+          />
+        </div>
         <VoiceTranscriber
           onTranscription={onTranscription}
           disabled={inputsDisabled}

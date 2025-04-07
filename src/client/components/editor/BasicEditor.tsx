@@ -10,9 +10,9 @@ const FixedTextArea = forwardRef<
   return <textarea {...props} ref={ref} />;
 });
 
-type EditorProps = {
+type BasicEditorProps = {
   value: string;
-  setValue: (value: string) => void;
+  onChange: (value: string) => void;
   width?: number | string;
   placeholder?: string;
   minHeight?: number;
@@ -25,11 +25,11 @@ type EditorProps = {
   outlineCn?: string;
 };
 
-export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
-  function Editor(
+export const BasicEditor = forwardRef<HTMLTextAreaElement, BasicEditorProps>(
+  function BasicEditor(
     {
       value,
-      setValue,
+      onChange,
       width = "100%", // 516,
       placeholder = "Type here...",
       minHeight = 32 /* smaller than this causes a bounce on load */,
@@ -50,7 +50,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
         autoComplete="off"
         autoCorrect="off"
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         style={{
           width,
           resize: "none",
@@ -66,7 +66,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
   },
 );
 
-export function WysiwygEditor({
+export function WysiwygBasicEditor({
   value,
   setValue,
   placeholder,
@@ -74,7 +74,6 @@ export function WysiwygEditor({
   outlineCn = "focus:outline focus:outline-gray-200",
   roundingCn = "rounded-none",
   className = "",
-  width,
 }: {
   value: string;
   setValue: (value: string) => void;
@@ -83,19 +82,17 @@ export function WysiwygEditor({
   outlineCn?: string;
   roundingCn?: string;
   className?: string;
-  width?: number;
 }) {
   return (
-    <Editor
+    <BasicEditor
       placeholder={placeholder}
       value={value}
-      setValue={setValue}
+      onChange={setValue}
       paddingCn="p-1"
       className={`mx-[-4px] grow disabled:cursor-auto disabled:bg-white ${className}`}
       roundingCn={roundingCn}
       outlineCn={outlineCn}
       disabled={disabled}
-      width={width}
     />
   );
 }
