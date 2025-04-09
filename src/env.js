@@ -21,6 +21,10 @@ export const env = createEnv({
     OPENROUTER_API_KEY: z.string(),
     PORT: z.string().default("3000"),
     QUICK_DEV_LOGIN: z.literal("true").optional(),
+    CLOUDFLARE_ACCOUNT_ID: z.string(),
+    CLOUDFLARE_API_TOKEN: z.string(),
+    CLOUDFLARE_STREAM_KEY_ID: z.string(),
+    CLOUDFLARE_STREAM_JWK_BASE64: z.string(),
   },
 
   /**
@@ -48,6 +52,10 @@ export const env = createEnv({
     OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
     PORT: process.env.PORT,
     QUICK_DEV_LOGIN: process.env.QUICK_DEV_LOGIN,
+    CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
+    CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+    CLOUDFLARE_STREAM_KEY_ID: process.env.CLOUDFLARE_STREAM_KEY_ID,
+    CLOUDFLARE_STREAM_JWK_BASE64: process.env.CLOUDFLARE_STREAM_JWK_BASE64,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

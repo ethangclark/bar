@@ -49,6 +49,7 @@ export const nonDescendents = [
   "users",
   "verificationTokens",
   "videos",
+  "pendingVideoUploads",
 ] as const satisfies Array<keyof typeof schema>;
 
 export const descendentNames = [

@@ -113,13 +113,16 @@ export const AssistantMessage = storeObserver<{
                   id={isLastChild ? message.id : undefined}
                   messageId={message.id}
                   isLastMessage={isLast}
-                  messageLength={child.url.length}
+                  messageLength={child.infoImage.url.length}
                   scrollToBottom={scrollToBottom}
                   flag={isLastChild ? flag : null}
                   diagnosticMessage="ASSISTANT MESSAGE - IMAGE"
                   complete
                 >
-                  <Image alt={child.textAlternative} url={child.url} />
+                  <Image
+                    alt={child.infoImage.textAlternative}
+                    url={child.infoImage.url}
+                  />
                 </MessageView>
               );
             case "video":
@@ -129,13 +132,13 @@ export const AssistantMessage = storeObserver<{
                   id={isLastChild ? message.id : undefined}
                   messageId={message.id}
                   isLastMessage={isLast}
-                  messageLength={child.textAlternative.length}
+                  messageLength={child.infoVideo.textAlternative.length}
                   scrollToBottom={scrollToBottom}
                   flag={isLastChild ? flag : null}
                   diagnosticMessage="ASSISTANT MESSAGE - VIDEO"
                   complete
                 >
-                  <Video videoId={child.videoId} />
+                  <Video infoVideo={child.infoVideo} />
                 </MessageView>
               );
             case "text":

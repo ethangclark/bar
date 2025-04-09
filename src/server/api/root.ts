@@ -12,6 +12,7 @@ import { messageRouter } from "./routers/messageRouter";
 import { submissionRouter } from "./routers/submissionRouter";
 import { threadWrapRouter } from "./routers/threadWrapRouter";
 import { transcriptionRouter } from "./routers/transcriptionRouter";
+import { videoRouter } from "./routers/videoRouter";
 
 /**
  * This is the primary router for your server.
@@ -32,6 +33,7 @@ export const appRouter = createTRPCRouter({
   threadWrap: threadWrapRouter,
   submission: submissionRouter,
   admin: adminRouter,
+  video: videoRouter,
 });
 
 // export type definition of API
