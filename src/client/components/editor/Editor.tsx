@@ -4,6 +4,7 @@ import { Trash2 } from "lucide-react";
 import { forwardRef, useMemo } from "react";
 import { assertTypesExhausted } from "~/common/assertions";
 import { BasicEditor } from "./BasicEditor";
+import { EditorTextButton } from "./EditorTextButton";
 import { LatexEditor } from "./LatexEditor";
 import { joinSegments, parseTextWithLatex } from "./utils";
 
@@ -57,6 +58,7 @@ type EditorProps = {
   }) => void;
   disabled?: boolean;
   minHeight?: number;
+  lowerLeftButton?: React.ReactNode;
 };
 
 export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
@@ -69,6 +71,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
       onKeyDown,
       disabled,
       minHeight,
+      lowerLeftButton,
     },
     ref,
   ) {
@@ -165,11 +168,9 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
               assertTypesExhausted(segment);
           }
         })}
-        <div className="flex w-full justify-end">
-          <Button
-            size="small"
-            type="text"
-            className="text-xs text-gray-600"
+        <div className="flex w-full justify-between">
+          {lowerLeftButton ?? <div />}
+          <EditorTextButton
             onClick={() => {
               onChange?.(
                 joinSegments([...segments, { type: "latex", content: "" }]),
@@ -179,7 +180,7 @@ export const Editor = forwardRef<HTMLTextAreaElement, EditorProps>(
             disabled={disabled}
           >
             Add equation
-          </Button>
+          </EditorTextButton>
         </div>
       </div>
     );
