@@ -10,7 +10,7 @@ import { db, type DbOrTx, schema } from "~/server/db";
 import { type Video, videos } from "~/server/db/schema";
 
 const CLOUDFLARE_STREAM_KEY_ID = env.CLOUDFLARE_STREAM_KEY_ID;
-const CLOUDFLARE_STREAM_JWK_BASE64 = env.CLOUDFLARE_STREAM_JWK_BASE64;
+const CLOUDFLARE_STREAM_PEM_BASE64 = env.CLOUDFLARE_STREAM_PEM_BASE64;
 const CLOUDFLARE_ACCOUNT_ID = env.CLOUDFLARE_ACCOUNT_ID;
 const CLOUDFLARE_API_TOKEN = env.CLOUDFLARE_API_TOKEN;
 const CLOUDFLARE_API_BASE = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}`;
@@ -304,14 +304,15 @@ export async function generateViewToken({ video }: { video: Video }) {
     // 'startTime': Math.floor(Date.now() / 1000), // Optional: Token not valid before this time
   };
 
-  const streamToken = jwt.sign(
-    payload,
-    JSON.parse(atob(CLOUDFLARE_STREAM_JWK_BASE64)),
-    {
-      algorithm: "RS256",
-      header: headers,
-    },
-  );
+  const privateKeyPEM = Buffer.from(
+    CLOUDFLARE_STREAM_PEM_BASE64,
+    "base64",
+  ).toString("utf8");
+
+  const streamToken = jwt.sign(payload, privateKeyPEM, {
+    algorithm: "RS256",
+    header: headers,
+  });
 
   return { streamToken };
 }

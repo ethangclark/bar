@@ -24,7 +24,7 @@ export const env = createEnv({
     CLOUDFLARE_ACCOUNT_ID: z.string(),
     CLOUDFLARE_API_TOKEN: z.string(),
     CLOUDFLARE_STREAM_KEY_ID: z.string(),
-    CLOUDFLARE_STREAM_JWK_BASE64: z.string(),
+    CLOUDFLARE_STREAM_PEM_BASE64: z.string(),
   },
 
   /**
@@ -55,7 +55,7 @@ export const env = createEnv({
     CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
     CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
     CLOUDFLARE_STREAM_KEY_ID: process.env.CLOUDFLARE_STREAM_KEY_ID,
-    CLOUDFLARE_STREAM_JWK_BASE64: process.env.CLOUDFLARE_STREAM_JWK_BASE64,
+    CLOUDFLARE_STREAM_PEM_BASE64: process.env.CLOUDFLARE_STREAM_PEM_BASE64,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
