@@ -17,6 +17,7 @@ export const InfoVideoItem = storeObserver<{
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const isOk = isInfoVideoDraftReady(infoVideoDraft);
   const [newTranscript, setNewTranscript] = useState<string | null>(null);
+
   return (
     <div className="relative w-full">
       <div className="mb-4 flex w-full">
@@ -24,9 +25,12 @@ export const InfoVideoItem = storeObserver<{
           className="mr-2"
           onUploadStarted={() => setIsUploadingVideo(true)}
           onUploadComplete={({ videoId, transcript }) => {
+            // TODO: actually create the video object in the db
+
             draftStore.updateDraft("infoVideos", {
               id: infoVideoDraft.id,
               videoId,
+              textAlternative: transcript,
             });
             setNewTranscript(transcript);
             setIsUploadingVideo(false);
@@ -38,7 +42,7 @@ export const InfoVideoItem = storeObserver<{
 
       <div className="relative mb-2">
         <Video
-          videoId={infoVideoDraft.videoId}
+          infoVideo={infoVideoDraft}
           className={isUploadingVideo ? "invisible" : "visible"}
         />
 

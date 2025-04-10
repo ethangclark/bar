@@ -581,6 +581,31 @@ export const infoImagesRelations = relations(infoImages, ({ one }) => ({
 }));
 export const infoImageSchema = createSelectSchema(infoImages);
 
+export const pendingVideoUploads = pgTable(
+  "pending_video_uploads",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    cloudflareStreamId: text("cloudflare_stream_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+  },
+  (p) => [
+    index("pending_video_uploads_cloudflare_stream_id_idx").on(
+      p.cloudflareStreamId,
+    ),
+  ],
+);
+export type PendingVideoUpload = InferSelectModel<typeof pendingVideoUploads>;
+export const pendingVideoUploadsRelations = relations(
+  pendingVideoUploads,
+  () => ({}),
+);
+export const pendingVideoUploadSchema = createSelectSchema(pendingVideoUploads);
+
 // not going to make this a descendent, as the data flow will be different
 export const videos = pgTable(
   "video",
@@ -589,11 +614,16 @@ export const videos = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    cloudinaryPublicExId: text("cloudinary_public_ex_id").notNull(),
-    cloudinarySecureUrl: text("cloudinary_secure_url").notNull(),
-    cloudinaryAudioUrl: text("cloudinary_audio_url"), // null if no audio track
+    cloudinaryPublicExId: text("cloudinary_public_ex_id"), // TODO: remove
+    cloudinarySecureUrl: text("cloudinary_secure_url"), // TODO: remove
+    cloudinaryAudioUrl: text("cloudinary_audio_url"), // TODO: remove
+    cloudflareStreamId: text("cloudflare_stream_id"), // TODO: make non-nullable
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }), // TODO: make non-nullable
   },
-  (v) => [index("video_cloudinary_public_id_idx").on(v.cloudinaryPublicExId)],
+  (v) => [
+    index("video_cloudinary_public_id_idx").on(v.cloudinaryPublicExId),
+    index("video_cloudflare_stream_id_idx").on(v.cloudflareStreamId),
+  ],
 );
 export type Video = InferSelectModel<typeof videos>;
 export const videosRelations = relations(videos, () => ({}));

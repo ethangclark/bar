@@ -1,9 +1,8 @@
 import { message, Upload } from "antd";
 import { useCallback } from "react";
-import { z } from "zod";
-import { type VideoUploadResponse } from "~/app/api/video/upload/route";
 import { storeObserver } from "~/client/utils/storeObserver";
 import { noop } from "~/common/fnUtils";
+import { trpc } from "~/trpc/proxy";
 
 export const UploadVideo = storeObserver<{
   children: React.ReactNode;
@@ -24,19 +23,23 @@ export const UploadVideo = storeObserver<{
       formData.append("video", file);
       try {
         onUploadStarted();
-        const res = await fetch(`/api/video/upload`, {
+
+        const { cloudflareUploadUrl, cloudflareStreamId } =
+          await trpc.video.createUploadUrl.mutate();
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await fetch(cloudflareUploadUrl, {
           method: "POST",
           body: formData,
         });
+        const asJson = await response.json();
+        console.log("Upload response:", asJson);
 
-        // Nothing to actually do with this lol.
-        // Just keeping so the control flow is consistent and errors flow as expected
-        const { videoId, transcript } = (
-          z.object({
-            videoId: z.string(),
-            transcript: z.string(),
-          }) satisfies z.ZodType<VideoUploadResponse>
-        ).parse(await res.json());
+        const { videoId, transcript } = await trpc.video.processUpload.mutate({
+          cloudflareStreamId,
+        });
 
         onUploadComplete({ videoId, transcript });
       } catch (error) {

@@ -1,18 +1,17 @@
 import { makeAutoObservable } from "mobx";
 import { Status } from "~/client/utils/status";
+import { type InfoImage, type InfoVideo } from "~/server/db/schema";
 import { type DescendentStore } from "./descendentStore";
 
 type ViewPieceChildren = Array<
   | {
       type: "image";
-      url: string;
-      textAlternative: string;
+      infoImage: InfoImage;
       key: string;
     }
   | {
       type: "video";
-      videoId: string;
-      textAlternative: string;
+      infoVideo: InfoVideo;
       key: string;
     }
   | {
@@ -66,8 +65,7 @@ export class ViewPieceStore {
           }
           children.push({
             type: "image",
-            url: ii.url,
-            textAlternative: ii.textAlternative,
+            infoImage: ii,
             key: vp.id,
           });
         });
@@ -80,8 +78,7 @@ export class ViewPieceStore {
           }
           children.push({
             type: "video",
-            videoId: iv.videoId,
-            textAlternative: iv.textAlternative,
+            infoVideo: iv,
             key: vp.id,
           });
         });
