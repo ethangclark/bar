@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Editor } from "../components/editor/Editor";
+import { EditorTextButton } from "../components/editor/EditorTextButton";
 import { LoadingCentered } from "../components/Loading";
 import { VoiceTranscriber } from "../components/VoiceTranscriber";
 import { Status } from "../utils/status";
@@ -43,6 +44,22 @@ export const ChatInput = storeObserver(function ChatInput({
     }
   }, [inputsDisabled]);
 
+  const sendMessage = useCallback(
+    async (content: string) => {
+      if (thread instanceof Status) return;
+      setIsMessageSending(true);
+      await descendentStore.create("messages", {
+        content,
+        senderRole: "user",
+        threadId: thread.id,
+        status: "completeWithoutViewPieces",
+      });
+      initialMessageSent.current = true;
+      setIsMessageSending(false);
+    },
+    [descendentStore, thread],
+  );
+
   return (
     <div
       style={{
@@ -63,30 +80,25 @@ export const ChatInput = storeObserver(function ChatInput({
             placeholder="Compose your message..."
             minHeight={70}
             onKeyDown={async (e) => {
-              if (e.key !== "Enter" || e.shiftKey) {
-                return;
-              }
+              if (e.key !== "Enter" || e.shiftKey) return;
               e.preventDefault();
-
-              if (thread instanceof Status) {
-                return;
-              }
-
-              setIsMessageSending(true);
+              if (thread instanceof Status) return;
               setV("");
-              try {
-                await descendentStore.create("messages", {
-                  content: v,
-                  senderRole: "user",
-                  threadId: thread.id,
-                  status: "completeWithoutViewPieces",
-                });
-                initialMessageSent.current = true;
-              } finally {
-                setIsMessageSending(false);
-              }
+              await sendMessage(v);
             }}
             disabled={inputsDisabled}
+            lowerLeftButton={
+              <div className="flex items-center">
+                <EditorTextButton
+                  onClick={async () => {
+                    await sendMessage("Please continue");
+                  }}
+                >
+                  Click or tap <span className="mx-[-0px] font-bold">here</span>{" "}
+                  to send "Please continue"
+                </EditorTextButton>
+              </div>
+            }
           />
         </div>
         <VoiceTranscriber

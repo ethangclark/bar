@@ -127,13 +127,16 @@ const layouts = [
             },
             {
               class: "separator",
+              width: 0.5 as const,
+            },
+            {
+              latex: "\\ ", // Insert a LaTeX space command
+              label: "Space",
+              width: 2 as const, // Make the space key wider
             },
             {
               class: "separator",
-            },
-            // ********************************
-            {
-              class: "separator",
+              width: 0.5 as const,
             },
             {
               class: "action hide-shift",
