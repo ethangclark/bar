@@ -42,7 +42,8 @@ export const InfoVideoItem = storeObserver<{
 
       <div className="relative mb-2">
         <Video
-          infoVideo={infoVideoDraft}
+          activityId={infoVideoDraft.activityId}
+          videoId={infoVideoDraft.videoId}
           className={isUploadingVideo ? "invisible" : "visible"}
         />
 

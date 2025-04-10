@@ -34,8 +34,9 @@ export const UploadVideo = storeObserver<{
           method: "POST",
           body: formData,
         });
-        const asJson = await response.json();
-        console.log("Upload response:", asJson);
+        if (!response.ok) {
+          throw new Error("Video upload failed");
+        }
 
         const { videoId, transcript } = await trpc.video.processUpload.mutate({
           cloudflareStreamId,

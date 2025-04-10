@@ -1,17 +1,18 @@
 import { Stream } from "@cloudflare/stream-react";
 import { useEffect, useState } from "react";
 import { invoke } from "~/common/fnUtils";
-import { type InfoVideo } from "~/server/db/schema";
 import { trpc } from "~/trpc/proxy";
 import { LoadingCentered } from "./Loading";
 
 export function Video({
-  infoVideo,
+  activityId,
+  videoId,
   className,
   height = 360,
   width = 640,
 }: {
-  infoVideo: InfoVideo;
+  activityId: string;
+  videoId: string;
   className?: string;
   height?: number;
   width?: number;
@@ -20,14 +21,13 @@ export function Video({
 
   useEffect(() => {
     void invoke(async () => {
-      const { id: infoVideoId, activityId } = infoVideo;
       const r = await trpc.video.generateViewToken.mutate({
         activityId,
-        infoVideoId,
+        videoId,
       });
       setStreamToken(r.streamToken);
     });
-  }, [infoVideo]);
+  }, [activityId, videoId]);
 
   if (!streamToken) {
     return <LoadingCentered />;

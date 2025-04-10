@@ -138,7 +138,10 @@ export const AssistantMessage = storeObserver<{
                   diagnosticMessage="ASSISTANT MESSAGE - VIDEO"
                   complete
                 >
-                  <Video infoVideo={child.infoVideo} />
+                  <Video
+                    activityId={child.infoVideo.activityId}
+                    videoId={child.infoVideo.videoId}
+                  />
                 </MessageView>
               );
             case "text":

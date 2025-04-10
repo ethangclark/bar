@@ -20,122 +20,7 @@ const cloudflareHeaders = {
 };
 // --- End Cloudflare Configuration ---
 
-// Helper function to poll for transcription status
-async function pollTranscriptionStatus(
-  videoId: string,
-  language = "en",
-): Promise<void> {
-  const pollInterval = 2 * 1000; // 2 seconds
-  const maxPollDuration = 2 * 60 * 1000; // 2 minutes
-  const maxAttempts = maxPollDuration / pollInterval;
-
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    try {
-      const response = await fetch(
-        `${CLOUDFLARE_API_BASE}/stream/${videoId}/captions/${language}`,
-        {
-          headers: cloudflareHeaders,
-        },
-      );
-
-      if (!response.ok) {
-        // If status is 404, captions haven't been generated yet, continue polling
-        if (response.status === 404) {
-          console.log(
-            `Transcription status for ${videoId} (attempt ${attempt + 1}/${maxAttempts}): Not found, polling again...`,
-          );
-          await new Promise((resolve) => setTimeout(resolve, pollInterval));
-          continue;
-        }
-        // Handle other errors
-        const errorText = await response.text();
-        throw new Error(
-          `Failed to poll transcription status (${response.status}): ${errorText}`,
-        );
-      }
-
-      const data: unknown = await response.json();
-      const captions = z
-        .object({
-          // status can be 'inprogress', 'ready', 'error' etc.
-          status: z.string(),
-        })
-        .parse(data);
-
-      console.log(
-        `Transcription status for ${videoId} (attempt ${attempt + 1}/${maxAttempts}): ${captions.status}`,
-      );
-
-      if (captions.status === "ready") {
-        return; // Transcription is ready
-      }
-      if (captions.status === "error") {
-        throw new Error(`Transcription failed for video ${videoId}`);
-      }
-
-      // If status is 'inprogress' or other non-ready/non-error state, wait and poll again
-      await new Promise((resolve) => setTimeout(resolve, pollInterval));
-    } catch (error) {
-      console.error(
-        `Error polling transcription status for ${videoId}:`,
-        error,
-      );
-      // Decide if you want to retry on specific errors or just throw
-      if (attempt === maxAttempts - 1) {
-        throw new Error(
-          `Transcription polling failed after ${maxAttempts} attempts for video ${videoId}. Last error: ${error instanceof Error ? error.message : String(error)}`,
-        );
-      }
-      await new Promise((resolve) => setTimeout(resolve, pollInterval)); // Wait before retrying after an error
-    }
-  }
-
-  throw new Error(
-    `Transcription for video ${videoId} did not become ready after ${maxAttempts} attempts.`,
-  );
-}
-
-// Helper function to fetch and parse VTT transcript
-async function getTranscriptFromVTT(
-  videoId: string,
-  language = "en",
-): Promise<string> {
-  const response = await fetch(
-    `${CLOUDFLARE_API_BASE}/stream/${videoId}/captions/${language}/vtt`,
-    {
-      headers: cloudflareHeaders,
-    },
-  );
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `Failed to fetch VTT transcript (${response.status}): ${errorText}`,
-    );
-  }
-
-  const vttContent = await response.text();
-
-  // Basic VTT parsing: extract text lines, ignore timestamps and metadata
-  const lines = vttContent.split("\n");
-  const transcriptLines: string[] = [];
-
-  for (const line of lines) {
-    // Skip empty lines, VTT header, and cue identifiers/timings
-    if (
-      line.trim() === "" ||
-      line.startsWith("WEBVTT") ||
-      line.includes("-->") ||
-      /^\d+$/.test(line.trim()) // Skip cue numbers
-    ) {
-      continue;
-    }
-    // Assume lines after timing are text content
-    transcriptLines.push(line.trim());
-  }
-
-  return transcriptLines.join(" ").replace(/<[^>]+>/g, ""); // Join lines and remove potential VTT tags like <v ->
-}
+const language = "en";
 
 export async function createUploadUrl(userId: string) {
   const videoName = `summit-user-id-${userId}-date-${Date.now()}.mp4`; // Default name
@@ -156,7 +41,10 @@ export async function createUploadUrl(userId: string) {
       // Require signed URLs for viewing this video
       requireSignedURLs: true,
       // Restrict uploads to come from your web app's origin
-      allowedOrigins: [new URL(getBaseUrl()).origin],
+      allowedOrigins:
+        env.NODE_ENV === "production"
+          ? [new URL(getBaseUrl()).origin, "dash.cloudflare.com"]
+          : undefined,
       // --- Transcript Request ---
       // We will add metadata via the client-side upload library instead
       meta: { name: videoName }, // Basic metadata can be set here too
@@ -192,6 +80,180 @@ export async function createUploadUrl(userId: string) {
   return { cloudflareUploadUrl, cloudflareStreamId };
 }
 
+const captionStatusSchema = z.object({
+  result: z.object({
+    status: z.enum(["inprogress", "ready", "error"]),
+  }),
+});
+
+const transcriptionWaitRetryInterval = 1000;
+const transcriptionWaitMaxTime = 60 * 1000;
+const transcriptionWaitMaxAttempts =
+  transcriptionWaitMaxTime / transcriptionWaitRetryInterval;
+
+async function beginTranscription(
+  cloudflareStreamId: string,
+  retryAttempt = 0,
+) {
+  if (retryAttempt > transcriptionWaitMaxAttempts) {
+    throw new Error(
+      `Transcription failed after ${retryAttempt} attempts for video ${cloudflareStreamId}`,
+    );
+  }
+  const response = await fetch(
+    `${CLOUDFLARE_API_BASE}/stream/${cloudflareStreamId}/captions/en/generate`,
+    { method: "POST", headers: cloudflareHeaders },
+  );
+
+  if (!response.ok) {
+    const errorDataRaw = await response.json();
+    const errorData = z
+      .object({
+        errors: z.array(
+          z.object({
+            code: z.number(),
+            message: z.string(),
+          }),
+        ),
+      })
+      .parse(errorDataRaw);
+    if (errorData.errors.length === 1 && errorData.errors[0]?.code === 10067) {
+      // video is not ready yet; wait a bit and try again
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return await beginTranscription(cloudflareStreamId, retryAttempt + 1);
+    }
+    console.error(
+      `Failed to generate transcription request (${response.status}): ${JSON.stringify(errorData)}`,
+    );
+    throw new Error(
+      `Failed to generate transcription request (${response.status})`,
+    );
+  }
+
+  const data = await response.json();
+  const status = captionStatusSchema.parse(data).result.status;
+  switch (status) {
+    case "error":
+      throw new Error(
+        `Transcription failed in initial generation request for video ${cloudflareStreamId}`,
+      );
+    case "inprogress":
+      return { done: false };
+    case "ready":
+      return { done: true };
+  }
+}
+
+// Helper function to poll for transcription status
+async function pollTranscriptionStatus(
+  cloudflareStreamId: string,
+): Promise<void> {
+  const pollInterval = 2 * 1000; // 2 seconds
+  const maxPollDuration = 2 * 60 * 1000; // 2 minutes
+  const maxAttempts = maxPollDuration / pollInterval;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const response = await fetch(
+        `${CLOUDFLARE_API_BASE}/stream/${cloudflareStreamId}/captions/${language}`,
+        {
+          headers: cloudflareHeaders,
+        },
+      );
+
+      if (!response.ok) {
+        // If status is 404, captions haven't been generated yet, continue polling
+        if (response.status === 404) {
+          console.log(
+            `Transcription status for ${cloudflareStreamId} (attempt ${attempt + 1}/${maxAttempts}): Not found, polling again...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, pollInterval));
+          continue;
+        }
+        // Handle other errors
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to poll transcription status (${response.status}): ${errorText}`,
+        );
+      }
+
+      const data: unknown = await response.json();
+      const captions = captionStatusSchema.parse(data);
+
+      console.log(
+        `Transcription status for ${cloudflareStreamId} (attempt ${attempt + 1}/${maxAttempts}): ${captions.result.status}`,
+      );
+
+      if (captions.result.status === "ready") {
+        return; // Transcription is ready
+      }
+      if (captions.result.status === "error") {
+        throw new Error(`Transcription failed for video ${cloudflareStreamId}`);
+      }
+
+      // If status is 'inprogress' or other non-ready/non-error state, wait and poll again
+      await new Promise((resolve) => setTimeout(resolve, pollInterval));
+    } catch (error) {
+      console.error(
+        `Error polling transcription status for ${cloudflareStreamId}:`,
+        error,
+      );
+      // Decide if you want to retry on specific errors or just throw
+      if (attempt === maxAttempts - 1) {
+        throw new Error(
+          `Transcription polling failed after ${maxAttempts} attempts for video ${cloudflareStreamId}. Last error: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      await new Promise((resolve) => setTimeout(resolve, pollInterval)); // Wait before retrying after an error
+    }
+  }
+
+  throw new Error(
+    `Transcription for video ${cloudflareStreamId} did not become ready after ${maxAttempts} attempts.`,
+  );
+}
+
+// Helper function to fetch and parse VTT transcript
+async function getTranscriptFromVTT(
+  cloudflareStreamId: string,
+): Promise<string> {
+  const response = await fetch(
+    `${CLOUDFLARE_API_BASE}/stream/${cloudflareStreamId}/captions/${language}/vtt`,
+    {
+      headers: cloudflareHeaders,
+    },
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to fetch VTT transcript (${response.status}): ${errorText}`,
+    );
+  }
+
+  const vttContent = await response.text();
+
+  // Basic VTT parsing: extract text lines, ignore timestamps and metadata
+  const lines = vttContent.split("\n");
+  const transcriptLines: string[] = [];
+
+  for (const line of lines) {
+    // Skip empty lines, VTT header, and cue identifiers/timings
+    if (
+      line.trim() === "" ||
+      line.startsWith("WEBVTT") ||
+      line.includes("-->") ||
+      /^\d+$/.test(line.trim()) // Skip cue numbers
+    ) {
+      continue;
+    }
+    // Assume lines after timing are text content
+    transcriptLines.push(line.trim());
+  }
+
+  return transcriptLines.join(" ").replace(/<[^>]+>/g, ""); // Join lines and remove potential VTT tags like <v ->
+}
+
 export async function processUpload({
   cloudflareStreamId,
   userId,
@@ -201,8 +263,11 @@ export async function processUpload({
   userId: string;
   tx: DbOrTx;
 }) {
-  await pollTranscriptionStatus(cloudflareStreamId, "en");
-  const transcript = await getTranscriptFromVTT(cloudflareStreamId, "en");
+  const { done } = await beginTranscription(cloudflareStreamId);
+  if (!done) {
+    await pollTranscriptionStatus(cloudflareStreamId);
+  }
+  const transcript = await getTranscriptFromVTT(cloudflareStreamId);
 
   const insertedVideos = await tx
     .insert(videos)

@@ -619,6 +619,9 @@ export const videos = pgTable(
     cloudinaryAudioUrl: text("cloudinary_audio_url"), // TODO: remove
     cloudflareStreamId: text("cloudflare_stream_id"), // TODO: make non-nullable
     userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }), // TODO: make non-nullable
+    activityId: uuid("activity_id").references(() => activities.id, {
+      onDelete: "cascade",
+    }), // nullable; if it's null, then we don't restrict access to the video (beyond requiring the user to be logged in) (TODO: make non-nullable)
   },
   (v) => [
     index("video_cloudinary_public_id_idx").on(v.cloudinaryPublicExId),

@@ -1,0 +1,2 @@
+ALTER TABLE "video" ADD COLUMN "activity_id" uuid;--> statement-breakpoint
+ALTER TABLE "video" ADD CONSTRAINT "video_activity_id_activity_id_fk" FOREIGN KEY ("activity_id") REFERENCES "public"."activity"("id") ON DELETE cascade ON UPDATE no action;
